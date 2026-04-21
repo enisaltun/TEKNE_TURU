@@ -461,6 +461,75 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
   </div>
 </section>
 
+<!-- ================================================================ PAGE 8b: REZERVASYON DETAYI -->
+<section id="page-booking-detail" class="page" style="padding-bottom:80px">
+  <!-- Header -->
+  <div id="bdet-hero" class="h-48 relative flex items-end p-4">
+    <button onclick="history.back()" class="absolute top-4 left-4 w-9 h-9 bg-black/30 backdrop-blur rounded-full flex items-center justify-center">
+      <i class="fas fa-arrow-left text-white text-sm"></i>
+    </button>
+    <div class="text-white w-full">
+      <div id="bdet-cat-badge" class="text-xs font-semibold opacity-80 mb-0.5"></div>
+      <h1 class="text-xl font-bold leading-tight" id="bdet-title">—</h1>
+    </div>
+  </div>
+
+  <div class="px-4 pt-4 space-y-3">
+    <!-- Status + Rez No -->
+    <div class="card p-4 flex items-center justify-between">
+      <div>
+        <div class="text-[10px] text-gray-400 mb-0.5">Rezervasyon No</div>
+        <div class="font-bold text-primary text-sm" id="bdet-no">—</div>
+      </div>
+      <div id="bdet-status-badge"></div>
+    </div>
+
+    <!-- Booking Info -->
+    <div class="card p-4">
+      <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Rezervasyon Bilgileri</div>
+      <div class="space-y-2.5 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Tarih</span><span class="font-medium" id="bdet-date">—</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Saat</span><span class="font-medium" id="bdet-time">—</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Misafir</span><span class="font-medium" id="bdet-guests">—</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Konum</span><span class="font-medium" id="bdet-loc">—</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Sure</span><span class="font-medium" id="bdet-dur">—</span></div>
+        <div class="border-t pt-2.5 flex justify-between font-semibold">
+          <span>Toplam Ucret</span>
+          <span class="text-primary text-base" id="bdet-amount">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Captain Card -->
+    <div class="card p-4">
+      <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Kaptan</div>
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+          <span class="font-bold text-primary text-lg" id="bdet-cap-avatar">K</span>
+        </div>
+        <div class="flex-1">
+          <div class="font-semibold text-sm" id="bdet-cap-name">—</div>
+          <div class="text-[11px] text-gray-500" id="bdet-cap-sub">—</div>
+          <div class="flex items-center gap-1 mt-0.5 text-amber-500 text-[11px]" id="bdet-cap-rating"></div>
+        </div>
+        <button id="bdet-msg-btn" class="bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-xs font-medium">
+          <i class="fas fa-comment mr-0.5"></i>Yaz
+        </button>
+      </div>
+    </div>
+
+    <!-- Tour Details -->
+    <div class="card p-4" id="bdet-tour-section">
+      <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Tur Detaylari</div>
+      <p class="text-xs text-gray-600 leading-relaxed mb-3" id="bdet-desc">—</p>
+      <div class="grid grid-cols-2 gap-2" id="bdet-includes"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex gap-2 pb-2" id="bdet-actions"></div>
+  </div>
+</section>
+
 <!-- ================================================================ PAGE 9: FAVORILER -->
 <section id="page-favorites" class="page">
   <div class="px-4 pt-2">
@@ -595,8 +664,8 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 
 <script>
 /* ── CONSTANTS ── */
-const ALL_PAGES=['auth','home','search','detail','captain-profile','booking','payment','confirmation','my-tours','favorites','messages','notifications','profile'];
-const HIDE_NAV=['auth','detail','booking','payment','confirmation','captain-profile','notifications'];
+const ALL_PAGES=['auth','home','search','detail','captain-profile','booking','payment','confirmation','my-tours','booking-detail','favorites','messages','notifications','profile'];
+const HIDE_NAV=['auth','detail','booking','payment','confirmation','captain-profile','notifications','booking-detail'];
 const CM={
   balik:    {label:'Balik Avi',   icon:'fa-fish',      color:'blue',   grad:'from-blue-400 to-blue-600'},
   gezi:     {label:'Tekne Gezisi',icon:'fa-compass',   color:'cyan',   grad:'from-cyan-400 to-teal-500'},
@@ -739,6 +808,7 @@ function handleRoute(){
   if(h==='payment')  renderPayment();
   if(h==='captain-profile') renderCaptainProfile();
   if(h==='my-tours') renderMyTours(curTab);
+  if(h==='booking-detail') renderBookingDetail();
   if(h==='favorites')renderFavorites();
   if(h==='messages') {document.getElementById('msg-list-view').style.display='';document.getElementById('msg-chat-view').style.display='none';renderMsgList();}
   if(h==='notifications') renderNotifs();
@@ -1044,7 +1114,7 @@ function renderMyTours(tab){
     const cat=tourMap[b.tourId]?.cat||'gezi';
     const m=CM[cat]||CM.gezi;
     const badge=b.durum==='onaylandi'?'<span class="badge bg-green-100 text-success">Onaylandi</span>':b.durum==='tamamlandi'?'<span class="badge bg-gray-100 text-gray-600">Bitti</span>':b.durum==='iptal'||b.durum==='reddedildi'?'<span class="badge bg-red-100 text-danger">Iptal</span>':'<span class="badge bg-amber-100 text-amber-700">Bekliyor</span>';
-    return`<div class="card p-4 card-hover" onclick="openConf('${b.id}')">
+    return`<div class="card p-4 card-hover" onclick="openBookingDetail('${b.id}')">
       <div class="flex items-center gap-3 mb-2">
         <div class="w-12 h-12 bg-gradient-to-br ${m.grad} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas ${m.icon} text-white"></i></div>
         <div class="flex-1"><div class="font-medium text-sm">${b.tourTitle||'Tur'}</div><div class="text-[11px] text-gray-500">${b.captainName||'—'}</div></div>
@@ -1069,6 +1139,74 @@ function renderMyTours(tab){
 function openConf(id){
   const b=S.get('db_bookings',[]).find(x=>x.id===id);
   if(b){renderConf(b);navigateTo('confirmation');}
+}
+
+let _bdetId=null;
+function openBookingDetail(id){
+  _bdetId=id;
+  navigateTo('booking-detail');
+}
+function renderBookingDetail(){
+  rebuildTourMap();
+  const b=S.get('db_bookings',[]).find(x=>x.id===_bdetId);
+  if(!b){navigateTo('my-tours');return;}
+  const t=tourMap[b.tourId]||{};
+  const m=CM[t.cat||'gezi']||CM.gezi;
+
+  /* hero */
+  document.getElementById('bdet-hero').className=`h-48 bg-gradient-to-br ${m.grad} relative flex items-end p-4`;
+  document.getElementById('bdet-cat-badge').textContent=m.label;
+  document.getElementById('bdet-title').textContent=b.tourTitle||t.name||'Tur';
+
+  /* rez no + status */
+  document.getElementById('bdet-no').textContent='#'+String(b.id).slice(-8).toUpperCase();
+  const statusMap={
+    bekliyor:'<span style="background:#fef3c7;color:#b45309;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600">Onay Bekleniyor</span>',
+    onaylandi:'<span style="background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600">Onaylandi</span>',
+    tamamlandi:'<span style="background:#e5e7eb;color:#374151;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600">Tamamlandi</span>',
+    iptal:'<span style="background:#fee2e2;color:#b91c1c;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600">Iptal Edildi</span>',
+    reddedildi:'<span style="background:#fee2e2;color:#b91c1c;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600">Reddedildi</span>',
+  };
+  document.getElementById('bdet-status-badge').innerHTML=statusMap[b.durum]||statusMap.bekliyor;
+
+  /* booking info */
+  document.getElementById('bdet-date').textContent=b.tarih||'—';
+  document.getElementById('bdet-time').textContent=b.saat||'—';
+  document.getElementById('bdet-guests').textContent=(b.guests||1)+' kisi';
+  document.getElementById('bdet-loc').textContent=t.loc||'—';
+  document.getElementById('bdet-dur').textContent=t.dur||'—';
+  document.getElementById('bdet-amount').textContent=(b.amount||0).toLocaleString('tr-TR')+' TL';
+
+  /* captain */
+  const cname=b.captainName||t.captain||'Kaptan';
+  document.getElementById('bdet-cap-avatar').textContent=cname[0]||'K';
+  document.getElementById('bdet-cap-name').textContent=cname;
+  document.getElementById('bdet-cap-sub').textContent=t.loc?(t.loc+' kalkisli • Dogrulandi'):'Dogrulandi';
+  document.getElementById('bdet-cap-rating').innerHTML=t.rating?`<i class="fas fa-star text-amber-400"></i><span class="ml-0.5">${t.rating} (${t.reviews||0} yorum)</span>`:'';
+  document.getElementById('bdet-msg-btn').onclick=()=>jumpToChat(b.id);
+
+  /* tour details */
+  const inc=t.includes||['Yakıt','Kaptan','Ekipman'];
+  document.getElementById('bdet-desc').textContent=t.desc||`${b.tourTitle} - ${t.loc||''} kalkisli tur.`;
+  document.getElementById('bdet-includes').innerHTML=inc.map(i=>`<div class="flex items-center gap-1.5 text-xs text-gray-600"><i class="fas fa-check-circle text-success text-[10px]"></i>${i}</div>`).join('');
+
+  /* action buttons */
+  const canCancel=b.durum==='bekliyor'||b.durum==='onaylandi';
+  document.getElementById('bdet-actions').innerHTML=
+    `<button onclick="navigateTo('messages')" class="flex-1 border py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-comment mr-1"></i>Kaptana Yaz</button>`+
+    `<button onclick="go(${b.tourId},'detail')" class="flex-1 border border-primary text-primary py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-ship mr-1"></i>Tur Sayfasi</button>`+
+    (canCancel?`<button onclick="cancelBFromDetail('${b.id}')" class="border border-danger text-danger px-4 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-times"></i></button>`:'');
+}
+function cancelBFromDetail(id){
+  const db=S.get('db_bookings',[]);
+  const b=db.find(x=>x.id===id);
+  if(!b)return;
+  if(!confirm('Rezervasyonu iptal etmek istediginizden emin misiniz?'))return;
+  b.durum='iptal';
+  S.set('db_bookings',db);
+  addNotif('Rezervasyon iptal edildi',`${b.tourTitle} rezervasyonunuz iptal edildi.`,'danger');
+  showToast('Rezervasyon iptal edildi','danger');
+  renderBookingDetail();
 }
 
 function cancelB(id){
