@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DenizBul Admin Paneli</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+tailwind.config={theme:{extend:{colors:{primary:'#0369a1',primaryDark:'#075985',primaryLight:'#e0f2fe',accent:'#f59e0b',surface:'#f8fafc',danger:'#ef4444',success:'#10b981'}}}}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{font-family:'Inter',sans-serif;margin:0;padding:0;box-sizing:border-box}
+body{background:#f1f5f9;color:#1e293b;display:flex;min-height:100vh}
+.sidebar{width:240px;background:#0f172a;color:#94a3b8;padding:16px;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:40}
+.sidebar a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;color:#94a3b8;text-decoration:none;transition:all .15s;margin-bottom:2px}
+.sidebar a:hover{background:#1e293b;color:#e2e8f0}
+.sidebar a.active{background:#0369a1;color:#fff}
+.sidebar a i{width:18px;text-align:center}
+.main{flex:1;margin-left:240px;min-height:100vh}
+.page{display:none;padding:24px}
+.page.active{display:block}
+.card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.stat-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;align-items:center;gap:16px}
+.stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.table-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e2e8f0}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9}
+tr:hover td{background:#f8fafc}
+.badge{font-size:10px;padding:3px 10px;border-radius:12px;font-weight:600;display:inline-flex;align-items:center;gap:3px}
+.toggle{position:relative;width:40px;height:22px;background:#cbd5e1;border-radius:11px;cursor:pointer;transition:background .2s}
+.toggle.on{background:#10b981}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on::after{transform:translateX(18px)}
+.tab-btn.active{background:#0369a1;color:#fff}
+.tab-btn{background:#e2e8f0;color:#475569;border:none;cursor:pointer;transition:all .15s}
+.chart-bar{display:flex;align-items:flex-end;gap:6px;height:140px}
+.chart-bar>div{flex:1;border-radius:6px 6px 0 0;transition:height .3s}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}}
+</style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar">
+  <div class="flex items-center gap-2 mb-8 px-2">
+    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"><i class="fas fa-ship text-white text-sm"></i></div>
+    <div><span class="text-white font-bold text-sm">DenizBul</span><span class="text-accent font-bold text-sm">.tr</span><div class="text-[9px] text-gray-500">Admin Panel</div></div>
+  </div>
+
+  <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2">Ana Menu</div>
+  <a href="#dashboard" class="active" data-nav="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
+  <a href="#captains" data-nav="captains"><i class="fas fa-anchor"></i> Kaptan Yonetimi</a>
+  <a href="#users" data-nav="users"><i class="fas fa-users"></i> Kullanici Yonetimi</a>
+  <a href="#tours-bookings" data-nav="tours-bookings"><i class="fas fa-ship"></i> Tur & Rezervasyon</a>
+  <a href="#finance" data-nav="finance"><i class="fas fa-wallet"></i> Finans</a>
+  <a href="#modules" data-nav="modules"><i class="fas fa-puzzle-piece"></i> Modul Yonetimi</a>
+
+  <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Sistem</div>
+  <a href="#"><i class="fas fa-cog"></i> Ayarlar</a>
+  <a href="#"><i class="fas fa-bell"></i> Bildirimler</a>
+  <a href="#"><i class="fas fa-question-circle"></i> Yardim</a>
+
+  <div class="mt-auto pt-6 border-t border-gray-800 mt-6">
+    <div class="flex items-center gap-2 px-2">
+      <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center"><i class="fas fa-user text-primary text-xs"></i></div>
+      <div><div class="text-xs text-white font-medium">Admin</div><div class="text-[10px] text-gray-500">admin@denizbul.tr</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="main">
+  <!-- Top Bar -->
+  <div class="bg-white border-b px-6 py-3 flex items-center justify-between sticky top-0 z-30">
+    <div class="flex items-center gap-3">
+      <h2 class="font-semibold text-sm" id="page-title">Dashboard</h2>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative"><input type="text" placeholder="Ara..." class="pl-9 pr-4 py-2 bg-gray-50 border rounded-lg text-sm w-64"><i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i></div>
+      <button class="relative p-2 text-gray-400 hover:text-gray-600"><i class="fas fa-bell"></i><span class="absolute top-0.5 right-0.5 w-2 h-2 bg-danger rounded-full"></span></button>
+      <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center"><i class="fas fa-user text-primary text-xs"></i></div>
+    </div>
+  </div>
+
+  <!-- ======================================= -->
+  <!-- PAGE 1: DASHBOARD                       -->
+  <!-- ======================================= -->
+  <section id="page-dashboard" class="page active">
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="stat-card">
+        <div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-ship"></i></div>
+        <div><div class="text-2xl font-bold" id="dash-stat-tours">0</div><div class="text-xs text-gray-500">Aktif Tur</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-green-100 text-success"><i class="fas fa-calendar-check"></i></div>
+        <div><div class="text-2xl font-bold" id="dash-stat-bookings">0</div><div class="text-xs text-gray-500">Aylik Rezervasyon</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-amber-100 text-accent"><i class="fas fa-wallet"></i></div>
+        <div><div class="text-2xl font-bold" id="dash-stat-revenue">0 TL</div><div class="text-xs text-gray-500">Aylik Gelir</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-purple-100 text-purple-600"><i class="fas fa-users"></i></div>
+        <div><div class="text-2xl font-bold" id="dash-stat-captains">0</div><div class="text-xs text-gray-500">Toplam Kaptan</div></div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <!-- Revenue Chart -->
+      <div class="card col-span-2">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-semibold text-sm">Gelir Grafigi</h3>
+          <div class="flex gap-1">
+            <button class="tab-btn active px-3 py-1 rounded-full text-xs">Aylik</button>
+            <button class="tab-btn px-3 py-1 rounded-full text-xs">Haftalik</button>
+          </div>
+        </div>
+        <div class="chart-bar">
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">Oca</span></div>
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">Sub</span></div>
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">Mar</span></div>
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">Nis</span></div>
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">May</span></div>
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">Haz</span></div>
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">Tem</span></div>
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">Agu</span></div>
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">Eyl</span></div>
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">Eki</span></div>
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">Kas</span></div>
+          <div class="flex flex-col items-center gap-1 flex-1"><div class="w-full bg-gray-100 rounded-t-md" style="height:0%"></div><span class="text-[9px] text-gray-400">Ara</span></div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <h3 class="font-semibold text-sm mb-4">Son Aktiviteler</h3>
+        <div class="text-xs text-gray-400 text-center py-8">Henuz aktivite yok</div>
+      </div>
+    </div>
+
+    <!-- Category & Region Breakdown -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="card">
+        <h3 class="font-semibold text-sm mb-4">Kategori Dagilimi</h3>
+        <div class="space-y-3">
+          <div><div class="flex justify-between text-xs mb-1"><span>Balik Avi</span><span class="font-medium">—</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-blue-500 rounded-full h-2" style="width:0%"></div></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span>Tekne Gezisi</span><span class="font-medium">—</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-cyan-500 rounded-full h-2" style="width:0%"></div></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span>Ozel Etkinlik</span><span class="font-medium">—</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-pink-500 rounded-full h-2" style="width:0%"></div></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span>Yuzme</span><span class="font-medium">—</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-sky-500 rounded-full h-2" style="width:0%"></div></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span>Kurumsal</span><span class="font-medium">—</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-indigo-500 rounded-full h-2" style="width:0%"></div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="font-semibold text-sm mb-4">Bolge Dagilimi</h3>
+        <div class="space-y-3">
+          <div><div class="flex justify-between text-xs mb-1"><span>Antalya</span><span class="font-medium">0 tur</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-primary rounded-full h-2" style="width:0%"></div></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span>Istanbul</span><span class="font-medium">0 tur</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-primary/80 rounded-full h-2" style="width:0%"></div></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span>Bodrum</span><span class="font-medium">0 tur</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-primary/60 rounded-full h-2" style="width:0%"></div></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span>Fethiye</span><span class="font-medium">0 tur</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-primary/40 rounded-full h-2" style="width:0%"></div></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span>Diger</span><span class="font-medium">0 tur</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-gray-300 rounded-full h-2" style="width:0%"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Approvals -->
+    <div class="card">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-semibold text-sm">Onay Bekleyenler</h3>
+        <span class="badge bg-amber-100 text-amber-700" id="dash-pending-badge">0 bekliyor</span>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Kaptan</th><th>Tekne</th><th>Bolge</th><th>Basvuru</th><th>Durum</th><th>Islem</th></tr></thead>
+          <tbody id="dash-pending-tbody">
+            <tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Onay bekleyen basvuru yok</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE 2: KAPTAN YONETIMI                -->
+  <!-- ======================================= -->
+  <section id="page-captains" class="page">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-xl font-bold">Kaptan Yonetimi</h1>
+      <div class="flex gap-2">
+        <button onclick="window.location.hash='#captain-add'" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-plus mr-1"></i> Kaptan Ekle</button>
+        <button class="border px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-download mr-1"></i> Dis Aktar</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="stat-card"><div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-anchor"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Toplam Kaptan</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-green-100 text-success"><i class="fas fa-check-circle"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Aktif</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-amber-100 text-amber-600"><i class="fas fa-clock"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Onay Bekliyor</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-red-100 text-danger"><i class="fas fa-ban"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Askiya Alinan</div></div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+      <div class="flex flex-wrap gap-3 items-center">
+        <input type="text" placeholder="Kaptan ara..." class="!w-64 px-3 py-2 border rounded-lg text-sm">
+        <select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Tum Durum</option><option>Aktif</option><option>Bekliyor</option><option>Askida</option></select>
+        <select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Tum Bolgeler</option><option>Antalya</option><option>Istanbul</option><option>Bodrum</option><option>Fethiye</option></select>
+        <select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Siralama: En Yeni</option><option>Puan</option><option>Tur Sayisi</option></select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Kaptan</th><th>Tekne</th><th>Bolge</th><th>Tur</th><th>Puan</th><th>Kazanc</th><th>Durum</th><th>Islem</th></tr></thead>
+          <tbody>
+            <tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Henuz kayitli kaptan yok</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex justify-between items-center mt-4 text-xs text-gray-500">
+        <span id="captain-count">0 kaptan</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE 3: KULLANICI YONETIMI             -->
+  <!-- ======================================= -->
+  <section id="page-users" class="page">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-xl font-bold">Kullanici Yonetimi</h1>
+      <button class="border px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-download mr-1"></i> Dis Aktar</button>
+    </div>
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="stat-card"><div class="stat-icon bg-purple-100 text-purple-600"><i class="fas fa-users"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Toplam</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-green-100 text-success"><i class="fas fa-user-check"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Aktif (30 gun)</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-user-plus"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Bu Hafta Yeni</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-red-100 text-danger"><i class="fas fa-user-slash"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Engellenen</div></div></div>
+    </div>
+    <div class="card">
+      <div class="flex gap-3 mb-4"><input type="text" placeholder="Kullanici ara..." class="!w-64 px-3 py-2 border rounded-lg text-sm"><select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Tum Durum</option><option>Aktif</option><option>Pasif</option><option>Engelli</option></select></div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Kullanici</th><th>Kayit</th><th>Rez. Sayisi</th><th>Harcama</th><th>Son Giris</th><th>Durum</th><th>Islem</th></tr></thead>
+          <tbody>
+            <tr><td colspan="7" class="text-center text-gray-400 py-6 text-xs">Henuz kayitli kullanici yok</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE 4: TUR & REZERVASYON              -->
+  <!-- ======================================= -->
+  <section id="page-tours-bookings" class="page">
+    <h1 class="text-xl font-bold mb-6">Tur & Rezervasyon Yonetimi</h1>
+    <!-- Sub Tabs -->
+    <div class="flex gap-2 mb-6 flex-wrap">
+      <button id="tab-btn-tours" class="tab-btn active px-4 py-2 rounded-full text-sm font-medium" onclick="showSubTab(this,'tab-tours')">Turlar (0)</button>
+      <button id="tab-btn-bookings" class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="showSubTab(this,'tab-bookings')">Rezervasyonlar (0)</button>
+      <button id="tab-btn-hareketler" class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="showSubTab(this,'tab-hareketler');renderHareketler()">Hareketler (0)</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="showSubTab(this,'tab-complaints')">Sikayetler (0)</button>
+    </div>
+    <!-- Tours Tab -->
+    <div id="tab-tours">
+      <div class="card">
+        <div class="flex gap-3 mb-4"><input type="text" placeholder="Tur ara..." class="!w-64 px-3 py-2 border rounded-lg text-sm"><select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Tum Kategoriler</option><option>Balik Avi</option><option>Gezi</option><option>Ozel</option><option>Kurumsal</option></select><select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Tum Durum</option><option>Aktif</option><option>Pasif</option></select></div>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Tur</th><th>Kaptan</th><th>Kategori</th><th>Fiyat</th><th>Rez.</th><th>Puan</th><th>Durum</th><th>Islem</th></tr></thead>
+            <tbody id="tours-tbody">
+              <tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Henuz kayitli tur yok</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Bookings Tab -->
+    <div id="tab-bookings" style="display:none">
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Rez. No</th><th>Musteri</th><th>Tur</th><th>Tarih</th><th>Tutar</th><th>Komisyon</th><th>Durum</th></tr></thead>
+            <tbody id="bookings-tbody">
+              <tr><td colspan="7" class="text-center text-gray-400 py-6 text-xs">Henuz rezervasyon yok</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Hareketler Tab -->
+    <div id="tab-hareketler" style="display:none">
+
+      <!-- Ozet Kartlar -->
+      <div class="grid grid-cols-4 gap-4 mb-5">
+        <div class="stat-card">
+          <div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-receipt"></i></div>
+          <div><div class="text-xl font-bold" id="har-toplam-ciro">0 TL</div><div class="text-xs text-gray-500">Toplam Ciro</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon bg-accent/20 text-accent"><i class="fas fa-percentage"></i></div>
+          <div><div class="text-xl font-bold" id="har-komisyon">0 TL</div><div class="text-xs text-gray-500">Komisyon (%10)</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon bg-amber-100 text-amber-600"><i class="fas fa-hourglass-half"></i></div>
+          <div><div class="text-xl font-bold" id="har-bekleyen">0 TL</div><div class="text-xs text-gray-500">Odeme Bekleyen</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon bg-green-100 text-success"><i class="fas fa-check-double"></i></div>
+          <div><div class="text-xl font-bold" id="har-odendi">0 TL</div><div class="text-xs text-gray-500">Kaptana Odendi</div></div>
+        </div>
+      </div>
+
+      <!-- Filtreler -->
+      <div class="card mb-4">
+        <div class="flex flex-wrap gap-3 items-center">
+          <select id="har-filter-durum" onchange="renderHareketler()" class="px-3 py-2 border rounded-lg text-sm !w-auto">
+            <option value="">Tum Rezervasyon Durumlari</option>
+            <option value="bekliyor">Bekliyor</option>
+            <option value="onaylandi">Onaylandi</option>
+            <option value="tamamlandi">Tamamlandi</option>
+            <option value="iptal">Iptal / Reddedildi</option>
+          </select>
+          <select id="har-filter-odeme" onchange="renderHareketler()" class="px-3 py-2 border rounded-lg text-sm !w-auto">
+            <option value="">Tum Odeme Durumlari</option>
+            <option value="bekliyor">Odeme Bekliyor</option>
+            <option value="odendi">Odendi</option>
+          </select>
+          <input type="text" id="har-filter-kaptan" placeholder="Kaptan filtrele..." oninput="renderHareketler()" class="px-3 py-2 border rounded-lg text-sm !w-48">
+          <button onclick="document.getElementById('har-filter-durum').value='';document.getElementById('har-filter-odeme').value='';document.getElementById('har-filter-kaptan').value='';renderHareketler()" class="border px-3 py-2 rounded-lg text-xs text-gray-500 hover:bg-gray-50"><i class="fas fa-times mr-1"></i>Temizle</button>
+          <button onclick="markAllOdendi()" class="ml-auto bg-success text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-green-600"><i class="fas fa-check-double mr-1"></i>Tamamlananlari Odendi Isaretle</button>
+        </div>
+      </div>
+
+      <!-- Tablo -->
+      <div class="card">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm">Satis Hareketleri</h3>
+          <span class="text-xs text-gray-400" id="har-row-count">0 hareket</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Rezervasyon</th>
+                <th>Tur</th>
+                <th>Kaptan</th>
+                <th>Musteri</th>
+                <th>Tarih</th>
+                <th>Brut</th>
+                <th>Komisyon</th>
+                <th>Kaptan Payi</th>
+                <th>Rez. Durum</th>
+                <th>Odeme</th>
+                <th>Islem</th>
+              </tr>
+            </thead>
+            <tbody id="hareketler-tbody">
+              <tr><td colspan="11" class="text-center text-gray-400 py-8 text-xs">Henuz hareket yok</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complaints Tab -->
+    <div id="tab-complaints" style="display:none">
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Sikayet No</th><th>Musteri</th><th>Kaptan</th><th>Konu</th><th>Tarih</th><th>Oncelik</th><th>Islem</th></tr></thead>
+            <tbody>
+              <tr><td colspan="7" class="text-center text-gray-400 py-6 text-xs">Henuz sikayet yok</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE 5: FINANS                          -->
+  <!-- ======================================= -->
+  <section id="page-finance" class="page">
+    <h1 class="text-xl font-bold mb-6">Finans</h1>
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="stat-card"><div class="stat-icon bg-green-100 text-success"><i class="fas fa-money-bill-wave"></i></div><div><div class="text-xl font-bold" id="fin-ciro">0 TL</div><div class="text-xs text-gray-500">Aylik Ciro</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-accent/20 text-accent"><i class="fas fa-percentage"></i></div><div><div class="text-xl font-bold" id="fin-komisyon">0 TL</div><div class="text-xs text-gray-500">Komisyon Geliri</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-hand-holding-usd"></i></div><div><div class="text-xl font-bold" id="fin-net">0 TL</div><div class="text-xs text-gray-500">Kaptanlara Odenen</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-purple-100 text-purple-600"><i class="fas fa-shopping-bag"></i></div><div><div class="text-xl font-bold">0 TL</div><div class="text-xs text-gray-500">E-ticaret Geliri</div></div></div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="card">
+        <h3 class="font-semibold text-sm mb-4">Komisyon Raporu</h3>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center"><span class="text-sm">Standart Turlar (%10)</span><span class="font-bold">0 TL</span></div>
+          <div class="flex justify-between items-center"><span class="text-sm">Ozel Etkinlik (%15)</span><span class="font-bold">0 TL</span></div>
+          <div class="flex justify-between items-center"><span class="text-sm">E-ticaret (%8)</span><span class="font-bold">0 TL</span></div>
+          <hr>
+          <div class="flex justify-between items-center"><span class="font-semibold">Toplam Komisyon</span><span class="font-bold text-primary text-lg">0 TL</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="font-semibold text-sm mb-4">Odeme Takvimi</h3>
+        <div class="text-xs text-gray-400 text-center py-6">Henuz odeme takvimi yok</div>
+      </div>
+    </div>
+
+    <!-- Transactions -->
+    <div class="card">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-semibold text-sm">Son Islemler</h3>
+        <button class="border px-3 py-1.5 rounded-lg text-xs"><i class="fas fa-download mr-1"></i> Fatura Indir</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Tarih</th><th>Aciklama</th><th>Tur</th><th>Brut</th><th>Komisyon</th><th>Net</th></tr></thead>
+          <tbody>
+            <tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Henuz islem yok</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE 7: KAPTAN EKLE                    -->
+  <!-- ======================================= -->
+  <section id="page-captain-add" class="page">
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <button onclick="window.location.hash='#captains'" class="p-2 border rounded-lg text-gray-500 hover:bg-gray-50"><i class="fas fa-arrow-left text-sm"></i></button>
+        <h1 class="text-xl font-bold">Yeni Kaptan Ekle</h1>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="window.location.hash='#captains'" class="border px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">Iptal</button>
+        <button onclick="submitCaptainForm()" class="bg-primary text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-primaryDark"><i class="fas fa-check mr-1"></i> Kaydet</button>
+      </div>
+    </div>
+
+    <form id="captain-form" onsubmit="return false" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+      <!-- Sol Sutun -->
+      <div class="flex flex-col gap-5">
+
+        <!-- Kisisel Bilgiler -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user text-primary text-sm"></i></div>
+            <h3 class="font-semibold text-sm">Kisisel Bilgiler</h3>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Ad <span class="text-danger">*</span></label>
+              <input type="text" id="f-ad" placeholder="Ahmet" class="px-3 py-2 border rounded-lg text-sm w-full" required>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Soyad <span class="text-danger">*</span></label>
+              <input type="text" id="f-soyad" placeholder="Yilmaz" class="px-3 py-2 border rounded-lg text-sm w-full" required>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">E-posta <span class="text-danger">*</span></label>
+              <input type="email" id="f-email" placeholder="kaptan@email.com" class="px-3 py-2 border rounded-lg text-sm w-full" required>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Telefon <span class="text-danger">*</span></label>
+              <input type="tel" id="f-telefon" placeholder="05xx xxx xx xx" class="px-3 py-2 border rounded-lg text-sm w-full" required>
+            </div>
+            <div class="col-span-2">
+              <label class="text-xs font-medium text-gray-600 mb-1 block">TC Kimlik No</label>
+              <input type="text" id="f-tc" placeholder="11 haneli TC kimlik" maxlength="11" class="px-3 py-2 border rounded-lg text-sm w-full">
+            </div>
+          </div>
+        </div>
+
+        <!-- Belge Bilgileri -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-file-alt text-purple-600 text-sm"></i></div>
+            <h3 class="font-semibold text-sm">Belge Bilgileri</h3>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Kaptanlik Lisans No</label>
+              <input type="text" id="f-lisans" placeholder="KL-XXXXX" class="px-3 py-2 border rounded-lg text-sm w-full">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Lisans Gecerlilik Tarihi</label>
+              <input type="date" id="f-lisans-tarih" class="px-3 py-2 border rounded-lg text-sm w-full">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Tekne Ruhsat No</label>
+              <input type="text" id="f-ruhsat" placeholder="TR-XXXXX" class="px-3 py-2 border rounded-lg text-sm w-full">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Sigorta Porice No</label>
+              <input type="text" id="f-sigorta" placeholder="SP-XXXXX" class="px-3 py-2 border rounded-lg text-sm w-full">
+            </div>
+          </div>
+        </div>
+
+        <!-- Tur Kategorileri -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center"><i class="fas fa-list-check text-cyan-600 text-sm"></i></div>
+            <h3 class="font-semibold text-sm">Sunulacak Tur Kategorileri <span class="text-danger">*</span></h3>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-50 text-sm"><input type="checkbox" name="kategori" value="Balik Avi" class="accent-primary"> Balik Avi</label>
+            <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-50 text-sm"><input type="checkbox" name="kategori" value="Tekne Gezisi" class="accent-primary"> Tekne Gezisi</label>
+            <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-50 text-sm"><input type="checkbox" name="kategori" value="Ozel Etkinlik" class="accent-primary"> Ozel Etkinlik</label>
+            <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-50 text-sm"><input type="checkbox" name="kategori" value="Yuzme/Dalis" class="accent-primary"> Yuzme / Dalis</label>
+            <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-50 text-sm"><input type="checkbox" name="kategori" value="Kurumsal" class="accent-primary"> Kurumsal</label>
+            <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-50 text-sm"><input type="checkbox" name="kategori" value="Gun Kiralama" class="accent-primary"> Gun Kiralama</label>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sag Sutun -->
+      <div class="flex flex-col gap-5">
+
+        <!-- Tekne Bilgileri -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-ship text-primary text-sm"></i></div>
+            <h3 class="font-semibold text-sm">Tekne Bilgileri</h3>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="col-span-2">
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Tekne Adi <span class="text-danger">*</span></label>
+              <input type="text" id="f-tekne" placeholder="Deniz Yildizi" class="px-3 py-2 border rounded-lg text-sm w-full" required>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Tekne Turu <span class="text-danger">*</span></label>
+              <select id="f-tekne-turu" class="px-3 py-2 border rounded-lg text-sm w-full" required>
+                <option value="">Secin...</option>
+                <option>Motorlu Tekne</option>
+                <option>Yelkenli</option>
+                <option>Gulet</option>
+                <option>Katamaran</option>
+                <option>RIB / Bot</option>
+                <option>Yat</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Uzunluk (m) <span class="text-danger">*</span></label>
+              <input type="number" id="f-uzunluk" placeholder="12" min="3" max="100" class="px-3 py-2 border rounded-lg text-sm w-full" required>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Kapasite (kisi) <span class="text-danger">*</span></label>
+              <input type="number" id="f-kapasite" placeholder="8" min="1" max="200" class="px-3 py-2 border rounded-lg text-sm w-full" required>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Yapim Yili</label>
+              <input type="number" id="f-yil" placeholder="2018" min="1950" max="2026" class="px-3 py-2 border rounded-lg text-sm w-full">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Marka / Model</label>
+              <input type="text" id="f-marka" placeholder="Beneteau Oceanis" class="px-3 py-2 border rounded-lg text-sm w-full">
+            </div>
+          </div>
+        </div>
+
+        <!-- Konum -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-map-marker-alt text-success text-sm"></i></div>
+            <h3 class="font-semibold text-sm">Konum Bilgileri</h3>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Bolge <span class="text-danger">*</span></label>
+              <select id="f-bolge" class="px-3 py-2 border rounded-lg text-sm w-full" required>
+                <option value="">Secin...</option>
+                <option>Antalya</option>
+                <option>Istanbul</option>
+                <option>Bodrum</option>
+                <option>Fethiye</option>
+                <option>Marmaris</option>
+                <option>Kas</option>
+                <option>Kemer</option>
+                <option>Side</option>
+                <option>Cesme</option>
+                <option>Diger</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Liman / Marina</label>
+              <input type="text" id="f-marina" placeholder="Kemer Marinasi" class="px-3 py-2 border rounded-lg text-sm w-full">
+            </div>
+          </div>
+        </div>
+
+        <!-- Notlar -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center"><i class="fas fa-sticky-note text-accent text-sm"></i></div>
+            <h3 class="font-semibold text-sm">Admin Notu</h3>
+          </div>
+          <textarea id="f-not" rows="4" placeholder="Kaptan hakkinda dahili notlar..." class="px-3 py-2 border rounded-lg text-sm w-full resize-none"></textarea>
+        </div>
+
+        <!-- Alt Butonlar -->
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="window.location.hash='#captains'" class="border px-5 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">Iptal</button>
+          <button type="button" onclick="submitCaptainForm()" class="bg-primary text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-primaryDark"><i class="fas fa-check mr-1"></i> Kaydet</button>
+        </div>
+
+      </div>
+    </form>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE 6: MODUL YONETIMI                 -->
+  <!-- ======================================= -->
+  <section id="page-modules" class="page">
+    <h1 class="text-xl font-bold mb-2">Modul Yonetimi</h1>
+    <p class="text-gray-500 text-sm mb-6">Platformun ozelliklerini buradan acip kapatabilirsiniz. Kapatilan moduller menuden kaybolur, API 404 doner.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Core Modules -->
+      <div class="card">
+        <div class="flex items-center justify-between mb-4"><h3 class="font-semibold text-sm">Cekirdek Moduller</h3><span class="badge bg-blue-100 text-blue-700">Zorunlu</span></div>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-ship text-primary"></i></div><div><div class="text-sm font-medium">Tur Yonetimi</div><div class="text-[10px] text-gray-400">Tur CRUD, takvim, slot yonetimi</div></div></div>
+            <div class="toggle on" style="pointer-events:none;opacity:.5"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-calendar-check text-success"></i></div><div><div class="text-sm font-medium">Rezervasyon Motoru</div><div class="text-[10px] text-gray-400">Anlik onay, slot kilidi, durum makinesi</div></div></div>
+            <div class="toggle on" style="pointer-events:none;opacity:.5"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center"><i class="fas fa-credit-card text-accent"></i></div><div><div class="text-sm font-medium">Odeme (Iyzico)</div><div class="text-[10px] text-gray-400">Kredi karti, havale, webhook</div></div></div>
+            <div class="toggle on" style="pointer-events:none;opacity:.5"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-shield text-purple-600"></i></div><div><div class="text-sm font-medium">Auth & Kullanici</div><div class="text-[10px] text-gray-400">Kayit, giris, roller, dogrulama</div></div></div>
+            <div class="toggle on" style="pointer-events:none;opacity:.5"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Optional Modules -->
+      <div class="card">
+        <div class="flex items-center justify-between mb-4"><h3 class="font-semibold text-sm">Opsiyonel Moduller</h3><span class="badge bg-green-100 text-green-700">Acilabilir</span></div>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center"><i class="fas fa-comment text-cyan-600"></i></div><div><div class="text-sm font-medium">Mesajlasma</div><div class="text-[10px] text-gray-400">Kaptan-musteri mesaj, tura bagli</div></div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center"><i class="fas fa-star text-amber-500"></i></div><div><div class="text-sm font-medium">Yorum Sistemi</div><div class="text-[10px] text-gray-400">Puan, yazi, foto yukleme</div></div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center"><i class="fas fa-shopping-bag text-emerald-600"></i></div><div><div class="text-sm font-medium">E-ticaret</div><div class="text-[10px] text-gray-400">Balikcilik malzemeleri, sepet, odeme</div></div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center"><i class="fas fa-users text-rose-500"></i></div><div><div class="text-sm font-medium">Topluluk (Sosyal)</div><div class="text-[10px] text-gray-400">Fishbrain tarafi — av paylasimi, liderlik tablosu</div></div></div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-indigo-600"></i></div><div><div class="text-sm font-medium">Gelismis Analitik</div><div class="text-[10px] text-gray-400">Detayli raporlar, export, trend</div></div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center"><i class="fas fa-bell text-sky-600"></i></div><div><div class="text-sm font-medium">Bildirimler</div><div class="text-[10px] text-gray-400">Push, email, SMS</div></div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center"><i class="fas fa-book text-teal-600"></i></div><div><div class="text-sm font-medium">Blog / Kesfet</div><div class="text-[10px] text-gray-400">Bolge rehberleri, mevsim onerileri</div></div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center"><i class="fas fa-robot text-orange-600"></i></div><div><div class="text-sm font-medium">AI Asistan</div><div class="text-[10px] text-gray-400">Balıkcı asistanı, hava tahmini, rota onerisi</div></div></div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module Config Info -->
+    <div class="card mt-4 bg-blue-50 border border-blue-200">
+      <div class="flex items-start gap-3">
+        <i class="fas fa-info-circle text-primary mt-0.5"></i>
+        <div>
+          <div class="text-sm font-medium">Modul Sistemi Nasil Calisiyor?</div>
+          <p class="text-xs text-gray-600 mt-1">Her modul <code class="bg-white px-1 rounded">module_config</code> tablosunda <code class="bg-white px-1 rounded">is_active</code> flag'i ile kontrol edilir. Modul kapatildiginda: frontend menuden kaybolur, API endpointleri 404 doner, veritabani RLS politikalari bloke eder. Kod silinmez — istediginiz zaman tekrar acabilirsiniz.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== SIL ONAY MODALI ===== -->
+<div id="delete-modal" style="display:none" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
+    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-trash text-danger"></i>
+    </div>
+    <h3 class="font-bold text-center text-base mb-1">Kaptani Sil</h3>
+    <p class="text-xs text-gray-500 text-center mb-5" id="delete-modal-text">Bu kaptani silmek istediginizden emin misiniz? Bu islem geri alinamaz.</p>
+    <div class="flex gap-3">
+      <button onclick="closeDeleteModal()" class="flex-1 border py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50">Vazgec</button>
+      <button onclick="executeDelete()" class="flex-1 bg-danger text-white py-2.5 rounded-xl text-sm font-medium hover:bg-red-600">Evet, Sil</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div id="toast" class="fixed top-5 right-5 z-50 bg-gray-900 text-white text-sm px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 transition-all duration-300 opacity-0 -translate-y-2 pointer-events-none">
+  <i id="toast-icon" class="fas fa-check-circle text-success"></i>
+  <span id="toast-text"></span>
+</div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+const pages=['dashboard','captains','users','tours-bookings','finance','modules','captain-add'];
+const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur & Rezervasyon','finance':'Finans','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle'};
+
+function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
+
+function handleRoute(){
+  let h=window.location.hash.replace('#','')||'dashboard';
+  pages.forEach(p=>{const el=document.getElementById('page-'+p);if(el)el.classList.toggle('active',p===h)});
+  document.querySelectorAll('.sidebar a[data-nav]').forEach(a=>a.classList.toggle('active',a.dataset.nav===h||(h==='captain-add'&&a.dataset.nav==='captains')));
+  document.getElementById('page-title').textContent=titles[h]||'';
+  if(h==='dashboard')      renderDashboard();
+  if(h==='captains')       renderCaptains();
+  if(h==='tours-bookings') renderToursBookings();
+  if(h==='finance')        renderFinance();
+}
+window.addEventListener('hashchange',handleRoute);
+window.addEventListener('load',handleRoute);
+
+/* ── DASHBOARD ── */
+function renderDashboard(){
+  const caps=loadCaptains();
+  const tours=lsGet('db_tours',[]);
+  const bookings=lsGet('db_bookings',[]);
+  const now=new Date();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const monthlyB=bookings.filter(b=>b.createdAt&&new Date(b.createdAt)>=monthStart);
+  const monthlyRev=monthlyB.reduce((s,b)=>s+(b.amount||0),0);
+
+  const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
+  setEl('dash-stat-tours',tours.length);
+  setEl('dash-stat-bookings',monthlyB.length);
+  setEl('dash-stat-revenue',monthlyRev.toLocaleString('tr-TR')+' TL');
+  setEl('dash-stat-captains',caps.length);
+
+  const pending=caps.filter(c=>c.durum==='bekliyor');
+  const badge=document.getElementById('dash-pending-badge');
+  if(badge)badge.textContent=pending.length+' bekliyor';
+  const tbody=document.getElementById('dash-pending-tbody');
+  if(tbody){
+    if(!pending.length){tbody.innerHTML='<tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Onay bekleyen basvuru yok</td></tr>';return;}
+    tbody.innerHTML=pending.map(c=>`<tr>
+      <td><div class="font-medium">${c.ad} ${c.soyad}</div><div class="text-[10px] text-gray-400">${c.email}</div></td>
+      <td>${c.tekne||'—'}</td><td>${c.bolge||'—'}</td><td>${c.tarih||'—'}</td>
+      <td><span class="badge bg-amber-100 text-amber-700">Bekliyor</span></td>
+      <td>
+        <button onclick="setCaptainDurum(${c.id},'aktif');renderDashboard()" class="bg-success text-white px-2 py-1 rounded text-xs mr-1 hover:bg-green-600">Onayla</button>
+        <button onclick="setCaptainDurum(${c.id},'askida');renderDashboard()" class="text-danger text-xs hover:underline">Reddet</button>
+      </td>
+    </tr>`).join('');
+  }
+}
+
+/* ── TOURS & BOOKINGS ── */
+function renderToursBookings(){
+  const tours=lsGet('db_tours',[]);
+  const bookings=lsGet('db_bookings',[]);
+
+  const tabTours=document.getElementById('tab-btn-tours');
+  const tabBookings=document.getElementById('tab-btn-bookings');
+  const tabHar=document.getElementById('tab-btn-hareketler');
+  if(tabTours)tabTours.textContent=`Turlar (${tours.length})`;
+  if(tabBookings)tabBookings.textContent=`Rezervasyonlar (${bookings.length})`;
+  if(tabHar)tabHar.textContent=`Hareketler (${bookings.length})`;
+
+  const toursTbody=document.getElementById('tours-tbody');
+  if(toursTbody){
+    if(!tours.length){toursTbody.innerHTML='<tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Henuz kayitli tur yok</td></tr>';}
+    else{
+      toursTbody.innerHTML=tours.map(t=>`<tr>
+        <td><div class="font-medium">${t.title||t.name||'—'}</div><div class="text-[10px] text-gray-400">${t.kalkis||'—'} &bull; ${t.sure||'—'}</div></td>
+        <td><div class="text-xs">${t.captainName||'—'}</div></td>
+        <td><span class="badge bg-blue-100 text-blue-700">${t.kategoriler?.[0]||'—'}</span></td>
+        <td>${(t.price||0).toLocaleString('tr-TR')} TL</td>
+        <td>${bookings.filter(b=>b.tourId===t.id).length}</td>
+        <td>—</td>
+        <td><span class="badge bg-green-100 text-green-700">Aktif</span></td>
+        <td><button onclick="adminDeleteTour(${t.id})" class="text-danger text-xs hover:underline">Sil</button></td>
+      </tr>`).join('');
+    }
+  }
+
+  const bookingsTbody=document.getElementById('bookings-tbody');
+  if(bookingsTbody){
+    if(!bookings.length){bookingsTbody.innerHTML='<tr><td colspan="7" class="text-center text-gray-400 py-6 text-xs">Henuz rezervasyon yok</td></tr>';}
+    else{
+      bookingsTbody.innerHTML=bookings.map(b=>{
+        const kom=Math.round((b.amount||0)*0.1);
+        const badge=b.durum==='onaylandi'?'<span class="badge bg-green-100 text-green-700">Onaylandi</span>':
+          b.durum==='bekliyor'?'<span class="badge bg-amber-100 text-amber-700">Bekliyor</span>':
+          b.durum==='tamamlandi'?'<span class="badge bg-gray-100 text-gray-600">Bitti</span>':
+          '<span class="badge bg-red-100 text-danger">Iptal</span>';
+        return`<tr>
+          <td class="text-[11px] font-mono">${b.id?.slice(-8)||'—'}</td>
+          <td>${b.customerName||'Misafir'}</td>
+          <td>${b.tourTitle||'—'}</td>
+          <td>${b.tarih||'—'} ${b.saat||''}</td>
+          <td>${(b.amount||0).toLocaleString('tr-TR')} TL</td>
+          <td class="text-accent font-medium">${kom.toLocaleString('tr-TR')} TL</td>
+          <td>${badge}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+}
+
+function adminDeleteTour(id){
+  if(!confirm('Bu turu silmek istediginizden emin misiniz?'))return;
+  const tours=lsGet('db_tours',[]).filter(t=>t.id!==id);
+  localStorage.setItem('db_tours',JSON.stringify(tours));
+  renderToursBookings();
+  showToast('Tur silindi','danger');
+}
+
+/* ── FINANCE ── */
+function renderFinance(){
+  const bookings=lsGet('db_bookings',[]);
+  const now=new Date();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const monthlyB=bookings.filter(b=>b.createdAt&&new Date(b.createdAt)>=monthStart);
+  const ciro=monthlyB.reduce((s,b)=>s+(b.amount||0),0);
+  const komisyon=Math.round(ciro*0.1);
+  const net=ciro-komisyon;
+  const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
+  setEl('fin-ciro',ciro.toLocaleString('tr-TR')+' TL');
+  setEl('fin-komisyon',komisyon.toLocaleString('tr-TR')+' TL');
+  setEl('fin-net',net.toLocaleString('tr-TR')+' TL');
+}
+
+/* ── HAREKETLER ── */
+function renderHareketler(){
+  let bookings=lsGet('db_bookings',[]);
+
+  // Filtreler
+  const fDurum=document.getElementById('har-filter-durum')?.value||'';
+  const fOdeme=document.getElementById('har-filter-odeme')?.value||'';
+  const fKaptan=(document.getElementById('har-filter-kaptan')?.value||'').toLowerCase();
+
+  if(fDurum){
+    if(fDurum==='iptal') bookings=bookings.filter(b=>b.durum==='iptal'||b.durum==='reddedildi');
+    else bookings=bookings.filter(b=>b.durum===fDurum);
+  }
+  if(fOdeme==='odendi')  bookings=bookings.filter(b=>b.odenmis===true);
+  if(fOdeme==='bekliyor')bookings=bookings.filter(b=>!b.odenmis&&(b.durum==='onaylandi'||b.durum==='tamamlandi'));
+  if(fKaptan) bookings=bookings.filter(b=>(b.captainName||'').toLowerCase().includes(fKaptan));
+
+  // Ozet hesapla (tum ham veriden, filtre oncesi)
+  const allB=lsGet('db_bookings',[]);
+  const toplamCiro=allB.reduce((s,b)=>s+(b.amount||0),0);
+  const komisyon=Math.round(toplamCiro*0.1);
+  const bekleyenB=allB.filter(b=>!b.odenmis&&(b.durum==='onaylandi'||b.durum==='tamamlandi'));
+  const bekleyen=bekleyenB.reduce((s,b)=>s+Math.round((b.amount||0)*0.9),0);
+  const odendi=allB.filter(b=>b.odenmis).reduce((s,b)=>s+Math.round((b.amount||0)*0.9),0);
+
+  const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
+  setEl('har-toplam-ciro',toplamCiro.toLocaleString('tr-TR')+' TL');
+  setEl('har-komisyon',komisyon.toLocaleString('tr-TR')+' TL');
+  setEl('har-bekleyen',bekleyen.toLocaleString('tr-TR')+' TL');
+  setEl('har-odendi',odendi.toLocaleString('tr-TR')+' TL');
+
+  const tabBtn=document.getElementById('tab-btn-hareketler');
+  if(tabBtn)tabBtn.textContent=`Hareketler (${allB.length})`;
+
+  const countEl=document.getElementById('har-row-count');
+  if(countEl)countEl.textContent=bookings.length+' hareket';
+
+  const tbody=document.getElementById('hareketler-tbody');
+  if(!tbody)return;
+  if(!bookings.length){tbody.innerHTML='<tr><td colspan="11" class="text-center text-gray-400 py-8 text-xs">Filtrelerle eslesen hareket yok</td></tr>';return;}
+
+  tbody.innerHTML=bookings.map(b=>{
+    const brut=b.amount||0;
+    const kom=Math.round(brut*0.1);
+    const pay=brut-kom;
+    const odenmis=b.odenmis===true;
+
+    const rezBadge=b.durum==='onaylandi'?'<span class="badge bg-green-100 text-green-700">Onaylandi</span>':
+      b.durum==='bekliyor'?'<span class="badge bg-amber-100 text-amber-700">Bekliyor</span>':
+      b.durum==='tamamlandi'?'<span class="badge bg-blue-100 text-blue-700">Tamamlandi</span>':
+      '<span class="badge bg-red-100 text-danger">Iptal</span>';
+
+    const odemeBadge=odenmis
+      ?`<span class="badge bg-green-100 text-green-700"><i class="fas fa-check mr-0.5"></i>Odendi</span><div class="text-[10px] text-gray-400 mt-0.5">${b.odenmeTarihi||''}</div>`
+      :(b.durum==='tamamlandi'||b.durum==='onaylandi')
+        ?'<span class="badge bg-amber-100 text-amber-700">Bekliyor</span>'
+        :'<span class="badge bg-gray-100 text-gray-400">—</span>';
+
+    const actions=[];
+    if(!odenmis&&(b.durum==='tamamlandi'||b.durum==='onaylandi')){
+      actions.push(`<button onclick="markOdendi('${b.id}')" class="bg-success text-white px-2 py-1 rounded text-xs hover:bg-green-600 whitespace-nowrap"><i class="fas fa-check mr-0.5"></i>Odendi</button>`);
+    }
+    if(b.durum==='onaylandi'){
+      actions.push(`<button onclick="setBookingDurum('${b.id}','tamamlandi')" class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs hover:bg-blue-200 whitespace-nowrap">Tamamlandi</button>`);
+    }
+    if(b.durum==='bekliyor'||b.durum==='onaylandi'){
+      actions.push(`<button onclick="setBookingDurum('${b.id}','iptal')" class="text-danger text-xs hover:underline">Iptal</button>`);
+    }
+
+    return`<tr class="${odenmis?'opacity-60':''}">
+      <td class="font-mono text-[11px]">${b.id?.slice(-8)||'—'}</td>
+      <td><div class="font-medium text-xs">${b.tourTitle||'—'}</div><div class="text-[10px] text-gray-400">${b.tarih||''} ${b.saat||''}</div></td>
+      <td class="text-xs">${b.captainName||'—'}</td>
+      <td class="text-xs">${b.customerName||'Misafir'}<div class="text-[10px] text-gray-400">${b.guests} kisi</div></td>
+      <td class="text-xs">${b.tarih||'—'}</td>
+      <td class="font-bold">${brut.toLocaleString('tr-TR')} TL</td>
+      <td class="text-accent font-medium">${kom.toLocaleString('tr-TR')} TL</td>
+      <td class="text-primary font-medium">${pay.toLocaleString('tr-TR')} TL</td>
+      <td>${rezBadge}</td>
+      <td>${odemeBadge}</td>
+      <td><div class="flex gap-1 flex-wrap">${actions.join('')}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function markOdendi(id){
+  const db=lsGet('db_bookings',[]);
+  const b=db.find(x=>x.id===id);
+  if(b){b.odenmis=true;b.odenmeTarihi=new Date().toLocaleDateString('tr-TR');}
+  localStorage.setItem('db_bookings',JSON.stringify(db));
+  renderHareketler();
+  showToast('Odeme yapildi olarak isaretlendi','success');
+}
+
+function markAllOdendi(){
+  const db=lsGet('db_bookings',[]);
+  let count=0;
+  db.forEach(b=>{
+    if(!b.odenmis&&(b.durum==='tamamlandi'||b.durum==='onaylandi')){
+      b.odenmis=true;b.odenmeTarihi=new Date().toLocaleDateString('tr-TR');count++;
+    }
+  });
+  localStorage.setItem('db_bookings',JSON.stringify(db));
+  renderHareketler();
+  showToast(count+' rezervasyon odendi olarak isaretlendi','success');
+}
+
+function setBookingDurum(id,durum){
+  const db=lsGet('db_bookings',[]);
+  const b=db.find(x=>x.id===id);
+  if(b)b.durum=durum;
+  localStorage.setItem('db_bookings',JSON.stringify(db));
+  renderHareketler();renderDashboard();
+  showToast('Durum guncellendi: '+durum,'info');
+}
+
+function showSubTab(btn,tabId){
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['tab-tours','tab-bookings','tab-hareketler','tab-complaints'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display=id===tabId?'':'none';
+  });
+}
+
+/* ---- Kaptan Veri Yonetimi ---- */
+function loadCaptains(){
+  try{const v=localStorage.getItem('db_captains');return v?JSON.parse(v):[];}catch{return[];}
+}
+function saveCaptains(){
+  localStorage.setItem('db_captains',JSON.stringify(captains));
+}
+let captains=loadCaptains();
+let captainIdCounter=captains.length>0?Math.max(...captains.map(c=>c.id||0))+1:1;
+let pendingDeleteId=null;
+
+function renderCaptains(){
+  const tbody=document.querySelector('#page-captains .table-container tbody');
+  const countEl=document.getElementById('captain-count');
+  if(!tbody)return;
+
+  const total=captains.length;
+  const aktif=captains.filter(c=>c.durum==='aktif').length;
+  const bekliyor=captains.filter(c=>c.durum==='bekliyor').length;
+  const askida=captains.filter(c=>c.durum==='askida').length;
+
+  // stat kartlari guncelle
+  const statNums=document.querySelectorAll('#page-captains .stat-card .text-xl');
+  if(statNums.length>=4){statNums[0].textContent=total;statNums[1].textContent=aktif;statNums[2].textContent=bekliyor;statNums[3].textContent=askida;}
+  countEl.textContent=total+' kaptan';
+
+  if(total===0){
+    tbody.innerHTML='<tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Henuz kayitli kaptan yok</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML=captains.map(c=>{
+    const initials=(c.ad[0]+(c.soyad[0]||'')).toUpperCase();
+    const durumBadge=c.durum==='aktif'
+      ?'<span class="badge bg-green-100 text-green-700"><i class="fas fa-check-circle"></i> Aktif</span>'
+      :c.durum==='askida'
+      ?'<span class="badge bg-red-100 text-red-700"><i class="fas fa-ban"></i> Askida</span>'
+      :'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-clock"></i> Bekliyor</span>';
+    const islemler=c.durum==='bekliyor'
+      ?`<button onclick="setCaptainDurum(${c.id},'aktif')" class="bg-success text-white px-2 py-1 rounded text-xs mr-1">Onayla</button><button onclick="setCaptainDurum(${c.id},'askida')" class="bg-gray-100 px-2 py-1 rounded text-xs mr-1">Askiya Al</button><button onclick="openDeleteModal(${c.id})" class="text-danger text-xs hover:underline">Sil</button>`
+      :c.durum==='askida'
+      ?`<button onclick="setCaptainDurum(${c.id},'aktif')" class="text-success text-xs hover:underline mr-2">Aktif Et</button><button onclick="openDeleteModal(${c.id})" class="text-danger text-xs hover:underline">Sil</button>`
+      :`<button onclick="setCaptainDurum(${c.id},'askida')" class="text-gray-400 text-xs hover:text-danger mr-2">Askiya Al</button><button onclick="openDeleteModal(${c.id})" class="text-danger text-xs hover:underline">Sil</button>`;
+    return`<tr>
+      <td><div class="flex items-center gap-2"><div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">${initials}</div><div><div class="font-medium">${c.ad} ${c.soyad}</div><div class="text-[10px] text-gray-400">${c.email}</div></div></div></td>
+      <td>${c.tekne} (${c.uzunluk}m)</td><td>${c.bolge}</td><td>0</td><td>—</td><td>—</td>
+      <td>${durumBadge}</td><td>${islemler}</td>
+    </tr>`;
+  }).join('');
+}
+
+function setCaptainDurum(id,durum){
+  const c=captains.find(x=>x.id===id);
+  if(c){c.durum=durum;saveCaptains();renderCaptains();showToast(c.ad+' '+c.soyad+' durumu guncellendi','info');}
+}
+
+function openDeleteModal(id){
+  const c=captains.find(x=>x.id===id);
+  if(!c)return;
+  pendingDeleteId=id;
+  document.getElementById('delete-modal-text').textContent=`"${c.ad} ${c.soyad}" kaptanini silmek istediginizden emin misiniz? Bu islem geri alinamaz.`;
+  document.getElementById('delete-modal').style.display='flex';
+}
+function closeDeleteModal(){document.getElementById('delete-modal').style.display='none';pendingDeleteId=null;}
+function executeDelete(){
+  if(pendingDeleteId===null)return;
+  const c=captains.find(x=>x.id===pendingDeleteId);
+  captains=captains.filter(x=>x.id!==pendingDeleteId);
+  saveCaptains();
+  closeDeleteModal();
+  renderCaptains();
+  showToast((c?c.ad+' '+c.soyad+' silindi':'Kaptan silindi'),'danger');
+}
+
+function submitCaptainForm(){
+  const ad=document.getElementById('f-ad').value.trim();
+  const soyad=document.getElementById('f-soyad').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const telefon=document.getElementById('f-telefon').value.trim();
+  const tekne=document.getElementById('f-tekne').value.trim();
+  const tekneTuru=document.getElementById('f-tekne-turu').value;
+  const uzunluk=document.getElementById('f-uzunluk').value;
+  const kapasite=document.getElementById('f-kapasite').value;
+  const bolge=document.getElementById('f-bolge').value;
+
+  if(!ad||!soyad||!email||!telefon){showToast('Lutfen zorunlu kisisel bilgileri doldurun','danger');return;}
+  if(!tekne||!tekneTuru||!uzunluk||!kapasite){showToast('Lutfen zorunlu tekne bilgilerini doldurun','danger');return;}
+  if(!bolge){showToast('Lutfen bolge secin','danger');return;}
+
+  const kategoriler=[...document.querySelectorAll('input[name="kategori"]:checked')].map(x=>x.value);
+  if(kategoriler.length===0){showToast('En az bir tur kategorisi secin','danger');return;}
+
+  captains.push({
+    id:captainIdCounter++,
+    ad,soyad,email,telefon,
+    tc:document.getElementById('f-tc').value.trim(),
+    tekne,tekneTuru,
+    uzunluk:+uzunluk,kapasite:+kapasite,
+    yil:document.getElementById('f-yil').value,
+    marka:document.getElementById('f-marka').value.trim(),
+    bolge,marina:document.getElementById('f-marina').value.trim(),
+    lisans:document.getElementById('f-lisans').value.trim(),
+    lisansTarih:document.getElementById('f-lisans-tarih').value,
+    ruhsat:document.getElementById('f-ruhsat').value.trim(),
+    sigorta:document.getElementById('f-sigorta').value.trim(),
+    not:document.getElementById('f-not').value.trim(),
+    kategoriler,
+    durum:'bekliyor',
+    tarih:new Date().toLocaleDateString('tr-TR')
+  });
+
+  saveCaptains();
+  document.getElementById('captain-form').reset();
+  renderCaptains();
+  window.location.hash='#captains';
+  showToast(ad+' '+soyad+' basariyla eklendi','success');
+}
+
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  const icon=document.getElementById('toast-icon');
+  document.getElementById('toast-text').textContent=msg;
+  icon.className='fas '+(type==='danger'?'fa-times-circle text-danger':type==='info'?'fa-info-circle text-blue-400':'fa-check-circle text-success');
+  t.classList.remove('opacity-0','-translate-y-2');
+  t.classList.add('opacity-100','translate-y-0');
+  setTimeout(()=>{t.classList.add('opacity-0','-translate-y-2');t.classList.remove('opacity-100','translate-y-0');},3000);
+}
+
+document.getElementById('delete-modal').addEventListener('click',function(e){if(e.target===this)closeDeleteModal();});
+</script>
+</body>
+</html>

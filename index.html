@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DenizBul.tr — Turkiye'nin Tekne Turu Marketplace'i</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',accent:'#f59e0b'}}}}</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{font-family:'Inter',sans-serif}
+.card-hover{transition:all .2s}
+.card-hover:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(3,105,161,.15)}
+</style>
+</head>
+<body class="bg-gradient-to-br from-sky-50 via-white to-blue-50 min-h-screen">
+
+<!-- Hero -->
+<div class="max-w-5xl mx-auto px-6 pt-16 pb-12 text-center">
+  <div class="flex items-center justify-center gap-3 mb-6">
+    <div class="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
+      <i class="fas fa-ship text-white text-2xl"></i>
+    </div>
+    <div class="text-left">
+      <div class="text-3xl font-extrabold text-primary leading-none">DenizBul<span class="text-accent">.tr</span></div>
+      <div class="text-xs text-gray-500 font-medium tracking-wide">TURKIYE'NIN TEKNE TURU MARKETPLACE'I</div>
+    </div>
+  </div>
+  <h1 class="text-4xl font-extrabold text-gray-900 mb-4 leading-tight">
+    Harika bir tekne turu<br><span class="text-primary">sadece birkaç tık uzakta</span>
+  </h1>
+  <p class="text-gray-500 text-lg max-w-xl mx-auto mb-3">
+    Balik avi, gezi, ozel etkinlik ve daha fazlasi. Turkiye'nin en iyi kaptanlariyla bulusun.
+  </p>
+  <div class="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium px-4 py-2 rounded-full mb-10">
+    <i class="fas fa-flask"></i> UI Prototype — Tum paneller localStorage ile bagli calisir
+  </div>
+
+  <!-- Panel Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 text-left">
+
+    <!-- Musteri App -->
+    <a href="customer-app.html" class="card-hover bg-white rounded-2xl p-6 shadow-md border border-gray-100 block">
+      <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+        <i class="fas fa-mobile-alt text-primary text-xl"></i>
+      </div>
+      <div class="font-bold text-gray-900 text-lg mb-1">Musteri App</div>
+      <div class="text-gray-500 text-sm mb-4">Tur kesfet, rezervasyon yap, kaptan ile mesajlas.</div>
+      <div class="space-y-1.5">
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-primary w-4"></i>Tur arama & filtreleme</div>
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-primary w-4"></i>Dinamik rezervasyon akisi</div>
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-primary w-4"></i>Mesajlasma & bildirimler</div>
+      </div>
+      <div class="mt-5 flex items-center gap-2 text-primary font-semibold text-sm">
+        Aci <i class="fas fa-arrow-right text-xs"></i>
+      </div>
+    </a>
+
+    <!-- Kaptan App -->
+    <a href="captain-app.html" class="card-hover bg-white rounded-2xl p-6 shadow-md border border-gray-100 block">
+      <div class="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center mb-4">
+        <i class="fas fa-anchor text-sky-600 text-xl"></i>
+      </div>
+      <div class="font-bold text-gray-900 text-lg mb-1">Kaptan Paneli</div>
+      <div class="text-gray-500 text-sm mb-4">Tur olustur, rezervasyonlari yonet, kazancini takip et.</div>
+      <div class="space-y-1.5">
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-sky-600 w-4"></i>5 adimli tur olusturma wizard</div>
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-sky-600 w-4"></i>Rezervasyon kabul / red</div>
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-sky-600 w-4"></i>Musteri mesajlasma</div>
+      </div>
+      <div class="mt-5 flex items-center gap-2 text-sky-600 font-semibold text-sm">
+        Aci <i class="fas fa-arrow-right text-xs"></i>
+      </div>
+    </a>
+
+    <!-- Admin Panel -->
+    <a href="admin-panel.html" class="card-hover bg-white rounded-2xl p-6 shadow-md border border-gray-100 block">
+      <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+        <i class="fas fa-chart-pie text-purple-600 text-xl"></i>
+      </div>
+      <div class="font-bold text-gray-900 text-lg mb-1">Admin Panel</div>
+      <div class="text-gray-500 text-sm mb-4">Tum platformu yonet: kaptanlar, turlar, finans, hareketler.</div>
+      <div class="space-y-1.5">
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-purple-600 w-4"></i>Kaptan onaylama akisi</div>
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-purple-600 w-4"></i>Satis hareketi yonetimi</div>
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-purple-600 w-4"></i>Komisyon & finans takibi</div>
+      </div>
+      <div class="mt-5 flex items-center gap-2 text-purple-600 font-semibold text-sm">
+        Aci <i class="fas fa-arrow-right text-xs"></i>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Data Flow -->
+<div class="max-w-5xl mx-auto px-6 pb-16">
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+    <h2 class="font-bold text-gray-900 text-lg mb-6 text-center">Paneller Arasi Veri Akisi</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+      <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
+        <div class="font-semibold text-purple-700 mb-2"><i class="fas fa-chart-pie mr-1"></i>Admin Panel</div>
+        <div class="text-xs text-gray-600 space-y-1">
+          <div><span class="font-mono bg-purple-100 px-1 rounded">db_captains</span> yazar</div>
+          <div><span class="font-mono bg-purple-100 px-1 rounded">db_tours</span> okur</div>
+          <div><span class="font-mono bg-purple-100 px-1 rounded">db_bookings</span> okur / durum gunceller</div>
+        </div>
+      </div>
+      <div class="bg-sky-50 rounded-xl p-4 border border-sky-100">
+        <div class="font-semibold text-sky-700 mb-2"><i class="fas fa-anchor mr-1"></i>Kaptan Paneli</div>
+        <div class="text-xs text-gray-600 space-y-1">
+          <div><span class="font-mono bg-sky-100 px-1 rounded">db_captains</span> okur (kimlik)</div>
+          <div><span class="font-mono bg-sky-100 px-1 rounded">db_tours</span> yazar / okur</div>
+          <div><span class="font-mono bg-sky-100 px-1 rounded">db_bookings</span> okur / onaylar</div>
+          <div><span class="font-mono bg-sky-100 px-1 rounded">db_messages</span> yazar / okur</div>
+        </div>
+      </div>
+      <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+        <div class="font-semibold text-blue-700 mb-2"><i class="fas fa-mobile-alt mr-1"></i>Musteri App</div>
+        <div class="text-xs text-gray-600 space-y-1">
+          <div><span class="font-mono bg-blue-100 px-1 rounded">db_tours</span> okur</div>
+          <div><span class="font-mono bg-blue-100 px-1 rounded">db_bookings</span> yazar</div>
+          <div><span class="font-mono bg-blue-100 px-1 rounded">db_messages</span> yazar / okur</div>
+          <div><span class="font-mono bg-blue-100 px-1 rounded">cu_*</span> kisisel veri</div>
+        </div>
+      </div>
+    </div>
+    <p class="text-center text-xs text-gray-400 mt-5">
+      <i class="fas fa-info-circle mr-1"></i>
+      Tum paneller ayni tarayici sekmesinde acildiginda localStorage uzerinden gercek zamanli senkronize calisir.
+    </p>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="border-t border-gray-100 bg-white">
+  <div class="max-w-5xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 bg-primary rounded-lg flex items-center justify-center"><i class="fas fa-ship text-white text-xs"></i></div>
+      <span class="font-bold text-primary text-sm">DenizBul<span class="text-accent">.tr</span></span>
+      <span class="text-gray-400 text-xs">UI Prototype v1.0.0</span>
+    </div>
+    <div class="flex gap-4 text-xs text-gray-400">
+      <a href="customer-app.html" class="hover:text-primary">Musteri</a>
+      <a href="captain-app.html" class="hover:text-sky-600">Kaptan</a>
+      <a href="admin-panel.html" class="hover:text-purple-600">Admin</a>
+      <a href="customer-site.html" class="hover:text-gray-600">Web Sitesi</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

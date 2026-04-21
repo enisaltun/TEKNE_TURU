@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>DenizBul — Musteri App</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',primaryDark:'#075985',primaryLight:'#e0f2fe',accent:'#f59e0b',accentDark:'#d97706',surface:'#f8fafc',danger:'#ef4444',success:'#10b981',dark:'#0f172a'}}}}</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{font-family:'Inter',sans-serif;margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#f8fafc;color:#1e293b;max-width:430px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden}
+.page{display:none;padding-bottom:80px;min-height:100vh}
+.page.active{display:block}
+.fade-in{animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.slide-up{animation:slideUp .3s ease}
+.card{background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-hover:active{transform:scale(.98);opacity:.9}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid #e2e8f0;display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:50}
+.bottom-nav a{display:flex;flex-direction:column;align-items:center;padding:4px 12px;color:#94a3b8;text-decoration:none;font-size:9px;font-weight:500;transition:color .15s;position:relative}
+.bottom-nav a.active{color:#0369a1}
+.bottom-nav a i{font-size:20px;margin-bottom:2px;transition:transform .15s}
+.bottom-nav a.active i{transform:scale(1.1)}
+.status-bar{background:#fff;padding:8px 16px 6px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;position:sticky;top:0;z-index:50}
+input,select,textarea{border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px;width:100%;outline:none;transition:border .2s;background:#fff}
+input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,161,.1)}
+.pill{display:inline-flex;align-items:center;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;transition:all .15s;white-space:nowrap}
+.pill.active{background:#0369a1;color:#fff;border-color:#0369a1}
+.badge{font-size:10px;padding:3px 10px;border-radius:12px;font-weight:600}
+.star{color:#fbbf24}.star-empty{color:#d1d5db}
+.img-placeholder{background:linear-gradient(135deg,#0369a1 0%,#0ea5e9 50%,#06b6d4 100%)}
+.search-bar{background:#fff;border-radius:14px;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;gap:10px}
+.swipe-indicator{width:36px;height:4px;background:#cbd5e1;border-radius:2px;margin:8px auto}
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:55;display:none}
+.bottom-sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-radius:20px 20px 0 0;z-index:56;padding:0 16px 24px;max-height:90vh;overflow-y:auto;display:none}
+.msg-bubble{max-width:78%;padding:10px 14px;border-radius:18px;font-size:13px;line-height:1.5}
+.msg-in{background:#f1f5f9;border-bottom-left-radius:4px}
+.msg-out{background:#0369a1;color:#fff;border-bottom-right-radius:4px}
+::-webkit-scrollbar{width:0}
+.map-bg{background:linear-gradient(135deg,#dbeafe 0%,#e0f2fe 50%,#cffafe 100%)}
+.notif-dot{position:absolute;top:0;right:8px;width:8px;height:8px;background:#ef4444;border-radius:50%;border:2px solid #fff}
+.date-btn{min-width:58px;text-align:center;padding:8px 6px;border:1.5px solid #e2e8f0;border-radius:12px;cursor:pointer;transition:all .15s;flex-shrink:0}
+.date-btn.sel{border-color:#0369a1;background:#e0f2fe}
+.time-btn{padding:8px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;cursor:pointer;transition:all .15s;background:#fff}
+.time-btn.sel{border-color:#0369a1;background:#e0f2fe;color:#0369a1;font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <span id="clock">00:00</span>
+  <div class="flex items-center gap-1"><i class="fas fa-ship text-primary text-xs"></i><span class="text-primary font-bold text-xs">DenizBul</span></div>
+  <div class="flex items-center gap-1.5 text-gray-400"><i class="fas fa-signal text-[10px]"></i><i class="fas fa-wifi text-[10px]"></i><i class="fas fa-battery-three-quarters text-[10px]"></i></div>
+</div>
+
+<!-- ================================================================ PAGE 1: ANA SAYFA -->
+<section id="page-home" class="page">
+  <div class="px-4 pt-2 pb-3">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <div class="flex items-center gap-1 text-xs text-gray-500"><i class="fas fa-map-marker-alt text-primary"></i> Konumun</div>
+        <div class="font-bold text-base">Antalya, Turkiye</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="relative w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center card-hover" onclick="navigateTo('notifications')">
+          <i class="fas fa-bell text-gray-500"></i>
+          <span class="notif-dot" id="notif-dot" style="display:none"></span>
+        </button>
+        <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center card-hover" onclick="navigateTo('profile')">
+          <span class="text-primary font-bold text-sm" id="home-avatar">M</span>
+        </div>
+      </div>
+    </div>
+    <div class="search-bar card-hover" onclick="navigateTo('search')">
+      <i class="fas fa-search text-gray-400"></i>
+      <span class="text-gray-400 text-sm flex-1">Tur, bolge veya kaptan ara...</span>
+      <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"><i class="fas fa-sliders-h text-white text-xs"></i></div>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <div class="px-4 mb-4">
+    <div class="flex gap-3 overflow-x-auto pb-1" style="-webkit-overflow-scrolling:touch">
+      <div class="flex flex-col items-center gap-1.5 min-w-[64px] card-hover" onclick="filterAndGo('balik')">
+        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center"><i class="fas fa-fish text-primary text-lg"></i></div>
+        <span class="text-[10px] font-medium text-gray-600">Balik Avi</span>
+      </div>
+      <div class="flex flex-col items-center gap-1.5 min-w-[64px] card-hover" onclick="filterAndGo('gezi')">
+        <div class="w-14 h-14 bg-cyan-50 rounded-2xl flex items-center justify-center"><i class="fas fa-compass text-cyan-600 text-lg"></i></div>
+        <span class="text-[10px] font-medium text-gray-600">Gezi</span>
+      </div>
+      <div class="flex flex-col items-center gap-1.5 min-w-[64px] card-hover" onclick="filterAndGo('yuzme')">
+        <div class="w-14 h-14 bg-sky-50 rounded-2xl flex items-center justify-center"><i class="fas fa-swimmer text-sky-600 text-lg"></i></div>
+        <span class="text-[10px] font-medium text-gray-600">Yuzme</span>
+      </div>
+      <div class="flex flex-col items-center gap-1.5 min-w-[64px] card-hover" onclick="filterAndGo('ozel')">
+        <div class="w-14 h-14 bg-pink-50 rounded-2xl flex items-center justify-center"><i class="fas fa-heart text-pink-500 text-lg"></i></div>
+        <span class="text-[10px] font-medium text-gray-600">Ozel</span>
+      </div>
+      <div class="flex flex-col items-center gap-1.5 min-w-[64px] card-hover" onclick="filterAndGo('gunbatimi')">
+        <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center"><i class="fas fa-sun text-orange-500 text-lg"></i></div>
+        <span class="text-[10px] font-medium text-gray-600">Gun Batimi</span>
+      </div>
+      <div class="flex flex-col items-center gap-1.5 min-w-[64px] card-hover" onclick="filterAndGo('kurumsal')">
+        <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center"><i class="fas fa-briefcase text-indigo-600 text-lg"></i></div>
+        <span class="text-[10px] font-medium text-gray-600">Kurumsal</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="px-4 mb-5">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-bold text-base">Yakindaki Turlar</h2>
+      <button class="text-primary text-xs font-medium" onclick="navigateTo('search')">Tumu <i class="fas fa-arrow-right ml-0.5"></i></button>
+    </div>
+    <div class="flex gap-3 overflow-x-auto pb-2" id="nearby-tours" style="-webkit-overflow-scrolling:touch"></div>
+  </div>
+
+  <div class="px-4 mb-5">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-bold text-base">Populer Turlar</h2>
+      <button class="text-primary text-xs font-medium" onclick="navigateTo('search')">Tumu <i class="fas fa-arrow-right ml-0.5"></i></button>
+    </div>
+    <div class="space-y-3" id="popular-tours-app"></div>
+  </div>
+
+  <div class="px-4 mb-5">
+    <h2 class="font-bold text-base mb-3">Populer Bolgeler</h2>
+    <div class="flex gap-3 overflow-x-auto pb-2" style="-webkit-overflow-scrolling:touch">
+      <div class="min-w-[140px] h-[100px] rounded-2xl img-placeholder relative flex-shrink-0 card-hover" onclick="filterAndGo('','Antalya')">
+        <div class="absolute inset-0 bg-black/20 rounded-2xl"></div>
+        <div class="absolute bottom-2 left-3 text-white font-bold text-sm">Antalya</div>
+      </div>
+      <div class="min-w-[140px] h-[100px] rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 relative flex-shrink-0 card-hover" onclick="filterAndGo('','Bodrum')">
+        <div class="absolute inset-0 bg-black/20 rounded-2xl"></div>
+        <div class="absolute bottom-2 left-3 text-white font-bold text-sm">Bodrum</div>
+      </div>
+      <div class="min-w-[140px] h-[100px] rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 relative flex-shrink-0 card-hover" onclick="filterAndGo('','Fethiye')">
+        <div class="absolute inset-0 bg-black/20 rounded-2xl"></div>
+        <div class="absolute bottom-2 left-3 text-white font-bold text-sm">Fethiye</div>
+      </div>
+      <div class="min-w-[140px] h-[100px] rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 relative flex-shrink-0 card-hover" onclick="filterAndGo('','Istanbul')">
+        <div class="absolute inset-0 bg-black/20 rounded-2xl"></div>
+        <div class="absolute bottom-2 left-3 text-white font-bold text-sm">Istanbul</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="px-4 mb-5">
+    <div class="bg-gradient-to-r from-accent to-orange-500 rounded-2xl p-4 text-white">
+      <div class="flex items-center gap-2 mb-1"><i class="fas fa-fire"></i><span class="font-bold text-sm">Haftanin Firsati</span></div>
+      <div class="text-xs opacity-90 mb-2">Secili turlarda %20'ye varan indirim!</div>
+      <button class="bg-white text-accent px-4 py-2 rounded-xl text-xs font-bold" onclick="navigateTo('search')">Firsatlari Gor</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE 2: ARAMA -->
+<section id="page-search" class="page">
+  <div class="px-4 pt-2">
+    <div class="flex items-center gap-3 mb-3">
+      <button onclick="navigateTo('home')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+      <div class="flex-1 relative">
+        <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
+        <input type="text" id="search-input" placeholder="Tur, bolge veya kaptan..." class="pl-10 !rounded-xl !py-2.5 text-sm" oninput="applyFilters()">
+      </div>
+      <button class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center" onclick="openSheet('filter-sheet')"><i class="fas fa-sliders-h text-primary text-sm"></i></button>
+    </div>
+    <div class="flex gap-2 overflow-x-auto mb-3 pb-1" id="cat-pills">
+      <div class="pill active" data-cat="" onclick="setCat(this,'')"><i class="fas fa-th mr-1"></i>Tumu</div>
+      <div class="pill" data-cat="balik" onclick="setCat(this,'balik')"><i class="fas fa-fish mr-1"></i>Balik</div>
+      <div class="pill" data-cat="gezi" onclick="setCat(this,'gezi')"><i class="fas fa-compass mr-1"></i>Gezi</div>
+      <div class="pill" data-cat="ozel" onclick="setCat(this,'ozel')"><i class="fas fa-heart mr-1"></i>Ozel</div>
+      <div class="pill" data-cat="gunbatimi" onclick="setCat(this,'gunbatimi')"><i class="fas fa-sun mr-1"></i>Batimi</div>
+      <div class="pill" data-cat="yuzme" onclick="setCat(this,'yuzme')"><i class="fas fa-swimmer mr-1"></i>Yuzme</div>
+    </div>
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs text-gray-500"><strong id="search-count">0</strong> tur bulundu</span>
+      <button class="w-8 h-8 bg-white rounded-lg shadow-sm flex items-center justify-center text-gray-400" onclick="document.getElementById('map-view').classList.toggle('hidden')"><i class="fas fa-map"></i></button>
+    </div>
+    <div id="map-view" class="hidden mb-3">
+      <div class="map-bg rounded-2xl h-40 flex items-center justify-center"><i class="fas fa-map-marked-alt text-primary text-3xl opacity-30"></i></div>
+    </div>
+    <div class="space-y-3 pb-4" id="search-results-app"></div>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE 3: TUR DETAY -->
+<section id="page-detail" class="page" style="padding-bottom:0">
+  <div class="relative">
+    <div class="h-64 relative" id="detail-hero">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+    </div>
+    <button onclick="history.back()" class="absolute top-3 left-3 w-9 h-9 bg-white/80 backdrop-blur rounded-full flex items-center justify-center"><i class="fas fa-arrow-left text-gray-700 text-sm"></i></button>
+    <button id="btn-fav-detail" class="absolute top-3 right-3 w-9 h-9 bg-white/80 backdrop-blur rounded-full flex items-center justify-center" onclick="toggleDetailFav()"><i class="far fa-heart text-gray-700 text-sm"></i></button>
+  </div>
+  <div class="px-4 pt-4 pb-28">
+    <div class="flex gap-2 mb-2" id="detail-badges"></div>
+    <h1 class="text-xl font-bold mb-1" id="detail-title">—</h1>
+    <div class="flex flex-wrap items-center gap-3 text-xs text-gray-500 mb-4" id="detail-meta"></div>
+    <div class="card p-3 flex items-center gap-3 mb-4 card-hover" onclick="navigateTo('captain-profile')">
+      <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center" id="detail-cap-avatar"><i class="fas fa-user text-primary"></i></div>
+      <div class="flex-1">
+        <div class="flex items-center gap-1"><span class="font-semibold text-sm" id="detail-cap-name">Kaptan</span><i class="fas fa-check-circle text-primary text-[10px]"></i></div>
+        <div class="text-[11px] text-gray-500" id="detail-cap-sub">—</div>
+      </div>
+      <i class="fas fa-chevron-right text-gray-300 text-sm"></i>
+    </div>
+    <h2 class="font-bold text-sm mb-2">Dahil Olanlar</h2>
+    <div class="grid grid-cols-2 gap-2 mb-4" id="detail-includes"></div>
+    <h2 class="font-bold text-sm mb-2">Aciklama</h2>
+    <p class="text-xs text-gray-600 leading-relaxed mb-4" id="detail-desc">—</p>
+    <h2 class="font-bold text-sm mb-2">Guzergah</h2>
+    <div class="map-bg rounded-2xl h-32 flex items-center justify-center mb-4"><i class="fas fa-route text-primary text-2xl opacity-30"></i></div>
+  </div>
+  <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t p-3 flex items-center justify-between z-40">
+    <div><span class="text-xl font-bold text-primary" id="detail-price">—</span><span class="text-xs text-gray-400"> TL / tekne</span></div>
+    <button onclick="navigateTo('booking')" class="bg-accent text-white px-6 py-3 rounded-xl font-bold text-sm">Rezervasyon Yap</button>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE 4: KAPTAN PROFILI -->
+<section id="page-captain-profile" class="page">
+  <div class="px-4 pt-2">
+    <div class="flex items-center gap-3 mb-4">
+      <button onclick="navigateTo('detail')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+      <span class="font-semibold text-sm">Kaptan Profili</span>
+    </div>
+    <div class="text-center mb-4">
+      <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2" id="cp-avatar"><i class="fas fa-user text-primary text-2xl"></i></div>
+      <h1 class="text-lg font-bold" id="cp-name">—</h1>
+      <div class="text-xs text-gray-500 mt-1" id="cp-meta">—</div>
+      <div class="flex justify-center gap-6 mt-3">
+        <div class="text-center"><div class="text-lg font-bold text-amber-500" id="cp-rating">4.8</div><div class="text-[9px] text-gray-400">Puan</div></div>
+        <div class="text-center"><div class="text-lg font-bold text-primary" id="cp-tour-count">—</div><div class="text-[9px] text-gray-400">Tur</div></div>
+        <div class="text-center"><div class="text-lg font-bold text-success">0</div><div class="text-[9px] text-gray-400">Yorum</div></div>
+      </div>
+    </div>
+    <div class="card p-4 mb-4">
+      <h3 class="font-semibold text-sm mb-2">Sertifikalar</h3>
+      <div class="flex flex-wrap gap-1">
+        <span class="badge bg-blue-50 text-blue-600">Kaptan Belgesi</span>
+        <span class="badge bg-blue-50 text-blue-600">Ilk Yardim</span>
+      </div>
+    </div>
+    <h3 class="font-semibold text-sm mb-3">Turlari</h3>
+    <div class="space-y-3" id="captain-tours-list"></div>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE 5: REZERVASYON -->
+<section id="page-booking" class="page">
+  <div class="px-4 pt-2">
+    <div class="flex items-center gap-3 mb-4">
+      <button onclick="navigateTo('detail')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+      <span class="font-semibold text-sm">Rezervasyon</span>
+    </div>
+    <div class="card p-3 flex items-center gap-3 mb-4" id="booking-tour-card">
+      <div class="w-14 h-14 img-placeholder rounded-xl flex items-center justify-center flex-shrink-0" id="booking-tour-icon"><i class="fas fa-ship text-white/60 text-xl"></i></div>
+      <div class="flex-1">
+        <div class="font-medium text-sm" id="booking-tour-name">—</div>
+        <div class="text-[11px] text-gray-500" id="booking-tour-meta">—</div>
+      </div>
+    </div>
+    <div class="card p-4 mb-3">
+      <h3 class="font-semibold text-sm mb-3"><i class="fas fa-calendar-day text-primary mr-1"></i> Tarih Sec</h3>
+      <div class="flex gap-2 overflow-x-auto pb-1" id="date-strip"></div>
+    </div>
+    <div class="card p-4 mb-3">
+      <h3 class="font-semibold text-sm mb-3"><i class="fas fa-clock text-primary mr-1"></i> Saat Sec</h3>
+      <div class="flex flex-wrap gap-2" id="time-strip"></div>
+    </div>
+    <div class="card p-4 mb-3">
+      <h3 class="font-semibold text-sm mb-3"><i class="fas fa-users text-primary mr-1"></i> Misafir Sayisi</h3>
+      <div class="flex items-center justify-between">
+        <div><span class="text-sm text-gray-600">Kisi sayisi</span><div class="text-[10px] text-gray-400" id="booking-cap-note"></div></div>
+        <div class="flex items-center gap-4">
+          <button class="w-9 h-9 rounded-full border-2 flex items-center justify-center text-gray-400 active:bg-gray-100" onclick="adjGuest(-1)">−</button>
+          <span class="text-xl font-bold w-6 text-center" id="guest-count-val">2</span>
+          <button class="w-9 h-9 rounded-full border-2 border-primary flex items-center justify-center text-primary" onclick="adjGuest(1)">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="card p-4 mb-4">
+      <h3 class="font-semibold text-sm mb-2"><i class="fas fa-comment text-primary mr-1"></i> Ozel Not</h3>
+      <textarea id="booking-note" placeholder="Kaptana iletmek istediginiz not..." class="text-sm h-16"></textarea>
+    </div>
+    <div class="card p-4 mb-4">
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Tur ucreti</span><span id="b-fee">—</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Hizmet bedeli (%10)</span><span id="b-svc">—</span></div>
+        <hr>
+        <div class="flex justify-between font-bold text-base"><span>Toplam</span><span class="text-primary" id="b-total">—</span></div>
+      </div>
+    </div>
+    <button onclick="navigateTo('payment')" class="w-full bg-accent text-white py-3.5 rounded-xl font-bold text-base mb-4"><i class="fas fa-arrow-right mr-2"></i>Odemeye Gec</button>
+    <div class="text-center text-[10px] text-gray-400 mb-4"><i class="fas fa-shield-alt text-success mr-1"></i>Guvenli odeme &bull; 24 saat ucretsiz iptal</div>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE 6: ODEME -->
+<section id="page-payment" class="page">
+  <div class="px-4 pt-2">
+    <div class="flex items-center gap-3 mb-4">
+      <button onclick="navigateTo('booking')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+      <span class="font-semibold text-sm">Odeme</span>
+      <div class="ml-auto flex gap-1"><div class="w-8 h-1 bg-primary rounded-full"></div><div class="w-8 h-1 bg-primary rounded-full"></div><div class="w-8 h-1 bg-gray-200 rounded-full"></div></div>
+    </div>
+    <div class="card p-4 mb-3">
+      <h3 class="font-semibold text-sm mb-3">Kart Bilgileri</h3>
+      <div class="space-y-3">
+        <div><label class="text-[11px] font-medium text-gray-500">Kart Numarasi</label><input type="text" id="pay-card" placeholder="XXXX XXXX XXXX XXXX" class="mt-1 text-sm"></div>
+        <div class="flex gap-3">
+          <div class="flex-1"><label class="text-[11px] font-medium text-gray-500">Son Kullanma</label><input type="text" id="pay-exp" placeholder="AA/YY" class="mt-1 text-sm"></div>
+          <div class="w-24"><label class="text-[11px] font-medium text-gray-500">CVV</label><input type="text" id="pay-cvv" placeholder="***" class="mt-1 text-sm"></div>
+        </div>
+        <div><label class="text-[11px] font-medium text-gray-500">Kart Uzerindeki Isim</label><input type="text" id="pay-name" placeholder="Ad Soyad" class="mt-1 text-sm"></div>
+      </div>
+    </div>
+    <div class="card p-4 mb-4">
+      <div class="space-y-2 text-sm">
+        <div class="text-gray-500 font-medium" id="pay-tour-line">—</div>
+        <div class="text-gray-400 text-xs" id="pay-detail-line">—</div>
+        <hr>
+        <div class="flex justify-between font-bold text-base"><span>Toplam</span><span class="text-primary" id="pay-total">—</span></div>
+      </div>
+    </div>
+    <label class="flex items-start gap-2 mb-4"><input type="checkbox" id="pay-terms" class="accent-primary mt-0.5"><span class="text-[11px] text-gray-600">Iptal ve iade politikasini kabul ediyorum</span></label>
+    <button onclick="doBooking()" class="w-full bg-accent text-white py-3.5 rounded-xl font-bold text-base mb-2" id="pay-btn"><i class="fas fa-lock mr-2"></i>Ode</button>
+    <div class="flex items-center justify-center gap-3 text-[10px] text-gray-400"><span><i class="fas fa-shield-alt text-success"></i> 256-bit SSL</span><span><i class="fas fa-lock text-success"></i> Iyzico</span></div>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE 7: ONAY -->
+<section id="page-confirmation" class="page">
+  <div class="px-4 pt-8 text-center">
+    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-check text-success text-3xl"></i></div>
+    <h1 class="text-xl font-bold mb-1">Rezervasyon Alindi!</h1>
+    <p class="text-sm text-gray-500 mb-6">Kaptan onayladiginda bildirim gelecek</p>
+    <div class="card p-4 text-left mb-4">
+      <div class="flex justify-between items-start mb-3">
+        <div class="text-xs text-gray-400">Rezervasyon No</div>
+        <span class="badge bg-amber-100 text-amber-700" id="conf-badge">Onay Bekleniyor</span>
+      </div>
+      <div class="font-bold text-primary mb-3" id="conf-no">—</div>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Tur</span><span class="font-medium" id="conf-tour">—</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Tarih & Saat</span><span id="conf-date">—</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Misafir</span><span id="conf-guests">—</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Kaptan</span><span id="conf-captain">—</span></div>
+        <div class="flex justify-between font-semibold border-t pt-2 mt-1"><span>Toplam</span><span class="text-primary" id="conf-total">—</span></div>
+      </div>
+      <div class="mt-4 flex items-center justify-center">
+        <div class="w-28 h-28 bg-gray-100 rounded-xl flex items-center justify-center"><i class="fas fa-qrcode text-3xl text-gray-400"></i></div>
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="navigateTo('messages')" class="flex-1 border py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-comment mr-1"></i>Kaptana Yaz</button>
+      <button onclick="navigateTo('my-tours')" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-list mr-1"></i>Turlarim</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE 8: TURLARIM -->
+<section id="page-my-tours" class="page">
+  <div class="px-4 pt-2">
+    <h1 class="text-lg font-bold mb-3">Turlarim</h1>
+    <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+      <div class="pill active" id="tab-up" onclick="setTab('up',this)">Yaklasan</div>
+      <div class="pill" id="tab-past" onclick="setTab('past',this)">Gecmis</div>
+      <div class="pill" id="tab-cancelled" onclick="setTab('cancelled',this)">Iptal</div>
+    </div>
+    <div class="space-y-3" id="my-tours-list"></div>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE 9: FAVORILER -->
+<section id="page-favorites" class="page">
+  <div class="px-4 pt-2">
+    <h1 class="text-lg font-bold mb-3">Favorilerim</h1>
+    <div class="space-y-3" id="favorites-list"></div>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE 10: MESAJLAR -->
+<section id="page-messages" class="page" style="padding-bottom:0">
+  <div class="flex flex-col" style="height:calc(100vh - 100px)">
+    <div id="msg-list-view" class="flex-1 overflow-y-auto">
+      <div class="px-4 pt-2 pb-2 flex items-center justify-between">
+        <h1 class="text-lg font-bold">Mesajlar</h1>
+        <span class="text-xs text-primary font-medium" id="msg-unread"></span>
+      </div>
+      <div class="divide-y" id="msg-list-body">
+        <div class="text-center py-12 text-xs text-gray-400">Henuz mesajiniz yok</div>
+      </div>
+    </div>
+    <div id="msg-chat-view" class="flex-1 flex flex-col" style="display:none">
+      <div class="px-4 py-3 border-b flex items-center gap-3 bg-white">
+        <button onclick="closeChat()" class="text-gray-400"><i class="fas fa-arrow-left"></i></button>
+        <div class="w-9 h-9 bg-primary/15 rounded-full flex items-center justify-center flex-shrink-0"><span class="font-bold text-primary text-xs" id="chat-avatar">K</span></div>
+        <div class="flex-1">
+          <div class="font-medium text-sm" id="chat-name">Kaptan</div>
+          <div class="text-[10px] text-gray-400" id="chat-sub">—</div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50" id="chat-body"></div>
+      <div class="p-3 border-t flex items-center gap-2 bg-white">
+        <input type="text" id="chat-input" placeholder="Mesaj yaz..." class="flex-1 !rounded-full !py-2.5 text-sm bg-gray-50" onkeydown="if(event.key==='Enter')sendMsg()">
+        <button onclick="sendMsg()" class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center"><i class="fas fa-paper-plane text-sm"></i></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE 11: BILDIRIMLER -->
+<section id="page-notifications" class="page">
+  <div class="px-4 pt-2">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <button onclick="navigateTo('home')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+        <span class="font-semibold">Bildirimler</span>
+      </div>
+      <button onclick="markAllRead()" class="text-xs text-primary font-medium">Tümünü Oku</button>
+    </div>
+    <div class="space-y-2" id="notif-list">
+      <div class="text-center py-12 text-xs text-gray-400">Henuz bildirim yok</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE 12: PROFIL -->
+<section id="page-profile" class="page">
+  <div class="px-4 pt-2">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-lg font-bold">Profilim</h1>
+      <button onclick="openSheet('edit-sheet')" class="text-primary text-sm font-medium"><i class="fas fa-pen mr-1"></i>Duzenle</button>
+    </div>
+    <div class="card p-4 mb-4 text-center">
+      <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2"><span class="text-primary font-bold text-2xl" id="prof-avatar">M</span></div>
+      <h2 class="font-bold" id="prof-name">Misafir</h2>
+      <div class="text-xs text-gray-500 mt-0.5" id="prof-email">—</div>
+      <div class="flex justify-center gap-6 mt-3">
+        <div class="text-center"><div class="font-bold text-primary" id="prof-tours">0</div><div class="text-[9px] text-gray-400">Tur</div></div>
+        <div class="text-center"><div class="font-bold text-success" id="prof-spend">0</div><div class="text-[9px] text-gray-400">TL</div></div>
+        <div class="text-center"><div class="font-bold text-amber-500" id="prof-favs">0</div><div class="text-[9px] text-gray-400">Favori</div></div>
+      </div>
+    </div>
+    <div class="space-y-1.5">
+      <div class="card p-3.5 flex items-center gap-3 card-hover" onclick="navigateTo('my-tours')"><i class="fas fa-calendar-check text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Rezervasyonlarim</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
+      <div class="card p-3.5 flex items-center gap-3 card-hover" onclick="navigateTo('favorites')"><i class="fas fa-heart text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Favorilerim</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
+      <div class="card p-3.5 flex items-center gap-3 card-hover" onclick="navigateTo('messages')"><i class="fas fa-comment text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Mesajlarim</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
+      <div class="card p-3.5 flex items-center gap-3 card-hover"><i class="fas fa-credit-card text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Odeme Yontemlerim</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
+      <div class="card p-3.5 flex items-center gap-3 card-hover" onclick="navigateTo('notifications')"><i class="fas fa-bell text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Bildirimler</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
+      <div class="card p-3.5 flex items-center gap-3 card-hover text-danger" onclick="clearAll()"><i class="fas fa-trash w-6 text-center"></i><span class="text-sm font-medium flex-1">Veriyi Temizle (Test)</span></div>
+    </div>
+    <div class="text-center text-[10px] text-gray-400 mt-6 space-x-2">
+      <span>DenizBul v1.0.0</span>
+      <a href="admin-panel.html" target="_blank" class="text-primary">Admin</a>
+      <a href="captain-panel.html" target="_blank" class="text-primary">Kaptan</a>
+    </div>
+  </div>
+</section>
+
+<!-- FILTER SHEET -->
+<div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
+<div class="bottom-sheet" id="filter-sheet">
+  <div class="swipe-indicator"></div>
+  <h2 class="font-bold text-base mb-4 pt-2">Filtreler</h2>
+  <div class="space-y-4 pb-4">
+    <div>
+      <h3 class="text-sm font-medium mb-2">Fiyat Araligi (TL)</h3>
+      <div class="flex gap-3"><input type="number" id="flt-min" placeholder="Min" class="text-sm"><input type="number" id="flt-max" placeholder="Max" class="text-sm"></div>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="resetFilters()" class="flex-1 border py-3 rounded-xl text-sm font-medium">Temizle</button>
+      <button onclick="closeSheet();applyFilters()" class="flex-1 bg-primary text-white py-3 rounded-xl text-sm font-medium">Uygula</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE EDIT SHEET -->
+<div class="bottom-sheet" id="edit-sheet">
+  <div class="swipe-indicator"></div>
+  <h2 class="font-bold text-base mb-4 pt-2">Profili Duzenle</h2>
+  <div class="space-y-3 pb-4">
+    <div><label class="text-xs font-medium text-gray-500">Ad Soyad</label><input type="text" id="edit-name" placeholder="Adiniz Soyadiniz" class="mt-1"></div>
+    <div><label class="text-xs font-medium text-gray-500">E-posta</label><input type="email" id="edit-email" placeholder="email@ornek.com" class="mt-1"></div>
+    <div><label class="text-xs font-medium text-gray-500">Telefon</label><input type="tel" id="edit-phone" placeholder="+90 5XX XXX XX XX" class="mt-1"></div>
+    <button onclick="saveProfile()" class="w-full bg-primary text-white py-3 rounded-xl font-semibold">Kaydet</button>
+    <button onclick="closeSheet()" class="w-full border py-3 rounded-xl text-sm font-medium">Vazgec</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed top-14 left-4 right-4 max-w-[398px] mx-auto bg-success text-white px-4 py-3 rounded-xl shadow-lg z-[60] transition-all transform -translate-y-20 opacity-0 flex items-center gap-2 text-sm font-medium">
+  <i class="fas fa-check-circle"></i><span id="toast-msg"></span>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottom-nav">
+  <a href="#home" data-nav="home"><i class="fas fa-home"></i>Ana Sayfa</a>
+  <a href="#search" data-nav="search"><i class="fas fa-search"></i>Ara</a>
+  <a href="#favorites" data-nav="favorites"><i class="fas fa-heart"></i>Favori</a>
+  <a href="#my-tours" data-nav="my-tours"><i class="fas fa-calendar"></i>Turlarim</a>
+  <a href="#profile" data-nav="profile"><i class="fas fa-user"></i>Profil</a>
+</nav>
+
+<script>
+/* ── CONSTANTS ── */
+const ALL_PAGES=['home','search','detail','captain-profile','booking','payment','confirmation','my-tours','favorites','messages','notifications','profile'];
+const HIDE_NAV=['detail','booking','payment','confirmation','captain-profile','notifications'];
+const CM={
+  balik:    {label:'Balik Avi',   icon:'fa-fish',      color:'blue',   grad:'from-blue-400 to-blue-600'},
+  gezi:     {label:'Tekne Gezisi',icon:'fa-compass',   color:'cyan',   grad:'from-cyan-400 to-teal-500'},
+  ozel:     {label:'Ozel Etkinlik',icon:'fa-heart',    color:'pink',   grad:'from-pink-400 to-rose-500'},
+  kurumsal: {label:'Kurumsal',    icon:'fa-briefcase', color:'indigo', grad:'from-indigo-400 to-indigo-600'},
+  yuzme:    {label:'Yuzme',       icon:'fa-swimmer',   color:'sky',    grad:'from-sky-400 to-sky-600'},
+  gunbatimi:{label:'Gun Batimi',  icon:'fa-sun',       color:'orange', grad:'from-orange-400 to-amber-500'},
+};
+const DB_CAT={'Balik Avi':'balik','Tekne Gezisi':'gezi','Ozel Etkinlik':'ozel','Kurumsal':'kurumsal','Yuzme':'yuzme','Gun Batimi':'gunbatimi'};
+
+/* ── LOCALSTORAGE ── */
+const S={
+  get:(k,d=null)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}},
+  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
+  del:(k)=>localStorage.removeItem(k)
+};
+
+/* ── STATE ── */
+let selTour=null, selDate=null, selTime=null, guestVal=2;
+let curChatId=null, curTab='up', catFilter='';
+const tourMap={};
+
+/* ── ROUTER ── */
+function navigateTo(p){window.location.hash='#'+p;}
+function handleRoute(){
+  const h=window.location.hash.replace('#','')||'home';
+  ALL_PAGES.forEach(p=>{const el=document.getElementById('page-'+p);if(el){el.classList.toggle('active',p===h);if(p===h)el.classList.add('fade-in');}});
+  document.querySelectorAll('#bottom-nav a').forEach(a=>a.classList.toggle('active',a.dataset.nav===h));
+  document.getElementById('bottom-nav').style.display=HIDE_NAV.includes(h)?'none':'flex';
+  if(h==='home')     renderHome();
+  if(h==='search')   {rebuildTourMap();applyFilters();}
+  if(h==='detail')   renderDetail();
+  if(h==='booking')  renderBooking();
+  if(h==='payment')  renderPayment();
+  if(h==='captain-profile') renderCaptainProfile();
+  if(h==='my-tours') renderMyTours(curTab);
+  if(h==='favorites')renderFavorites();
+  if(h==='messages') {document.getElementById('msg-list-view').style.display='';document.getElementById('msg-chat-view').style.display='none';renderMsgList();}
+  if(h==='notifications') renderNotifs();
+  if(h==='profile')  renderProfile();
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',handleRoute);
+window.addEventListener('load',()=>{rebuildTourMap();handleRoute();updateClock();pollBookingStatus();});
+
+function updateClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});setTimeout(updateClock,30000);}
+
+/* ── TOUR DATA ── */
+const SAMPLE=[
+  {id:1,name:'Balik Avi Turu',loc:'Kemer',price:1800,rating:4.9,reviews:124,dur:'6 saat',cat:'balik',kapasite:8,saatler:['06:00','07:00'],includes:['Ekipman & Olta','Yem','Can yelegi','Cay/Kahve'],desc:'Antalya Kemer aciklaylarinda profesyonel balik avi. Trolling ve jigging teknikleri.'},
+  {id:2,name:'12 Adalar Gezi',loc:'Fethiye',price:600,rating:4.8,reviews:89,dur:'8 saat',cat:'gezi',kapasite:12,saatler:['09:00','10:00'],includes:['Ogle yemegi','Snorkel ekipmani','Muzik'],desc:'Fethiye koylarinda 12 ada turu. Yuzme ve snorkel molalari.'},
+  {id:3,name:'Gun Batimi Ozel Turu',loc:'Bodrum',price:4500,rating:5.0,reviews:34,dur:'3 saat',cat:'ozel',kapasite:6,saatler:['18:00','19:00'],includes:['Dekorasyon','Pasta','Sampanya','Fotografci'],desc:'Bodrum manzarasinda romantik gun batimi.'},
+  {id:4,name:'Kekova Yuzme Turu',loc:'Kas',price:450,rating:4.7,reviews:67,dur:'5 saat',cat:'yuzme',kapasite:10,saatler:['10:00','11:00'],includes:['Snorkel ekipmani','Sandvic','Can yelegi'],desc:'Kekova sularinda batik sehir ve berrak deniz.'},
+  {id:5,name:'Kurumsal Team Building',loc:'Istanbul',price:8000,rating:4.8,reviews:22,dur:'4 saat',cat:'kurumsal',kapasite:20,saatler:['09:00','14:00'],includes:['Catering','Sunum ekipmani','Wifi'],desc:'Kurumsal etkinlikler icin ozel tekne.'},
+  {id:6,name:'Alanya Trolling',loc:'Alanya',price:2200,rating:4.6,reviews:55,dur:'8 saat',cat:'balik',kapasite:6,saatler:['05:30','06:00'],includes:['Profesyonel ekipman','Yem','Cay'],desc:'Alanya aciklaylarinda derin su trolling.'},
+  {id:7,name:'Romantik Gun Batimi',loc:'Bodrum',price:1200,rating:4.9,reviews:156,dur:'2 saat',cat:'gunbatimi',kapasite:4,saatler:['18:30','19:00'],includes:['Sampanya','Cicekler','Muzik'],desc:'Bodrum gunbatiminde romantic tekne turu.'},
+];
+
+function getDbTours(){
+  return S.get('db_tours',[]).map(t=>{
+    const cat=DB_CAT[t.kategoriler?.[0]||'Tekne Gezisi']||'gezi';
+    return{id:t.id,name:t.title,loc:t.kalkis||'Turkiye',price:t.price||0,rating:4.8,reviews:0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,_db:true};
+  });
+}
+
+function allTours(){return[...getDbTours(),...SAMPLE];}
+
+function rebuildTourMap(){allTours().forEach(t=>{tourMap[t.id]=t;});}
+
+/* ── HOME ── */
+function renderHome(){
+  rebuildTourMap();
+  const tours=allTours();
+  const p=S.get('cu_profile',{});
+  document.getElementById('home-avatar').textContent=(p.name||'M')[0].toUpperCase();
+  const favs=S.get('cu_favs',[]);
+
+  document.getElementById('nearby-tours').innerHTML=tours.slice(0,5).map(t=>{
+    const m=CM[t.cat]||CM.gezi;
+    return`<div class="min-w-[200px] card overflow-hidden flex-shrink-0 card-hover" onclick="go(${t.id},'detail')">
+      <div class="h-28 bg-gradient-to-br ${m.grad} relative">
+        <span class="absolute top-2 left-2 badge bg-white/90 text-${m.color}-700"><i class="fas ${m.icon} mr-0.5"></i>${m.label}</span>
+        <button class="absolute top-2 right-2 w-7 h-7 bg-white/80 rounded-full flex items-center justify-center" onclick="event.stopPropagation();toggleFav(${t.id},this)"><i class="${favs.includes(t.id)?'fas text-danger':'far text-gray-500'} fa-heart text-xs"></i></button>
+      </div>
+      <div class="p-3">
+        <div class="font-semibold text-xs mb-0.5">${t.name}</div>
+        <div class="text-[10px] text-gray-500 mb-1"><i class="fas fa-map-marker-alt text-primary"></i> ${t.loc} &bull; ${t.dur}</div>
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-primary text-sm">${t.price.toLocaleString('tr-TR')} TL</span>
+          <span class="text-[10px] text-amber-500"><i class="fas fa-star"></i> ${t.rating}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('popular-tours-app').innerHTML=tours.slice(0,5).map(t=>{
+    const m=CM[t.cat]||CM.gezi;
+    return`<div class="card overflow-hidden flex flex-row card-hover" onclick="go(${t.id},'detail')">
+      <div class="w-28 h-24 bg-gradient-to-br ${m.grad} flex-shrink-0 relative">
+        <span class="absolute top-1.5 left-1.5 text-[8px] bg-white/90 text-${m.color}-700 px-1.5 py-0.5 rounded-full font-bold"><i class="fas ${m.icon}"></i></span>
+      </div>
+      <div class="p-3 flex-1">
+        <div class="font-semibold text-sm mb-0.5">${t.name}${t._db?'<span class="ml-1 text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Yeni</span>':''}</div>
+        <div class="text-[10px] text-gray-500 mb-1"><i class="fas fa-map-marker-alt text-primary"></i> ${t.loc} &bull; ${t.dur}</div>
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-primary">${t.price.toLocaleString('tr-TR')} TL</span>
+          <span class="text-[10px] text-amber-500"><i class="fas fa-star"></i> ${t.rating}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── SEARCH ── */
+function setCat(el,cat){
+  catFilter=cat;
+  document.querySelectorAll('#cat-pills .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function filterAndGo(cat,loc=''){
+  catFilter=cat;
+  navigateTo('search');
+  setTimeout(()=>{
+    document.querySelectorAll('#cat-pills .pill').forEach(p=>p.classList.toggle('active',(p.dataset.cat||'')===(cat||'')));
+    const inp=document.getElementById('search-input');
+    if(inp&&loc)inp.value=loc;
+    applyFilters();
+  },60);
+}
+
+function applyFilters(){
+  rebuildTourMap();
+  const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
+  const minP=parseFloat(document.getElementById('flt-min')?.value)||0;
+  const maxP=parseFloat(document.getElementById('flt-max')?.value)||Infinity;
+  const favs=S.get('cu_favs',[]);
+  const list=allTours().filter(t=>{
+    const mCat=!catFilter||t.cat===catFilter;
+    const mQ=!q||t.name.toLowerCase().includes(q)||t.loc.toLowerCase().includes(q)||(t.captainName||'').toLowerCase().includes(q);
+    const mP=t.price>=minP&&t.price<=maxP;
+    return mCat&&mQ&&mP;
+  });
+  const el=document.getElementById('search-results-app');
+  const cnt=document.getElementById('search-count');
+  if(!el)return;
+  if(cnt)cnt.textContent=list.length;
+  if(!list.length){el.innerHTML='<div class="text-center py-12 text-sm text-gray-400"><i class="fas fa-search text-3xl mb-2 block text-gray-200"></i>Tur bulunamadi</div>';return;}
+  el.innerHTML=list.map(t=>{
+    const m=CM[t.cat]||CM.gezi;
+    const isFav=favs.includes(t.id);
+    return`<div class="card overflow-hidden card-hover" onclick="go(${t.id},'detail')">
+      <div class="h-40 bg-gradient-to-br ${m.grad} relative">
+        <span class="absolute top-2 left-2 badge bg-white/90 text-${m.color}-700"><i class="fas ${m.icon} mr-0.5"></i>${m.label}</span>
+        <button class="absolute top-2 right-2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center" onclick="event.stopPropagation();toggleFav(${t.id},this)"><i class="${isFav?'fas text-danger':'far text-gray-500'} fa-heart"></i></button>
+        ${t.cat==='balik'||t.cat==='gezi'?'<span class="absolute bottom-2 left-2 text-[9px] bg-green-500 text-white px-2 py-0.5 rounded-full font-medium"><i class="fas fa-bolt mr-0.5"></i>Aninda</span>':''}
+      </div>
+      <div class="p-3">
+        <div class="font-semibold text-sm mb-0.5">${t.name}${t._db?'<span class="ml-1 text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Kaptan Listesi</span>':''}</div>
+        <div class="text-[10px] text-gray-500 mb-1.5"><i class="fas fa-map-marker-alt text-primary"></i> ${t.loc} &bull; <i class="fas fa-clock"></i> ${t.dur} &bull; Max ${t.kapasite} kisi</div>
+        <div class="flex items-center justify-between">
+          <div><span class="text-lg font-bold text-primary">${t.price.toLocaleString('tr-TR')}</span><span class="text-xs text-gray-400"> TL/tekne</span></div>
+          <span class="text-xs text-amber-500 font-medium"><i class="fas fa-star"></i> ${t.rating}</span>
+        </div>
+        ${t.captainName?`<div class="text-[10px] text-gray-400 mt-1"><i class="fas fa-user-tie text-primary mr-0.5"></i>${t.captainName}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function resetFilters(){document.getElementById('flt-min').value='';document.getElementById('flt-max').value='';}
+
+function go(id,page){
+  rebuildTourMap();
+  if(tourMap[id]){selTour=tourMap[id];selDate=null;selTime=null;}
+  navigateTo(page);
+}
+
+/* ── DETAIL ── */
+function renderDetail(){
+  const t=selTour;if(!t)return;
+  const m=CM[t.cat]||CM.gezi;
+  document.getElementById('detail-hero').className=`h-64 bg-gradient-to-br ${m.grad} relative`;
+  document.getElementById('detail-badges').innerHTML=`<span class="badge bg-${m.color}-100 text-${m.color}-700"><i class="fas ${m.icon} mr-0.5"></i>${m.label}</span>${t.cat==='balik'||t.cat==='gezi'?'<span class="badge bg-green-100 text-green-700"><i class="fas fa-bolt mr-0.5"></i>Aninda Onay</span>':'<span class="badge bg-amber-100 text-amber-700">Kaptan Onayi</span>'}`;
+  document.getElementById('detail-title').textContent=t.name;
+  document.getElementById('detail-meta').innerHTML=`<span><i class="fas fa-map-marker-alt text-primary"></i> ${t.loc}</span><span><i class="fas fa-clock text-primary"></i> ${t.dur}</span><span><i class="fas fa-users text-primary"></i> Max ${t.kapasite}</span><span class="text-amber-500 font-semibold"><i class="fas fa-star"></i> ${t.rating} (${t.reviews})</span>`;
+  const cname=t.captainName||'DenizBul';
+  document.getElementById('detail-cap-avatar').innerHTML=`<span class="font-bold text-primary text-lg">${cname[0]}</span>`;
+  document.getElementById('detail-cap-name').textContent=cname;
+  document.getElementById('detail-cap-sub').textContent=t._db?`${t.loc} kalkisli • Dogrulandi`:'Deneyimli Kaptan';
+  const inc=t.includes?.length?t.includes:['Can yelegi','Rehberlik'];
+  document.getElementById('detail-includes').innerHTML=inc.map(i=>`<div class="flex items-center gap-2 text-xs"><i class="fas fa-check text-success text-[10px]"></i>${i}</div>`).join('');
+  document.getElementById('detail-desc').textContent=t.desc||`${t.name} - ${t.loc} kalkisli ${t.dur} sureli tur.`;
+  document.getElementById('detail-price').textContent=t.price.toLocaleString('tr-TR');
+  // fav btn
+  const favs=S.get('cu_favs',[]);
+  const fav=favs.includes(t.id);
+  document.getElementById('btn-fav-detail').innerHTML=`<i class="${fav?'fas text-danger':'far text-gray-700'} fa-heart text-sm"></i>`;
+}
+
+function toggleDetailFav(){
+  if(!selTour)return;
+  const favs=S.get('cu_favs',[]);
+  const idx=favs.indexOf(selTour.id);
+  const adding=idx<0;
+  if(adding)favs.push(selTour.id);else favs.splice(idx,1);
+  S.set('cu_favs',favs);
+  document.getElementById('btn-fav-detail').innerHTML=`<i class="${adding?'fas text-danger':'far text-gray-700'} fa-heart text-sm"></i>`;
+  showToast(adding?'Favorilere eklendi':'Favorilerden kaldirildi');
+}
+
+/* ── BOOKING ── */
+function renderBooking(){
+  const t=selTour;if(!t)return;
+  const m=CM[t.cat]||CM.gezi;
+  const iconEl=document.getElementById('booking-tour-icon');
+  iconEl.className=`w-14 h-14 bg-gradient-to-br ${m.grad} rounded-xl flex items-center justify-center flex-shrink-0`;
+  iconEl.innerHTML=`<i class="fas ${m.icon} text-white/80 text-xl"></i>`;
+  document.getElementById('booking-tour-name').textContent=t.name;
+  document.getElementById('booking-tour-meta').textContent=`${t.loc} • ${t.dur} • Max ${t.kapasite} kisi`;
+  document.getElementById('booking-cap-note').textContent=`En fazla ${t.kapasite} kisi`;
+  guestVal=Math.min(guestVal,t.kapasite);
+  document.getElementById('guest-count-val').textContent=guestVal;
+
+  // Date strip — next 10 days
+  const DAYS=['Paz','Pzt','Sal','Car','Per','Cum','Cmt'];
+  const MONTHS=['Oca','Sub','Mar','Nis','May','Haz','Tem','Agu','Eyl','Eki','Kas','Ara'];
+  const today=new Date();
+  let dHtml='';
+  for(let i=1;i<=10;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    const str=d.toLocaleDateString('tr-TR');
+    if(!selDate&&i===1)selDate=str;
+    dHtml+=`<div class="date-btn${selDate===str?' sel':''}" onclick="pickDate('${str}',this)">
+      <div class="text-[10px] text-gray-500">${DAYS[d.getDay()]}</div>
+      <div class="font-bold${selDate===str?' text-primary':''}">${d.getDate()}</div>
+      <div class="text-[10px] text-gray-500">${MONTHS[d.getMonth()]}</div>
+    </div>`;
+  }
+  document.getElementById('date-strip').innerHTML=dHtml;
+
+  // Time slots
+  const slots=t.saatler?.length?t.saatler:['09:00','10:00'];
+  if(!selTime)selTime=slots[0];
+  document.getElementById('time-strip').innerHTML=slots.map(s=>`<div class="time-btn${selTime===s?' sel':''}" onclick="pickTime('${s}',this)">${s}</div>`).join('');
+
+  updPrice();
+}
+
+function pickDate(str,el){selDate=str;document.querySelectorAll('.date-btn').forEach(b=>{b.classList.remove('sel');b.querySelector('.font-bold').classList.remove('text-primary');});el.classList.add('sel');el.querySelector('.font-bold').classList.add('text-primary');}
+function pickTime(t,el){selTime=t;document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');}
+function adjGuest(d){guestVal=Math.max(1,Math.min(selTour?.kapasite||10,guestVal+d));document.getElementById('guest-count-val').textContent=guestVal;updPrice();}
+function updPrice(){
+  const t=selTour;if(!t)return;
+  const fee=t.price,svc=Math.round(fee*.1),total=fee+svc;
+  const s=n=>n.toLocaleString('tr-TR')+' TL';
+  const b=id=>{const e=document.getElementById(id);if(e)e.textContent=id==='b-fee'?s(fee):id==='b-svc'?s(svc):s(total);};
+  ['b-fee','b-svc','b-total'].forEach(b);
+  const bEl=document.getElementById('b-fee');if(bEl)bEl.textContent=s(fee);
+  const sEl=document.getElementById('b-svc');if(sEl)sEl.textContent=s(svc);
+  const tEl=document.getElementById('b-total');if(tEl)tEl.textContent=s(total);
+}
+
+/* ── PAYMENT ── */
+function renderPayment(){
+  const t=selTour;if(!t)return;
+  const total=t.price+Math.round(t.price*.1);
+  document.getElementById('pay-tour-line').textContent=`${t.name} — ${selDate||''}`;
+  document.getElementById('pay-detail-line').textContent=`${guestVal} misafir • ${t.dur} • ${selTime||''}`;
+  document.getElementById('pay-total').textContent=total.toLocaleString('tr-TR')+' TL';
+  document.getElementById('pay-btn').innerHTML=`<i class="fas fa-lock mr-2"></i>${total.toLocaleString('tr-TR')} TL Ode`;
+}
+
+/* ── CONFIRM BOOKING ── */
+function doBooking(){
+  const t=selTour;
+  if(!t){showToast('Lutfen bir tur secin','danger');return;}
+  const total=t.price+Math.round(t.price*.1);
+  const profile=S.get('cu_profile',{name:'Misafir'});
+  const b={
+    id:'BK'+Date.now(),tourId:t.id,tourTitle:t.name,
+    captainEmail:t.captainEmail||null,captainName:t.captainName||'DenizBul',
+    customerName:profile.name||'Misafir',guests:guestVal,durum:'bekliyor',
+    amount:total,tarih:selDate||new Date().toLocaleDateString('tr-TR'),
+    saat:selTime||'—',note:document.getElementById('booking-note')?.value||'',
+    createdAt:new Date().toISOString()
+  };
+  const db=S.get('db_bookings',[]);db.unshift(b);S.set('db_bookings',db);
+  const my=S.get('cu_bookings',[]);my.unshift(b.id);S.set('cu_bookings',my);
+  addNotif('Rezervasyon alindi',`${t.name} icin talebiniz kaptana iletildi.`,'info');
+  renderConf(b);
+  navigateTo('confirmation');
+}
+
+function renderConf(b){
+  if(!b)return;
+  document.getElementById('conf-no').textContent='#'+b.id.toString().slice(-8).toUpperCase();
+  document.getElementById('conf-tour').textContent=b.tourTitle;
+  document.getElementById('conf-date').textContent=`${b.tarih}, ${b.saat}`;
+  document.getElementById('conf-guests').textContent=b.guests+' kisi';
+  document.getElementById('conf-captain').textContent=b.captainName||'—';
+  document.getElementById('conf-total').textContent=(b.amount||0).toLocaleString('tr-TR')+' TL';
+  const badge=document.getElementById('conf-badge');
+  if(badge){badge.className='badge '+(b.durum==='onaylandi'?'bg-green-100 text-success':b.durum==='iptal'||b.durum==='reddedildi'?'bg-red-100 text-danger':'bg-amber-100 text-amber-700');badge.textContent=b.durum==='onaylandi'?'Onaylandi':b.durum==='iptal'?'Iptal':b.durum==='reddedildi'?'Reddedildi':'Onay Bekleniyor';}
+}
+
+/* ── MY TOURS ── */
+function setTab(tab,el){curTab=tab;document.querySelectorAll('#page-my-tours .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderMyTours(tab);}
+
+function renderMyTours(tab){
+  const all=S.get('db_bookings',[]);
+  const now=Date.now();
+  const up=all.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi');
+  const past=all.filter(b=>b.durum==='tamamlandi');
+  const canc=all.filter(b=>b.durum==='iptal'||b.durum==='reddedildi');
+  document.getElementById('tab-up').textContent=`Yaklasan (${up.length})`;
+  document.getElementById('tab-past').textContent=`Gecmis (${past.length})`;
+  document.getElementById('tab-cancelled').textContent=`Iptal (${canc.length})`;
+  const list=tab==='up'?up:tab==='past'?past:canc;
+  const el=document.getElementById('my-tours-list');
+  if(!list.length){
+    el.innerHTML=`<div class="text-center py-12 text-sm text-gray-400"><i class="fas fa-calendar text-3xl mb-3 block text-gray-200"></i>${tab==='up'?'Yaklasan turunuz yok.':tab==='past'?'Gecmis turunuz yok.':'Iptal edilmis tur yok.'}</div>${tab==='up'?'<div class="text-center mt-2"><button onclick="navigateTo(\'search\')" class="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-medium">Tur Kesfet</button></div>':''}`;
+    return;
+  }
+  el.innerHTML=list.map(b=>{
+    const cat=tourMap[b.tourId]?.cat||'gezi';
+    const m=CM[cat]||CM.gezi;
+    const badge=b.durum==='onaylandi'?'<span class="badge bg-green-100 text-success">Onaylandi</span>':b.durum==='tamamlandi'?'<span class="badge bg-gray-100 text-gray-600">Bitti</span>':b.durum==='iptal'||b.durum==='reddedildi'?'<span class="badge bg-red-100 text-danger">Iptal</span>':'<span class="badge bg-amber-100 text-amber-700">Bekliyor</span>';
+    return`<div class="card p-4 card-hover" onclick="openConf('${b.id}')">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-12 h-12 bg-gradient-to-br ${m.grad} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas ${m.icon} text-white"></i></div>
+        <div class="flex-1"><div class="font-medium text-sm">${b.tourTitle||'Tur'}</div><div class="text-[11px] text-gray-500">${b.captainName||'—'}</div></div>
+        ${badge}
+      </div>
+      <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
+        <span><i class="fas fa-calendar mr-0.5"></i>${b.tarih||'—'}</span>
+        <span><i class="fas fa-clock mr-0.5"></i>${b.saat||'—'}</span>
+        <span><i class="fas fa-users mr-0.5"></i>${b.guests} kisi</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="font-bold text-primary">${(b.amount||0).toLocaleString('tr-TR')} TL</span>
+        <div class="flex gap-2">
+          <button class="bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-[11px] font-medium" onclick="event.stopPropagation();jumpToChat('${b.id}')"><i class="fas fa-comment mr-0.5"></i>Mesaj</button>
+          ${b.durum==='bekliyor'||b.durum==='onaylandi'?`<button class="border px-3 py-1.5 rounded-lg text-[11px] font-medium text-danger" onclick="event.stopPropagation();cancelB('${b.id}')">Iptal</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openConf(id){
+  const b=S.get('db_bookings',[]).find(x=>x.id===id);
+  if(b){renderConf(b);navigateTo('confirmation');}
+}
+
+function cancelB(id){
+  const db=S.get('db_bookings',[]);
+  const b=db.find(x=>x.id===id);
+  if(b){b.durum='iptal';S.set('db_bookings',db);addNotif('Rezervasyon iptal edildi',`${b.tourTitle} rezervasyonunuz iptal edildi.`,'danger');renderMyTours(curTab);showToast('Rezervasyon iptal edildi','danger');}
+}
+
+function jumpToChat(id){navigateTo('messages');setTimeout(()=>openChat(id),100);}
+
+/* ── FAVORITES ── */
+function toggleFav(id,btn){
+  rebuildTourMap();
+  const favs=S.get('cu_favs',[]);
+  const idx=favs.indexOf(id);
+  const add=idx<0;
+  if(add)favs.push(id);else favs.splice(idx,1);
+  S.set('cu_favs',favs);
+  btn.innerHTML=`<i class="${add?'fas text-danger':'far text-gray-500'} fa-heart text-xs"></i>`;
+  showToast(add?'Favorilere eklendi':'Favorilerden kaldirildi');
+}
+
+function renderFavorites(){
+  rebuildTourMap();
+  const favIds=S.get('cu_favs',[]);
+  const tours=allTours().filter(t=>favIds.includes(t.id));
+  const el=document.getElementById('favorites-list');
+  if(!tours.length){el.innerHTML='<div class="text-center py-12 text-sm text-gray-400"><i class="fas fa-heart text-3xl mb-3 block text-gray-200"></i>Henuz favori turunuz yok.<br>Tur kartlarindaki <i class="far fa-heart"></i> ile ekleyin.</div>';return;}
+  el.innerHTML=tours.map(t=>{
+    const m=CM[t.cat]||CM.gezi;
+    return`<div class="card overflow-hidden flex flex-row card-hover" onclick="go(${t.id},'detail')">
+      <div class="w-24 h-20 bg-gradient-to-br ${m.grad} flex-shrink-0 flex items-center justify-center"><i class="fas ${m.icon} text-white text-xl"></i></div>
+      <div class="p-3 flex-1">
+        <div class="font-semibold text-sm">${t.name}</div>
+        <div class="text-[10px] text-gray-500">${t.loc} &bull; ${t.dur}</div>
+        <div class="font-bold text-primary text-sm mt-1">${t.price.toLocaleString('tr-TR')} TL</div>
+      </div>
+      <button class="px-3 text-danger" onclick="event.stopPropagation();rmFav(${t.id})"><i class="fas fa-heart"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function rmFav(id){const favs=S.get('cu_favs',[]).filter(f=>f!==id);S.set('cu_favs',favs);renderFavorites();}
+
+/* ── CAPTAIN PROFILE ── */
+function renderCaptainProfile(){
+  const t=selTour;
+  const cname=t?.captainName||'DenizBul';
+  document.getElementById('cp-avatar').innerHTML=`<span class="font-bold text-primary text-2xl">${cname[0]}</span>`;
+  document.getElementById('cp-name').textContent=cname;
+  document.getElementById('cp-meta').textContent=t?`${t.loc} kalkisli • Aktif Kaptan`:'—';
+  document.getElementById('cp-rating').textContent=t?.rating||'4.8';
+  const capTours=t?.captainEmail?allTours().filter(x=>x.captainEmail===t.captainEmail):allTours().slice(0,3);
+  document.getElementById('cp-tour-count').textContent=capTours.length;
+  document.getElementById('captain-tours-list').innerHTML=capTours.slice(0,4).map(x=>{
+    const m=CM[x.cat]||CM.gezi;
+    return`<div class="card overflow-hidden flex flex-row card-hover" onclick="go(${x.id},'detail')">
+      <div class="w-20 h-20 bg-gradient-to-br ${m.grad} flex-shrink-0 flex items-center justify-center rounded-l-2xl"><i class="fas ${m.icon} text-white"></i></div>
+      <div class="p-3 flex-1">
+        <div class="font-semibold text-sm">${x.name}</div>
+        <div class="text-[10px] text-gray-500">${x.dur} &bull; Max ${x.kapasite}</div>
+        <div class="font-bold text-primary text-sm mt-1">${x.price.toLocaleString('tr-TR')} TL</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── MESSAGES ── */
+function renderMsgList(){
+  const bookings=S.get('db_bookings',[]);
+  const msgs=S.get('db_messages',{});
+  const el=document.getElementById('msg-list-body');
+  if(!bookings.length){el.innerHTML='<div class="text-center py-12 text-xs text-gray-400">Rezervasyon yapildiginda kaptan ile yazisabilirsin.</div>';return;}
+  let unread=0;
+  el.innerHTML=bookings.map(b=>{
+    const thread=msgs[b.id]||[];
+    const last=thread[thread.length-1];
+    const ur=thread.filter(m=>m.byCaptan&&!m.readByCustomer).length;
+    unread+=ur;
+    const cname=b.captainName||'Kaptan';
+    const ini=cname.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return`<div class="px-4 py-3 flex items-center gap-3 card-hover" onclick="openChat('${b.id}')">
+      <div class="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0"><span class="font-bold text-primary text-sm">${ini}</span></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex justify-between"><span class="font-medium text-sm">${cname}</span>${last?`<span class="text-[10px] text-gray-400">${new Date(last.ts).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span>`:''}</div>
+        <div class="text-xs text-gray-500 truncate">${last?last.text:'Mesaj yok — yaz!'}</div>
+        <span class="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">${b.tourTitle||'Tur'} — ${b.tarih||''}</span>
+      </div>
+      ${ur?`<span class="w-5 h-5 bg-primary text-white text-[9px] rounded-full flex items-center justify-center">${ur}</span>`:''}
+    </div>`;
+  }).join('');
+  const badge=document.getElementById('msg-unread');
+  if(badge)badge.textContent=unread?`${unread} okunmamis`:'';
+}
+
+function openChat(bookingId){
+  const b=S.get('db_bookings',[]).find(x=>x.id===bookingId);
+  if(!b)return;
+  curChatId=bookingId;
+  const cname=b.captainName||'Kaptan';
+  document.getElementById('chat-avatar').textContent=cname.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('chat-name').textContent=cname;
+  document.getElementById('chat-sub').textContent=`${b.tourTitle||'Tur'} — ${b.tarih||''}`;
+  document.getElementById('msg-list-view').style.display='none';
+  document.getElementById('msg-chat-view').style.display='flex';
+  renderChat(bookingId);
+}
+
+function renderChat(id){
+  const msgs=S.get('db_messages',{});
+  const thread=msgs[id]||[];
+  let changed=false;
+  thread.forEach(m=>{if(m.byCaptan&&!m.readByCustomer){m.readByCustomer=true;changed=true;}});
+  if(changed)S.set('db_messages',msgs);
+  const el=document.getElementById('chat-body');
+  if(!thread.length){el.innerHTML='<div class="text-center text-xs text-gray-400 py-8">Henuz mesaj yok. Ilk mesaji siz gonderin!</div>';return;}
+  el.innerHTML=thread.map(m=>`<div class="flex ${m.byCaptan?'justify-start':'justify-end'}"><div class="msg-bubble ${m.byCaptan?'msg-in':'msg-out'}">${m.text}</div></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+function sendMsg(){
+  const inp=document.getElementById('chat-input');
+  const text=inp.value.trim();
+  if(!text||!curChatId)return;
+  // Write to db_messages (shared with captain)
+  const msgs=S.get('db_messages',{});
+  if(!msgs[curChatId])msgs[curChatId]=[];
+  msgs[curChatId].push({text,byCaptan:false,ts:Date.now(),readByCustomer:true});
+  S.set('db_messages',msgs);
+  // Mirror to cp_messages so captain panel picks it up
+  const cp=S.get('cp_messages',{});
+  if(!cp[curChatId])cp[curChatId]=[];
+  cp[curChatId].push({text,byCaptan:false,ts:Date.now()});
+  S.set('cp_messages',cp);
+  inp.value='';
+  renderChat(curChatId);
+}
+
+function closeChat(){
+  curChatId=null;
+  document.getElementById('msg-list-view').style.display='';
+  document.getElementById('msg-chat-view').style.display='none';
+  renderMsgList();
+}
+
+/* ── NOTIFICATIONS ── */
+function addNotif(title,body,type='info'){
+  const n=S.get('cu_notifs',[]);
+  n.unshift({id:Date.now(),title,body,type,read:false,ts:new Date().toISOString()});
+  S.set('cu_notifs',n.slice(0,50));
+  updateNotifDot();
+}
+
+function updateNotifDot(){
+  const unread=S.get('cu_notifs',[]).filter(n=>!n.read).length;
+  const dot=document.getElementById('notif-dot');
+  if(dot)dot.style.display=unread?'block':'none';
+}
+
+function renderNotifs(){
+  const notifs=S.get('cu_notifs',[]);
+  const el=document.getElementById('notif-list');
+  if(!notifs.length){el.innerHTML='<div class="text-center py-12 text-xs text-gray-400"><i class="fas fa-bell text-3xl mb-3 block text-gray-200"></i>Henuz bildirim yok</div>';return;}
+  const ts={info:{b:'border-primary',bg:'bg-blue-100',i:'fa-info-circle text-primary'},success:{b:'border-success',bg:'bg-green-100',i:'fa-check-circle text-success'},danger:{b:'border-danger',bg:'bg-red-100',i:'fa-times-circle text-danger'}};
+  el.innerHTML=notifs.map(n=>{
+    const s=ts[n.type]||ts.info;
+    const diff=Math.floor((Date.now()-new Date(n.ts))/1000);
+    const ago=diff<60?'simdi':diff<3600?Math.floor(diff/60)+' dk once':diff<86400?Math.floor(diff/3600)+' saat once':Math.floor(diff/86400)+' gun once';
+    return`<div class="card p-3 flex items-start gap-3 border-l-4 ${s.b} ${n.read?'opacity-60':''}">
+      <div class="w-9 h-9 ${s.bg} rounded-full flex items-center justify-center flex-shrink-0"><i class="fas ${s.i} text-sm"></i></div>
+      <div class="flex-1"><div class="text-sm font-medium">${n.title}</div><div class="text-xs text-gray-500 mt-0.5">${n.body}</div><div class="text-[10px] text-gray-400 mt-1">${ago}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function markAllRead(){
+  const n=S.get('cu_notifs',[]);n.forEach(x=>x.read=true);S.set('cu_notifs',n);updateNotifDot();renderNotifs();
+}
+
+/* ── PROFILE ── */
+function renderProfile(){
+  const p=S.get('cu_profile',{});
+  const name=p.name||'Misafir';
+  document.getElementById('prof-avatar').textContent=name[0].toUpperCase();
+  document.getElementById('prof-name').textContent=name;
+  document.getElementById('prof-email').textContent=p.email||p.phone||'Profil doldurun';
+  document.getElementById('home-avatar').textContent=name[0].toUpperCase();
+  const bookings=S.get('db_bookings',[]);
+  const total=bookings.reduce((s,b)=>s+(b.amount||0),0);
+  const favCount=S.get('cu_favs',[]).length;
+  document.getElementById('prof-tours').textContent=bookings.length;
+  document.getElementById('prof-spend').textContent=total.toLocaleString('tr-TR');
+  document.getElementById('prof-favs').textContent=favCount;
+}
+
+function saveProfile(){
+  S.set('cu_profile',{name:document.getElementById('edit-name').value.trim()||'Misafir',email:document.getElementById('edit-email').value.trim(),phone:document.getElementById('edit-phone').value.trim()});
+  closeSheet();renderProfile();showToast('Profil guncellendi');
+}
+
+/* ── SHEETS ── */
+function openSheet(id){
+  if(id==='edit-sheet'){const p=S.get('cu_profile',{});document.getElementById('edit-name').value=p.name||'';document.getElementById('edit-email').value=p.email||'';document.getElementById('edit-phone').value=p.phone||'';}
+  document.getElementById(id).style.display='block';
+  document.getElementById('sheet-overlay').style.display='block';
+}
+function closeSheet(){document.querySelectorAll('.bottom-sheet').forEach(s=>s.style.display='none');document.getElementById('sheet-overlay').style.display='none';}
+function resetFilters(){document.getElementById('flt-min').value='';document.getElementById('flt-max').value='';}
+
+/* ── TOAST ── */
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.style.background=type==='danger'?'#ef4444':'#10b981';
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.remove('-translate-y-20','opacity-0');
+  setTimeout(()=>t.classList.add('-translate-y-20','opacity-0'),3000);
+}
+
+/* ── BOOKING STATUS POLL ── */
+function pollBookingStatus(){
+  const my=S.get('cu_bookings',[]);
+  const db=S.get('db_bookings',[]);
+  const seen=S.get('cu_seen_status',{});
+  my.forEach(id=>{
+    const b=db.find(x=>x.id===id);
+    if(!b)return;
+    const key=id+'_'+b.durum;
+    if(!seen[key]&&b.durum!=='bekliyor'){
+      seen[key]=true;
+      if(b.durum==='onaylandi')addNotif('Rezervasyon onaylandi!',`${b.tourTitle} rezervasyonunuz kaptan tarafindan onaylandi.`,'success');
+      else if(b.durum==='reddedildi'||b.durum==='iptal')addNotif('Rezervasyon reddedildi',`${b.tourTitle} talebi kabul edilmedi.`,'danger');
+      else if(b.durum==='tamamlandi')addNotif('Tur tamamlandi',`${b.tourTitle} turunu tamamladiniz. Yorum yazmak ister misiniz?`,'success');
+    }
+  });
+  S.set('cu_seen_status',seen);
+  setTimeout(pollBookingStatus,5000);
+}
+
+/* ── CLEAR DATA ── */
+function clearAll(){
+  if(!confirm('Tum test verisini silmek istiyor musunuz?'))return;
+  ['db_bookings','db_tours','db_messages','cu_bookings','cu_favs','cu_notifs','cu_profile','cu_seen_status'].forEach(k=>localStorage.removeItem(k));
+  location.reload();
+}
+</script>
+</body>
+</html>
