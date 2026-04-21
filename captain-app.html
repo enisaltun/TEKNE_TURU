@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>DenizBul Kaptan — App</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',primaryDark:'#075985',primaryLight:'#e0f2fe',accent:'#f59e0b',accentDark:'#d97706',surface:'#f8fafc',danger:'#ef4444',success:'#10b981',dark:'#0f172a'}}}}</script>
 <style>
@@ -1128,29 +1129,65 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
   </div>
 </section>
 
-<!-- ===== QR SCANNER OVERLAY ===== -->
-<div id="qr-overlay" class="sheet-overlay"></div>
-<div id="qr-sheet" class="bottom-sheet">
-  <div class="swipe-indicator"></div>
-  <div class="py-4">
-    <h3 class="font-bold text-center mb-4">QR Kod Okut</h3>
-    <div class="w-64 h-64 mx-auto bg-gray-900 rounded-3xl flex items-center justify-center mb-4 relative overflow-hidden">
-      <div class="absolute inset-4 border-2 border-white/30 rounded-2xl"></div>
-      <div class="absolute top-4 left-4 w-8 h-8 border-t-3 border-l-3 border-white rounded-tl-lg"></div>
-      <div class="absolute top-4 right-4 w-8 h-8 border-t-3 border-r-3 border-white rounded-tr-lg"></div>
-      <div class="absolute bottom-4 left-4 w-8 h-8 border-b-3 border-l-3 border-white rounded-bl-lg"></div>
-      <div class="absolute bottom-4 right-4 w-8 h-8 border-b-3 border-r-3 border-white rounded-br-lg"></div>
-      <div class="w-48 h-0.5 bg-primary shadow-lg shadow-primary/50" style="animation:scanLine 2s ease-in-out infinite"></div>
-      <i class="fas fa-camera text-white/20 text-4xl absolute"></i>
+<!-- ===== QR SCANNER FULLSCREEN ===== -->
+<div id="qr-screen" style="display:none;position:fixed;inset:0;z-index:70;background:#000;flex-direction:column">
+  <!-- header -->
+  <div style="padding:16px 16px 8px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.6);position:relative;z-index:2">
+    <button onclick="closeQRScanner()" style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;border:none;cursor:pointer"><i class="fas fa-times"></i></button>
+    <span style="color:#fff;font-weight:700;font-size:15px">Binis QR Tarama</span>
+    <div style="width:36px"></div>
+  </div>
+  <!-- camera viewport -->
+  <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
+    <div id="qr-reader" style="width:100%;max-width:430px"></div>
+    <!-- corner guides overlaid on camera -->
+    <div style="position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center">
+      <div style="position:relative;width:220px;height:220px">
+        <div style="position:absolute;top:0;left:0;width:36px;height:36px;border-top:3px solid #0ea5e9;border-left:3px solid #0ea5e9;border-radius:4px 0 0 0"></div>
+        <div style="position:absolute;top:0;right:0;width:36px;height:36px;border-top:3px solid #0ea5e9;border-right:3px solid #0ea5e9;border-radius:0 4px 0 0"></div>
+        <div style="position:absolute;bottom:0;left:0;width:36px;height:36px;border-bottom:3px solid #0ea5e9;border-left:3px solid #0ea5e9;border-radius:0 0 0 4px"></div>
+        <div style="position:absolute;bottom:0;right:0;width:36px;height:36px;border-bottom:3px solid #0ea5e9;border-right:3px solid #0ea5e9;border-radius:0 0 4px 0"></div>
+        <div id="qr-scan-line" style="position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#0ea5e9,transparent);top:50%;animation:scanLine 2s ease-in-out infinite"></div>
+      </div>
     </div>
-    <p class="text-xs text-gray-500 text-center mb-4">Musterinin telefonundaki QR kodu kameraya gosterin</p>
-    <button onclick="simulateQRScan()" class="w-full bg-primary text-white py-3.5 rounded-2xl font-bold text-sm mb-2"><i class="fas fa-qrcode mr-2"></i>Simule Et (Demo)</button>
-    <button onclick="closeQRScanner()" class="w-full border-2 py-3 rounded-2xl text-sm font-medium">Kapat</button>
+  </div>
+  <!-- hint -->
+  <div style="padding:16px;text-align:center;background:rgba(0,0,0,.6)">
+    <p style="color:rgba(255,255,255,.7);font-size:12px;margin-bottom:12px">Musterinin telefonundaki barkodu cerceve icine getirin</p>
+    <!-- manual fallback -->
+    <div style="display:flex;gap:8px;max-width:380px;margin:0 auto">
+      <input id="qr-manual-input" type="text" placeholder="Rezervasyon No elle gir (BK...)" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 14px;color:#fff;font-size:13px;outline:none" onkeydown="if(event.key==='Enter')manualQRLookup()">
+      <button onclick="manualQRLookup()" style="background:#0369a1;color:#fff;border:none;border-radius:12px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer">Ara</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BINIS ONAY MODAL ===== -->
+<div id="binis-modal" style="display:none;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:28px 28px 0 0;padding:28px 20px 40px;width:100%;max-width:430px;animation:slideUp .25s ease-out">
+    <div style="text-align:center;margin-bottom:20px">
+      <div id="binis-icon" style="width:64px;height:64px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px">✅</div>
+      <div style="font-weight:800;font-size:18px;color:#0f172a" id="binis-headline">QR Kod Okundu</div>
+      <div style="font-size:13px;color:#64748b;margin-top:4px" id="binis-subline">Yolcu bilgilerini kontrol edin</div>
+    </div>
+    <div style="background:#f8fafc;border-radius:16px;padding:16px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px"><span style="color:#64748b">Rezervasyon No</span><span style="font-weight:700;color:#0369a1" id="binis-rezno">—</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px"><span style="color:#64748b">Yolcu</span><span style="font-weight:600" id="binis-musteri">—</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px"><span style="color:#64748b">Tur</span><span style="font-weight:600;text-align:right;max-width:180px" id="binis-tur">—</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px"><span style="color:#64748b">Tarih & Saat</span><span style="font-weight:600" id="binis-tarih">—</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#64748b">Kisi Sayisi</span><span style="font-weight:600" id="binis-kisi">—</span></div>
+    </div>
+    <div id="binis-durum-bilgi" style="background:#fef3c7;border-radius:12px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:16px;display:none"></div>
+    <div style="display:flex;gap:10px" id="binis-btn-row">
+      <button onclick="closeBinisModal()" style="flex:1;border:2px solid #e2e8f0;background:#fff;border-radius:16px;padding:14px;font-size:14px;font-weight:600;cursor:pointer">Iptal</button>
+      <button id="binis-onayla-btn" onclick="onayBinis()" style="flex:2;background:#10b981;color:#fff;border:none;border-radius:16px;padding:14px;font-size:14px;font-weight:700;cursor:pointer"><i class="fas fa-check mr-1"></i>Binisi Onayla</button>
+    </div>
   </div>
 </div>
 
 <style>
 @keyframes scanLine{0%{transform:translateY(-80px)}50%{transform:translateY(80px)}100%{transform:translateY(-80px)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 </style>
 
 <!-- ===== TOAST ===== -->
@@ -1646,17 +1683,81 @@ function setEarningPeriod(btn,period){
 }
 
 /* ── QR SCANNER ── */
+let html5QrCode=null;
+let _binisBookingId=null;
+
 function openQRScanner(){
-  document.getElementById('qr-overlay').style.display='block';
-  document.getElementById('qr-sheet').style.display='block';
-  document.getElementById('qr-sheet').classList.add('slide-up');
+  const screen=document.getElementById('qr-screen');
+  screen.style.display='flex';
+  document.getElementById('qr-manual-input').value='';
+  setTimeout(()=>{
+    try{
+      html5QrCode=new Html5Qrcode('qr-reader');
+      html5QrCode.start(
+        {facingMode:'environment'},
+        {fps:10,qrbox:{width:220,height:220},aspectRatio:1.0},
+        (decodedText)=>{processScannedQR(decodedText);},
+        ()=>{}
+      ).catch(()=>{/* camera not available — manual input still works */});
+    }catch(e){}
+  },300);
 }
 function closeQRScanner(){
-  document.getElementById('qr-overlay').style.display='none';
-  document.getElementById('qr-sheet').style.display='none';
+  document.getElementById('qr-screen').style.display='none';
+  if(html5QrCode){try{html5QrCode.stop().then(()=>{html5QrCode.clear();html5QrCode=null;});}catch(e){html5QrCode=null;}}
 }
-function simulateQRScan(){closeQRScanner();showToast('QR kod okundu! Rezervasyon dogrulandi.');}
-document.getElementById('qr-overlay').onclick=closeQRScanner;
+function manualQRLookup(){
+  const val=document.getElementById('qr-manual-input').value.trim();
+  if(!val)return;
+  processScannedQR(val);
+}
+function processScannedQR(raw){
+  closeQRScanner();
+  const bookingId=raw.startsWith('DENIZBUL:')?raw.slice(9):raw;
+  const bookings=S.get('db_bookings',[]);
+  const b=bookings.find(x=>x.id===bookingId||x.id===raw);
+  if(!b){
+    document.getElementById('binis-icon').textContent='❌';
+    document.getElementById('binis-headline').textContent='Rezervasyon Bulunamadi';
+    document.getElementById('binis-subline').textContent='Bu QR kod sistemde kayitli degil';
+    document.getElementById('binis-rezno').textContent=bookingId||'—';
+    document.getElementById('binis-musteri').textContent='—';
+    document.getElementById('binis-tur').textContent='—';
+    document.getElementById('binis-tarih').textContent='—';
+    document.getElementById('binis-kisi').textContent='—';
+    document.getElementById('binis-durum-bilgi').style.display='none';
+    document.getElementById('binis-onayla-btn').style.display='none';
+    document.getElementById('binis-modal').style.display='flex';
+    return;
+  }
+  _binisBookingId=b.id;
+  const alreadyBoarded=b.binisYapildi===true;
+  const isIptal=b.durum==='iptal'||b.durum==='reddedildi';
+  document.getElementById('binis-icon').textContent=alreadyBoarded?'🔁':isIptal?'🚫':'✅';
+  document.getElementById('binis-headline').textContent=alreadyBoarded?'Zaten Binis Yapildi':isIptal?'Rezervasyon Gecersiz':'QR Kod Dogrulandi';
+  document.getElementById('binis-subline').textContent=alreadyBoarded?'Bu yolcu daha once binis yapti':isIptal?'Bu rezervasyon iptal edilmis':'Yolcu bilgilerini kontrol edin';
+  document.getElementById('binis-rezno').textContent='#'+b.id.slice(-8).toUpperCase();
+  document.getElementById('binis-musteri').textContent=b.customerName||'Misafir';
+  document.getElementById('binis-tur').textContent=b.tourTitle||'—';
+  document.getElementById('binis-tarih').textContent=(b.tarih||'—')+(b.saat?' '+b.saat:'');
+  document.getElementById('binis-kisi').textContent=(b.guests||1)+' kisi';
+  const durumBilgi=document.getElementById('binis-durum-bilgi');
+  const onaylaBtn=document.getElementById('binis-onayla-btn');
+  if(alreadyBoarded){durumBilgi.textContent='⚠️ Bu yolcu daha once binis yapmis. Tekrar izin vermek icin onaylayin.';durumBilgi.style.display='';onaylaBtn.style.display='';}
+  else if(isIptal){durumBilgi.textContent='🚫 Bu rezervasyon iptal veya reddedilmis. Binise izin verilmemeli.';durumBilgi.style.display='';onaylaBtn.style.display='none';}
+  else{durumBilgi.style.display='none';onaylaBtn.style.display='';}
+  document.getElementById('binis-modal').style.display='flex';
+}
+function closeBinisModal(){document.getElementById('binis-modal').style.display='none';_binisBookingId=null;}
+function onayBinis(){
+  if(!_binisBookingId)return;
+  const bookings=S.get('db_bookings',[]);
+  const b=bookings.find(x=>x.id===_binisBookingId);
+  if(b){b.binisYapildi=true;b.binisZamani=new Date().toISOString();if(b.durum==='onaylandi')b.durum='tamamlandi';S.set('db_bookings',bookings);}
+  closeBinisModal();
+  showToast('Binis onaylandi! Iyi turlar.','success');
+  renderBookings();renderDashboard();
+}
 
 /* ── TOAST ── */
 function showToast(msg){
