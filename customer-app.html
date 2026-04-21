@@ -663,7 +663,7 @@ function doLogin(){
   if(!user){showAuthErr('login','E-posta veya sifre yanlis.');passEl.value='';passEl.focus();return;}
   localStorage.setItem('cu_session','active');
   S.set('cu_profile',{name:user.name,email:user.email,phone:user.phone||''});
-  window.location.hash='#home';
+  enterApp();
 }
 
 function doRegister(){
@@ -685,26 +685,45 @@ function doRegister(){
   S.set('cu_users',users);
   localStorage.setItem('cu_session','active');
   S.set('cu_profile',{name:name,email:email,phone:phone});
+  enterApp();
+}
+
+function enterApp(){
+  document.getElementById('page-auth').classList.remove('active');
+  document.getElementById('bottom-nav').style.display='flex';
   window.location.hash='#home';
+  ALL_PAGES.forEach(function(p){
+    const el=document.getElementById('page-'+p);
+    if(el)el.classList.toggle('active',p==='home');
+  });
+  rebuildTourMap();
+  renderHome();
 }
 
 function doLogout(){
   if(!confirm('Cikis yapmak istediginizden emin misiniz?'))return;
   localStorage.removeItem('cu_session');
+  ALL_PAGES.forEach(function(p){
+    const el=document.getElementById('page-'+p);
+    if(el)el.classList.remove('active');
+  });
+  document.getElementById('bottom-nav').style.display='none';
+  document.getElementById('page-auth').classList.add('active');
   window.location.hash='#auth';
+  switchAuthTab('login');
 }
 
 /* ── ROUTER ── */
 function navigateTo(p){window.location.hash='#'+p;}
 function handleRoute(){
-  const raw=window.location.hash.replace('#','')||'';
-  const h=raw||'home';
-  if(h!=='auth'&&!isLoggedIn()){
-    window.location.hash='#auth';
-    return;
-  }
-  if(h==='auth'&&isLoggedIn()){
-    window.location.hash='#home';
+  const h=window.location.hash.replace('#','')||'home';
+  if(h==='auth'){return;}
+  if(!isLoggedIn()){
+    document.getElementById('page-auth').classList.add('active');
+    document.getElementById('bottom-nav').style.display='none';
+    ALL_PAGES.filter(function(p){return p!=='auth';}).forEach(function(p){
+      const el=document.getElementById('page-'+p);if(el)el.classList.remove('active');
+    });
     return;
   }
   ALL_PAGES.forEach(function(p){
