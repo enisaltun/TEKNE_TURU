@@ -839,7 +839,9 @@ function renderDashboard(){
   const monthlyRev=monthlyB.reduce((s,b)=>s+(b.amount||0),0);
 
   const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
-  setEl('dash-stat-tours',tours.length);
+  const aktifTours=tours.filter(t=>t.durum==='aktif'||t.aktif===true);
+  const pendingTours=tours.filter(t=>t.durum==='bekliyor');
+  setEl('dash-stat-tours',aktifTours.length+(pendingTours.length?` (+${pendingTours.length} bekliyor)`:''));
   setEl('dash-stat-bookings',monthlyB.length);
   setEl('dash-stat-revenue',monthlyRev.toLocaleString('tr-TR')+' TL');
   setEl('dash-stat-captains',caps.length);
@@ -866,11 +868,12 @@ function renderDashboard(){
 function renderToursBookings(){
   const tours=lsGet('db_tours',[]);
   const bookings=lsGet('db_bookings',[]);
+  const pending=tours.filter(t=>t.durum==='bekliyor');
 
   const tabTours=document.getElementById('tab-btn-tours');
   const tabBookings=document.getElementById('tab-btn-bookings');
   const tabHar=document.getElementById('tab-btn-hareketler');
-  if(tabTours)tabTours.textContent=`Turlar (${tours.length})`;
+  if(tabTours)tabTours.textContent=pending.length?`Turlar (${tours.length}) ⚠ ${pending.length} onay bekliyor`:`Turlar (${tours.length})`;
   if(tabBookings)tabBookings.textContent=`Rezervasyonlar (${bookings.length})`;
   if(tabHar)tabHar.textContent=`Hareketler (${bookings.length})`;
 
@@ -878,16 +881,27 @@ function renderToursBookings(){
   if(toursTbody){
     if(!tours.length){toursTbody.innerHTML='<tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Henuz kayitli tur yok</td></tr>';}
     else{
-      toursTbody.innerHTML=tours.map(t=>`<tr>
-        <td><div class="font-medium">${t.title||t.name||'—'}</div><div class="text-[10px] text-gray-400">${t.kalkis||'—'} &bull; ${t.sure||'—'}</div></td>
-        <td><div class="text-xs">${t.captainName||'—'}</div></td>
-        <td><span class="badge bg-blue-100 text-blue-700">${t.kategoriler?.[0]||'—'}</span></td>
-        <td>${(t.price||0).toLocaleString('tr-TR')} TL</td>
-        <td>${bookings.filter(b=>b.tourId===t.id).length}</td>
-        <td>—</td>
-        <td><span class="badge bg-green-100 text-green-700">Aktif</span></td>
-        <td><button onclick="adminDeleteTour(${t.id})" class="text-danger text-xs hover:underline">Sil</button></td>
-      </tr>`).join('');
+      toursTbody.innerHTML=tours.map(t=>{
+        const d=t.durum||(t.aktif===true?'aktif':'bekliyor');
+        const durumBadge=d==='aktif'
+          ?'<span class="badge bg-green-100 text-green-700">Aktif</span>'
+          :d==='pasif'
+          ?'<span class="badge bg-gray-100 text-gray-500">Pasif</span>'
+          :'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-clock mr-0.5"></i>Onay Bekliyor</span>';
+        const actions=d==='bekliyor'
+          ?`<button onclick="quickApproveTour(${t.id})" class="bg-success text-white px-2 py-1 rounded text-xs mr-1 font-medium">Onayla</button><button onclick="quickRejectTour(${t.id})" class="bg-red-100 text-danger px-2 py-1 rounded text-xs mr-1">Reddet</button><button onclick="adminDeleteTour(${t.id})" class="text-danger text-xs hover:underline">Sil</button>`
+          :`<button onclick="quickRejectTour(${t.id})" class="text-gray-400 text-xs hover:text-danger mr-2">${d==='aktif'?'Pasife Al':'Aktif Et'}</button><button onclick="adminDeleteTour(${t.id})" class="text-danger text-xs hover:underline">Sil</button>`;
+        return`<tr class="${d==='bekliyor'?'bg-amber-50':''}">
+          <td><div class="font-medium">${t.title||t.ad||'—'}</div><div class="text-[10px] text-gray-400">${t.kalkis||t.konum||'—'} &bull; ${t.sure||'—'}</div></td>
+          <td><div class="text-xs">${t.captainName||'—'}</div></td>
+          <td><span class="badge bg-blue-100 text-blue-700">${t.kategoriler?.[0]||t.kategori||'—'}</span></td>
+          <td>${(t.price||t.fiyat||0).toLocaleString('tr-TR')} TL</td>
+          <td>${bookings.filter(b=>b.tourId===t.id).length}</td>
+          <td>—</td>
+          <td>${durumBadge}</td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join('');
     }
   }
 
@@ -913,6 +927,22 @@ function renderToursBookings(){
       }).join('');
     }
   }
+}
+
+function quickApproveTour(id){
+  const tours=lsGet('db_tours',[]);
+  const t=tours.find(x=>x.id===id);
+  if(t){t.durum='aktif';localStorage.setItem('db_tours',JSON.stringify(tours));renderToursBookings();renderDashboard();showToast((t.title||t.ad||'Tur')+' onaylandi ve rezervasyona acildi','success');}
+}
+function quickRejectTour(id){
+  const tours=lsGet('db_tours',[]);
+  const t=tours.find(x=>x.id===id);
+  if(!t)return;
+  const newDurum=t.durum==='aktif'?'pasif':'aktif';
+  t.durum=newDurum;
+  localStorage.setItem('db_tours',JSON.stringify(tours));
+  renderToursBookings();
+  showToast((t.title||t.ad||'Tur')+' '+(newDurum==='pasif'?'pasife alindi':'aktif edildi'),'info');
 }
 
 function adminDeleteTour(id){

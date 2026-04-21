@@ -572,10 +572,12 @@ const SAMPLE=[
 ];
 
 function getDbTours(){
-  return S.get('db_tours',[]).map(t=>{
-    const cat=DB_CAT[t.kategoriler?.[0]||'Tekne Gezisi']||'gezi';
-    return{id:t.id,name:t.title,loc:t.kalkis||'Turkiye',price:t.price||0,rating:4.8,reviews:0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,_db:true};
-  });
+  return S.get('db_tours',[])
+    .filter(t=>t.durum==='aktif'||t.aktif===true)
+    .map(t=>{
+      const cat=DB_CAT[t.kategoriler?.[0]||'Tekne Gezisi']||'gezi';
+      return{id:t.id,name:t.title,loc:t.kalkis||'Turkiye',price:t.price||0,rating:4.8,reviews:0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,_db:true};
+    });
 }
 
 function allTours(){return[...getDbTours(),...SAMPLE];}
