@@ -1520,8 +1520,17 @@ function renderBookings(){
 }
 
 function captainAccept(id){
-  const db=S.get('db_bookings',[]);const b=db.find(x=>x.id===id);
-  if(b){b.durum='onaylandi';S.set('db_bookings',db);}
+  const db=S.get('db_bookings',[]);
+  const b=db.find(x=>x.id===id);
+  if(!b)return;
+  const tour=S.get('db_tours',[]).find(t=>t.id===b.tourId);
+  const kapasite=tour?.kapasite||999;
+  const mevcutKisi=db.filter(x=>x.id!==id&&x.tourId===b.tourId&&x.durum!=='iptal'&&x.durum!=='reddedildi').reduce((s,x)=>s+(x.guests||1),0);
+  if(mevcutKisi+(b.guests||1)>kapasite){
+    showToast(`Kapasite asiliyor! Teknede ${kapasite-mevcutKisi} yer kaldi, bu rezervasyon ${b.guests||1} kisi.`,'danger');
+    return;
+  }
+  b.durum='onaylandi';S.set('db_bookings',db);
   renderBookings();renderDashboard();showToast('Rezervasyon kabul edildi! Musteri bilgilendirildi.');
 }
 function captainReject(id){

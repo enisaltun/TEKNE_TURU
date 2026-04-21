@@ -1886,11 +1886,23 @@ function closeResDetail(){
   activeResId=null;
 }
 
+function checkCapacity(bookingId,all){
+  const b=all.find(x=>x.id===bookingId);if(!b)return true;
+  const tour=lsGet('db_tours',[]).find(t=>t.id===b.tourId);
+  const kapasite=tour?.kapasite||999;
+  const mevcutKisi=all.filter(x=>x.id!==bookingId&&x.tourId===b.tourId&&x.durum!=='iptal'&&x.durum!=='reddedildi').reduce((s,x)=>s+(x.guests||1),0);
+  if(mevcutKisi+(b.guests||1)>kapasite){
+    showToast(`Kapasite asiliyor! Teknede ${kapasite-mevcutKisi} yer kaldi, bu rezervasyon ${b.guests||1} kisi.`,'danger');
+    return false;
+  }
+  return true;
+}
 function setResDurum(durum){
   if(!activeResId)return;
   const all=lsGet('db_bookings',[]);
   const b=all.find(x=>x.id===activeResId);
   if(!b)return;
+  if(durum==='onaylandi'&&!checkCapacity(activeResId,all))return;
   b.durum=durum;
   localStorage.setItem('db_bookings',JSON.stringify(all));
   openResDetail(activeResId);
@@ -1914,6 +1926,7 @@ function quickResApprove(id){
   const all=lsGet('db_bookings',[]);
   const b=all.find(x=>x.id===id);
   if(!b)return;
+  if(!checkCapacity(id,all))return;
   b.durum='onaylandi';
   localStorage.setItem('db_bookings',JSON.stringify(all));
   renderReservations();

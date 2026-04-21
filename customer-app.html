@@ -1065,9 +1065,12 @@ function renderBooking(){
   iconEl.className=`w-14 h-14 bg-gradient-to-br ${m.grad} rounded-xl flex items-center justify-center flex-shrink-0`;
   iconEl.innerHTML=`<i class="fas ${m.icon} text-white/80 text-xl"></i>`;
   document.getElementById('booking-tour-name').textContent=t.name;
+  const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
+  const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);
   document.getElementById('booking-tour-meta').textContent=`${t.loc} • ${t.dur} • Max ${t.kapasite} kisi`;
-  document.getElementById('booking-cap-note').textContent=`En fazla ${t.kapasite} kisi`;
-  guestVal=Math.min(guestVal,t.kapasite);
+  document.getElementById('booking-cap-note').textContent=kalanKisi===0?'Bu tur dolu!':`${kalanKisi} yer kaldi (toplam ${t.kapasite} kisi)`;
+  document.getElementById('booking-cap-note').className=kalanKisi===0?'text-xs text-danger font-semibold':'text-xs text-gray-400';
+  guestVal=Math.min(guestVal,kalanKisi||1);
   document.getElementById('guest-count-val').textContent=guestVal;
 
   // Date strip — next 10 days
@@ -1097,7 +1100,14 @@ function renderBooking(){
 
 function pickDate(str,el){selDate=str;document.querySelectorAll('.date-btn').forEach(b=>{b.classList.remove('sel');b.querySelector('.font-bold').classList.remove('text-primary');});el.classList.add('sel');el.querySelector('.font-bold').classList.add('text-primary');}
 function pickTime(t,el){selTime=t;document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');}
-function adjGuest(d){guestVal=Math.max(1,Math.min(selTour?.kapasite||10,guestVal+d));document.getElementById('guest-count-val').textContent=guestVal;updPrice();}
+function adjGuest(d){
+  const t=selTour;if(!t)return;
+  const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
+  const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);
+  guestVal=Math.max(1,Math.min(kalanKisi,guestVal+d));
+  document.getElementById('guest-count-val').textContent=guestVal;
+  updPrice();
+}
 function updPrice(){
   const t=selTour;if(!t)return;
   const fee=t.price,svc=Math.round(fee*.1),total=fee+svc;
@@ -1123,6 +1133,10 @@ function renderPayment(){
 function doBooking(){
   const t=selTour;
   if(!t){showToast('Lutfen bir tur secin','danger');return;}
+  const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
+  const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);
+  if(kalanKisi<=0){showToast('Bu tur dolu, rezervasyon yapilamiyor.','danger');return;}
+  if(guestVal>kalanKisi){showToast(`Sadece ${kalanKisi} yer kaldi. Kisi sayisini azaltin.`,'danger');return;}
   const total=t.price+Math.round(t.price*.1);
   const profile=S.get('cu_profile',{name:'Misafir'});
   const b={
