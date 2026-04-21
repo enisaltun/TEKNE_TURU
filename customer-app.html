@@ -57,6 +57,68 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
   <div class="flex items-center gap-1.5 text-gray-400"><i class="fas fa-signal text-[10px]"></i><i class="fas fa-wifi text-[10px]"></i><i class="fas fa-battery-three-quarters text-[10px]"></i></div>
 </div>
 
+<!-- ================================================================ PAGE 0: GİRİŞ / KAYIT -->
+<section id="page-auth" class="page" style="padding-bottom:0;background:linear-gradient(160deg,#0369a1 0%,#0284c7 40%,#f0f9ff 100%);min-height:100vh">
+  <div class="px-6 pt-14 pb-8 text-center">
+    <div class="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur">
+      <i class="fas fa-ship text-white text-3xl"></i>
+    </div>
+    <div class="text-white font-extrabold text-2xl">DenizBul<span class="text-amber-300">.tr</span></div>
+    <div class="text-white/70 text-xs mt-1">Turkiye'nin Tekne Turu Marketplace'i</div>
+  </div>
+
+  <div class="bg-white rounded-t-3xl mx-0 px-6 pt-6 pb-10 min-h-[60vh]">
+    <!-- Tab toggle -->
+    <div class="flex bg-gray-100 rounded-xl p-1 mb-6">
+      <button id="auth-tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg text-sm font-semibold bg-white shadow text-primary transition-all">Giris Yap</button>
+      <button id="auth-tab-register" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-lg text-sm font-semibold text-gray-400 transition-all">Kayit Ol</button>
+    </div>
+
+    <!-- Giris formu -->
+    <div id="auth-login-form">
+      <div class="space-y-3 mb-4">
+        <div>
+          <label class="text-xs font-medium text-gray-500 mb-1 block">E-posta</label>
+          <input id="login-email" type="email" placeholder="ornek@email.com" autocomplete="email">
+        </div>
+        <div class="relative">
+          <label class="text-xs font-medium text-gray-500 mb-1 block">Sifre</label>
+          <input id="login-password" type="password" placeholder="Sifreniz" autocomplete="current-password">
+        </div>
+      </div>
+      <div id="login-error" class="text-danger text-xs mb-3 hidden"><i class="fas fa-exclamation-circle mr-1"></i><span></span></div>
+      <button onclick="doLogin()" class="w-full bg-primary text-white py-3.5 rounded-2xl font-bold text-sm">Giris Yap</button>
+      <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
+        <i class="fas fa-flask mr-1"></i><strong>Demo hesap:</strong> ayse@test.com / test123
+      </div>
+    </div>
+
+    <!-- Kayit formu -->
+    <div id="auth-register-form" style="display:none">
+      <div class="space-y-3 mb-4">
+        <div>
+          <label class="text-xs font-medium text-gray-500 mb-1 block">Ad Soyad</label>
+          <input id="reg-name" type="text" placeholder="Adiniz Soyadiniz" autocomplete="name">
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-500 mb-1 block">E-posta</label>
+          <input id="reg-email" type="email" placeholder="ornek@email.com" autocomplete="email">
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-500 mb-1 block">Telefon</label>
+          <input id="reg-phone" type="tel" placeholder="05XX XXX XX XX" autocomplete="tel">
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-500 mb-1 block">Sifre</label>
+          <input id="reg-password" type="password" placeholder="En az 6 karakter" autocomplete="new-password">
+        </div>
+      </div>
+      <div id="reg-error" class="text-danger text-xs mb-3 hidden"><i class="fas fa-exclamation-circle mr-1"></i><span></span></div>
+      <button onclick="doRegister()" class="w-full bg-primary text-white py-3.5 rounded-2xl font-bold text-sm">Hesap Olustur</button>
+    </div>
+  </div>
+</section>
+
 <!-- ================================================================ PAGE 1: ANA SAYFA -->
 <section id="page-home" class="page">
   <div class="px-4 pt-2 pb-3">
@@ -455,7 +517,8 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
       <div class="card p-3.5 flex items-center gap-3 card-hover" onclick="navigateTo('messages')"><i class="fas fa-comment text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Mesajlarim</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
       <div class="card p-3.5 flex items-center gap-3 card-hover"><i class="fas fa-credit-card text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Odeme Yontemlerim</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
       <div class="card p-3.5 flex items-center gap-3 card-hover" onclick="navigateTo('notifications')"><i class="fas fa-bell text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Bildirimler</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
-      <div class="card p-3.5 flex items-center gap-3 card-hover text-danger" onclick="clearAll()"><i class="fas fa-trash w-6 text-center"></i><span class="text-sm font-medium flex-1">Veriyi Temizle (Test)</span></div>
+      <div class="card p-3.5 flex items-center gap-3 card-hover text-danger" onclick="doLogout()"><i class="fas fa-sign-out-alt w-6 text-center"></i><span class="text-sm font-medium flex-1">Cikis Yap</span></div>
+      <div class="card p-3.5 flex items-center gap-3 card-hover text-gray-400" onclick="clearAll()"><i class="fas fa-trash w-6 text-center"></i><span class="text-sm font-medium flex-1">Veriyi Temizle (Test)</span></div>
     </div>
     <div class="text-center text-[10px] text-gray-400 mt-6 space-x-2">
       <span>DenizBul v1.0.0</span>
@@ -511,8 +574,8 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 
 <script>
 /* ── CONSTANTS ── */
-const ALL_PAGES=['home','search','detail','captain-profile','booking','payment','confirmation','my-tours','favorites','messages','notifications','profile'];
-const HIDE_NAV=['detail','booking','payment','confirmation','captain-profile','notifications'];
+const ALL_PAGES=['auth','home','search','detail','captain-profile','booking','payment','confirmation','my-tours','favorites','messages','notifications','profile'];
+const HIDE_NAV=['auth','detail','booking','payment','confirmation','captain-profile','notifications'];
 const CM={
   balik:    {label:'Balik Avi',   icon:'fa-fish',      color:'blue',   grad:'from-blue-400 to-blue-600'},
   gezi:     {label:'Tekne Gezisi',icon:'fa-compass',   color:'cyan',   grad:'from-cyan-400 to-teal-500'},
@@ -535,10 +598,60 @@ let selTour=null, selDate=null, selTime=null, guestVal=2;
 let curChatId=null, curTab='up', catFilter='';
 const tourMap={};
 
+/* ── AUTH ── */
+function isLoggedIn(){return!!S.get('cu_session',null);}
+
+function switchAuthTab(tab){
+  document.getElementById('auth-login-form').style.display=tab==='login'?'':'none';
+  document.getElementById('auth-register-form').style.display=tab==='register'?'':'none';
+  document.getElementById('auth-tab-login').className='flex-1 py-2 rounded-lg text-sm font-semibold transition-all '+(tab==='login'?'bg-white shadow text-primary':'text-gray-400');
+  document.getElementById('auth-tab-register').className='flex-1 py-2 rounded-lg text-sm font-semibold transition-all '+(tab==='register'?'bg-white shadow text-primary':'text-gray-400');
+}
+
+function showAuthError(id,msg){const el=document.getElementById(id);if(!el)return;el.classList.remove('hidden');el.querySelector('span').textContent=msg;}
+function hideAuthErrors(){['login-error','reg-error'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.add('hidden');});}
+
+function doLogin(){
+  hideAuthErrors();
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const pass=document.getElementById('login-password').value;
+  if(!email||!pass){showAuthError('login-error','E-posta ve sifre gerekli.');return;}
+  const users=S.get('cu_users',[]);
+  const user=users.find(u=>u.email===email&&u.password===pass);
+  if(!user){showAuthError('login-error','E-posta veya sifre yanlis.');return;}
+  S.set('cu_session',{email:user.email});
+  S.set('cu_profile',{name:user.name,email:user.email,phone:user.phone||''});
+  navigateTo('home');
+}
+
+function doRegister(){
+  hideAuthErrors();
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
+  const phone=document.getElementById('reg-phone').value.trim();
+  const pass=document.getElementById('reg-password').value;
+  if(!name||!email||!pass){showAuthError('reg-error','Ad, e-posta ve sifre zorunludur.');return;}
+  if(pass.length<6){showAuthError('reg-error','Sifre en az 6 karakter olmali.');return;}
+  const users=S.get('cu_users',[]);
+  if(users.find(u=>u.email===email)){showAuthError('reg-error','Bu e-posta zaten kayitli.');return;}
+  users.push({name,email,phone,password:pass});
+  S.set('cu_users',users);
+  S.set('cu_session',{email});
+  S.set('cu_profile',{name,email,phone});
+  navigateTo('home');
+}
+
+function doLogout(){
+  if(!confirm('Cikis yapmak istediginizden emin misiniz?'))return;
+  S.set('cu_session',null);
+  navigateTo('auth');
+}
+
 /* ── ROUTER ── */
 function navigateTo(p){window.location.hash='#'+p;}
 function handleRoute(){
   const h=window.location.hash.replace('#','')||'home';
+  if(h!=='auth'&&!isLoggedIn()){navigateTo('auth');return;}
   ALL_PAGES.forEach(p=>{const el=document.getElementById('page-'+p);if(el){el.classList.toggle('active',p===h);if(p===h)el.classList.add('fade-in');}});
   document.querySelectorAll('#bottom-nav a').forEach(a=>a.classList.toggle('active',a.dataset.nav===h));
   document.getElementById('bottom-nav').style.display=HIDE_NAV.includes(h)?'none':'flex';
@@ -557,8 +670,10 @@ function handleRoute(){
 }
 window.addEventListener('hashchange',handleRoute);
 window.addEventListener('load',()=>{
-  if(!S.get('cu_profile',null)){
-    S.set('cu_profile',{name:'Ayse Demir',email:'ayse@test.com',phone:'0532 999 0101'});
+  const users=S.get('cu_users',[]);
+  if(!users.find(u=>u.email==='ayse@test.com')){
+    users.push({name:'Ayse Demir',email:'ayse@test.com',phone:'0532 999 0101',password:'test123'});
+    S.set('cu_users',users);
   }
   rebuildTourMap();handleRoute();updateClock();pollBookingStatus();
 });
