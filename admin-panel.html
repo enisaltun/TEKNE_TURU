@@ -55,6 +55,7 @@ tr:hover td{background:#f8fafc}
   <a href="#captains" data-nav="captains"><i class="fas fa-anchor"></i> Kaptan Yonetimi</a>
   <a href="#users" data-nav="users"><i class="fas fa-users"></i> Kullanici Yonetimi</a>
   <a href="#tours-bookings" data-nav="tours-bookings"><i class="fas fa-ship"></i> Tur & Rezervasyon</a>
+  <a href="#reservations" data-nav="reservations"><i class="fas fa-calendar-check"></i> Rezervasyonlar <span id="res-badge" style="display:none;background:#f59e0b;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
   <a href="#finance" data-nav="finance"><i class="fas fa-wallet"></i> Finans</a>
   <a href="#modules" data-nav="modules"><i class="fas fa-puzzle-piece"></i> Modul Yonetimi</a>
 
@@ -179,6 +180,74 @@ tr:hover td{background:#f8fafc}
             <tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Onay bekleyen basvuru yok</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE: REZERVASYON YONETIMI             -->
+  <!-- ======================================= -->
+  <section id="page-reservations" class="page">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-xl font-bold">Rezervasyon Yonetimi</h1>
+      <button onclick="exportBookings()" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"><i class="fas fa-download mr-1"></i> Dis Aktar</button>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="stat-card"><div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-calendar-check"></i></div><div><div class="text-xl font-bold" id="res-stat-toplam">0</div><div class="text-xs text-gray-500">Toplam</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-amber-100 text-amber-600"><i class="fas fa-clock"></i></div><div><div class="text-xl font-bold" id="res-stat-bekliyor">0</div><div class="text-xs text-gray-500">Onay Bekliyor</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-green-100 text-success"><i class="fas fa-check-circle"></i></div><div><div class="text-xl font-bold" id="res-stat-onaylandi">0</div><div class="text-xs text-gray-500">Onaylandi</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-red-100 text-danger"><i class="fas fa-times-circle"></i></div><div><div class="text-xl font-bold" id="res-stat-iptal">0</div><div class="text-xs text-gray-500">Iptal / Red</div></div></div>
+    </div>
+
+    <!-- Filtreler -->
+    <div class="card mb-4">
+      <div class="flex flex-wrap gap-3 items-center">
+        <input type="text" id="res-search" placeholder="Musteri, tur veya no ile ara..." oninput="renderReservations()" class="!w-64 px-3 py-2 border rounded-lg text-sm">
+        <select id="res-filter-durum" onchange="renderReservations()" class="px-3 py-2 border rounded-lg text-sm !w-auto">
+          <option value="">Tum Durumlar</option>
+          <option value="bekliyor">Bekliyor</option>
+          <option value="onaylandi">Onaylandi</option>
+          <option value="tamamlandi">Tamamlandi</option>
+          <option value="reddedildi">Reddedildi</option>
+          <option value="iptal">Iptal</option>
+        </select>
+        <select id="res-filter-sort" onchange="renderReservations()" class="px-3 py-2 border rounded-lg text-sm !w-auto">
+          <option value="yeni">En Yeni</option>
+          <option value="eski">En Eski</option>
+          <option value="yuksek">En Yuksek Tutar</option>
+          <option value="dusuk">En Dusuk Tutar</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tablo -->
+    <div class="card">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Rez. No</th>
+              <th>Musteri</th>
+              <th>Tur</th>
+              <th>Kaptan</th>
+              <th>Tarih / Saat</th>
+              <th>Misafir</th>
+              <th>Tutar</th>
+              <th>Komisyon</th>
+              <th>Durum</th>
+              <th>Islem</th>
+            </tr>
+          </thead>
+          <tbody id="res-tbody">
+            <tr><td colspan="10" class="text-center text-gray-400 py-10 text-xs"><i class="fas fa-calendar text-3xl block mb-2 opacity-20"></i>Henuz rezervasyon yok</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex justify-between items-center mt-4 text-xs text-gray-400">
+        <span id="res-count">0 rezervasyon</span>
+        <span id="res-total-amount"></span>
       </div>
     </div>
   </section>
@@ -703,6 +772,77 @@ tr:hover td{background:#f8fafc}
   </section>
 </div>
 
+<!-- ===== REZERVASYON DETAY MODALI ===== -->
+<div id="res-detail-modal" style="display:none" class="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto pt-6 pb-10 px-4">
+  <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl">
+    <div class="flex items-center justify-between p-5 border-b">
+      <div>
+        <h2 class="font-bold text-base" id="rdm-title">Rezervasyon Detayi</h2>
+        <p class="text-xs text-gray-400 mt-0.5" id="rdm-no"></p>
+      </div>
+      <button onclick="closeResDetail()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"><i class="fas fa-times text-gray-500"></i></button>
+    </div>
+    <div class="p-5 space-y-4">
+      <!-- Durum & Tutar -->
+      <div class="flex items-center justify-between bg-gray-50 rounded-xl p-4">
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Durum</div>
+          <div id="rdm-badge"></div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-gray-500 mb-1">Toplam Tutar</div>
+          <div class="text-xl font-bold text-primary" id="rdm-amount"></div>
+          <div class="text-xs text-gray-400">Komisyon: <span id="rdm-komisyon"></span></div>
+        </div>
+      </div>
+      <!-- Bilgiler grid -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-blue-50 rounded-xl p-3">
+          <div class="text-[10px] text-blue-400 font-semibold uppercase mb-1">Musteri</div>
+          <div class="font-semibold text-sm" id="rdm-musteri">—</div>
+          <div class="text-xs text-gray-500" id="rdm-misafir">—</div>
+        </div>
+        <div class="bg-sky-50 rounded-xl p-3">
+          <div class="text-[10px] text-sky-400 font-semibold uppercase mb-1">Tur</div>
+          <div class="font-semibold text-sm" id="rdm-tur">—</div>
+          <div class="text-xs text-gray-500" id="rdm-kaptan">—</div>
+        </div>
+        <div class="bg-amber-50 rounded-xl p-3">
+          <div class="text-[10px] text-amber-500 font-semibold uppercase mb-1">Tarih & Saat</div>
+          <div class="font-semibold text-sm" id="rdm-tarih">—</div>
+          <div class="text-xs text-gray-500" id="rdm-saat">—</div>
+        </div>
+        <div class="bg-purple-50 rounded-xl p-3">
+          <div class="text-[10px] text-purple-400 font-semibold uppercase mb-1">Olusturulma</div>
+          <div class="font-semibold text-sm" id="rdm-created">—</div>
+        </div>
+      </div>
+      <!-- Not -->
+      <div id="rdm-note-wrap" style="display:none">
+        <div class="text-xs font-medium text-gray-600 mb-1">Musteri Notu</div>
+        <div class="bg-gray-50 rounded-xl p-3 text-sm text-gray-700 italic" id="rdm-note"></div>
+      </div>
+      <!-- Durum Degistir -->
+      <div class="border-t pt-4">
+        <div class="text-xs font-semibold text-gray-600 mb-2">Durumu Degistir</div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="setResDurum('bekliyor')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-700 hover:bg-amber-200">Bekliyor</button>
+          <button onclick="setResDurum('onaylandi')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200">Onayla</button>
+          <button onclick="setResDurum('tamamlandi')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200">Tamamlandi</button>
+          <button onclick="setResDurum('reddedildi')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-100 text-danger hover:bg-red-200">Reddet</button>
+          <button onclick="setResDurum('iptal')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">Iptal Et</button>
+        </div>
+      </div>
+      <!-- Admin Notu -->
+      <div>
+        <div class="text-xs font-semibold text-gray-600 mb-1">Admin Notu (opsiyonel)</div>
+        <textarea id="rdm-admin-note" rows="2" placeholder="Bu rezervasyona not ekle..." class="w-full border rounded-xl px-3 py-2 text-sm resize-none"></textarea>
+        <button onclick="saveAdminNote()" class="mt-2 bg-primary text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-primaryDark">Notu Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== KAPTAN TURLARI MODALI ===== -->
 <div id="captain-tours-modal" style="display:none" class="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto pt-6 pb-10 px-4">
   <div class="bg-white rounded-2xl w-full max-w-4xl shadow-2xl">
@@ -810,8 +950,8 @@ tr:hover td{background:#f8fafc}
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
-const pages=['dashboard','captains','users','tours-bookings','finance','modules','captain-add'];
-const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur & Rezervasyon','finance':'Finans','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle'};
+const pages=['dashboard','captains','users','tours-bookings','reservations','finance','modules','captain-add'];
+const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur & Rezervasyon','reservations':'Rezervasyon Yonetimi','finance':'Finans','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle'};
 
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
 
@@ -823,6 +963,7 @@ function handleRoute(){
   if(h==='dashboard')      renderDashboard();
   if(h==='captains')       renderCaptains();
   if(h==='tours-bookings') renderToursBookings();
+  if(h==='reservations')   renderReservations();
   if(h==='finance')        renderFinance();
 }
 window.addEventListener('hashchange',handleRoute);
@@ -1342,6 +1483,165 @@ function saveTourEdit(){
 }
 document.getElementById('captain-tours-modal').addEventListener('click',function(e){if(e.target===this)closeCaptainTours();});
 document.getElementById('tour-edit-modal').addEventListener('click',function(e){if(e.target===this)closeTourEdit();});
+
+/* ── REZERVASYON YÖNETİMİ ── */
+let activeResId=null;
+
+const RES_BADGE={
+  bekliyor:'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-clock mr-1"></i>Bekliyor</span>',
+  onaylandi:'<span class="badge bg-green-100 text-green-700"><i class="fas fa-check-circle mr-1"></i>Onaylandi</span>',
+  tamamlandi:'<span class="badge bg-blue-100 text-blue-700"><i class="fas fa-flag-checkered mr-1"></i>Tamamlandi</span>',
+  reddedildi:'<span class="badge bg-red-100 text-danger"><i class="fas fa-times-circle mr-1"></i>Reddedildi</span>',
+  iptal:'<span class="badge bg-gray-100 text-gray-600"><i class="fas fa-ban mr-1"></i>Iptal</span>',
+};
+
+function renderReservations(){
+  const all=lsGet('db_bookings',[]);
+  const search=(document.getElementById('res-search')?.value||'').toLowerCase();
+  const fDurum=document.getElementById('res-filter-durum')?.value||'';
+  const fSort=document.getElementById('res-filter-sort')?.value||'yeni';
+
+  let list=all.filter(b=>{
+    if(fDurum&&b.durum!==fDurum)return false;
+    if(search){
+      const hay=(b.id+b.customerName+b.tourTitle+b.captainName).toLowerCase();
+      if(!hay.includes(search))return false;
+    }
+    return true;
+  });
+
+  if(fSort==='yeni')   list.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+  if(fSort==='eski')   list.sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
+  if(fSort==='yuksek') list.sort((a,b)=>(b.amount||0)-(a.amount||0));
+  if(fSort==='dusuk')  list.sort((a,b)=>(a.amount||0)-(b.amount||0));
+
+  // Stats
+  document.getElementById('res-stat-toplam').textContent=all.length;
+  document.getElementById('res-stat-bekliyor').textContent=all.filter(b=>b.durum==='bekliyor').length;
+  document.getElementById('res-stat-onaylandi').textContent=all.filter(b=>b.durum==='onaylandi'||b.durum==='tamamlandi').length;
+  document.getElementById('res-stat-iptal').textContent=all.filter(b=>b.durum==='iptal'||b.durum==='reddedildi').length;
+
+  // Badge
+  const bek=all.filter(b=>b.durum==='bekliyor').length;
+  const resBadge=document.getElementById('res-badge');
+  if(resBadge){resBadge.style.display=bek?'':'none';resBadge.textContent=bek;}
+
+  const tbody=document.getElementById('res-tbody');
+  if(!tbody)return;
+
+  if(!list.length){
+    tbody.innerHTML=`<tr><td colspan="10" class="text-center text-gray-400 py-10 text-xs"><i class="fas fa-calendar text-3xl block mb-2 opacity-20"></i>${search||fDurum?'Eslesen rezervasyon bulunamadi':'Henuz rezervasyon yok'}</td></tr>`;
+    document.getElementById('res-count').textContent='0 rezervasyon';
+    document.getElementById('res-total-amount').textContent='';
+    return;
+  }
+
+  const totalAmt=list.reduce((s,b)=>s+(b.amount||0),0);
+  document.getElementById('res-count').textContent=list.length+' rezervasyon';
+  document.getElementById('res-total-amount').textContent='Toplam: '+totalAmt.toLocaleString('tr-TR')+' TL';
+
+  tbody.innerHTML=list.map(b=>{
+    const durum=b.durum||'bekliyor';
+    const badge=RES_BADGE[durum]||RES_BADGE.bekliyor;
+    const kom=Math.round((b.amount||0)*0.1);
+    const rowBg=durum==='bekliyor'?'bg-amber-50/50':'';
+    return`<tr class="${rowBg}">
+      <td><span class="font-mono text-[11px] text-gray-500">${(b.id||'').slice(-8)||'—'}</span>${b.adminNote?'<i class="fas fa-sticky-note text-amber-400 ml-1 text-[10px]" title="Admin notu var"></i>':''}</td>
+      <td><div class="font-medium text-sm">${b.customerName||'Misafir'}</div>${b.customerEmail?`<div class="text-[10px] text-gray-400">${b.customerEmail}</div>`:''}</td>
+      <td><div class="text-sm font-medium max-w-[160px] truncate">${b.tourTitle||'—'}</div></td>
+      <td class="text-xs text-gray-500">${b.captainName||'—'}</td>
+      <td><div class="text-sm">${b.tarih||'—'}</div><div class="text-[10px] text-gray-400">${b.saat||'—'}</div></td>
+      <td class="text-center text-sm">${b.guests||1}</td>
+      <td class="font-semibold text-sm">${(b.amount||0).toLocaleString('tr-TR')} TL</td>
+      <td class="text-accent text-sm">${kom.toLocaleString('tr-TR')} TL</td>
+      <td>${badge}</td>
+      <td>
+        <button onclick="openResDetail('${b.id}')" class="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium mr-1 hover:bg-primary/20">Detay</button>
+        ${durum==='bekliyor'?`<button onclick="quickResApprove('${b.id}')" class="bg-success text-white px-2 py-1 rounded text-xs font-medium hover:bg-green-600">Onayla</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openResDetail(id){
+  const all=lsGet('db_bookings',[]);
+  const b=all.find(x=>x.id===id);
+  if(!b)return;
+  activeResId=id;
+  const durum=b.durum||'bekliyor';
+  document.getElementById('rdm-title').textContent=b.tourTitle||'Rezervasyon';
+  document.getElementById('rdm-no').textContent='#'+(b.id||'').slice(-10);
+  document.getElementById('rdm-badge').innerHTML=RES_BADGE[durum]||RES_BADGE.bekliyor;
+  document.getElementById('rdm-amount').textContent=(b.amount||0).toLocaleString('tr-TR')+' TL';
+  document.getElementById('rdm-komisyon').textContent=Math.round((b.amount||0)*0.1).toLocaleString('tr-TR')+' TL';
+  document.getElementById('rdm-musteri').textContent=b.customerName||'Misafir';
+  document.getElementById('rdm-misafir').textContent=(b.guests||1)+' misafir';
+  document.getElementById('rdm-tur').textContent=b.tourTitle||'—';
+  document.getElementById('rdm-kaptan').textContent=b.captainName||'—';
+  document.getElementById('rdm-tarih').textContent=b.tarih||'—';
+  document.getElementById('rdm-saat').textContent=b.saat||'—';
+  document.getElementById('rdm-created').textContent=b.createdAt?new Date(b.createdAt).toLocaleDateString('tr-TR','dd.MM.yyyy'):'—';
+  const noteWrap=document.getElementById('rdm-note-wrap');
+  if(b.note){noteWrap.style.display='';document.getElementById('rdm-note').textContent=b.note;}
+  else{noteWrap.style.display='none';}
+  document.getElementById('rdm-admin-note').value=b.adminNote||'';
+  document.getElementById('res-detail-modal').style.display='flex';
+}
+
+function closeResDetail(){
+  document.getElementById('res-detail-modal').style.display='none';
+  activeResId=null;
+}
+
+function setResDurum(durum){
+  if(!activeResId)return;
+  const all=lsGet('db_bookings',[]);
+  const b=all.find(x=>x.id===activeResId);
+  if(!b)return;
+  b.durum=durum;
+  localStorage.setItem('db_bookings',JSON.stringify(all));
+  openResDetail(activeResId);
+  renderReservations();
+  renderDashboard();
+  showToast('Durum guncellendi: '+durum,'success');
+}
+
+function saveAdminNote(){
+  if(!activeResId)return;
+  const all=lsGet('db_bookings',[]);
+  const b=all.find(x=>x.id===activeResId);
+  if(!b)return;
+  b.adminNote=document.getElementById('rdm-admin-note').value.trim();
+  localStorage.setItem('db_bookings',JSON.stringify(all));
+  renderReservations();
+  showToast('Not kaydedildi','success');
+}
+
+function quickResApprove(id){
+  const all=lsGet('db_bookings',[]);
+  const b=all.find(x=>x.id===id);
+  if(!b)return;
+  b.durum='onaylandi';
+  localStorage.setItem('db_bookings',JSON.stringify(all));
+  renderReservations();
+  renderDashboard();
+  showToast('Rezervasyon onaylandi','success');
+}
+
+function exportBookings(){
+  const all=lsGet('db_bookings',[]);
+  if(!all.length){showToast('Dis aktarilacak rezervasyon yok','danger');return;}
+  const header='Rez.No,Musteri,Tur,Kaptan,Tarih,Saat,Misafir,Tutar,Komisyon,Durum\n';
+  const rows=all.map(b=>[
+    (b.id||'').slice(-8),b.customerName||'',b.tourTitle||'',b.captainName||'',
+    b.tarih||'',b.saat||'',b.guests||1,b.amount||0,Math.round((b.amount||0)*.1),b.durum||''
+  ].join(',')).join('\n');
+  const blob=new Blob(['﻿'+header+rows],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='rezervasyonlar_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+document.getElementById('res-detail-modal').addEventListener('click',function(e){if(e.target===this)closeResDetail();});
 
 function showToast(msg,type='success'){
   const t=document.getElementById('toast');
