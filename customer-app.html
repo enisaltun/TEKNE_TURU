@@ -556,7 +556,12 @@ function handleRoute(){
   window.scrollTo(0,0);
 }
 window.addEventListener('hashchange',handleRoute);
-window.addEventListener('load',()=>{rebuildTourMap();handleRoute();updateClock();pollBookingStatus();});
+window.addEventListener('load',()=>{
+  if(!S.get('cu_profile',null)){
+    S.set('cu_profile',{name:'Ayse Demir',email:'ayse@test.com',phone:'0532 999 0101'});
+  }
+  rebuildTourMap();handleRoute();updateClock();pollBookingStatus();
+});
 
 function updateClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});setTimeout(updateClock,30000);}
 
