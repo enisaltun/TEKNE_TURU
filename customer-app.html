@@ -441,6 +441,29 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
         <div class="w-28 h-28 bg-gray-100 rounded-xl flex items-center justify-center"><i class="fas fa-qrcode text-3xl text-gray-400"></i></div>
       </div>
     </div>
+
+    <!-- Kalkis Noktasi Haritasi -->
+    <div class="card p-4 text-left mb-4" id="conf-map-card" style="display:none">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center"><i class="fas fa-map-marker-alt text-danger text-sm"></i></div>
+          <div>
+            <div class="text-xs font-semibold text-gray-700">Kalkis Noktasi</div>
+            <div class="text-[11px] text-gray-500" id="conf-loc-name">—</div>
+          </div>
+        </div>
+        <a id="conf-maps-link" href="#" target="_blank" rel="noopener noreferrer"
+           class="flex items-center gap-1 bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium">
+          <i class="fas fa-directions text-xs"></i> Yol Tarifi
+        </a>
+      </div>
+      <!-- Static map preview via iframe -->
+      <div class="rounded-xl overflow-hidden border border-gray-100" style="height:150px">
+        <iframe id="conf-map-iframe" style="width:100%;height:100%;border:0" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src=""></iframe>
+      </div>
+      <p class="text-[10px] text-gray-400 mt-2 text-center"><i class="fas fa-info-circle mr-0.5"></i>Liman veya marina giris saatine dikkat edin</p>
+    </div>
+
     <div class="flex gap-2">
       <button onclick="navigateTo('messages')" class="flex-1 border py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-comment mr-1"></i>Kaptana Yaz</button>
       <button onclick="navigateTo('my-tours')" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-list mr-1"></i>Turlarim</button>
@@ -523,6 +546,26 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
       <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Tur Detaylari</div>
       <p class="text-xs text-gray-600 leading-relaxed mb-3" id="bdet-desc">—</p>
       <div class="grid grid-cols-2 gap-2" id="bdet-includes"></div>
+    </div>
+
+    <!-- Kalkis Haritasi -->
+    <div class="card p-4" id="bdet-map-card" style="display:none">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center"><i class="fas fa-map-marker-alt text-danger text-sm"></i></div>
+          <div>
+            <div class="text-xs font-semibold text-gray-700">Kalkis Noktasi</div>
+            <div class="text-[11px] text-gray-500" id="bdet-loc-name">—</div>
+          </div>
+        </div>
+        <a id="bdet-maps-link" href="#" target="_blank" rel="noopener noreferrer"
+           class="flex items-center gap-1 bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium">
+          <i class="fas fa-directions text-xs"></i> Yol Tarifi
+        </a>
+      </div>
+      <div class="rounded-xl overflow-hidden border border-gray-100" style="height:150px">
+        <iframe id="bdet-map-iframe" style="width:100%;height:100%;border:0" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src=""></iframe>
+      </div>
     </div>
 
     <!-- Action Buttons -->
@@ -1071,6 +1114,7 @@ function doBooking(){
     customerName:profile.name||'Misafir',guests:guestVal,durum:'bekliyor',
     amount:total,tarih:selDate||new Date().toLocaleDateString('tr-TR'),
     saat:selTime||'—',note:document.getElementById('booking-note')?.value||'',
+    loc:t.loc||t.kalkis||null,
     createdAt:new Date().toISOString()
   };
   const db=S.get('db_bookings',[]);db.unshift(b);S.set('db_bookings',db);
@@ -1090,6 +1134,18 @@ function renderConf(b){
   document.getElementById('conf-total').textContent=(b.amount||0).toLocaleString('tr-TR')+' TL';
   const badge=document.getElementById('conf-badge');
   if(badge){badge.className='badge '+(b.durum==='onaylandi'?'bg-green-100 text-success':b.durum==='iptal'||b.durum==='reddedildi'?'bg-red-100 text-danger':'bg-amber-100 text-amber-700');badge.textContent=b.durum==='onaylandi'?'Onaylandi':b.durum==='iptal'?'Iptal':b.durum==='reddedildi'?'Reddedildi':'Onay Bekleniyor';}
+  /* harita */
+  const loc=b.loc||(tourMap[b.tourId]?.loc)||(tourMap[b.tourId]?.kalkis)||null;
+  const mapCard=document.getElementById('conf-map-card');
+  if(loc){
+    const q=encodeURIComponent(loc+', Turkiye');
+    document.getElementById('conf-loc-name').textContent=loc;
+    document.getElementById('conf-maps-link').href=`https://www.google.com/maps/search/?api=1&query=${q}`;
+    document.getElementById('conf-map-iframe').src=`https://maps.google.com/maps?q=${q}&output=embed&z=14`;
+    mapCard.style.display='';
+  }else{
+    mapCard.style.display='none';
+  }
 }
 
 /* ── MY TOURS ── */
@@ -1189,6 +1245,17 @@ function renderBookingDetail(){
   const inc=t.includes||['Yakıt','Kaptan','Ekipman'];
   document.getElementById('bdet-desc').textContent=t.desc||`${b.tourTitle} - ${t.loc||''} kalkisli tur.`;
   document.getElementById('bdet-includes').innerHTML=inc.map(i=>`<div class="flex items-center gap-1.5 text-xs text-gray-600"><i class="fas fa-check-circle text-success text-[10px]"></i>${i}</div>`).join('');
+
+  /* harita */
+  const loc=b.loc||t.loc||t.kalkis||null;
+  const bdetMapCard=document.getElementById('bdet-map-card');
+  if(loc){
+    const q=encodeURIComponent(loc+', Turkiye');
+    document.getElementById('bdet-loc-name').textContent=loc;
+    document.getElementById('bdet-maps-link').href=`https://www.google.com/maps/search/?api=1&query=${q}`;
+    document.getElementById('bdet-map-iframe').src=`https://maps.google.com/maps?q=${q}&output=embed&z=14`;
+    bdetMapCard.style.display='';
+  }else{bdetMapCard.style.display='none';}
 
   /* action buttons */
   const canCancel=b.durum==='bekliyor'||b.durum==='onaylandi';
