@@ -942,6 +942,89 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
+<!-- ===== KAPTAN DETAY MODAL ===== -->
+<div id="captain-detail-modal" style="display:none" class="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto pt-6 pb-10 px-4">
+  <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl">
+    <!-- header -->
+    <div class="bg-gradient-to-br from-slate-700 to-slate-900 rounded-t-2xl p-6">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <span class="text-white text-2xl font-bold" id="cdm-avatar">AK</span>
+          </div>
+          <div>
+            <h2 class="text-white text-xl font-bold" id="cdm-name">—</h2>
+            <div class="text-white/70 text-xs mt-0.5" id="cdm-email">—</div>
+            <div class="text-white/70 text-xs" id="cdm-phone">—</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <span id="cdm-status-badge"></span>
+          <button onclick="closeCaptainDetailModal()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white"><i class="fas fa-times text-sm"></i></button>
+        </div>
+      </div>
+    </div>
+    <!-- body -->
+    <div class="p-6 space-y-5">
+      <!-- stats -->
+      <div class="grid grid-cols-4 gap-3">
+        <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold text-primary" id="cdm-tours">0</div><div class="text-[10px] text-gray-400 mt-0.5">Tur</div></div>
+        <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold text-success" id="cdm-rezcount">0</div><div class="text-[10px] text-gray-400 mt-0.5">Rezervasyon</div></div>
+        <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold" id="cdm-kapasite">—</div><div class="text-[10px] text-gray-400 mt-0.5">Kapasite</div></div>
+        <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold text-accent" id="cdm-kazanc">—</div><div class="text-[10px] text-gray-400 mt-0.5">Kazanc</div></div>
+      </div>
+
+      <!-- tekne bilgileri -->
+      <div class="border rounded-xl p-4">
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"><i class="fas fa-ship mr-1"></i>Tekne Bilgileri</div>
+        <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-gray-500">Tekne Adi</span><span class="font-medium" id="cdm-tekne">—</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Tekne Turu</span><span class="font-medium" id="cdm-tekne-turu">—</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Uzunluk</span><span class="font-medium" id="cdm-uzunluk">—</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Model Yili</span><span class="font-medium" id="cdm-yil">—</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Marka</span><span class="font-medium" id="cdm-marka">—</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Marina</span><span class="font-medium" id="cdm-marina">—</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Bolge</span><span class="font-medium" id="cdm-bolge">—</span></div>
+        </div>
+      </div>
+
+      <!-- lisans & belgeler -->
+      <div class="border rounded-xl p-4">
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"><i class="fas fa-id-card mr-1"></i>Lisans & Belgeler</div>
+        <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-gray-500">TC Kimlik</span><span class="font-medium" id="cdm-tc">—</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Lisans No</span><span class="font-medium" id="cdm-lisans">—</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Lisans Tarihi</span><span class="font-medium" id="cdm-lisans-tarih">—</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Ruhsat No</span><span class="font-medium" id="cdm-ruhsat">—</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Sigorta No</span><span class="font-medium" id="cdm-sigorta">—</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Kayit Tarihi</span><span class="font-medium" id="cdm-tarih">—</span></div>
+        </div>
+      </div>
+
+      <!-- kategoriler -->
+      <div id="cdm-kat-section">
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Tur Kategorileri</div>
+        <div class="flex flex-wrap gap-1.5" id="cdm-kategoriler"></div>
+      </div>
+
+      <!-- not -->
+      <div id="cdm-not-section">
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Admin Notu</div>
+        <p class="text-sm text-gray-600 bg-gray-50 rounded-xl p-3" id="cdm-not">—</p>
+      </div>
+
+      <!-- turlar -->
+      <div id="cdm-tours-section">
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Turlar</div>
+        <div class="space-y-2" id="cdm-tours-list"></div>
+      </div>
+
+      <!-- actions -->
+      <div class="flex gap-2 pt-2 border-t" id="cdm-actions"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== TUR DETAY MODAL ===== -->
 <div id="tour-detail-modal" style="display:none" class="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto pt-6 pb-10 px-4">
   <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl">
@@ -1416,19 +1499,83 @@ function renderCaptains(){
       ?'<span class="badge bg-red-100 text-red-700"><i class="fas fa-ban"></i> Askida</span>'
       :'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-clock"></i> Bekliyor</span>';
     const islemler=c.durum==='bekliyor'
-      ?`<button onclick="setCaptainDurum(${c.id},'aktif')" class="bg-success text-white px-2 py-1 rounded text-xs mr-1">Onayla</button><button onclick="setCaptainDurum(${c.id},'askida')" class="bg-gray-100 px-2 py-1 rounded text-xs mr-1">Askiya Al</button><button onclick="openDeleteModal(${c.id})" class="text-danger text-xs hover:underline">Sil</button>`
+      ?`<button onclick="event.stopPropagation();setCaptainDurum(${c.id},'aktif')" class="bg-success text-white px-2 py-1 rounded text-xs mr-1">Onayla</button><button onclick="event.stopPropagation();setCaptainDurum(${c.id},'askida')" class="bg-gray-100 px-2 py-1 rounded text-xs mr-1">Askiya Al</button><button onclick="event.stopPropagation();openDeleteModal(${c.id})" class="text-danger text-xs hover:underline">Sil</button>`
       :c.durum==='askida'
-      ?`<button onclick="setCaptainDurum(${c.id},'aktif')" class="text-success text-xs hover:underline mr-2">Aktif Et</button><button onclick="openDeleteModal(${c.id})" class="text-danger text-xs hover:underline">Sil</button>`
-      :`<button onclick="setCaptainDurum(${c.id},'askida')" class="text-gray-400 text-xs hover:text-danger mr-2">Askiya Al</button><button onclick="openDeleteModal(${c.id})" class="text-danger text-xs hover:underline">Sil</button>`;
-    return`<tr>
+      ?`<button onclick="event.stopPropagation();setCaptainDurum(${c.id},'aktif')" class="text-success text-xs hover:underline mr-2">Aktif Et</button><button onclick="event.stopPropagation();openDeleteModal(${c.id})" class="text-danger text-xs hover:underline">Sil</button>`
+      :`<button onclick="event.stopPropagation();setCaptainDurum(${c.id},'askida')" class="text-gray-400 text-xs hover:text-danger mr-2">Askiya Al</button><button onclick="event.stopPropagation();openDeleteModal(${c.id})" class="text-danger text-xs hover:underline">Sil</button>`;
+    return`<tr class="cursor-pointer hover:bg-blue-50/40 transition-colors" onclick="openCaptainDetailModal(${c.id})">
       <td><div class="flex items-center gap-2"><div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">${initials}</div><div><div class="font-medium">${c.ad} ${c.soyad}</div><div class="text-[10px] text-gray-400">${c.email}</div></div></div></td>
       <td>${c.tekne} (${c.uzunluk}m)</td><td>${c.bolge}</td>
-      <td><button onclick="openCaptainTours(${c.id})" class="flex items-center gap-1 text-primary text-xs font-medium hover:underline"><i class="fas fa-ship"></i> ${tourCount} tur</button></td>
+      <td><button onclick="event.stopPropagation();openCaptainTours(${c.id})" class="flex items-center gap-1 text-primary text-xs font-medium hover:underline"><i class="fas fa-ship"></i> ${tourCount} tur</button></td>
       <td>—</td><td>—</td>
       <td>${durumBadge}</td><td>${islemler}</td>
     </tr>`;
   }).join('');
 }
+
+function openCaptainDetailModal(id){
+  const c=captains.find(x=>x.id===id);
+  if(!c)return;
+  const allTours=lsGet('db_tours',[]).filter(t=>t.captainEmail===c.email);
+  const allBookings=lsGet('db_bookings',[]).filter(b=>allTours.some(t=>t.id===b.tourId));
+  const totalKazanc=allBookings.filter(b=>b.durum==='tamamlandi'||b.durum==='onaylandi').reduce((s,b)=>s+(b.amount||0),0);
+  const initials=((c.ad||'')[0]+(c.soyad||'')[0]||'').toUpperCase();
+  const statusMap={
+    aktif:'<span class="badge bg-green-100 text-green-700"><i class="fas fa-check-circle mr-0.5"></i>Aktif</span>',
+    askida:'<span class="badge bg-red-100 text-red-700"><i class="fas fa-ban mr-0.5"></i>Askida</span>',
+    bekliyor:'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-clock mr-0.5"></i>Bekliyor</span>',
+  };
+  document.getElementById('cdm-avatar').textContent=initials;
+  document.getElementById('cdm-name').textContent=c.ad+' '+c.soyad;
+  document.getElementById('cdm-email').textContent=c.email||'—';
+  document.getElementById('cdm-phone').textContent=c.telefon||'—';
+  document.getElementById('cdm-status-badge').innerHTML=statusMap[c.durum]||statusMap.bekliyor;
+  document.getElementById('cdm-tours').textContent=allTours.length;
+  document.getElementById('cdm-rezcount').textContent=allBookings.length;
+  document.getElementById('cdm-kapasite').textContent=(c.kapasite||'—')+' kisi';
+  document.getElementById('cdm-kazanc').textContent=totalKazanc?totalKazanc.toLocaleString('tr-TR')+' TL':'—';
+  document.getElementById('cdm-tekne').textContent=c.tekne||'—';
+  document.getElementById('cdm-tekne-turu').textContent=c.tekneTuru||'—';
+  document.getElementById('cdm-uzunluk').textContent=c.uzunluk?(c.uzunluk+'m'):'—';
+  document.getElementById('cdm-yil').textContent=c.yil||'—';
+  document.getElementById('cdm-marka').textContent=c.marka||'—';
+  document.getElementById('cdm-marina').textContent=c.marina||'—';
+  document.getElementById('cdm-bolge').textContent=c.bolge||'—';
+  document.getElementById('cdm-tc').textContent=c.tc?c.tc.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1 $2 $3 $4'):'—';
+  document.getElementById('cdm-lisans').textContent=c.lisans||'—';
+  document.getElementById('cdm-lisans-tarih').textContent=c.lisansTarih||'—';
+  document.getElementById('cdm-ruhsat').textContent=c.ruhsat||'—';
+  document.getElementById('cdm-sigorta').textContent=c.sigorta||'—';
+  document.getElementById('cdm-tarih').textContent=c.tarih||'—';
+  const kats=c.kategoriler||[];
+  const katSec=document.getElementById('cdm-kat-section');
+  if(kats.length){document.getElementById('cdm-kategoriler').innerHTML=kats.map(k=>`<span class="badge bg-blue-100 text-blue-700">${k}</span>`).join('');katSec.style.display='';}else katSec.style.display='none';
+  const notSec=document.getElementById('cdm-not-section');
+  if(c.not){document.getElementById('cdm-not').textContent=c.not;notSec.style.display='';}else notSec.style.display='none';
+  const toursSec=document.getElementById('cdm-tours-section');
+  if(allTours.length){
+    toursSec.style.display='';
+    const dColor={aktif:'bg-green-100 text-green-700',pasif:'bg-gray-100 text-gray-500',bekliyor:'bg-amber-100 text-amber-700'};
+    document.getElementById('cdm-tours-list').innerHTML=allTours.map(t=>{
+      const d=t.durum||'bekliyor';
+      const tRez=lsGet('db_bookings',[]).filter(b=>b.tourId===t.id).length;
+      return`<div class="flex items-center justify-between gap-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer" onclick="closeCaptainDetailModal();openTourDetailModal(${t.id})">
+        <div><div class="text-sm font-medium">${t.title||t.ad||'—'}</div><div class="text-[10px] text-gray-400">${t.kalkis||t.konum||'—'} &bull; ${t.sure||'—'}</div></div>
+        <div class="flex items-center gap-2 flex-shrink-0"><span class="text-xs text-gray-500">${tRez} rez.</span><span class="badge ${dColor[d]||'bg-gray-100 text-gray-500'} text-[10px]">${{aktif:'Aktif',pasif:'Pasif',bekliyor:'Onay Bekliyor'}[d]||d}</span></div>
+      </div>`;
+    }).join('');
+  }else{toursSec.style.display='none';}
+  const actEl=document.getElementById('cdm-actions');
+  actEl.innerHTML=c.durum==='bekliyor'
+    ?`<button onclick="closeCaptainDetailModal();setCaptainDurum(${id},'aktif')" class="bg-success text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-check mr-1"></i>Onayla</button><button onclick="closeCaptainDetailModal();setCaptainDurum(${id},'askida')" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Askiya Al</button>`
+    :c.durum==='askida'
+    ?`<button onclick="closeCaptainDetailModal();setCaptainDurum(${id},'aktif')" class="bg-success text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-check mr-1"></i>Aktif Et</button>`
+    :`<button onclick="closeCaptainDetailModal();setCaptainDurum(${id},'askida')" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Askiya Al</button>`;
+  actEl.innerHTML+=`<button onclick="closeCaptainDetailModal();openCaptainTours(${id})" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"><i class="fas fa-ship mr-1"></i>Turlari Yonet</button>`;
+  actEl.innerHTML+=`<button onclick="closeCaptainDetailModal();openDeleteModal(${id})" class="ml-auto text-danger border border-danger/30 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-50"><i class="fas fa-trash mr-1"></i>Sil</button>`;
+  document.getElementById('captain-detail-modal').style.display='flex';
+}
+function closeCaptainDetailModal(){document.getElementById('captain-detail-modal').style.display='none';}
 
 function setCaptainDurum(id,durum){
   const c=captains.find(x=>x.id===id);
@@ -1628,6 +1775,7 @@ function saveTourEdit(){
 document.getElementById('captain-tours-modal').addEventListener('click',function(e){if(e.target===this)closeCaptainTours();});
 document.getElementById('tour-edit-modal').addEventListener('click',function(e){if(e.target===this)closeTourEdit();});
 document.getElementById('tour-detail-modal').addEventListener('click',function(e){if(e.target===this)closeTourDetailModal();});
+document.getElementById('captain-detail-modal').addEventListener('click',function(e){if(e.target===this)closeCaptainDetailModal();});
 
 /* ── REZERVASYON YÖNETİMİ ── */
 let activeResId=null;
