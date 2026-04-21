@@ -54,12 +54,27 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
     <a href="#about" class="nav-item px-3 py-5 text-sm font-medium text-gray-600 hover:text-primary" data-nav="about">Hakkimizda</a>
   </div>
   <div class="flex items-center gap-3">
-    <a href="#messages" class="relative p-2 text-gray-500 hover:text-primary">
+    <a href="#messages" class="relative p-2 text-gray-500 hover:text-primary nav-auth-only" style="display:none">
       <i class="fas fa-comment-dots text-lg"></i>
-      <span class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-danger text-white text-[10px] rounded-full flex items-center justify-center">2</span>
     </a>
-    <a href="#my-bookings" class="p-2 text-gray-500 hover:text-primary"><i class="fas fa-calendar-check text-lg"></i></a>
-    <a href="#login" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primaryDark transition">Giris Yap</a>
+    <a href="#my-bookings" class="p-2 text-gray-500 hover:text-primary nav-auth-only" style="display:none"><i class="fas fa-calendar-check text-lg"></i></a>
+    <a href="#login" id="nav-login-btn" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primaryDark transition">Giris Yap</a>
+    <div id="nav-user-menu" style="display:none;position:relative">
+      <button onclick="toggleUserMenu()" class="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 px-3 py-2 rounded-lg transition">
+        <div class="w-7 h-7 bg-primary rounded-full flex items-center justify-center">
+          <span class="text-white text-xs font-bold" id="nav-avatar">A</span>
+        </div>
+        <span class="text-sm font-medium text-primary" id="nav-username">Kullanici</span>
+        <i class="fas fa-chevron-down text-primary text-xs"></i>
+      </button>
+      <div id="user-dropdown" style="display:none;position:absolute;right:0;top:calc(100%+8px);background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;z-index:100;overflow:hidden">
+        <a href="#profile" onclick="closeUserMenu()" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-user text-primary w-4"></i>Profilim</a>
+        <a href="#my-bookings" onclick="closeUserMenu()" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-calendar text-primary w-4"></i>Rezervasyonlarim</a>
+        <a href="#messages" onclick="closeUserMenu()" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-comment text-primary w-4"></i>Mesajlarim</a>
+        <hr class="my-1">
+        <button onclick="doSiteLogout()" class="w-full flex items-center gap-2 px-4 py-3 text-sm text-danger hover:bg-red-50 text-left"><i class="fas fa-sign-out-alt w-4"></i>Cikis Yap</button>
+      </div>
+    </div>
   </div>
 </div>
 </nav>
@@ -698,19 +713,23 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
       <!-- Login Form -->
       <div id="login-form">
         <div class="space-y-3">
-          <div><label class="text-xs font-medium text-gray-600">E-posta veya Telefon</label><input type="text" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="ornek@email.com"></div>
-          <div><label class="text-xs font-medium text-gray-600">Sifre</label><input type="password" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="********"></div>
-          <div class="flex justify-between items-center">
-            <label class="flex items-center gap-2"><input type="checkbox" class="accent-primary"><span class="text-xs text-gray-600">Beni hatirla</span></label>
-            <a href="#" class="text-xs text-primary hover:underline">Sifremi Unuttum</a>
+          <div>
+            <label class="text-xs font-medium text-gray-600">E-posta</label>
+            <input id="site-login-email" type="email" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="ornek@email.com"
+              onkeydown="if(event.key==='Enter')document.getElementById('site-login-pass').focus()">
           </div>
-          <button onclick="navigateTo('home')" class="w-full bg-primary text-white py-3 rounded-xl font-semibold transition hover:bg-primaryDark">Giris Yap</button>
+          <div>
+            <label class="text-xs font-medium text-gray-600">Sifre</label>
+            <input id="site-login-pass" type="password" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="Sifreniz"
+              onkeydown="if(event.key==='Enter')doSiteLogin()">
+          </div>
         </div>
-        <div class="relative my-6"><hr><span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-xs text-gray-400">veya</span></div>
-        <div class="space-y-2">
-          <button class="w-full border py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50"><i class="fab fa-google text-red-500"></i> Google ile devam et</button>
-          <button class="w-full border py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50"><i class="fab fa-apple"></i> Apple ile devam et</button>
-          <button class="w-full border py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50"><i class="fab fa-facebook text-blue-600"></i> Facebook ile devam et</button>
+        <div id="site-login-error" style="display:none" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
+          <i class="fas fa-exclamation-circle mr-1"></i><span id="site-login-error-msg"></span>
+        </div>
+        <button onclick="doSiteLogin()" class="w-full bg-primary text-white py-3 rounded-xl font-semibold transition hover:bg-primaryDark mt-4">Giris Yap</button>
+        <div class="text-center mt-3 text-xs text-gray-400 p-2 bg-amber-50 rounded-lg border border-amber-100">
+          <i class="fas fa-flask mr-1 text-amber-500"></i><strong>Demo:</strong> ayse@test.com / test123
         </div>
       </div>
 
@@ -718,20 +737,37 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
       <div id="register-form" style="display:none">
         <div class="space-y-3">
           <div class="flex gap-3">
-            <div class="flex-1"><label class="text-xs font-medium text-gray-600">Ad</label><input type="text" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="Mehmet"></div>
-            <div class="flex-1"><label class="text-xs font-medium text-gray-600">Soyad</label><input type="text" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="Yilmaz"></div>
+            <div class="flex-1">
+              <label class="text-xs font-medium text-gray-600">Ad</label>
+              <input id="site-reg-ad" type="text" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="Mehmet"
+                onkeydown="if(event.key==='Enter')document.getElementById('site-reg-soyad').focus()">
+            </div>
+            <div class="flex-1">
+              <label class="text-xs font-medium text-gray-600">Soyad</label>
+              <input id="site-reg-soyad" type="text" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="Yilmaz"
+                onkeydown="if(event.key==='Enter')document.getElementById('site-reg-email').focus()">
+            </div>
           </div>
-          <div><label class="text-xs font-medium text-gray-600">E-posta</label><input type="email" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="ornek@email.com"></div>
-          <div><label class="text-xs font-medium text-gray-600">Telefon</label><input type="tel" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="+90 5XX XXX XX XX"></div>
-          <div><label class="text-xs font-medium text-gray-600">Sifre</label><input type="password" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="En az 8 karakter"></div>
-          <label class="flex items-start gap-2"><input type="checkbox" class="accent-primary mt-1"><span class="text-xs text-gray-600"><a href="#" class="text-primary">Kullanim Sartlari</a> ve <a href="#" class="text-primary">Gizlilik Politikasi</a>'ni okudum, kabul ediyorum.</span></label>
-          <button onclick="navigateTo('home')" class="w-full bg-primary text-white py-3 rounded-xl font-semibold transition hover:bg-primaryDark">Kayit Ol</button>
+          <div>
+            <label class="text-xs font-medium text-gray-600">E-posta</label>
+            <input id="site-reg-email" type="email" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="ornek@email.com"
+              onkeydown="if(event.key==='Enter')document.getElementById('site-reg-phone').focus()">
+          </div>
+          <div>
+            <label class="text-xs font-medium text-gray-600">Telefon <span class="text-gray-400 font-normal">(opsiyonel)</span></label>
+            <input id="site-reg-phone" type="tel" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="05XX XXX XX XX"
+              onkeydown="if(event.key==='Enter')document.getElementById('site-reg-pass').focus()">
+          </div>
+          <div>
+            <label class="text-xs font-medium text-gray-600">Sifre</label>
+            <input id="site-reg-pass" type="password" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="En az 6 karakter"
+              onkeydown="if(event.key==='Enter')doSiteRegister()">
+          </div>
         </div>
-        <div class="relative my-6"><hr><span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-xs text-gray-400">veya</span></div>
-        <div class="space-y-2">
-          <button class="w-full border py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50"><i class="fab fa-google text-red-500"></i> Google ile kayit ol</button>
-          <button class="w-full border py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50"><i class="fab fa-apple"></i> Apple ile kayit ol</button>
+        <div id="site-reg-error" style="display:none" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
+          <i class="fas fa-exclamation-circle mr-1"></i><span id="site-reg-error-msg"></span>
         </div>
+        <button onclick="doSiteRegister()" class="w-full bg-primary text-white py-3 rounded-xl font-semibold transition hover:bg-primaryDark mt-4">Hesap Olustur</button>
       </div>
     </div>
   </div>
@@ -1280,7 +1316,16 @@ function handleRoute() {
   window.scrollTo(0,0);
 }
 window.addEventListener('hashchange', handleRoute);
-window.addEventListener('load', () => { handleRoute(); renderAll(); });
+window.addEventListener('load', function(){
+  const users=lsGet('cu_users',[]);
+  if(!users.find(function(u){return u.email==='ayse@test.com';})){
+    users.push({name:'Ayse Demir',email:'ayse@test.com',phone:'0532 999 0101',password:'test123'});
+    lsSet('cu_users',users);
+  }
+  handleRoute();
+  renderAll();
+  updateNavAuth();
+});
 
 // ===== LOCALSTORAGE HELPERS =====
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}}
@@ -1491,12 +1536,107 @@ function updateBookingPrice(price) {
   document.getElementById('total-price').textContent = (basePrice + fee).toLocaleString() + ' TL';
 }
 
+// ===== AUTH =====
+function siteIsLoggedIn(){
+  try{const v=localStorage.getItem('cu_session');return v!==null&&v!=='null'&&v!=='false';}catch{return false;}
+}
+
+function updateNavAuth(){
+  const loggedIn=siteIsLoggedIn();
+  const loginBtn=document.getElementById('nav-login-btn');
+  const userMenu=document.getElementById('nav-user-menu');
+  const authLinks=document.querySelectorAll('.nav-auth-only');
+  if(loginBtn)loginBtn.style.display=loggedIn?'none':'';
+  if(userMenu)userMenu.style.display=loggedIn?'':'none';
+  authLinks.forEach(function(el){el.style.display=loggedIn?'':'none';});
+  if(loggedIn){
+    const p=lsGet('cu_profile',{});
+    const name=p.name||'Kullanici';
+    const av=document.getElementById('nav-avatar');
+    const un=document.getElementById('nav-username');
+    if(av)av.textContent=name[0].toUpperCase();
+    if(un)un.textContent=name.split(' ')[0];
+  }
+}
+
+function toggleUserMenu(){
+  const d=document.getElementById('user-dropdown');
+  d.style.display=d.style.display==='none'?'block':'none';
+}
+function closeUserMenu(){
+  const d=document.getElementById('user-dropdown');
+  if(d)d.style.display='none';
+}
+document.addEventListener('click',function(e){
+  const menu=document.getElementById('nav-user-menu');
+  if(menu&&!menu.contains(e.target))closeUserMenu();
+});
+
+function showSiteErr(type,msg){
+  const el=document.getElementById('site-'+type+'-error');
+  const sp=document.getElementById('site-'+type+'-error-msg');
+  if(el&&sp){sp.textContent=msg;el.style.display='block';}
+}
+function hideSiteErr(type){
+  const el=document.getElementById('site-'+type+'-error');
+  if(el)el.style.display='none';
+}
+
+function doSiteLogin(){
+  hideSiteErr('login');
+  const emailEl=document.getElementById('site-login-email');
+  const passEl=document.getElementById('site-login-pass');
+  const email=(emailEl.value||'').trim().toLowerCase();
+  const pass=(passEl.value||'');
+  if(!email){showSiteErr('login','E-posta adresi gerekli.');emailEl.focus();return;}
+  if(!pass){showSiteErr('login','Sifre gerekli.');passEl.focus();return;}
+  const users=lsGet('cu_users',[]);
+  const user=users.find(function(u){return u.email===email&&u.password===pass;});
+  if(!user){showSiteErr('login','E-posta veya sifre yanlis.');passEl.value='';passEl.focus();return;}
+  localStorage.setItem('cu_session','active');
+  lsSet('cu_profile',{name:user.name,email:user.email,phone:user.phone||''});
+  updateNavAuth();
+  navigateTo('home');
+  showToast('Hosgeldiniz, '+user.name.split(' ')[0]+'!');
+}
+
+function doSiteRegister(){
+  hideSiteErr('reg');
+  const ad=(document.getElementById('site-reg-ad').value||'').trim();
+  const soyad=(document.getElementById('site-reg-soyad').value||'').trim();
+  const email=(document.getElementById('site-reg-email').value||'').trim().toLowerCase();
+  const phone=(document.getElementById('site-reg-phone').value||'').trim();
+  const pass=(document.getElementById('site-reg-pass').value||'');
+  if(!ad||!soyad){showSiteErr('reg','Ad ve soyad gerekli.');document.getElementById('site-reg-ad').focus();return;}
+  if(!email||!email.includes('@')){showSiteErr('reg','Gecerli bir e-posta girin.');document.getElementById('site-reg-email').focus();return;}
+  if(!pass||pass.length<6){showSiteErr('reg','Sifre en az 6 karakter olmali.');document.getElementById('site-reg-pass').focus();return;}
+  const users=lsGet('cu_users',[]);
+  if(users.find(function(u){return u.email===email;})){showSiteErr('reg','Bu e-posta zaten kayitli. Giris yapin.');return;}
+  const name=ad+' '+soyad;
+  users.push({name:name,email:email,phone:phone,password:pass});
+  lsSet('cu_users',users);
+  localStorage.setItem('cu_session','active');
+  lsSet('cu_profile',{name:name,email:email,phone:phone});
+  updateNavAuth();
+  navigateTo('home');
+  showToast('Hosgeldiniz '+ad+'! Hesabiniz olusturuldu.');
+}
+
+function doSiteLogout(){
+  closeUserMenu();
+  if(!confirm('Cikis yapmak istediginizden emin misiniz?'))return;
+  localStorage.removeItem('cu_session');
+  updateNavAuth();
+  navigateTo('home');
+}
+
 // ===== LOGIN TABS =====
 function showLoginTab(tab) {
   document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
   document.getElementById('login-tab').className = `flex-1 py-2 text-sm font-medium rounded-md ${tab==='login'?'bg-white shadow text-primary':'text-gray-500'}`;
   document.getElementById('register-tab').className = `flex-1 py-2 text-sm font-medium rounded-md ${tab==='register'?'bg-white shadow text-primary':'text-gray-500'}`;
+  hideSiteErr('login'); hideSiteErr('reg');
 }
 
 // ===== RATING =====
