@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DenizBul.tr — Tekne Turu Marketplace</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+tailwind.config={theme:{extend:{colors:{primary:'#0369a1',primaryDark:'#075985',primaryLight:'#e0f2fe',accent:'#f59e0b',accentDark:'#d97706',surface:'#f8fafc',danger:'#ef4444',success:'#10b981'}}}}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{font-family:'Inter',sans-serif;margin:0;padding:0;box-sizing:border-box}
+body{background:#f8fafc;color:#1e293b}
+.page{display:none;min-height:calc(100vh - 64px)}
+.page.active{display:block}
+.nav-item.active{color:#0369a1;border-bottom:2px solid #0369a1}
+.hero-gradient{background:linear-gradient(135deg,#0369a1 0%,#0ea5e9 50%,#06b6d4 100%)}
+.card-hover{transition:all .2s}
+.card-hover:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.12)}
+.fade-in{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.star{color:#fbbf24}
+.star-empty{color:#d1d5db}
+input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,161,.15)}
+.bottom-nav{display:none}
+@media(max-width:768px){.bottom-nav{display:flex}.desktop-nav{display:none}}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+.gallery-img{cursor:pointer;transition:transform .2s}
+.gallery-img:hover{transform:scale(1.02)}
+.tab-btn.active{background:#0369a1;color:#fff}
+.tab-btn{background:#e2e8f0;color:#475569;transition:all .2s}
+.badge-cat{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- ===== TOP NAVBAR ===== -->
+<nav class="bg-white shadow-sm sticky top-0 z-50 desktop-nav">
+<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+  <a href="#home" class="flex items-center gap-2">
+    <div class="w-9 h-9 rounded-lg hero-gradient flex items-center justify-center">
+      <i class="fas fa-ship text-white text-sm"></i>
+    </div>
+    <span class="text-xl font-bold text-primary">DenizBul<span class="text-accent">.tr</span></span>
+  </a>
+  <div class="hidden md:flex items-center gap-1">
+    <a href="#home" class="nav-item px-3 py-5 text-sm font-medium text-gray-600 hover:text-primary" data-nav="home">Ana Sayfa</a>
+    <a href="#search" class="nav-item px-3 py-5 text-sm font-medium text-gray-600 hover:text-primary" data-nav="search">Turlar</a>
+    <a href="#explore" class="nav-item px-3 py-5 text-sm font-medium text-gray-600 hover:text-primary" data-nav="explore">Kesfet</a>
+    <a href="#shop" class="nav-item px-3 py-5 text-sm font-medium text-gray-600 hover:text-primary" data-nav="shop">Magaza</a>
+    <a href="#about" class="nav-item px-3 py-5 text-sm font-medium text-gray-600 hover:text-primary" data-nav="about">Hakkimizda</a>
+  </div>
+  <div class="flex items-center gap-3">
+    <a href="#messages" class="relative p-2 text-gray-500 hover:text-primary">
+      <i class="fas fa-comment-dots text-lg"></i>
+      <span class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-danger text-white text-[10px] rounded-full flex items-center justify-center">2</span>
+    </a>
+    <a href="#my-bookings" class="p-2 text-gray-500 hover:text-primary"><i class="fas fa-calendar-check text-lg"></i></a>
+    <a href="#login" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primaryDark transition">Giris Yap</a>
+  </div>
+</div>
+</nav>
+
+<!-- ===== MOBILE BOTTOM NAV ===== -->
+<div class="bottom-nav fixed bottom-0 left-0 right-0 bg-white border-t z-50 justify-around py-1">
+  <a href="#home" class="flex flex-col items-center py-1 px-3 text-gray-400 mob-nav" data-mob="home"><i class="fas fa-home text-lg"></i><span class="text-[10px] mt-0.5">Ana Sayfa</span></a>
+  <a href="#search" class="flex flex-col items-center py-1 px-3 text-gray-400 mob-nav" data-mob="search"><i class="fas fa-search text-lg"></i><span class="text-[10px] mt-0.5">Ara</span></a>
+  <a href="#my-bookings" class="flex flex-col items-center py-1 px-3 text-gray-400 mob-nav" data-mob="my-bookings"><i class="fas fa-calendar text-lg"></i><span class="text-[10px] mt-0.5">Turlarim</span></a>
+  <a href="#messages" class="flex flex-col items-center py-1 px-3 text-gray-400 mob-nav" data-mob="messages"><i class="fas fa-comment text-lg"></i><span class="text-[10px] mt-0.5">Mesajlar</span></a>
+  <a href="#profile" class="flex flex-col items-center py-1 px-3 text-gray-400 mob-nav" data-mob="profile"><i class="fas fa-user text-lg"></i><span class="text-[10px] mt-0.5">Profil</span></a>
+</div>
+
+<!-- ======================================= -->
+<!-- PAGE 1: ANA SAYFA                       -->
+<!-- ======================================= -->
+<section id="page-home" class="page pb-20">
+  <!-- Hero -->
+  <div class="hero-gradient text-white py-16 md:py-24 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+      <h1 class="text-3xl md:text-5xl font-extrabold mb-4">Turkiye'nin En Buyuk<br>Tekne Turu Platformu</h1>
+      <p class="text-lg md:text-xl opacity-90 mb-8">Balik avi, gezi, ozel etkinlik — hayalindeki deniz deneyimini bul ve hemen rezervasyon yap</p>
+      <!-- Search Bar -->
+      <div class="bg-white rounded-2xl p-2 md:p-3 shadow-xl max-w-3xl mx-auto">
+        <div class="flex flex-col md:flex-row gap-2">
+          <div class="flex-1 relative">
+            <i class="fas fa-map-marker-alt absolute left-3 top-3.5 text-gray-400"></i>
+            <input type="text" placeholder="Nereye gitmek istiyorsun?" class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-gray-800 text-sm">
+          </div>
+          <div class="flex-1 relative">
+            <i class="fas fa-calendar absolute left-3 top-3.5 text-gray-400"></i>
+            <input type="date" class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-gray-800 text-sm">
+          </div>
+          <div class="relative">
+            <i class="fas fa-users absolute left-3 top-3.5 text-gray-400"></i>
+            <select class="pl-10 pr-8 py-3 rounded-xl border border-gray-200 text-gray-800 text-sm appearance-none bg-white">
+              <option>2 Kisi</option><option>3 Kisi</option><option>4 Kisi</option><option>5 Kisi</option><option>6+ Kisi</option>
+            </select>
+          </div>
+          <button onclick="navigateTo('search')" class="bg-accent hover:bg-accentDark text-white px-6 py-3 rounded-xl font-semibold text-sm transition whitespace-nowrap">
+            <i class="fas fa-search mr-1"></i> Tur Ara
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="max-w-6xl mx-auto px-4 -mt-8">
+    <div class="bg-white rounded-2xl shadow-lg p-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+      <div><div class="text-2xl font-bold text-primary">1,240+</div><div class="text-xs text-gray-500">Aktif Tur</div></div>
+      <div><div class="text-2xl font-bold text-primary">520+</div><div class="text-xs text-gray-500">Kaptan</div></div>
+      <div><div class="text-2xl font-bold text-primary">45,000+</div><div class="text-xs text-gray-500">Mutlu Musteri</div></div>
+      <div><div class="text-2xl font-bold text-accent">4.8 <i class="fas fa-star text-sm"></i></div><div class="text-xs text-gray-500">Ortalama Puan</div></div>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <div class="max-w-6xl mx-auto px-4 mt-12">
+    <h2 class="text-xl font-bold mb-6">Kategoriler</h2>
+    <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+      <a href="#search" onclick="setFilter('balik')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
+        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-fish text-primary text-xl"></i></div>
+        <span class="text-xs font-medium text-gray-700">Balik Avi</span>
+      </a>
+      <a href="#search" onclick="setFilter('gezi')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
+        <div class="w-12 h-12 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-compass text-cyan-600 text-xl"></i></div>
+        <span class="text-xs font-medium text-gray-700">Tekne Gezisi</span>
+      </a>
+      <a href="#search" onclick="setFilter('yuzme')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
+        <div class="w-12 h-12 bg-sky-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-swimmer text-sky-600 text-xl"></i></div>
+        <span class="text-xs font-medium text-gray-700">Yuzme</span>
+      </a>
+      <a href="#search" onclick="setFilter('ozel')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
+        <div class="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-heart text-pink-500 text-xl"></i></div>
+        <span class="text-xs font-medium text-gray-700">Ozel Etkinlik</span>
+      </a>
+      <a href="#search" onclick="setFilter('kurumsal')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
+        <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-briefcase text-indigo-600 text-xl"></i></div>
+        <span class="text-xs font-medium text-gray-700">Kurumsal</span>
+      </a>
+      <a href="#search" onclick="setFilter('gunbatimi')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
+        <div class="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-sun text-orange-500 text-xl"></i></div>
+        <span class="text-xs font-medium text-gray-700">Gun Batimi</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Popular Tours -->
+  <div class="max-w-6xl mx-auto px-4 mt-12">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-bold">Populer Turlar</h2>
+      <a href="#search" class="text-primary text-sm font-medium hover:underline">Tumunu Gor <i class="fas fa-arrow-right ml-1"></i></a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5" id="popular-tours"></div>
+  </div>
+
+  <!-- Regions -->
+  <div class="max-w-6xl mx-auto px-4 mt-12">
+    <h2 class="text-xl font-bold mb-6">Populer Bolgeler</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <a href="#search" class="relative rounded-2xl overflow-hidden h-40 card-hover group">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10"></div>
+        <div class="absolute inset-0 bg-primary/30"></div>
+        <img src="https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=400&h=300&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Antalya" onerror="this.style.display='none'">
+        <div class="absolute bottom-3 left-3 z-20 text-white"><div class="font-bold">Antalya</div><div class="text-xs opacity-80">234 tur</div></div>
+      </a>
+      <a href="#search" class="relative rounded-2xl overflow-hidden h-40 card-hover group">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10"></div>
+        <div class="absolute inset-0 bg-cyan-600/30"></div>
+        <img src="https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=400&h=300&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Bodrum" onerror="this.style.display='none'">
+        <div class="absolute bottom-3 left-3 z-20 text-white"><div class="font-bold">Bodrum</div><div class="text-xs opacity-80">189 tur</div></div>
+      </a>
+      <a href="#search" class="relative rounded-2xl overflow-hidden h-40 card-hover group">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10"></div>
+        <div class="absolute inset-0 bg-teal-600/30"></div>
+        <img src="https://images.unsplash.com/photo-1568702846914-96b305d2ead1?w=400&h=300&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Fethiye" onerror="this.style.display='none'">
+        <div class="absolute bottom-3 left-3 z-20 text-white"><div class="font-bold">Fethiye</div><div class="text-xs opacity-80">156 tur</div></div>
+      </a>
+      <a href="#search" class="relative rounded-2xl overflow-hidden h-40 card-hover group">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10"></div>
+        <div class="absolute inset-0 bg-sky-600/30"></div>
+        <img src="https://images.unsplash.com/photo-1527838832700-5059252407fa?w=400&h=300&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Istanbul" onerror="this.style.display='none'">
+        <div class="absolute bottom-3 left-3 z-20 text-white"><div class="font-bold">Istanbul</div><div class="text-xs opacity-80">312 tur</div></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <div class="max-w-6xl mx-auto px-4 mt-16">
+    <h2 class="text-xl font-bold text-center mb-8">Nasil Calisiyor?</h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div class="text-center">
+        <div class="w-16 h-16 bg-primaryLight rounded-2xl flex items-center justify-center mx-auto mb-3"><i class="fas fa-search text-primary text-2xl"></i></div>
+        <h3 class="font-semibold mb-1">1. Ara & Bul</h3>
+        <p class="text-sm text-gray-500">Bolge, tarih ve kategori secip idealinizi bulun</p>
+      </div>
+      <div class="text-center">
+        <div class="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-3"><i class="fas fa-calendar-check text-success text-2xl"></i></div>
+        <h3 class="font-semibold mb-1">2. Rezervasyon Yap</h3>
+        <p class="text-sm text-gray-500">Aninda onayli rezervasyon, guvenli odeme</p>
+      </div>
+      <div class="text-center">
+        <div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-3"><i class="fas fa-qrcode text-accent text-2xl"></i></div>
+        <h3 class="font-semibold mb-1">3. QR Kodunu Al</h3>
+        <p class="text-sm text-gray-500">Dijital biletin telefonunda hazir</p>
+      </div>
+      <div class="text-center">
+        <div class="w-16 h-16 bg-cyan-50 rounded-2xl flex items-center justify-center mx-auto mb-3"><i class="fas fa-anchor text-cyan-600 text-2xl"></i></div>
+        <h3 class="font-semibold mb-1">4. Keyfini Cikar</h3>
+        <p class="text-sm text-gray-500">Denizin tadini cikar, sonra yorum birak</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA Kaptan -->
+  <div class="max-w-6xl mx-auto px-4 mt-16">
+    <div class="bg-gradient-to-r from-primary to-cyan-600 rounded-2xl p-8 md:p-12 text-white flex flex-col md:flex-row items-center gap-6">
+      <div class="flex-1">
+        <h2 class="text-2xl font-bold mb-2">Kaptan misiniz? Ucretsiz katilın!</h2>
+        <p class="opacity-90 mb-4">Teknenizi listeleyin, yeni musterilere ulasin. Platform tamamen ucretsiz — sadece gerceklesen rezervasyonlardan komisyon.</p>
+        <button class="bg-white text-primary px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition">Kaptan Olarak Kaydol <i class="fas fa-arrow-right ml-1"></i></button>
+      </div>
+      <div class="text-6xl opacity-30"><i class="fas fa-ship"></i></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="max-w-6xl mx-auto px-4 mt-16 border-t pt-8 pb-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm text-gray-600">
+      <div>
+        <h4 class="font-semibold text-gray-900 mb-3">DenizBul</h4>
+        <p class="text-xs">Turkiye'nin en buyuk tekne turu platformu</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-gray-900 mb-3">Turlar</h4>
+        <a href="#search" class="block text-xs mb-1 hover:text-primary">Balik Avi</a>
+        <a href="#search" class="block text-xs mb-1 hover:text-primary">Tekne Gezisi</a>
+        <a href="#search" class="block text-xs mb-1 hover:text-primary">Ozel Etkinlik</a>
+      </div>
+      <div>
+        <h4 class="font-semibold text-gray-900 mb-3">Destek</h4>
+        <a href="#about" class="block text-xs mb-1 hover:text-primary">SSS</a>
+        <a href="#about" class="block text-xs mb-1 hover:text-primary">Iletisim</a>
+        <a href="#about" class="block text-xs mb-1 hover:text-primary">Iptal Politikasi</a>
+      </div>
+      <div>
+        <h4 class="font-semibold text-gray-900 mb-3">Bizi Takip Edin</h4>
+        <div class="flex gap-3">
+          <a href="#" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-primaryLight"><i class="fab fa-instagram text-gray-600"></i></a>
+          <a href="#" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-primaryLight"><i class="fab fa-twitter text-gray-600"></i></a>
+          <a href="#" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-primaryLight"><i class="fab fa-youtube text-gray-600"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="text-center text-xs text-gray-400 mt-6">&copy; 2026 DenizBul.tr — Tum haklari saklidir.</div>
+  </footer>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 2: ARAMA / LISTELEME              -->
+<!-- ======================================= -->
+<section id="page-search" class="page pb-20">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Search Header -->
+    <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+      <div class="flex flex-col md:flex-row gap-3">
+        <div class="flex-1 relative">
+          <i class="fas fa-map-marker-alt absolute left-3 top-3 text-gray-400"></i>
+          <input type="text" placeholder="Bolge veya sehir" class="w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm" value="Antalya">
+        </div>
+        <div class="flex-1 relative">
+          <i class="fas fa-calendar absolute left-3 top-3 text-gray-400"></i>
+          <input type="date" class="w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm">
+        </div>
+        <select class="px-4 py-2.5 rounded-lg border text-sm">
+          <option>Tum Kategoriler</option><option>Balik Avi</option><option>Tekne Gezisi</option><option>Yuzme</option><option>Ozel Etkinlik</option><option>Kurumsal</option><option>Gun Batimi</option>
+        </select>
+        <button class="bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-medium"><i class="fas fa-search mr-1"></i> Ara</button>
+      </div>
+    </div>
+
+    <div class="flex gap-6">
+      <!-- Filters Sidebar -->
+      <div class="hidden md:block w-64 flex-shrink-0">
+        <div class="bg-white rounded-xl shadow-sm p-5 sticky top-20">
+          <h3 class="font-semibold mb-4">Filtreler</h3>
+
+          <div class="mb-5">
+            <h4 class="text-sm font-medium mb-2">Fiyat Araligi</h4>
+            <div class="flex gap-2">
+              <input type="number" placeholder="Min" class="w-full px-3 py-2 border rounded text-sm">
+              <input type="number" placeholder="Max" class="w-full px-3 py-2 border rounded text-sm">
+            </div>
+            <input type="range" min="0" max="10000" value="5000" class="w-full mt-2 accent-primary">
+          </div>
+
+          <div class="mb-5">
+            <h4 class="text-sm font-medium mb-2">Tur Suresi</h4>
+            <label class="flex items-center gap-2 mb-1.5"><input type="checkbox" class="accent-primary"> <span class="text-sm">1-3 saat</span></label>
+            <label class="flex items-center gap-2 mb-1.5"><input type="checkbox" class="accent-primary"> <span class="text-sm">4-6 saat</span></label>
+            <label class="flex items-center gap-2 mb-1.5"><input type="checkbox" class="accent-primary"> <span class="text-sm">7-10 saat</span></label>
+            <label class="flex items-center gap-2"><input type="checkbox" class="accent-primary"> <span class="text-sm">Tam gun</span></label>
+          </div>
+
+          <div class="mb-5">
+            <h4 class="text-sm font-medium mb-2">Puan</h4>
+            <label class="flex items-center gap-2 mb-1.5"><input type="radio" name="rating" class="accent-primary"> <span class="text-sm"><i class="fas fa-star star"></i> 4.5+</span></label>
+            <label class="flex items-center gap-2 mb-1.5"><input type="radio" name="rating" class="accent-primary"> <span class="text-sm"><i class="fas fa-star star"></i> 4.0+</span></label>
+            <label class="flex items-center gap-2"><input type="radio" name="rating" class="accent-primary"> <span class="text-sm"><i class="fas fa-star star"></i> 3.5+</span></label>
+          </div>
+
+          <div class="mb-5">
+            <h4 class="text-sm font-medium mb-2">Ozellikler</h4>
+            <label class="flex items-center gap-2 mb-1.5"><input type="checkbox" class="accent-primary"> <span class="text-sm">Aninda Onay</span></label>
+            <label class="flex items-center gap-2 mb-1.5"><input type="checkbox" class="accent-primary"> <span class="text-sm">Ucretsiz Iptal</span></label>
+            <label class="flex items-center gap-2"><input type="checkbox" class="accent-primary"> <span class="text-sm">Ekipman Dahil</span></label>
+          </div>
+
+          <button class="w-full bg-primary text-white py-2 rounded-lg text-sm font-medium">Filtrele</button>
+          <button class="w-full text-gray-500 py-2 text-sm mt-1">Temizle</button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm text-gray-500"><strong>127</strong> tur bulundu</span>
+          <div class="flex items-center gap-2">
+            <select class="px-3 py-1.5 border rounded text-sm">
+              <option>Onerilen</option><option>Fiyat: Dusukten Yuksege</option><option>Fiyat: Yuksekten Dusuge</option><option>Puan</option><option>En Yeni</option>
+            </select>
+            <button class="p-1.5 border rounded text-sm" title="Harita"><i class="fas fa-map"></i></button>
+            <button class="p-1.5 border rounded text-sm bg-primary text-white" title="Liste"><i class="fas fa-list"></i></button>
+          </div>
+        </div>
+
+        <div class="space-y-4" id="search-results"></div>
+
+        <!-- Pagination -->
+        <div class="flex justify-center gap-2 mt-8">
+          <button class="w-9 h-9 rounded-lg border text-sm text-gray-400"><i class="fas fa-chevron-left"></i></button>
+          <button class="w-9 h-9 rounded-lg bg-primary text-white text-sm font-medium">1</button>
+          <button class="w-9 h-9 rounded-lg border text-sm hover:bg-gray-50">2</button>
+          <button class="w-9 h-9 rounded-lg border text-sm hover:bg-gray-50">3</button>
+          <span class="w-9 h-9 flex items-center justify-center text-gray-400">...</span>
+          <button class="w-9 h-9 rounded-lg border text-sm hover:bg-gray-50">12</button>
+          <button class="w-9 h-9 rounded-lg border text-sm"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 3: TUR DETAY                       -->
+<!-- ======================================= -->
+<section id="page-detail" class="page pb-20">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+      <a href="#home" class="hover:text-primary">Ana Sayfa</a><i class="fas fa-chevron-right text-[10px]"></i>
+      <a href="#search" class="hover:text-primary">Antalya Turlari</a><i class="fas fa-chevron-right text-[10px]"></i>
+      <span class="text-gray-800">Kaptan Mehmet ile Balik Avi Turu</span>
+    </div>
+
+    <!-- Gallery -->
+    <div class="grid grid-cols-4 grid-rows-2 gap-2 h-72 md:h-96 rounded-2xl overflow-hidden mb-6">
+      <div class="col-span-2 row-span-2 bg-blue-100 relative gallery-img"><div class="absolute inset-0 bg-gradient-to-br from-primary/40 to-transparent"></div><div class="absolute bottom-4 left-4 text-white"><span class="bg-black/30 backdrop-blur px-3 py-1 rounded-full text-sm"><i class="fas fa-images mr-1"></i> 1/12</span></div></div>
+      <div class="bg-cyan-100 gallery-img"></div>
+      <div class="bg-sky-100 gallery-img"></div>
+      <div class="bg-teal-100 gallery-img"></div>
+      <div class="bg-blue-200 gallery-img relative"><div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-semibold text-lg cursor-pointer">+8</div></div>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-8">
+      <!-- Left Content -->
+      <div class="flex-1">
+        <!-- Title & Tags -->
+        <div class="flex flex-wrap gap-2 mb-2">
+          <span class="badge-cat bg-blue-100 text-blue-700"><i class="fas fa-fish mr-1"></i>Balik Avi</span>
+          <span class="badge-cat bg-cyan-100 text-cyan-700"><i class="fas fa-compass mr-1"></i>Gezi</span>
+          <span class="badge-cat bg-green-100 text-green-700"><i class="fas fa-bolt mr-1"></i>Aninda Onay</span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-bold mb-1">Kaptan Mehmet ile Balik Avi & Gezi Turu</h1>
+        <div class="flex items-center gap-3 text-sm text-gray-500 mb-4">
+          <span><i class="fas fa-map-marker-alt text-primary"></i> Antalya, Kemer</span>
+          <span><i class="fas fa-clock text-primary"></i> 6 saat</span>
+          <span><i class="fas fa-users text-primary"></i> Max 8 kisi</span>
+          <span class="text-accent font-semibold"><i class="fas fa-star"></i> 4.9 (124 yorum)</span>
+        </div>
+
+        <!-- Captain Card -->
+        <a href="#captain-profile" class="flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm mb-6 card-hover">
+          <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center"><i class="fas fa-user text-primary text-xl"></i></div>
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold">Kaptan Mehmet Yilmaz</span>
+              <span class="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-medium"><i class="fas fa-check-circle"></i> Dogrulanmis</span>
+            </div>
+            <div class="text-sm text-gray-500">15 yil deneyim &bull; 312 tur &bull; 4.9 <i class="fas fa-star star text-xs"></i></div>
+          </div>
+          <i class="fas fa-chevron-right text-gray-300"></i>
+        </a>
+
+        <!-- Package Tabs -->
+        <div class="mb-6">
+          <h2 class="text-lg font-bold mb-3">Paketler</h2>
+          <div class="flex gap-2 mb-4 overflow-x-auto" id="detail-package-tabs">
+            <button class="tab-btn active px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap" onclick="selectPackage(0)"><i class="fas fa-fish mr-1"></i> Balik Avi</button>
+            <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap" onclick="selectPackage(1)"><i class="fas fa-compass mr-1"></i> Gezi</button>
+            <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap" onclick="selectPackage(2)"><i class="fas fa-heart mr-1"></i> Ozel Etkinlik</button>
+            <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap" onclick="selectPackage(3)"><i class="fas fa-briefcase mr-1"></i> Kurumsal</button>
+          </div>
+          <div id="package-details">
+            <!-- filled by JS -->
+          </div>
+        </div>
+
+        <!-- Includes -->
+        <div class="mb-6">
+          <h2 class="text-lg font-bold mb-3">Dahil Olanlar</h2>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success"></i> Balik avi ekipmanlari</div>
+            <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success"></i> Yem ve olta</div>
+            <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success"></i> Cay / Kahve ikrami</div>
+            <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success"></i> Can yelekleri</div>
+            <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success"></i> Fotografci</div>
+            <div class="flex items-center gap-2 text-sm text-gray-400"><i class="fas fa-times text-gray-300"></i> Ogle yemegi</div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-6">
+          <h2 class="text-lg font-bold mb-3">Tur Aciklamasi</h2>
+          <p class="text-sm text-gray-600 leading-relaxed">Antalya Kemer aciklaylarinda profesyonel ekipmanlarla balik avi deneyimi. Sabah erken saatlerde limandan kalkis, acik denizde trolling ve jigging teknikleri ile avlanma. Deneyimli kaptanimiz size en iyi avlanma noktalarini gosterecek. Tuttugunuz baliklari isterseniz teknede pisirebilirsiniz. Yeni baslayanlar icin birebir rehberlik yapilmaktadir.</p>
+        </div>
+
+        <!-- Route Map -->
+        <div class="mb-6">
+          <h2 class="text-lg font-bold mb-3">Guzergah</h2>
+          <div class="bg-blue-50 rounded-xl h-48 flex items-center justify-center text-primary"><i class="fas fa-map-marked-alt text-4xl opacity-50"></i><span class="ml-3 text-sm opacity-50">Harita Gorunumu</span></div>
+          <div class="flex gap-4 mt-3 text-sm text-gray-600">
+            <div><i class="fas fa-circle text-primary text-[8px]"></i> Kemer Limani (Kalkis)</div>
+            <div><i class="fas fa-circle text-accent text-[8px]"></i> Avlanma Noktasi</div>
+            <div><i class="fas fa-circle text-success text-[8px]"></i> Yuzme Molasi</div>
+            <div><i class="fas fa-circle text-danger text-[8px]"></i> Kemer Limani (Donus)</div>
+          </div>
+        </div>
+
+        <!-- Reviews -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-bold">Yorumlar (124)</h2>
+            <a href="#write-review" class="text-primary text-sm font-medium">Yorum Yaz</a>
+          </div>
+          <div class="flex items-center gap-4 bg-amber-50 rounded-xl p-4 mb-4">
+            <div class="text-center">
+              <div class="text-3xl font-bold text-amber-600">4.9</div>
+              <div class="flex text-amber-400 text-sm"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+              <div class="text-xs text-gray-500 mt-1">124 yorum</div>
+            </div>
+            <div class="flex-1 space-y-1">
+              <div class="flex items-center gap-2"><span class="text-xs w-4">5</span><div class="flex-1 bg-gray-200 rounded-full h-2"><div class="bg-amber-400 rounded-full h-2" style="width:85%"></div></div><span class="text-xs text-gray-400">85%</span></div>
+              <div class="flex items-center gap-2"><span class="text-xs w-4">4</span><div class="flex-1 bg-gray-200 rounded-full h-2"><div class="bg-amber-400 rounded-full h-2" style="width:10%"></div></div><span class="text-xs text-gray-400">10%</span></div>
+              <div class="flex items-center gap-2"><span class="text-xs w-4">3</span><div class="flex-1 bg-gray-200 rounded-full h-2"><div class="bg-amber-400 rounded-full h-2" style="width:3%"></div></div><span class="text-xs text-gray-400">3%</span></div>
+              <div class="flex items-center gap-2"><span class="text-xs w-4">2</span><div class="flex-1 bg-gray-200 rounded-full h-2"><div class="bg-amber-400 rounded-full h-2" style="width:1%"></div></div><span class="text-xs text-gray-400">1%</span></div>
+              <div class="flex items-center gap-2"><span class="text-xs w-4">1</span><div class="flex-1 bg-gray-200 rounded-full h-2"><div class="bg-amber-400 rounded-full h-2" style="width:1%"></div></div><span class="text-xs text-gray-400">1%</span></div>
+            </div>
+          </div>
+          <div class="space-y-4" id="review-list"></div>
+          <button class="w-full py-2 text-primary text-sm font-medium mt-4 hover:underline">Tum Yorumlari Gor (124)</button>
+        </div>
+      </div>
+
+      <!-- Right Sidebar: Booking Card -->
+      <div class="hidden md:block w-80 flex-shrink-0">
+        <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-20">
+          <div class="flex items-baseline gap-2 mb-4">
+            <span class="text-3xl font-bold text-primary" id="booking-price">1,800</span>
+            <span class="text-gray-500">TL / tekne</span>
+          </div>
+          <div class="border rounded-xl mb-4">
+            <div class="p-3 border-b">
+              <label class="text-xs font-medium text-gray-500">TARIH</label>
+              <input type="date" class="w-full text-sm mt-1 border-0 p-0">
+            </div>
+            <div class="p-3 border-b">
+              <label class="text-xs font-medium text-gray-500">SAAT</label>
+              <select class="w-full text-sm mt-1 border-0 p-0 bg-transparent">
+                <option>06:00</option><option>07:00</option><option>14:00</option>
+              </select>
+            </div>
+            <div class="p-3">
+              <label class="text-xs font-medium text-gray-500">MISAFIR</label>
+              <div class="flex items-center justify-between mt-1">
+                <button onclick="changeGuest(-1)" class="w-8 h-8 rounded-full border flex items-center justify-center text-gray-500 hover:bg-gray-100">-</button>
+                <span class="font-medium" id="guest-count">2</span>
+                <button onclick="changeGuest(1)" class="w-8 h-8 rounded-full border flex items-center justify-center text-gray-500 hover:bg-gray-100">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-2 text-sm mb-4">
+            <div class="flex justify-between"><span class="text-gray-500">Tur ucreti</span><span id="tour-fee">1,800 TL</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Hizmet bedeli</span><span id="service-fee">180 TL</span></div>
+            <hr>
+            <div class="flex justify-between font-bold"><span>Toplam</span><span id="total-price">1,980 TL</span></div>
+          </div>
+          <button onclick="navigateTo('payment')" class="w-full bg-accent hover:bg-accentDark text-white py-3 rounded-xl font-semibold transition">Rezervasyon Yap</button>
+          <div class="text-center text-xs text-gray-400 mt-2"><i class="fas fa-lock mr-1"></i> Guvenli odeme &bull; Ucretsiz iptal (24 saat)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Mobile Booking Bar -->
+  <div class="md:hidden fixed bottom-14 left-0 right-0 bg-white border-t p-3 flex items-center justify-between z-40">
+    <div><span class="text-xl font-bold text-primary">1,800 TL</span><span class="text-xs text-gray-500"> / tekne</span></div>
+    <button onclick="navigateTo('payment')" class="bg-accent text-white px-6 py-2.5 rounded-xl font-semibold text-sm">Rezervasyon Yap</button>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 4: KAPTAN PROFILI                  -->
+<!-- ======================================= -->
+<section id="page-captain-profile" class="page pb-20">
+  <div class="max-w-5xl mx-auto px-4 py-6">
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
+      <div class="h-32 hero-gradient"></div>
+      <div class="px-6 pb-6 -mt-12">
+        <div class="flex flex-col md:flex-row items-start md:items-end gap-4">
+          <div class="w-24 h-24 bg-white rounded-2xl border-4 border-white shadow-lg flex items-center justify-center"><i class="fas fa-user text-primary text-3xl"></i></div>
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <h1 class="text-2xl font-bold">Kaptan Mehmet Yilmaz</h1>
+              <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium"><i class="fas fa-check-circle"></i> Dogrulanmis</span>
+            </div>
+            <p class="text-gray-500 text-sm">Antalya, Kemer &bull; 15 yil deneyim &bull; Uye: Ocak 2024</p>
+          </div>
+          <div class="flex gap-3 text-center">
+            <div class="bg-amber-50 rounded-xl px-4 py-2"><div class="text-xl font-bold text-amber-600">4.9</div><div class="text-[10px] text-gray-500">Puan</div></div>
+            <div class="bg-blue-50 rounded-xl px-4 py-2"><div class="text-xl font-bold text-primary">312</div><div class="text-[10px] text-gray-500">Tur</div></div>
+            <div class="bg-green-50 rounded-xl px-4 py-2"><div class="text-xl font-bold text-success">124</div><div class="text-[10px] text-gray-500">Yorum</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bio -->
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="font-semibold mb-2">Hakkinda</h2>
+      <p class="text-sm text-gray-600 leading-relaxed">15 yildir Akdeniz'de profesyonel balikcilik ve tekne turlari yapiyorum. Teknem 12 metre uzunlugunda, 8 kisi kapasiteli motor yatdir. Hem balik avi hem gezi turlari duzenliyorum. Yeni baslayanlar icin ozel egitimli turlarim mevcut.</p>
+      <div class="flex flex-wrap gap-2 mt-3">
+        <span class="bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full">Kaptan Belgesi</span>
+        <span class="bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full">Ilk Yardim</span>
+        <span class="bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full">VHF Telsiz</span>
+        <span class="bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full">Dalis Sertifikasi</span>
+      </div>
+    </div>
+
+    <!-- Boat Info -->
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="font-semibold mb-3">Tekne Bilgileri</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div class="bg-gray-50 rounded-lg p-3"><i class="fas fa-ship text-primary text-xl mb-1"></i><div class="text-sm font-medium">Deniz Yildizi</div><div class="text-xs text-gray-500">Motor Yat</div></div>
+        <div class="bg-gray-50 rounded-lg p-3"><i class="fas fa-ruler text-primary text-xl mb-1"></i><div class="text-sm font-medium">12 metre</div><div class="text-xs text-gray-500">Uzunluk</div></div>
+        <div class="bg-gray-50 rounded-lg p-3"><i class="fas fa-users text-primary text-xl mb-1"></i><div class="text-sm font-medium">8 kisi</div><div class="text-xs text-gray-500">Kapasite</div></div>
+        <div class="bg-gray-50 rounded-lg p-3"><i class="fas fa-calendar text-primary text-xl mb-1"></i><div class="text-sm font-medium">2019</div><div class="text-xs text-gray-500">Yapim Yili</div></div>
+      </div>
+    </div>
+
+    <!-- Captain Tours -->
+    <div class="mb-6">
+      <h2 class="font-semibold mb-4">Turlari (5)</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="captain-tours"></div>
+    </div>
+
+    <!-- Captain Reviews -->
+    <div>
+      <h2 class="font-semibold mb-4">Yorumlar (124)</h2>
+      <div class="space-y-4" id="captain-reviews"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 5: KESFET / BLOG                   -->
+<!-- ======================================= -->
+<section id="page-explore" class="page pb-20">
+  <div class="max-w-6xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-2">Kesfet</h1>
+    <p class="text-gray-500 mb-6">Bolge rehberleri, balik turleri ve mevsimsel oneriler</p>
+
+    <!-- Featured Article -->
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-8 card-hover">
+      <div class="md:flex">
+        <div class="md:w-1/2 h-48 md:h-auto bg-gradient-to-br from-primary to-cyan-500"></div>
+        <div class="p-6">
+          <span class="bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full">One Cikan</span>
+          <h2 class="text-xl font-bold mt-2 mb-2">Turkiye'nin En Iyi 10 Balik Avi Noktasi</h2>
+          <p class="text-sm text-gray-600 mb-3">Akdeniz'den Karadeniz'e, Ege'den Marmara'ya — Turkiye'nin en verimli avlanma bolgelerini kaptanlarimizdan ogrenin.</p>
+          <div class="flex items-center gap-3 text-xs text-gray-500">
+            <span><i class="fas fa-clock"></i> 8 dk okuma</span>
+            <span><i class="fas fa-eye"></i> 3,240 goruntuleme</span>
+            <span><i class="fas fa-calendar"></i> 15 Mart 2026</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="flex gap-2 mb-6 overflow-x-auto">
+      <button class="tab-btn active px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Tumumu</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Bolge Rehberi</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Balik Turleri</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Mevsim Onerileri</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Kaptan Hikayeleri</button>
+    </div>
+
+    <!-- Articles Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+        <div class="h-40 bg-gradient-to-br from-blue-400 to-blue-600"></div>
+        <div class="p-4">
+          <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">Bolge Rehberi</span>
+          <h3 class="font-semibold mt-2 mb-1 text-sm">Antalya Balik Avi Rehberi 2026</h3>
+          <p class="text-xs text-gray-500 line-clamp-2">Kemer, Kas, Side ve daha fazlasi — Antalya'da mevsime gore nerede, ne avlanir?</p>
+          <div class="text-xs text-gray-400 mt-3"><i class="fas fa-clock"></i> 5 dk</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+        <div class="h-40 bg-gradient-to-br from-teal-400 to-teal-600"></div>
+        <div class="p-4">
+          <span class="text-[10px] bg-teal-50 text-teal-600 px-2 py-0.5 rounded-full font-medium">Balik Turleri</span>
+          <h3 class="font-semibold mt-2 mb-1 text-sm">Akdeniz'de Avlanabilecek 15 Balik Turu</h3>
+          <p class="text-xs text-gray-500 line-clamp-2">Levrek, cipura, orkinos ve daha fazlasi — hangi donemde hangi baligi avlayabilirsiniz?</p>
+          <div class="text-xs text-gray-400 mt-3"><i class="fas fa-clock"></i> 7 dk</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+        <div class="h-40 bg-gradient-to-br from-amber-400 to-orange-500"></div>
+        <div class="p-4">
+          <span class="text-[10px] bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full font-medium">Mevsim</span>
+          <h3 class="font-semibold mt-2 mb-1 text-sm">Nisan Ayinda En Iyi 5 Tur Rotasi</h3>
+          <p class="text-xs text-gray-500 line-clamp-2">Ilkbahar ruzgarlari, sicak sular — nisan ayinda denize acilmak icin ideal rotalar.</p>
+          <div class="text-xs text-gray-400 mt-3"><i class="fas fa-clock"></i> 4 dk</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+        <div class="h-40 bg-gradient-to-br from-pink-400 to-rose-500"></div>
+        <div class="p-4">
+          <span class="text-[10px] bg-pink-50 text-pink-600 px-2 py-0.5 rounded-full font-medium">Kaptan Hikayesi</span>
+          <h3 class="font-semibold mt-2 mb-1 text-sm">Kaptan Ahmet: "20 Yildir Denizle Yasiyorum"</h3>
+          <p class="text-xs text-gray-500 line-clamp-2">Bodrum'un en deneyimli kaptanlarindan biri anlatıyor.</p>
+          <div class="text-xs text-gray-400 mt-3"><i class="fas fa-clock"></i> 6 dk</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+        <div class="h-40 bg-gradient-to-br from-indigo-400 to-indigo-600"></div>
+        <div class="p-4">
+          <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-medium">Kurumsal</span>
+          <h3 class="font-semibold mt-2 mb-1 text-sm">Sirketler Icin Tekne Turu Rehberi</h3>
+          <p class="text-xs text-gray-500 line-clamp-2">Team building, kutlama, toplanti — kurumsal etkinlik icin en iyi tekne secimi.</p>
+          <div class="text-xs text-gray-400 mt-3"><i class="fas fa-clock"></i> 5 dk</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+        <div class="h-40 bg-gradient-to-br from-green-400 to-emerald-500"></div>
+        <div class="p-4">
+          <span class="text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-medium">Ipucu</span>
+          <h3 class="font-semibold mt-2 mb-1 text-sm">Ilk Balik Avi Turunda Bilmeniz Gerekenler</h3>
+          <p class="text-xs text-gray-500 line-clamp-2">Yeni baslayanlara ozel: ne giymeli, ne getirmeli, nelere dikkat etmeli?</p>
+          <div class="text-xs text-gray-400 mt-3"><i class="fas fa-clock"></i> 3 dk</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 6: KAYIT / GIRIS                   -->
+<!-- ======================================= -->
+<section id="page-login" class="page pb-20">
+  <div class="max-w-md mx-auto px-4 py-12">
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 rounded-2xl hero-gradient flex items-center justify-center mx-auto mb-4"><i class="fas fa-ship text-white text-2xl"></i></div>
+      <h1 class="text-2xl font-bold">Hosgeldiniz</h1>
+      <p class="text-gray-500 text-sm mt-1">Giris yapin veya ucretsiz kayit olun</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm p-6">
+      <!-- Tabs -->
+      <div class="flex mb-6 bg-gray-100 rounded-lg p-1">
+        <button class="flex-1 py-2 text-sm font-medium rounded-md bg-white shadow text-primary" id="login-tab" onclick="showLoginTab('login')">Giris Yap</button>
+        <button class="flex-1 py-2 text-sm font-medium rounded-md text-gray-500" id="register-tab" onclick="showLoginTab('register')">Kayit Ol</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-form">
+        <div class="space-y-3">
+          <div><label class="text-xs font-medium text-gray-600">E-posta veya Telefon</label><input type="text" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="ornek@email.com"></div>
+          <div><label class="text-xs font-medium text-gray-600">Sifre</label><input type="password" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="********"></div>
+          <div class="flex justify-between items-center">
+            <label class="flex items-center gap-2"><input type="checkbox" class="accent-primary"><span class="text-xs text-gray-600">Beni hatirla</span></label>
+            <a href="#" class="text-xs text-primary hover:underline">Sifremi Unuttum</a>
+          </div>
+          <button onclick="navigateTo('home')" class="w-full bg-primary text-white py-3 rounded-xl font-semibold transition hover:bg-primaryDark">Giris Yap</button>
+        </div>
+        <div class="relative my-6"><hr><span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-xs text-gray-400">veya</span></div>
+        <div class="space-y-2">
+          <button class="w-full border py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50"><i class="fab fa-google text-red-500"></i> Google ile devam et</button>
+          <button class="w-full border py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50"><i class="fab fa-apple"></i> Apple ile devam et</button>
+          <button class="w-full border py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50"><i class="fab fa-facebook text-blue-600"></i> Facebook ile devam et</button>
+        </div>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" style="display:none">
+        <div class="space-y-3">
+          <div class="flex gap-3">
+            <div class="flex-1"><label class="text-xs font-medium text-gray-600">Ad</label><input type="text" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="Mehmet"></div>
+            <div class="flex-1"><label class="text-xs font-medium text-gray-600">Soyad</label><input type="text" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="Yilmaz"></div>
+          </div>
+          <div><label class="text-xs font-medium text-gray-600">E-posta</label><input type="email" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="ornek@email.com"></div>
+          <div><label class="text-xs font-medium text-gray-600">Telefon</label><input type="tel" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="+90 5XX XXX XX XX"></div>
+          <div><label class="text-xs font-medium text-gray-600">Sifre</label><input type="password" class="w-full px-4 py-2.5 border rounded-lg text-sm mt-1" placeholder="En az 8 karakter"></div>
+          <label class="flex items-start gap-2"><input type="checkbox" class="accent-primary mt-1"><span class="text-xs text-gray-600"><a href="#" class="text-primary">Kullanim Sartlari</a> ve <a href="#" class="text-primary">Gizlilik Politikasi</a>'ni okudum, kabul ediyorum.</span></label>
+          <button onclick="navigateTo('home')" class="w-full bg-primary text-white py-3 rounded-xl font-semibold transition hover:bg-primaryDark">Kayit Ol</button>
+        </div>
+        <div class="relative my-6"><hr><span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-xs text-gray-400">veya</span></div>
+        <div class="space-y-2">
+          <button class="w-full border py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50"><i class="fab fa-google text-red-500"></i> Google ile kayit ol</button>
+          <button class="w-full border py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50"><i class="fab fa-apple"></i> Apple ile kayit ol</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 7: ODEME                           -->
+<!-- ======================================= -->
+<section id="page-payment" class="page pb-20">
+  <div class="max-w-4xl mx-auto px-4 py-6">
+    <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+      <a href="#detail" class="hover:text-primary"><i class="fas fa-arrow-left mr-1"></i> Tura Don</a>
+    </div>
+    <h1 class="text-2xl font-bold mb-6">Odeme</h1>
+
+    <div class="flex flex-col md:flex-row gap-6">
+      <!-- Left: Payment Form -->
+      <div class="flex-1 space-y-5">
+        <!-- Progress -->
+        <div class="flex gap-2 text-xs font-medium">
+          <div class="flex items-center gap-1 text-primary"><div class="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center">1</div> Bilgiler</div>
+          <div class="w-8 border-t border-dashed mt-3"></div>
+          <div class="flex items-center gap-1 text-gray-400"><div class="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">2</div> Odeme</div>
+          <div class="w-8 border-t border-dashed mt-3"></div>
+          <div class="flex items-center gap-1 text-gray-400"><div class="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">3</div> Onay</div>
+        </div>
+
+        <!-- Guest Info -->
+        <div class="bg-white rounded-xl shadow-sm p-5">
+          <h2 class="font-semibold mb-3">Misafir Bilgileri</h2>
+          <div class="space-y-3">
+            <div class="flex gap-3">
+              <div class="flex-1"><label class="text-xs font-medium text-gray-500">Ad</label><input type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" value="Ali"></div>
+              <div class="flex-1"><label class="text-xs font-medium text-gray-500">Soyad</label><input type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" value="Kaya"></div>
+            </div>
+            <div><label class="text-xs font-medium text-gray-500">E-posta</label><input type="email" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" value="ali@email.com"></div>
+            <div><label class="text-xs font-medium text-gray-500">Telefon</label><input type="tel" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" value="+90 535 123 45 67"></div>
+            <div><label class="text-xs font-medium text-gray-500">Ozel Not (opsiyonel)</label><textarea class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1 h-20" placeholder="Kaptan icin ozel istekleriniz..."></textarea></div>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="bg-white rounded-xl shadow-sm p-5">
+          <h2 class="font-semibold mb-3">Odeme Yontemi</h2>
+          <div class="space-y-2">
+            <label class="flex items-center gap-3 border rounded-xl p-3 cursor-pointer hover:border-primary">
+              <input type="radio" name="pay" class="accent-primary" checked>
+              <i class="fas fa-credit-card text-primary"></i>
+              <span class="text-sm font-medium">Kredi / Banka Karti</span>
+              <div class="ml-auto flex gap-1"><img src="https://img.icons8.com/color/24/visa.png" alt="visa" onerror="this.style.display='none'"><img src="https://img.icons8.com/color/24/mastercard.png" alt="mc" onerror="this.style.display='none'"></div>
+            </label>
+            <label class="flex items-center gap-3 border rounded-xl p-3 cursor-pointer hover:border-primary">
+              <input type="radio" name="pay" class="accent-primary">
+              <i class="fas fa-building text-primary"></i>
+              <span class="text-sm font-medium">Havale / EFT</span>
+            </label>
+          </div>
+          <div class="mt-4 space-y-3">
+            <div><label class="text-xs font-medium text-gray-500">Kart Numarasi</label><input type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="XXXX XXXX XXXX XXXX"></div>
+            <div class="flex gap-3">
+              <div class="flex-1"><label class="text-xs font-medium text-gray-500">Son Kullanma</label><input type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="AA/YY"></div>
+              <div class="w-28"><label class="text-xs font-medium text-gray-500">CVV</label><input type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="***"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terms -->
+        <label class="flex items-start gap-2">
+          <input type="checkbox" class="accent-primary mt-1">
+          <span class="text-xs text-gray-600"><a href="#" class="text-primary">Iptal ve iade politikasi</a>'ni okudum, kabul ediyorum. 24 saat oncesine kadar ucretsiz iptal.</span>
+        </label>
+
+        <button onclick="confirmBooking()" class="w-full bg-accent hover:bg-accentDark text-white py-3.5 rounded-xl font-semibold text-lg transition"><i class="fas fa-lock mr-2"></i> 1,980 TL Ode</button>
+        <div class="flex items-center justify-center gap-4 text-xs text-gray-400">
+          <span><i class="fas fa-shield-alt text-green-500"></i> 256-bit SSL</span>
+          <span><i class="fas fa-lock text-green-500"></i> Iyzico Guvenli Odeme</span>
+        </div>
+      </div>
+
+      <!-- Right: Order Summary -->
+      <div class="md:w-80 flex-shrink-0">
+        <div class="bg-white rounded-xl shadow-sm p-5 sticky top-20">
+          <h2 class="font-semibold mb-3">Rezervasyon Ozeti</h2>
+          <div class="flex gap-3 mb-4">
+            <div class="w-20 h-16 bg-primary/10 rounded-lg flex items-center justify-center"><i class="fas fa-ship text-primary"></i></div>
+            <div>
+              <div class="font-medium text-sm">Kaptan Mehmet ile Balik Avi</div>
+              <div class="text-xs text-gray-500">Antalya, Kemer</div>
+            </div>
+          </div>
+          <div class="space-y-2 text-sm border-t pt-3">
+            <div class="flex justify-between"><span class="text-gray-500"><i class="fas fa-calendar-day mr-1"></i> Tarih</span><span>25 Nisan 2026</span></div>
+            <div class="flex justify-between"><span class="text-gray-500"><i class="fas fa-clock mr-1"></i> Saat</span><span>06:00</span></div>
+            <div class="flex justify-between"><span class="text-gray-500"><i class="fas fa-users mr-1"></i> Misafir</span><span>2 kisi</span></div>
+            <div class="flex justify-between"><span class="text-gray-500"><i class="fas fa-hourglass-half mr-1"></i> Sure</span><span>6 saat</span></div>
+          </div>
+          <hr class="my-3">
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-gray-500">Tur ucreti</span><span>1,800 TL</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Hizmet bedeli</span><span>180 TL</span></div>
+            <hr>
+            <div class="flex justify-between font-bold text-lg"><span>Toplam</span><span class="text-primary">1,980 TL</span></div>
+          </div>
+          <div class="bg-green-50 rounded-lg p-2 mt-3 text-xs text-green-700 text-center"><i class="fas fa-check-circle mr-1"></i> 24 saat oncesine kadar ucretsiz iptal</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 8: REZERVASYON ONAY                -->
+<!-- ======================================= -->
+<section id="page-confirmation" class="page pb-20">
+  <div class="max-w-lg mx-auto px-4 py-12 text-center">
+    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-check-circle text-success text-4xl"></i>
+    </div>
+    <h1 class="text-2xl font-bold mb-2">Rezervasyonunuz Onaylandi!</h1>
+    <p class="text-gray-500 mb-6">Onay detaylari e-posta adresinize gonderildi.</p>
+
+    <div class="bg-white rounded-2xl shadow-sm p-6 text-left mb-6">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <div class="text-xs text-gray-500">Rezervasyon No</div>
+          <div class="font-bold text-primary">#DB-2026-4821</div>
+        </div>
+        <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-medium">Onaylandi</span>
+      </div>
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Tur</span><span class="font-medium">Kaptan Mehmet ile Balik Avi</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Tarih</span><span>25 Nisan 2026, 06:00</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Misafir</span><span>2 kisi</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Toplam</span><span class="font-bold">1,980 TL</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Bulusma Noktasi</span><span>Kemer Marina, Iskele 3</span></div>
+      </div>
+
+      <!-- QR Code -->
+      <div class="border-t mt-4 pt-4 text-center">
+        <div class="w-36 h-36 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+          <div class="text-center"><i class="fas fa-qrcode text-4xl text-gray-400"></i><div class="text-[10px] text-gray-400 mt-1">QR Bilet</div></div>
+        </div>
+        <p class="text-xs text-gray-500">Tur gunu bu QR kodu kaptana gosterin</p>
+      </div>
+
+      <!-- Captain Contact -->
+      <div class="border-t mt-4 pt-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center"><i class="fas fa-user text-primary"></i></div>
+          <div class="flex-1">
+            <div class="text-sm font-medium">Kaptan Mehmet Yilmaz</div>
+            <div class="text-xs text-gray-500">+90 532 XXX XX XX</div>
+          </div>
+          <a href="#messages" class="bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-comment mr-1"></i> Mesaj</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap-3 justify-center">
+      <button class="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-calendar-plus mr-1"></i> Takvime Ekle</button>
+      <button class="border px-5 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-share-alt mr-1"></i> Paylas</button>
+      <a href="#my-bookings" class="border px-5 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-list mr-1"></i> Turlarim</a>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 9: REZERVASYONLARIM                -->
+<!-- ======================================= -->
+<section id="page-my-bookings" class="page pb-20">
+  <div class="max-w-4xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Rezervasyonlarim</h1>
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6">
+      <button class="tab-btn active px-4 py-2 rounded-full text-sm font-medium" onclick="filterBookings('upcoming')">Yaklasan (2)</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="filterBookings('past')">Gecmis (5)</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="filterBookings('cancelled')">Iptal (1)</button>
+    </div>
+    <div class="space-y-4" id="bookings-list">
+      <!-- Upcoming 1 -->
+      <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col md:flex-row gap-4 card-hover">
+        <div class="w-full md:w-32 h-24 bg-primary/10 rounded-lg flex items-center justify-center"><i class="fas fa-fish text-primary text-2xl"></i></div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-medium">Onaylandi</span>
+            <span class="text-xs text-gray-400">#DB-2026-4821</span>
+          </div>
+          <h3 class="font-semibold">Kaptan Mehmet ile Balik Avi Turu</h3>
+          <div class="text-sm text-gray-500 mt-1"><i class="fas fa-calendar mr-1"></i> 25 Nisan 2026, 06:00 &bull; <i class="fas fa-users ml-1 mr-1"></i> 2 kisi &bull; <i class="fas fa-map-marker-alt ml-1 mr-1"></i> Kemer</div>
+          <div class="flex gap-2 mt-3">
+            <a href="#detail" class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium">Detay</a>
+            <a href="#messages" class="border px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-comment mr-1"></i> Mesaj</a>
+            <button class="border text-danger px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-times mr-1"></i> Iptal</button>
+          </div>
+        </div>
+        <div class="text-right"><div class="text-lg font-bold text-primary">1,980 TL</div><div class="text-xs text-gray-400">6 saat</div></div>
+      </div>
+      <!-- Upcoming 2 -->
+      <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col md:flex-row gap-4 card-hover">
+        <div class="w-full md:w-32 h-24 bg-pink-50 rounded-lg flex items-center justify-center"><i class="fas fa-heart text-pink-500 text-2xl"></i></div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="bg-amber-100 text-amber-700 text-[10px] px-2 py-0.5 rounded-full font-medium">Bekliyor</span>
+            <span class="text-xs text-gray-400">#DB-2026-4835</span>
+          </div>
+          <h3 class="font-semibold">Gun Batimi Nisan Teklifi Turu</h3>
+          <div class="text-sm text-gray-500 mt-1"><i class="fas fa-calendar mr-1"></i> 1 Mayis 2026, 18:00 &bull; <i class="fas fa-users ml-1 mr-1"></i> 2 kisi &bull; <i class="fas fa-map-marker-alt ml-1 mr-1"></i> Bodrum</div>
+          <div class="flex gap-2 mt-3">
+            <a href="#detail" class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium">Detay</a>
+            <a href="#messages" class="border px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-comment mr-1"></i> Mesaj</a>
+          </div>
+        </div>
+        <div class="text-right"><div class="text-lg font-bold text-primary">4,500 TL</div><div class="text-xs text-gray-400">3 saat</div></div>
+      </div>
+      <!-- Past -->
+      <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col md:flex-row gap-4 opacity-70">
+        <div class="w-full md:w-32 h-24 bg-cyan-50 rounded-lg flex items-center justify-center"><i class="fas fa-compass text-cyan-500 text-2xl"></i></div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full font-medium">Tamamlandi</span>
+            <span class="text-xs text-gray-400">#DB-2026-3891</span>
+          </div>
+          <h3 class="font-semibold">Fethiye 12 Adalar Gezi Turu</h3>
+          <div class="text-sm text-gray-500 mt-1"><i class="fas fa-calendar mr-1"></i> 10 Mart 2026 &bull; <i class="fas fa-users ml-1 mr-1"></i> 4 kisi</div>
+          <div class="flex gap-2 mt-3">
+            <a href="#write-review" class="bg-accent text-white px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-star mr-1"></i> Yorum Yaz</a>
+            <button class="border px-3 py-1.5 rounded-lg text-xs font-medium">Tekrar Rezervasyon</button>
+          </div>
+        </div>
+        <div class="text-right"><div class="text-lg font-bold text-gray-500">2,400 TL</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 10: YORUM YAZ                      -->
+<!-- ======================================= -->
+<section id="page-write-review" class="page pb-20">
+  <div class="max-w-lg mx-auto px-4 py-6">
+    <a href="#my-bookings" class="text-sm text-gray-500 hover:text-primary"><i class="fas fa-arrow-left mr-1"></i> Rezervasyonlarima Don</a>
+    <h1 class="text-2xl font-bold mt-4 mb-6">Yorum Yaz</h1>
+    <div class="bg-white rounded-2xl shadow-sm p-6">
+      <!-- Tour Info -->
+      <div class="flex items-center gap-3 mb-6 pb-4 border-b">
+        <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center"><i class="fas fa-ship text-primary"></i></div>
+        <div><div class="font-medium text-sm">Kaptan Mehmet ile Balik Avi Turu</div><div class="text-xs text-gray-500">25 Nisan 2026</div></div>
+      </div>
+      <!-- Stars -->
+      <div class="text-center mb-6">
+        <div class="text-sm font-medium mb-2">Genel Puan</div>
+        <div class="flex justify-center gap-2" id="star-rating">
+          <button onclick="setRating(1)" class="text-3xl star-empty hover:text-amber-400 transition"><i class="fas fa-star"></i></button>
+          <button onclick="setRating(2)" class="text-3xl star-empty hover:text-amber-400 transition"><i class="fas fa-star"></i></button>
+          <button onclick="setRating(3)" class="text-3xl star-empty hover:text-amber-400 transition"><i class="fas fa-star"></i></button>
+          <button onclick="setRating(4)" class="text-3xl star-empty hover:text-amber-400 transition"><i class="fas fa-star"></i></button>
+          <button onclick="setRating(5)" class="text-3xl star-empty hover:text-amber-400 transition"><i class="fas fa-star"></i></button>
+        </div>
+        <span class="text-sm text-gray-500" id="rating-text">Puan secin</span>
+      </div>
+      <!-- Sub ratings -->
+      <div class="space-y-3 mb-6">
+        <div class="flex items-center justify-between"><span class="text-sm">Tekne Durumu</span><div class="flex gap-1"><i class="fas fa-star star text-sm"></i><i class="fas fa-star star text-sm"></i><i class="fas fa-star star text-sm"></i><i class="fas fa-star star text-sm"></i><i class="fas fa-star star-empty text-sm"></i></div></div>
+        <div class="flex items-center justify-between"><span class="text-sm">Kaptan</span><div class="flex gap-1"><i class="fas fa-star star text-sm"></i><i class="fas fa-star star text-sm"></i><i class="fas fa-star star text-sm"></i><i class="fas fa-star star text-sm"></i><i class="fas fa-star star text-sm"></i></div></div>
+        <div class="flex items-center justify-between"><span class="text-sm">Fiyat/Deger</span><div class="flex gap-1"><i class="fas fa-star star text-sm"></i><i class="fas fa-star star text-sm"></i><i class="fas fa-star star text-sm"></i><i class="fas fa-star star text-sm"></i><i class="fas fa-star star-empty text-sm"></i></div></div>
+      </div>
+      <!-- Comment -->
+      <div class="mb-4">
+        <label class="text-sm font-medium">Yorumunuz</label>
+        <textarea class="w-full border rounded-xl p-3 text-sm mt-1 h-28" placeholder="Deneyiminizi paylasın..."></textarea>
+      </div>
+      <!-- Photo Upload -->
+      <div class="mb-4">
+        <label class="text-sm font-medium">Foto Ekle (opsiyonel)</label>
+        <div class="border-2 border-dashed rounded-xl p-6 text-center mt-1 cursor-pointer hover:border-primary transition">
+          <i class="fas fa-camera text-2xl text-gray-300 mb-2"></i>
+          <div class="text-sm text-gray-500">Fotograflari surukleyin veya tiklayın</div>
+          <div class="text-xs text-gray-400">Max 5 foto, her biri 5MB</div>
+        </div>
+      </div>
+      <button onclick="navigateTo('my-bookings');showToast('Yorumunuz basariyla gonderildi!')" class="w-full bg-primary text-white py-3 rounded-xl font-semibold">Yorumu Gonder</button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 11: MESAJLAR                       -->
+<!-- ======================================= -->
+<section id="page-messages" class="page pb-20">
+  <div class="max-w-4xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Mesajlar</h1>
+    <div class="flex gap-4 h-[calc(100vh-200px)]">
+      <!-- Conversation List -->
+      <div class="w-80 bg-white rounded-xl shadow-sm overflow-hidden flex-shrink-0 hidden md:block">
+        <div class="p-3 border-b"><input type="text" placeholder="Ara..." class="w-full px-3 py-2 bg-gray-50 rounded-lg text-sm"></div>
+        <div class="overflow-y-auto h-full">
+          <div class="p-3 bg-primaryLight border-l-4 border-primary cursor-pointer">
+            <div class="flex items-center gap-2">
+              <div class="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center"><i class="fas fa-user text-primary text-sm"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between"><span class="font-medium text-sm">Kaptan Mehmet</span><span class="text-[10px] text-gray-400">14:32</span></div>
+                <div class="text-xs text-gray-500 truncate">Sabah 06:00'da limanda gorusuruz!</div>
+                <span class="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">Balik Avi Turu</span>
+              </div>
+            </div>
+          </div>
+          <div class="p-3 hover:bg-gray-50 cursor-pointer border-b">
+            <div class="flex items-center gap-2">
+              <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center"><i class="fas fa-user text-pink-500 text-sm"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between"><span class="font-medium text-sm">Kaptan Ayse</span><span class="text-[10px] text-gray-400">Dun</span></div>
+                <div class="text-xs text-gray-500 truncate">Nisan teklifi icin dekorasyon...</div>
+                <span class="text-[10px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded-full">Ozel Etkinlik</span>
+              </div>
+              <span class="w-5 h-5 bg-primary text-white text-[10px] rounded-full flex items-center justify-center">2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Area -->
+      <div class="flex-1 bg-white rounded-xl shadow-sm flex flex-col overflow-hidden">
+        <!-- Chat Header -->
+        <div class="p-4 border-b flex items-center gap-3">
+          <div class="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center"><i class="fas fa-user text-primary"></i></div>
+          <div class="flex-1">
+            <div class="font-medium text-sm">Kaptan Mehmet Yilmaz</div>
+            <div class="text-xs text-gray-500">Balik Avi Turu &bull; 25 Nisan 2026</div>
+          </div>
+          <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-phone"></i></button>
+          <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-ellipsis-v"></i></button>
+        </div>
+
+        <!-- Messages -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+          <div class="text-center text-xs text-gray-400 mb-4">Bugun</div>
+          <div class="flex justify-start"><div class="bg-white rounded-2xl rounded-tl-sm p-3 max-w-xs shadow-sm"><div class="text-sm">Merhaba! Rezervasyonunuzu aldim. Hava durumuna gore harika bir gun olacak</div><div class="text-[10px] text-gray-400 mt-1">14:30</div></div></div>
+          <div class="flex justify-end"><div class="bg-primary text-white rounded-2xl rounded-tr-sm p-3 max-w-xs"><div class="text-sm">Tesekkurler kaptan! Ekipman getirmemize gerek var mi?</div><div class="text-[10px] text-white/70 mt-1">14:31</div></div></div>
+          <div class="flex justify-start"><div class="bg-white rounded-2xl rounded-tl-sm p-3 max-w-xs shadow-sm"><div class="text-sm">Hayir, tum ekipmanlar teknede mevcut. Sadece gunes kremi ve sapka getirin</div><div class="text-[10px] text-gray-400 mt-1">14:32</div></div></div>
+          <div class="flex justify-start"><div class="bg-white rounded-2xl rounded-tl-sm p-3 max-w-xs shadow-sm"><div class="text-sm">Sabah 06:00'da limanda gorusuruz! Marina girisi 3 numarali iskele.</div><div class="text-[10px] text-gray-400 mt-1">14:32</div></div></div>
+        </div>
+
+        <!-- Input -->
+        <div class="p-3 border-t flex items-center gap-2">
+          <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-paperclip"></i></button>
+          <input type="text" placeholder="Mesajinizi yazin..." class="flex-1 px-4 py-2.5 bg-gray-50 rounded-full text-sm">
+          <button class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primaryDark"><i class="fas fa-paper-plane text-sm"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 12: PROFIL / AYARLAR               -->
+<!-- ======================================= -->
+<section id="page-profile" class="page pb-20">
+  <div class="max-w-2xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Profilim</h1>
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center"><i class="fas fa-user text-primary text-2xl"></i></div>
+        <div>
+          <h2 class="font-bold text-lg">Ali Kaya</h2>
+          <p class="text-sm text-gray-500">ali@email.com &bull; +90 535 123 45 67</p>
+          <p class="text-xs text-gray-400">Uye: Ocak 2026</p>
+        </div>
+        <button class="ml-auto text-primary text-sm font-medium">Duzenle</button>
+      </div>
+      <div class="grid grid-cols-3 gap-4 text-center border-t pt-4">
+        <div><div class="text-xl font-bold text-primary">7</div><div class="text-xs text-gray-500">Tur</div></div>
+        <div><div class="text-xl font-bold text-accent">3</div><div class="text-xs text-gray-500">Yorum</div></div>
+        <div><div class="text-xl font-bold text-success">15,200 TL</div><div class="text-xs text-gray-500">Harcama</div></div>
+      </div>
+    </div>
+
+    <div class="space-y-2">
+      <a href="#my-bookings" class="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 card-hover"><div class="flex items-center gap-3"><i class="fas fa-calendar-check text-primary w-6"></i><span class="text-sm font-medium">Rezervasyonlarim</span></div><i class="fas fa-chevron-right text-gray-300"></i></a>
+      <a href="#messages" class="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 card-hover"><div class="flex items-center gap-3"><i class="fas fa-comment text-primary w-6"></i><span class="text-sm font-medium">Mesajlarim</span></div><i class="fas fa-chevron-right text-gray-300"></i></a>
+      <div class="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 card-hover cursor-pointer"><div class="flex items-center gap-3"><i class="fas fa-heart text-primary w-6"></i><span class="text-sm font-medium">Favorilerim</span></div><i class="fas fa-chevron-right text-gray-300"></i></div>
+      <div class="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 card-hover cursor-pointer"><div class="flex items-center gap-3"><i class="fas fa-credit-card text-primary w-6"></i><span class="text-sm font-medium">Odeme Yontemlerim</span></div><i class="fas fa-chevron-right text-gray-300"></i></div>
+      <div class="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 card-hover cursor-pointer"><div class="flex items-center gap-3"><i class="fas fa-bell text-primary w-6"></i><span class="text-sm font-medium">Bildirim Tercihleri</span></div><i class="fas fa-chevron-right text-gray-300"></i></div>
+      <div class="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 card-hover cursor-pointer"><div class="flex items-center gap-3"><i class="fas fa-shield-alt text-primary w-6"></i><span class="text-sm font-medium">Guvenlik</span></div><i class="fas fa-chevron-right text-gray-300"></i></div>
+      <div class="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 card-hover cursor-pointer"><div class="flex items-center gap-3"><i class="fas fa-globe text-primary w-6"></i><span class="text-sm font-medium">Dil: Turkce</span></div><i class="fas fa-chevron-right text-gray-300"></i></div>
+      <a href="#about" class="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 card-hover"><div class="flex items-center gap-3"><i class="fas fa-question-circle text-primary w-6"></i><span class="text-sm font-medium">Yardim & SSS</span></div><i class="fas fa-chevron-right text-gray-300"></i></a>
+      <div class="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 card-hover cursor-pointer"><div class="flex items-center gap-3"><i class="fas fa-sign-out-alt text-danger w-6"></i><span class="text-sm font-medium text-danger">Cikis Yap</span></div><i class="fas fa-chevron-right text-gray-300"></i></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 13: HAKKIMIZDA / SSS               -->
+<!-- ======================================= -->
+<section id="page-about" class="page pb-20">
+  <div class="max-w-4xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Hakkimizda</h1>
+
+    <!-- About -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <div class="md:flex items-center gap-6">
+        <div class="w-24 h-24 hero-gradient rounded-2xl flex items-center justify-center mb-4 md:mb-0"><i class="fas fa-ship text-white text-3xl"></i></div>
+        <div>
+          <h2 class="text-xl font-bold mb-2">DenizBul.tr</h2>
+          <p class="text-sm text-gray-600 leading-relaxed">Turkiye'nin en buyuk tekne turu marketplace platformu. Balik avi, gezi, ozel etkinlik ve daha fazlasi — dogrulanmis kaptanlar ve aninda onay ile hayalinizdeki deniz deneyimini sunuyoruz. Kaptanlara ucretsiz platform saglayarak en genis tur agini olusturuyoruz.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="mb-6">
+      <h2 class="text-lg font-bold mb-4">Sikca Sorulan Sorular</h2>
+      <div class="space-y-2" id="faq-list">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-4 text-left"><span class="font-medium text-sm">Rezervasyon nasil yapilir?</span><i class="fas fa-chevron-down text-gray-400 transition"></i></button>
+          <div class="px-4 pb-4 text-sm text-gray-600 hidden">Istediginiz turu secin, tarih ve misafir sayisini belirtin, odemenizi yapin. Aninda onayli turlarda rezervasyonunuz hemen onaylanir. Ozel etkinlik turlarda kaptan 24 saat icinde yanit verir.</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-4 text-left"><span class="font-medium text-sm">Iptal politikasi nedir?</span><i class="fas fa-chevron-down text-gray-400 transition"></i></button>
+          <div class="px-4 pb-4 text-sm text-gray-600 hidden">Tur baslangicidan 24 saat oncesine kadar ucretsiz iptal edebilirsiniz. 24 saatten az kaldiysa %50 kesinti uygulanir. Hava kosullari nedeniyle iptal durumunda tam iade yapilir.</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-4 text-left"><span class="font-medium text-sm">Odemeler guvenli mi?</span><i class="fas fa-chevron-down text-gray-400 transition"></i></button>
+          <div class="px-4 pb-4 text-sm text-gray-600 hidden">Evet, tum odemeler Iyzico altyapisi ile 256-bit SSL sifreleme altinda gerceklesir. Kart bilgileriniz sunucularimizda saklanmaz.</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-4 text-left"><span class="font-medium text-sm">Kaptan olarak nasil kayit olabilirim?</span><i class="fas fa-chevron-down text-gray-400 transition"></i></button>
+          <div class="px-4 pb-4 text-sm text-gray-600 hidden">Platform kaptanlar icin tamamen ucretsizdir. Kayit olun, tekne ve sertifika bilgilerinizi yukleyin, dogrulama surecinden gecin. Sadece gerceklesen rezervasyonlardan komisyon kesilir.</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-4 text-left"><span class="font-medium text-sm">Komisyon orani nedir?</span><i class="fas fa-chevron-down text-gray-400 transition"></i></button>
+          <div class="px-4 pb-4 text-sm text-gray-600 hidden">Standart turlar icin %10, ozel etkinlik turlari icin %15 komisyon uygulanir. Listeleme ucreti veya aylik abonelik yoktur.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="bg-white rounded-2xl shadow-sm p-6">
+      <h2 class="text-lg font-bold mb-4">Iletisim</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="text-center p-4 bg-gray-50 rounded-xl"><i class="fas fa-envelope text-primary text-xl mb-2"></i><div class="text-sm font-medium">E-posta</div><div class="text-xs text-gray-500">destek@denizbul.tr</div></div>
+        <div class="text-center p-4 bg-gray-50 rounded-xl"><i class="fas fa-phone text-primary text-xl mb-2"></i><div class="text-sm font-medium">Telefon</div><div class="text-xs text-gray-500">0850 XXX XX XX</div></div>
+        <div class="text-center p-4 bg-gray-50 rounded-xl"><i class="fas fa-map-marker-alt text-primary text-xl mb-2"></i><div class="text-sm font-medium">Adres</div><div class="text-xs text-gray-500">Antalya, Turkiye</div></div>
+      </div>
+      <div class="space-y-3">
+        <div class="flex gap-3">
+          <input type="text" class="flex-1 px-4 py-2.5 border rounded-lg text-sm" placeholder="Adiniz">
+          <input type="email" class="flex-1 px-4 py-2.5 border rounded-lg text-sm" placeholder="E-posta">
+        </div>
+        <textarea class="w-full px-4 py-2.5 border rounded-lg text-sm h-24" placeholder="Mesajiniz..."></textarea>
+        <button class="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-medium">Gonder</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================= -->
+<!-- PAGE 14: E-TICARET / MAGAZA             -->
+<!-- ======================================= -->
+<section id="page-shop" class="page pb-20">
+  <div class="max-w-6xl mx-auto px-4 py-6">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold">Magaza</h1>
+        <p class="text-gray-500 text-sm">Balikcilik malzemeleri ve ekipmanlar</p>
+      </div>
+      <button class="relative p-2 text-gray-500 hover:text-primary" onclick="toggleCart()">
+        <i class="fas fa-shopping-cart text-xl"></i>
+        <span class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-accent text-white text-[10px] rounded-full flex items-center justify-center" id="cart-count">3</span>
+      </button>
+    </div>
+
+    <!-- Categories -->
+    <div class="flex gap-2 mb-6 overflow-x-auto">
+      <button class="tab-btn active px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Tumu</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Olta & Makine</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Yem & Misina</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Giyim</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Aksesuar</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Tekne Ekipman</button>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="products-grid">
+      <!-- Filled by JS -->
+    </div>
+
+    <!-- Cart Sidebar (hidden by default) -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 w-80 h-full bg-white shadow-2xl z-[60] transform translate-x-full transition-transform" style="display:none">
+      <div class="p-4 border-b flex justify-between items-center">
+        <h3 class="font-bold">Sepetim (3)</h3>
+        <button onclick="toggleCart()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+      </div>
+      <div class="p-4 space-y-3 overflow-y-auto" style="max-height:calc(100vh - 200px)">
+        <div class="flex gap-3 pb-3 border-b">
+          <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center"><i class="fas fa-fishing text-gray-400"></i></div>
+          <div class="flex-1"><div class="text-sm font-medium">Shimano Olta Seti</div><div class="text-xs text-gray-500">1 adet</div><div class="text-sm font-bold text-primary mt-1">850 TL</div></div>
+          <button class="text-gray-300 hover:text-danger"><i class="fas fa-trash text-sm"></i></button>
+        </div>
+        <div class="flex gap-3 pb-3 border-b">
+          <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center"><i class="fas fa-tshirt text-gray-400"></i></div>
+          <div class="flex-1"><div class="text-sm font-medium">UV Koruma Tisort</div><div class="text-xs text-gray-500">2 adet</div><div class="text-sm font-bold text-primary mt-1">340 TL</div></div>
+          <button class="text-gray-300 hover:text-danger"><i class="fas fa-trash text-sm"></i></button>
+        </div>
+        <div class="flex gap-3">
+          <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center"><i class="fas fa-box text-gray-400"></i></div>
+          <div class="flex-1"><div class="text-sm font-medium">Suni Yem Seti (20li)</div><div class="text-xs text-gray-500">1 adet</div><div class="text-sm font-bold text-primary mt-1">180 TL</div></div>
+          <button class="text-gray-300 hover:text-danger"><i class="fas fa-trash text-sm"></i></button>
+        </div>
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
+        <div class="flex justify-between mb-3"><span class="text-gray-500">Toplam</span><span class="font-bold text-lg">1,370 TL</span></div>
+        <button class="w-full bg-accent text-white py-3 rounded-xl font-semibold">Odemeye Gec</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TOAST ===== -->
+<div id="toast" class="fixed top-20 right-4 bg-success text-white px-5 py-3 rounded-xl shadow-lg z-[70] transition-all transform translate-x-full opacity-0 flex items-center gap-2">
+  <i class="fas fa-check-circle"></i>
+  <span id="toast-text"></span>
+</div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+// ===== ROUTING =====
+const pages = ['home','search','detail','captain-profile','explore','login','payment','confirmation','my-bookings','write-review','messages','profile','about','shop'];
+
+function navigateTo(page) {
+  window.location.hash = '#' + page;
+}
+
+function handleRoute() {
+  let hash = window.location.hash.replace('#','') || 'home';
+  pages.forEach(p => {
+    const el = document.getElementById('page-' + p);
+    if(el) el.classList.toggle('active', p === hash);
+  });
+  // Update nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.nav === hash));
+  document.querySelectorAll('.mob-nav').forEach(n => {
+    const isActive = n.dataset.mob === hash;
+    n.classList.toggle('text-primary', isActive);
+    n.classList.toggle('text-gray-400', !isActive);
+  });
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange', handleRoute);
+window.addEventListener('load', () => { handleRoute(); renderAll(); });
+
+// ===== LOCALSTORAGE HELPERS =====
+function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}}
+function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
+const CAT_META={
+  'Balik Avi':{cat:'balik',catColor:'blue',icon:'fa-fish',img:'from-blue-400 to-blue-600'},
+  'Tekne Gezisi':{cat:'gezi',catColor:'cyan',icon:'fa-compass',img:'from-cyan-400 to-teal-500'},
+  'Ozel Etkinlik':{cat:'ozel',catColor:'pink',icon:'fa-heart',img:'from-pink-400 to-rose-500'},
+  'Kurumsal':{cat:'kurumsal',catColor:'indigo',icon:'fa-briefcase',img:'from-indigo-400 to-indigo-600'},
+  'Yuzme':{cat:'yuzme',catColor:'sky',icon:'fa-swimmer',img:'from-sky-400 to-sky-600'},
+  'Gun Batimi':{cat:'gunbatimi',catColor:'orange',icon:'fa-sun',img:'from-orange-400 to-amber-500'},
+};
+
+function getDbTours(){
+  return lsGet('db_tours',[]).map(t=>{
+    const cat=t.kategoriler?.[0]||'Tekne Gezisi';
+    const meta=CAT_META[cat]||CAT_META['Tekne Gezisi'];
+    return{id:t.id,name:t.title,location:t.kalkis||'Turkiye',price:t.price||0,rating:4.8,reviews:0,duration:t.sure||'—',captainName:t.captainName,captainEmail:t.captainEmail,...meta,_isReal:true};
+  });
+}
+
+function getAllTours(){
+  const db=getDbTours();
+  return db.length>0?[...db,...sampleTours]:sampleTours;
+}
+
+let selectedTour=null;
+
+// ===== MOCK DATA =====
+const sampleTours = [
+  {id:1,name:'Kaptan Mehmet ile Balik Avi Turu',location:'Antalya, Kemer',price:1800,rating:4.9,reviews:124,duration:'6 saat',cat:'balik',catColor:'blue',icon:'fa-fish',img:'from-blue-400 to-blue-600'},
+  {id:2,name:'Fethiye 12 Adalar Gezi Turu',location:'Fethiye',price:600,rating:4.8,reviews:89,duration:'8 saat',cat:'gezi',catColor:'cyan',icon:'fa-compass',img:'from-cyan-400 to-teal-500'},
+  {id:3,name:'Gun Batimi Nisan Teklifi',location:'Bodrum',price:4500,rating:5.0,reviews:34,duration:'3 saat',cat:'ozel',catColor:'pink',icon:'fa-heart',img:'from-pink-400 to-rose-500'},
+  {id:4,name:'Kekova Yuzme & Snokel Turu',location:'Kas',price:450,rating:4.7,reviews:67,duration:'5 saat',cat:'yuzme',catColor:'sky',icon:'fa-swimmer',img:'from-sky-400 to-sky-600'},
+  {id:5,name:'Kurumsal Team Building Turu',location:'Istanbul',price:8000,rating:4.8,reviews:22,duration:'4 saat',cat:'kurumsal',catColor:'indigo',icon:'fa-briefcase',img:'from-indigo-400 to-indigo-600'},
+  {id:6,name:'Alanya Derin Su Trolling',location:'Alanya',price:2200,rating:4.6,reviews:55,duration:'8 saat',cat:'balik',catColor:'blue',icon:'fa-fish',img:'from-blue-500 to-blue-700'},
+  {id:7,name:'Gun Batimi Romantik Gezi',location:'Bodrum',price:1200,rating:4.9,reviews:156,duration:'2 saat',cat:'gunbatimi',catColor:'orange',icon:'fa-sun',img:'from-orange-400 to-amber-500'},
+  {id:8,name:'Antalya Ogle Yemekli Tur',location:'Antalya',price:350,rating:4.5,reviews:203,duration:'6 saat',cat:'gezi',catColor:'cyan',icon:'fa-compass',img:'from-teal-400 to-teal-600'},
+  {id:9,name:'Evlilik Yildonu Kutlamasi',location:'Fethiye',price:5500,rating:5.0,reviews:18,duration:'4 saat',cat:'ozel',catColor:'pink',icon:'fa-heart',img:'from-rose-400 to-pink-600'},
+];
+
+const products = [
+  {name:'Shimano Olta Seti Pro',price:850,oldPrice:1100,rating:4.8,reviews:45,icon:'fa-fishing',color:'blue'},
+  {name:'UV Koruma Tisort',price:170,oldPrice:220,rating:4.5,reviews:89,icon:'fa-tshirt',color:'cyan'},
+  {name:'Suni Yem Seti (20li)',price:180,oldPrice:null,rating:4.6,reviews:32,icon:'fa-box',color:'green'},
+  {name:'Balik Tarti 50kg',price:340,oldPrice:400,rating:4.7,reviews:28,icon:'fa-weight-hanging',color:'amber'},
+  {name:'Denizci Sapka',price:120,oldPrice:null,rating:4.4,reviews:67,icon:'fa-hat-cowboy',color:'sky'},
+  {name:'Su Gecirmez Canta',price:290,oldPrice:350,rating:4.8,reviews:41,icon:'fa-suitcase',color:'indigo'},
+  {name:'Polarize Gunes Gozlugu',price:420,oldPrice:550,rating:4.9,reviews:56,icon:'fa-glasses',color:'teal'},
+  {name:'Balik Tutucu Eldiven',price:95,oldPrice:null,rating:4.3,reviews:24,icon:'fa-hand-paper',color:'rose'},
+];
+
+const reviews = [
+  {name:'Fatma D.',rating:5,text:'Harika bir deneyimdi! Kaptan cok ilgili ve bilgili. 3 buyuk levrek tuttuk. Kesinlikle tekrar geleceğiz.',date:'2 hafta once'},
+  {name:'Ahmet Y.',rating:5,text:'Ailecek gittik, cocuklar cok eglendi. Ekipmanlar temiz ve kaliteliydi.',date:'1 ay once'},
+  {name:'Zeynep K.',rating:4,text:'Tur guzeldi ama biraz erken basliyor. Kahvalti olsa daha iyi olurdu.',date:'1 ay once'},
+];
+
+// ===== RENDER =====
+function renderAll() {
+  renderPopularTours();
+  renderSearchResults();
+  renderProducts();
+  renderReviews();
+  renderCaptainTours();
+  selectPackage(0);
+}
+
+const tourMap={};
+function selectTourById(id){selectedTour=tourMap[id]||null;}
+
+function tourCard(t, isSearch) {
+  tourMap[t.id]=t;
+  const layout = isSearch ? 'flex flex-col md:flex-row gap-4' : '';
+  const imgClass = isSearch ? 'w-full md:w-48 h-40 md:h-auto' : 'h-44';
+  return `<a href="#detail" onclick="selectTourById(${t.id})" class="bg-white rounded-xl shadow-sm overflow-hidden card-hover block">
+    <div class="${layout}">
+      <div class="${imgClass} bg-gradient-to-br ${t.img} relative">
+        <div class="absolute top-3 left-3"><span class="badge-cat bg-${t.catColor}-100 text-${t.catColor}-700"><i class="fas ${t.icon} mr-1"></i>${t.cat}</span></div>
+        <div class="absolute top-3 right-3"><button class="w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white"><i class="far fa-heart text-gray-500"></i></button></div>
+        ${!isSearch?'':''}
+      </div>
+      <div class="p-4 flex-1">
+        <div class="flex items-center gap-1 text-xs text-gray-500 mb-1"><i class="fas fa-map-marker-alt text-primary"></i> ${t.location}</div>
+        <h3 class="font-semibold text-sm mb-1">${t.name}</h3>
+        <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
+          <span class="text-amber-500 font-medium"><i class="fas fa-star"></i> ${t.rating}</span>
+          <span>(${t.reviews} yorum)</span>
+          <span>&bull; <i class="fas fa-clock"></i> ${t.duration}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <div><span class="text-lg font-bold text-primary">${t.price.toLocaleString()} TL</span><span class="text-xs text-gray-400"> / tekne</span></div>
+          ${t.cat==='balik'||t.cat==='gezi'?'<span class="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full"><i class="fas fa-bolt mr-0.5"></i>Aninda Onay</span>':'<span class="bg-amber-100 text-amber-700 text-[10px] px-2 py-0.5 rounded-full">Kaptan Onayi</span>'}
+        </div>
+      </div>
+    </div>
+  </a>`;
+}
+
+function renderPopularTours() {
+  document.getElementById('popular-tours').innerHTML = getAllTours().slice(0,6).map(t => tourCard(t,false)).join('');
+}
+
+function renderSearchResults() {
+  document.getElementById('search-results').innerHTML = getAllTours().map(t => tourCard(t,true)).join('');
+}
+
+function renderProducts() {
+  document.getElementById('products-grid').innerHTML = products.map(p => `
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+      <div class="h-36 bg-${p.color}-50 flex items-center justify-center"><i class="fas ${p.icon} text-${p.color}-400 text-3xl"></i></div>
+      <div class="p-3">
+        <h3 class="font-medium text-sm mb-1">${p.name}</h3>
+        <div class="flex items-center gap-1 text-xs mb-2"><span class="text-amber-500"><i class="fas fa-star"></i> ${p.rating}</span><span class="text-gray-400">(${p.reviews})</span></div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-primary">${p.price} TL</span>
+          ${p.oldPrice?`<span class="text-xs text-gray-400 line-through">${p.oldPrice} TL</span>`:''}
+        </div>
+        <button class="w-full mt-2 bg-primary/10 text-primary py-1.5 rounded-lg text-xs font-medium hover:bg-primary hover:text-white transition"><i class="fas fa-cart-plus mr-1"></i> Sepete Ekle</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderReviews() {
+  const html = reviews.map(r => `
+    <div class="bg-white rounded-xl shadow-sm p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center"><span class="text-primary font-semibold text-sm">${r.name[0]}</span></div>
+        <div class="flex-1"><div class="font-medium text-sm">${r.name}</div><div class="text-xs text-gray-400">${r.date}</div></div>
+        <div class="flex gap-0.5">${'<i class="fas fa-star star text-sm"></i>'.repeat(r.rating)}${'<i class="fas fa-star star-empty text-sm"></i>'.repeat(5-r.rating)}</div>
+      </div>
+      <p class="text-sm text-gray-600">${r.text}</p>
+    </div>
+  `).join('');
+  const el1 = document.getElementById('review-list');
+  const el2 = document.getElementById('captain-reviews');
+  if(el1) el1.innerHTML = html;
+  if(el2) el2.innerHTML = html;
+}
+
+function renderCaptainTours() {
+  document.getElementById('captain-tours').innerHTML = getAllTours().slice(0,4).map(t => tourCard(t,false)).join('');
+}
+
+// ===== PACKAGES =====
+const packages = [
+  {name:'Balik Avi Paketi',price:1800,desc:'Acik denizde trolling ve jigging ile profesyonel balik avi deneyimi. Tum ekipmanlar dahil.',includes:['Olta ve makine','Yem','Can yelegi','Cay/Kahve','Fotografci']},
+  {name:'Gezi Paketi',price:1200,desc:'Kemer koylarini dolasarak yuzme ve doga ile iç ice bir gun. Ogle yemegi dahil.',includes:['Ogle yemegi','Snorkel seti','Muzik','Can yelegi','Havlu']},
+  {name:'Ozel Etkinlik',price:4500,desc:'Nisan teklifi, dogum gunu, yildonumu — hayalinizdeki ozel ani denizde yasayin.',includes:['Dekorasyon','Pasta','Sampanya','Fotografci','Ozel muzik']},
+  {name:'Kurumsal',price:8000,desc:'Team building, kutlama veya toplanti icin ozel tekne deneyimi. 20 kisiye kadar.',includes:['Catering','Sunum ekrani','Wifi','Fotografci','DJ']},
+];
+
+function selectPackage(idx) {
+  const p = packages[idx];
+  document.querySelectorAll('#detail-package-tabs .tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', i===idx);
+  });
+  document.getElementById('package-details').innerHTML = `
+    <div class="bg-gray-50 rounded-xl p-4">
+      <h3 class="font-semibold mb-1">${p.name}</h3>
+      <p class="text-sm text-gray-600 mb-3">${p.desc}</p>
+      <div class="flex flex-wrap gap-2">${p.includes.map(i => `<span class="bg-white text-sm px-3 py-1 rounded-full border"><i class="fas fa-check text-success mr-1"></i>${i}</span>`).join('')}</div>
+      <div class="mt-3 text-right"><span class="text-2xl font-bold text-primary">${p.price.toLocaleString()} TL</span><span class="text-gray-500 text-sm"> / tekne</span></div>
+    </div>`;
+  // Update booking card
+  const bp = document.getElementById('booking-price');
+  if(bp) bp.textContent = p.price.toLocaleString();
+  updateBookingPrice(p.price);
+}
+
+// ===== BOOKING =====
+let guestCount = 2;
+let basePrice = 1800;
+
+function confirmBooking(){
+  const t=selectedTour;
+  const booking={
+    id:'BK'+Date.now(),
+    tourId:t?t.id:null,
+    tourTitle:t?t.name:'Tur',
+    captainEmail:t?t.captainEmail:null,
+    captainName:t?t.captainName:null,
+    customerName:'Misafir',
+    guests:guestCount,
+    durum:'bekliyor',
+    amount:basePrice+Math.round(basePrice*0.1),
+    date:new Date().toLocaleDateString('tr-TR'),
+    createdAt:new Date().toISOString()
+  };
+  const db=lsGet('db_bookings',[]);
+  db.unshift(booking);
+  lsSet('db_bookings',db);
+  navigateTo('confirmation');
+}
+
+function changeGuest(d) {
+  guestCount = Math.max(1, Math.min(10, guestCount + d));
+  document.getElementById('guest-count').textContent = guestCount;
+}
+
+function updateBookingPrice(price) {
+  basePrice = price || basePrice;
+  const fee = Math.round(basePrice * 0.1);
+  document.getElementById('tour-fee').textContent = basePrice.toLocaleString() + ' TL';
+  document.getElementById('service-fee').textContent = fee.toLocaleString() + ' TL';
+  document.getElementById('total-price').textContent = (basePrice + fee).toLocaleString() + ' TL';
+}
+
+// ===== LOGIN TABS =====
+function showLoginTab(tab) {
+  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('login-tab').className = `flex-1 py-2 text-sm font-medium rounded-md ${tab==='login'?'bg-white shadow text-primary':'text-gray-500'}`;
+  document.getElementById('register-tab').className = `flex-1 py-2 text-sm font-medium rounded-md ${tab==='register'?'bg-white shadow text-primary':'text-gray-500'}`;
+}
+
+// ===== RATING =====
+function setRating(n) {
+  const stars = document.querySelectorAll('#star-rating button');
+  stars.forEach((s,i) => s.className = `text-3xl ${i<n?'star':'star-empty'} hover:text-amber-400 transition`);
+  const texts = ['','Cok Kotu','Kotu','Orta','Iyi','Harika!'];
+  document.getElementById('rating-text').textContent = texts[n];
+}
+
+// ===== FAQ =====
+function toggleFaq(btn) {
+  const content = btn.nextElementSibling;
+  const icon = btn.querySelector('i');
+  content.classList.toggle('hidden');
+  icon.classList.toggle('rotate-180');
+}
+
+// ===== CART =====
+function toggleCart() {
+  const sidebar = document.getElementById('cart-sidebar');
+  if(sidebar.style.display === 'none') {
+    sidebar.style.display = 'block';
+    setTimeout(() => sidebar.style.transform = 'translateX(0)', 10);
+  } else {
+    sidebar.style.transform = 'translateX(100%)';
+    setTimeout(() => sidebar.style.display = 'none', 300);
+  }
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = msg;
+  t.classList.remove('translate-x-full','opacity-0');
+  setTimeout(() => t.classList.add('translate-x-full','opacity-0'), 3000);
+}
+
+// ===== FILTER =====
+function setFilter(cat) {
+  // placeholder for filter logic
+}
+function filterBookings(type) {
+  document.querySelectorAll('#page-my-bookings .tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', b.textContent.toLowerCase().includes(type.substring(0,3)));
+  });
+}
+</script>
+</body>
+</html>
