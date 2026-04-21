@@ -703,6 +703,90 @@ tr:hover td{background:#f8fafc}
   </section>
 </div>
 
+<!-- ===== KAPTAN TURLARI MODALI ===== -->
+<div id="captain-tours-modal" style="display:none" class="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto pt-6 pb-10 px-4">
+  <div class="bg-white rounded-2xl w-full max-w-4xl shadow-2xl">
+    <!-- Header -->
+    <div class="flex items-center justify-between p-6 border-b">
+      <div>
+        <h2 class="font-bold text-lg" id="ctm-title">Kaptan Turlari</h2>
+        <p class="text-xs text-gray-400 mt-0.5" id="ctm-sub">Kaptanin yayinladigi turlar</p>
+      </div>
+      <button onclick="closeCaptainTours()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500"><i class="fas fa-times"></i></button>
+    </div>
+    <!-- Tur listesi -->
+    <div id="ctm-body" class="p-6 space-y-4">
+      <p class="text-center text-gray-400 text-sm py-8">Henuz tur yok</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TUR DUZENLEME MODALI ===== -->
+<div id="tour-edit-modal" style="display:none" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center px-4">
+  <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between p-5 border-b">
+      <h3 class="font-bold">Turu Duzenle</h3>
+      <button onclick="closeTourEdit()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-5 space-y-3">
+      <input type="hidden" id="te-id">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2">
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Tur Adi</label>
+          <input id="te-ad" type="text" class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Kategori</label>
+          <select id="te-kategori" class="w-full border rounded-lg px-3 py-2 text-sm">
+            <option>Balik Avi</option><option>Tekne Gezisi</option><option>Gunbatimi Turu</option>
+            <option>Yelkenli Turu</option><option>Ozel Etkinlik</option><option>Kurumsal</option><option>Foto Safari</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Durum</label>
+          <select id="te-durum" class="w-full border rounded-lg px-3 py-2 text-sm">
+            <option value="aktif">Aktif</option>
+            <option value="pasif">Pasif</option>
+            <option value="bekliyor">Onay Bekliyor</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Konum</label>
+          <input id="te-konum" type="text" class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Sure (saat)</label>
+          <input id="te-sure" type="number" min="1" class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Kapasite (kisi)</label>
+          <input id="te-kapasite" type="number" min="1" class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Fiyat (TL)</label>
+          <input id="te-fiyat" type="number" min="0" class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div class="col-span-2">
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Aciklama</label>
+          <textarea id="te-aciklama" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm resize-none"></textarea>
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Dahil Olanlar</label>
+          <textarea id="te-dahil" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm resize-none"></textarea>
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Haric Olanlar</label>
+          <textarea id="te-haric" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm resize-none"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3 p-5 border-t">
+      <button onclick="closeTourEdit()" class="flex-1 border py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50">Vazgec</button>
+      <button onclick="saveTourEdit()" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-medium hover:bg-primaryDark">Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== SIL ONAY MODALI ===== -->
 <div id="delete-modal" style="display:none" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
   <div class="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
@@ -1010,8 +1094,11 @@ function renderCaptains(){
     return;
   }
 
+  const allTours=lsGet('db_tours',[]);
   tbody.innerHTML=captains.map(c=>{
     const initials=(c.ad[0]+(c.soyad[0]||'')).toUpperCase();
+    const myTours=allTours.filter(t=>t.captainEmail===c.email);
+    const tourCount=myTours.length;
     const durumBadge=c.durum==='aktif'
       ?'<span class="badge bg-green-100 text-green-700"><i class="fas fa-check-circle"></i> Aktif</span>'
       :c.durum==='askida'
@@ -1024,7 +1111,9 @@ function renderCaptains(){
       :`<button onclick="setCaptainDurum(${c.id},'askida')" class="text-gray-400 text-xs hover:text-danger mr-2">Askiya Al</button><button onclick="openDeleteModal(${c.id})" class="text-danger text-xs hover:underline">Sil</button>`;
     return`<tr>
       <td><div class="flex items-center gap-2"><div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">${initials}</div><div><div class="font-medium">${c.ad} ${c.soyad}</div><div class="text-[10px] text-gray-400">${c.email}</div></div></div></td>
-      <td>${c.tekne} (${c.uzunluk}m)</td><td>${c.bolge}</td><td>0</td><td>—</td><td>—</td>
+      <td>${c.tekne} (${c.uzunluk}m)</td><td>${c.bolge}</td>
+      <td><button onclick="openCaptainTours(${c.id})" class="flex items-center gap-1 text-primary text-xs font-medium hover:underline"><i class="fas fa-ship"></i> ${tourCount} tur</button></td>
+      <td>—</td><td>—</td>
       <td>${durumBadge}</td><td>${islemler}</td>
     </tr>`;
   }).join('');
@@ -1096,6 +1185,133 @@ function submitCaptainForm(){
   window.location.hash='#captains';
   showToast(ad+' '+soyad+' basariyla eklendi','success');
 }
+
+/* ── KAPTAN TURLARI MODAL ── */
+let ctmCaptainId=null;
+function openCaptainTours(captainId){
+  ctmCaptainId=captainId;
+  const c=captains.find(x=>x.id===captainId);
+  if(!c)return;
+  document.getElementById('ctm-title').textContent=c.ad+' '+c.soyad+' — Turlar';
+  document.getElementById('ctm-sub').textContent=c.email+' | '+c.tekne+' ('+c.uzunluk+'m) | '+c.bolge;
+  renderCaptainToursModal(captainId);
+  document.getElementById('captain-tours-modal').style.display='flex';
+}
+function closeCaptainTours(){
+  document.getElementById('captain-tours-modal').style.display='none';
+  ctmCaptainId=null;
+}
+function renderCaptainToursModal(captainId){
+  const c=captains.find(x=>x.id===captainId);
+  if(!c)return;
+  const tours=lsGet('db_tours',[]).filter(t=>t.captainEmail===c.email);
+  const body=document.getElementById('ctm-body');
+  if(tours.length===0){
+    body.innerHTML='<p class="text-center text-gray-400 text-sm py-10"><i class="fas fa-ship text-3xl block mb-3 opacity-30"></i>Bu kaptanin henuz turu yok</p>';
+    return;
+  }
+  const durumColor={aktif:'bg-green-100 text-green-700',pasif:'bg-gray-100 text-gray-500',bekliyor:'bg-amber-100 text-amber-700'};
+  const durumLabel={aktif:'Aktif',pasif:'Pasif',bekliyor:'Onay Bekliyor'};
+  body.innerHTML=tours.map(t=>{
+    const d=t.durum||'bekliyor';
+    const approveBtn=d!=='aktif'?`<button onclick="adminSetTourDurum(${t.id},'aktif',${captainId})" class="bg-success text-white px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-check mr-1"></i>Onayla</button>`:'';
+    const rejectBtn=d!=='pasif'?`<button onclick="adminSetTourDurum(${t.id},'pasif',${captainId})" class="bg-red-100 text-danger px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-ban mr-1"></i>Reddet</button>`:'';
+    const dahilList=(t.dahil||'').split('\n').filter(Boolean).map(x=>`<li class="flex items-start gap-1"><i class="fas fa-check text-success text-[10px] mt-0.5"></i>${x}</li>`).join('');
+    const haricList=(t.haric||'').split('\n').filter(Boolean).map(x=>`<li class="flex items-start gap-1"><i class="fas fa-times text-danger text-[10px] mt-0.5"></i>${x}</li>`).join('');
+    return`<div class="border rounded-xl p-4 hover:shadow-md transition-shadow">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-sm">${t.ad||'—'}</span>
+            <span class="badge ${durumColor[d]||'bg-gray-100 text-gray-500'} text-[10px]">${durumLabel[d]||d}</span>
+          </div>
+          <div class="text-xs text-gray-400 mt-0.5">${t.kategori||'—'} · <i class="fas fa-map-marker-alt"></i> ${t.konum||'—'}</div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="text-base font-bold text-primary">${t.fiyat?Number(t.fiyat).toLocaleString('tr-TR')+' TL':'—'}</div>
+          <div class="text-[10px] text-gray-400">kisi basina</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 mb-3">
+        <div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-xs font-bold">${t.sure||'—'} saat</div><div class="text-[10px] text-gray-400">Sure</div></div>
+        <div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-xs font-bold">${t.kapasite||'—'} kisi</div><div class="text-[10px] text-gray-400">Kapasite</div></div>
+        <div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-xs font-bold">${lsGet('db_bookings',[]).filter(b=>b.tourId===t.id).length}</div><div class="text-[10px] text-gray-400">Rezervasyon</div></div>
+      </div>
+      ${t.aciklama?`<p class="text-xs text-gray-600 mb-3 leading-relaxed">${t.aciklama}</p>`:''}
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        ${dahilList?`<div><div class="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">Dahil</div><ul class="text-xs text-gray-600 space-y-0.5">${dahilList}</ul></div>`:''}
+        ${haricList?`<div><div class="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">Haric</div><ul class="text-xs text-gray-600 space-y-0.5">${haricList}</ul></div>`:''}
+      </div>
+      <div class="flex gap-2 flex-wrap pt-2 border-t">
+        ${approveBtn}${rejectBtn}
+        <button onclick="openTourEdit(${t.id},${captainId})" class="border px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-50"><i class="fas fa-edit mr-1"></i>Duzenle</button>
+        <button onclick="adminDeleteTourFromModal(${t.id},${captainId})" class="text-danger text-xs px-3 py-1.5 rounded-lg hover:bg-red-50 font-medium"><i class="fas fa-trash mr-1"></i>Sil</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function adminSetTourDurum(tourId,durum,captainId){
+  const tours=lsGet('db_tours',[]);
+  const t=tours.find(x=>x.id===tourId);
+  if(t){t.durum=durum;localStorage.setItem('db_tours',JSON.stringify(tours));}
+  renderCaptainToursModal(captainId);
+  renderCaptains();
+  showToast('Tur durumu guncellendi','success');
+}
+function adminDeleteTourFromModal(tourId,captainId){
+  if(!confirm('Bu turu silmek istediginizden emin misiniz?'))return;
+  const tours=lsGet('db_tours',[]).filter(x=>x.id!==tourId);
+  localStorage.setItem('db_tours',JSON.stringify(tours));
+  renderCaptainToursModal(captainId);
+  renderCaptains();
+  showToast('Tur silindi','danger');
+}
+
+/* ── TUR DUZENLEME MODAL ── */
+let teCapId=null;
+function openTourEdit(tourId,captainId){
+  teCapId=captainId;
+  const t=lsGet('db_tours',[]).find(x=>x.id===tourId);
+  if(!t)return;
+  document.getElementById('te-id').value=tourId;
+  document.getElementById('te-ad').value=t.ad||'';
+  document.getElementById('te-kategori').value=t.kategori||'Balik Avi';
+  document.getElementById('te-durum').value=t.durum||'bekliyor';
+  document.getElementById('te-konum').value=t.konum||'';
+  document.getElementById('te-sure').value=t.sure||'';
+  document.getElementById('te-kapasite').value=t.kapasite||'';
+  document.getElementById('te-fiyat').value=t.fiyat||'';
+  document.getElementById('te-aciklama').value=t.aciklama||'';
+  document.getElementById('te-dahil').value=t.dahil||'';
+  document.getElementById('te-haric').value=t.haric||'';
+  document.getElementById('tour-edit-modal').style.display='flex';
+}
+function closeTourEdit(){
+  document.getElementById('tour-edit-modal').style.display='none';
+}
+function saveTourEdit(){
+  const id=+document.getElementById('te-id').value;
+  const tours=lsGet('db_tours',[]);
+  const t=tours.find(x=>x.id===id);
+  if(!t){showToast('Tur bulunamadi','danger');return;}
+  t.ad=document.getElementById('te-ad').value.trim();
+  t.kategori=document.getElementById('te-kategori').value;
+  t.durum=document.getElementById('te-durum').value;
+  t.konum=document.getElementById('te-konum').value.trim();
+  t.sure=+document.getElementById('te-sure').value;
+  t.kapasite=+document.getElementById('te-kapasite').value;
+  t.fiyat=+document.getElementById('te-fiyat').value;
+  t.aciklama=document.getElementById('te-aciklama').value.trim();
+  t.dahil=document.getElementById('te-dahil').value.trim();
+  t.haric=document.getElementById('te-haric').value.trim();
+  localStorage.setItem('db_tours',JSON.stringify(tours));
+  closeTourEdit();
+  if(teCapId!==null)renderCaptainToursModal(teCapId);
+  renderCaptains();
+  showToast('Tur basariyla guncellendi','success');
+}
+document.getElementById('captain-tours-modal').addEventListener('click',function(e){if(e.target===this)closeCaptainTours();});
+document.getElementById('tour-edit-modal').addEventListener('click',function(e){if(e.target===this)closeTourEdit();});
 
 function showToast(msg,type='success'){
   const t=document.getElementById('toast');
