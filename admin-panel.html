@@ -795,13 +795,42 @@ tr:hover td{background:#f8fafc}
           <div class="text-xs text-gray-400">Komisyon: <span id="rdm-komisyon"></span></div>
         </div>
       </div>
-      <!-- Bilgiler grid -->
-      <div class="grid grid-cols-2 gap-3">
-        <div class="bg-blue-50 rounded-xl p-3">
-          <div class="text-[10px] text-blue-400 font-semibold uppercase mb-1">Musteri</div>
-          <div class="font-semibold text-sm" id="rdm-musteri">—</div>
-          <div class="text-xs text-gray-500" id="rdm-misafir">—</div>
+      <!-- Musteri Bilgi Karti -->
+      <div class="border rounded-xl p-4">
+        <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-3"><i class="fas fa-user mr-1"></i>Musteri Bilgileri</div>
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-11 h-11 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="font-bold text-blue-600 text-base" id="rdm-musteri-avatar">M</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-sm" id="rdm-musteri">—</div>
+            <div class="text-xs text-gray-500" id="rdm-misafir">—</div>
+          </div>
+          <div id="rdm-binis-badge"></div>
         </div>
+        <div class="grid grid-cols-1 gap-1.5 text-xs">
+          <div class="flex items-center gap-2 text-gray-600" id="rdm-email-row" style="display:none!important">
+            <i class="fas fa-envelope text-gray-400 w-4"></i>
+            <span id="rdm-email">—</span>
+            <a id="rdm-email-link" href="#" class="ml-auto text-primary font-medium hover:underline text-[10px]">Mail Gonder</a>
+          </div>
+          <div class="flex items-center gap-2 text-gray-600" id="rdm-phone-row" style="display:none!important">
+            <i class="fas fa-phone text-gray-400 w-4"></i>
+            <span id="rdm-phone">—</span>
+            <a id="rdm-phone-link" href="#" class="ml-auto text-primary font-medium hover:underline text-[10px]">Ara</a>
+          </div>
+          <div class="flex items-center gap-2 text-gray-500">
+            <i class="fas fa-users text-gray-400 w-4"></i>
+            <span id="rdm-guests-full">—</span>
+          </div>
+          <div class="flex items-center gap-2 text-gray-500">
+            <i class="fas fa-calendar-plus text-gray-400 w-4"></i>
+            <span id="rdm-created">—</span>
+          </div>
+        </div>
+      </div>
+      <!-- Tur & Tarih grid -->
+      <div class="grid grid-cols-2 gap-3">
         <div class="bg-sky-50 rounded-xl p-3">
           <div class="text-[10px] text-sky-400 font-semibold uppercase mb-1">Tur</div>
           <div class="font-semibold text-sm" id="rdm-tur">—</div>
@@ -811,10 +840,6 @@ tr:hover td{background:#f8fafc}
           <div class="text-[10px] text-amber-500 font-semibold uppercase mb-1">Tarih & Saat</div>
           <div class="font-semibold text-sm" id="rdm-tarih">—</div>
           <div class="text-xs text-gray-500" id="rdm-saat">—</div>
-        </div>
-        <div class="bg-purple-50 rounded-xl p-3">
-          <div class="text-[10px] text-purple-400 font-semibold uppercase mb-1">Olusturulma</div>
-          <div class="font-semibold text-sm" id="rdm-created">—</div>
         </div>
       </div>
       <!-- Not -->
@@ -1838,9 +1863,13 @@ function renderReservations(){
     const badge=RES_BADGE[durum]||RES_BADGE.bekliyor;
     const kom=Math.round((b.amount||0)*0.1);
     const rowBg=durum==='bekliyor'?'bg-amber-50/50':'';
-    return`<tr class="${rowBg}">
-      <td><span class="font-mono text-[11px] text-gray-500">${(b.id||'').slice(-8)||'—'}</span>${b.adminNote?'<i class="fas fa-sticky-note text-amber-400 ml-1 text-[10px]" title="Admin notu var"></i>':''}</td>
-      <td><div class="font-medium text-sm">${b.customerName||'Misafir'}</div>${b.customerEmail?`<div class="text-[10px] text-gray-400">${b.customerEmail}</div>`:''}</td>
+    const cuUsers=lsGet('cu_users',[]);
+    const cuUser=cuUsers.find(u=>u.email===b.customerEmail||u.name===b.customerName);
+    const email=b.customerEmail||cuUser?.email||null;
+    const phone=b.customerPhone||cuUser?.phone||null;
+    return`<tr class="${rowBg} cursor-pointer hover:bg-blue-50/40 transition-colors" onclick="openResDetail('${b.id}')">
+      <td><span class="font-mono text-[11px] text-gray-500">${(b.id||'').slice(-8)||'—'}</span>${b.adminNote?'<i class="fas fa-sticky-note text-amber-400 ml-1 text-[10px]" title="Admin notu var"></i>':''} ${b.binisYapildi?'<i class="fas fa-check-circle text-success text-[10px]" title="Binis yapildi"></i>':''}</td>
+      <td><div class="flex items-center gap-2"><div class="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600 flex-shrink-0">${(b.customerName||'M')[0]}</div><div><div class="font-medium text-sm">${b.customerName||'Misafir'}</div>${email?`<div class="text-[10px] text-gray-400">${email}</div>`:''}${phone?`<div class="text-[10px] text-gray-400"><i class="fas fa-phone text-[8px]"></i> ${phone}</div>`:''}</div></div></td>
       <td><div class="text-sm font-medium max-w-[160px] truncate">${b.tourTitle||'—'}</div></td>
       <td class="text-xs text-gray-500">${b.captainName||'—'}</td>
       <td><div class="text-sm">${b.tarih||'—'}</div><div class="text-[10px] text-gray-400">${b.saat||'—'}</div></td>
@@ -1850,7 +1879,7 @@ function renderReservations(){
       <td>${badge}</td>
       <td>
         <button onclick="openResDetail('${b.id}')" class="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium mr-1 hover:bg-primary/20">Detay</button>
-        ${durum==='bekliyor'?`<button onclick="quickResApprove('${b.id}')" class="bg-success text-white px-2 py-1 rounded text-xs font-medium hover:bg-green-600">Onayla</button>`:''}
+        ${durum==='bekliyor'?`<button onclick="event.stopPropagation();quickResApprove('${b.id}')" class="bg-success text-white px-2 py-1 rounded text-xs font-medium hover:bg-green-600">Onayla</button>`:''}
       </td>
     </tr>`;
   }).join('');
@@ -1867,13 +1896,29 @@ function openResDetail(id){
   document.getElementById('rdm-badge').innerHTML=RES_BADGE[durum]||RES_BADGE.bekliyor;
   document.getElementById('rdm-amount').textContent=(b.amount||0).toLocaleString('tr-TR')+' TL';
   document.getElementById('rdm-komisyon').textContent=Math.round((b.amount||0)*0.1).toLocaleString('tr-TR')+' TL';
-  document.getElementById('rdm-musteri').textContent=b.customerName||'Misafir';
-  document.getElementById('rdm-misafir').textContent=(b.guests||1)+' misafir';
+  const cname=b.customerName||'Misafir';
+  document.getElementById('rdm-musteri').textContent=cname;
+  document.getElementById('rdm-musteri-avatar').textContent=cname[0]||'M';
+  document.getElementById('rdm-misafir').textContent='Toplam '+( b.guests||1)+' misafir';
+  document.getElementById('rdm-guests-full').textContent=(b.guests||1)+' kisi rezerve edildi';
+  /* email */
+  const emailRow=document.getElementById('rdm-email-row');
+  const email=b.customerEmail||(lsGet('cu_users',[]).find(u=>u.name===cname)?.email)||null;
+  if(email){emailRow.style.cssText='';document.getElementById('rdm-email').textContent=email;document.getElementById('rdm-email-link').href='mailto:'+email;}
+  else{emailRow.style.cssText='display:none!important';}
+  /* telefon */
+  const phoneRow=document.getElementById('rdm-phone-row');
+  const phone=b.customerPhone||(lsGet('cu_users',[]).find(u=>u.name===cname)?.phone)||null;
+  if(phone){phoneRow.style.cssText='';document.getElementById('rdm-phone').textContent=phone;document.getElementById('rdm-phone-link').href='tel:'+phone.replace(/\s/g,'');}
+  else{phoneRow.style.cssText='display:none!important';}
+  /* binis durumu */
+  const binisBadge=document.getElementById('rdm-binis-badge');
+  binisBadge.innerHTML=b.binisYapildi?'<span class="badge bg-green-100 text-green-700 text-[10px]"><i class="fas fa-check-circle mr-0.5"></i>Binis Yapildi</span>':'';
   document.getElementById('rdm-tur').textContent=b.tourTitle||'—';
   document.getElementById('rdm-kaptan').textContent=b.captainName||'—';
   document.getElementById('rdm-tarih').textContent=b.tarih||'—';
   document.getElementById('rdm-saat').textContent=b.saat||'—';
-  document.getElementById('rdm-created').textContent=b.createdAt?new Date(b.createdAt).toLocaleDateString('tr-TR','dd.MM.yyyy'):'—';
+  document.getElementById('rdm-created').textContent=b.createdAt?new Date(b.createdAt).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
   const noteWrap=document.getElementById('rdm-note-wrap');
   if(b.note){noteWrap.style.display='';document.getElementById('rdm-note').textContent=b.note;}
   else{noteWrap.style.display='none';}

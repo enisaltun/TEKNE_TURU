@@ -1142,7 +1142,8 @@ function doBooking(){
   const b={
     id:'BK'+Date.now(),tourId:t.id,tourTitle:t.name,
     captainEmail:t.captainEmail||null,captainName:t.captainName||'DenizBul',
-    customerName:profile.name||'Misafir',guests:guestVal,durum:'bekliyor',
+    customerName:profile.name||'Misafir',customerEmail:profile.email||null,customerPhone:profile.phone||null,
+    guests:guestVal,durum:'bekliyor',
     amount:total,tarih:selDate||new Date().toLocaleDateString('tr-TR'),
     saat:selTime||'—',note:document.getElementById('booking-note')?.value||'',
     loc:t.loc||t.kalkis||null,
