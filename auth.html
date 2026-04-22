@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giriş Yap / Kayıt Ol — DenizBul.tr</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',primaryDark:'#075985',accent:'#f59e0b',success:'#10b981',danger:'#ef4444'}}}}</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{font-family:'Inter',sans-serif;box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#0369a1 50%,#075985 100%);display:flex;align-items:center;justify-content:center;padding:16px}
+.card{background:#fff;border-radius:20px;padding:36px 32px;width:100%;max-width:440px;box-shadow:0 25px 50px rgba(0,0,0,0.3)}
+input{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;background:#f8fafc}
+input:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,161,0.12);background:#fff}
+input.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
+.btn-primary{width:100%;padding:13px;background:#0369a1;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s,transform .1s}
+.btn-primary:hover{background:#075985}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{background:#93c5fd;cursor:not-allowed;transform:none}
+.tab{padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;border:none;background:transparent;color:#64748b}
+.tab.active{background:#0369a1;color:#fff}
+.field-wrap{position:relative}
+.field-wrap input{padding-right:44px}
+.toggle-pw{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:#94a3b8;background:none;border:none;padding:4px}
+.toggle-pw:hover{color:#475569}
+.err-msg{font-size:11px;color:#ef4444;margin-top:4px;display:none}
+.err-msg.show{display:block}
+.strength-bar{height:4px;border-radius:2px;transition:all .3s;margin-top:6px}
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
+.social-btn{width:100%;padding:11px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;transition:border-color .2s,background .2s}
+.social-btn:hover{background:#f8fafc;border-color:#cbd5e1}
+.success-card{text-align:center;padding:40px 20px;display:none}
+@keyframes pop{0%{transform:scale(.5);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .5s ease forwards}
+</style>
+</head>
+<body>
+
+<div class="card" id="auth-card">
+
+  <!-- Logo -->
+  <div class="flex items-center justify-center gap-2 mb-8">
+    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
+      <i class="fas fa-ship text-white"></i>
+    </div>
+    <div class="text-2xl font-extrabold"><span class="text-primary">DenizBul</span><span class="text-accent">.tr</span></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-1 p-1 bg-gray-100 rounded-xl mb-8" id="tab-row">
+    <button class="tab active flex-1" onclick="switchTab('login')" id="tab-login">Giriş Yap</button>
+    <button class="tab flex-1" onclick="switchTab('register')" id="tab-register">Kayıt Ol</button>
+  </div>
+
+  <!-- ── LOGIN FORM ── -->
+  <form id="login-form" onsubmit="doLogin(event)" novalidate>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">E-posta Adresi</label>
+        <input type="email" id="l-email" placeholder="ornek@email.com" autocomplete="email">
+        <div class="err-msg" id="l-email-err">Geçerli bir e-posta giriniz.</div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şifre</label>
+        <div class="field-wrap">
+          <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+          <button type="button" class="toggle-pw" onclick="togglePw('l-pass',this)"><i class="fas fa-eye-slash text-sm"></i></button>
+        </div>
+        <div class="err-msg" id="l-pass-err">Şifre alanı boş bırakılamaz.</div>
+      </div>
+
+      <div class="flex items-center justify-between text-xs">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+          <input type="checkbox" id="l-remember" class="!w-auto accent-primary"> Beni hatırla
+        </label>
+        <button type="button" onclick="switchTab('forgot')" class="text-primary hover:underline font-medium">Şifremi unuttum</button>
+      </div>
+
+      <div id="login-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
+        <i class="fas fa-exclamation-circle"></i><span></span>
+      </div>
+
+      <button type="submit" class="btn-primary mt-2" id="login-btn">
+        <span id="login-btn-text">Giriş Yap</span>
+        <i class="fas fa-spinner fa-spin hidden" id="login-spin"></i>
+      </button>
+    </div>
+
+    <div class="divider text-xs text-gray-400">veya</div>
+    <button type="button" onclick="guestLogin()" class="social-btn text-gray-600">
+      <i class="fas fa-user-circle text-gray-400"></i> Misafir olarak devam et
+    </button>
+  </form>
+
+  <!-- ── REGISTER FORM ── -->
+  <form id="register-form" onsubmit="doRegister(event)" novalidate style="display:none">
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Ad Soyad</label>
+          <input type="text" id="r-name" placeholder="Zeynep Arslan" autocomplete="name">
+          <div class="err-msg" id="r-name-err">En az 3 karakter giriniz.</div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Telefon</label>
+          <input type="tel" id="r-phone" placeholder="05XX XXX XX XX" autocomplete="tel">
+          <div class="err-msg" id="r-phone-err">Geçerli bir telefon giriniz.</div>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">E-posta Adresi</label>
+        <input type="email" id="r-email" placeholder="ornek@email.com" autocomplete="email">
+        <div class="err-msg" id="r-email-err">Geçerli bir e-posta giriniz.</div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şehir</label>
+        <select id="r-city" class="w-full px-3 py-3 border-[1.5px] border-gray-200 rounded-xl text-sm outline-none focus:border-primary bg-gray-50 focus:bg-white transition">
+          <option value="">Şehir seçin...</option>
+          <option>Antalya</option><option>İstanbul</option><option>Bodrum</option>
+          <option>Fethiye</option><option>Marmaris</option><option>Kaş</option>
+          <option>Kemer</option><option>Çeşme</option><option>İzmir</option>
+          <option>Alanya</option><option>Side</option><option>Diğer</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şifre</label>
+        <div class="field-wrap">
+          <input type="password" id="r-pass" placeholder="En az 8 karakter" autocomplete="new-password" oninput="checkStrength(this.value)">
+          <button type="button" class="toggle-pw" onclick="togglePw('r-pass',this)"><i class="fas fa-eye-slash text-sm"></i></button>
+        </div>
+        <div id="strength-wrap" class="hidden">
+          <div class="strength-bar" id="strength-bar"></div>
+          <div class="text-[10px] text-gray-500 mt-1" id="strength-text"></div>
+        </div>
+        <div class="err-msg" id="r-pass-err">En az 8 karakter giriniz.</div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şifre Tekrar</label>
+        <div class="field-wrap">
+          <input type="password" id="r-pass2" placeholder="Şifreyi tekrarlayın" autocomplete="new-password">
+          <button type="button" class="toggle-pw" onclick="togglePw('r-pass2',this)"><i class="fas fa-eye-slash text-sm"></i></button>
+        </div>
+        <div class="err-msg" id="r-pass2-err">Şifreler eşleşmiyor.</div>
+      </div>
+      <label class="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
+        <input type="checkbox" id="r-terms" class="!w-auto mt-0.5 accent-primary">
+        <span><b>Kullanım koşullarını</b> ve <b>gizlilik politikasını</b> okudum, kabul ediyorum.</span>
+      </label>
+      <div class="err-msg show" id="r-terms-err" style="display:none">Devam etmek için koşulları kabul etmelisiniz.</div>
+
+      <div id="register-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
+        <i class="fas fa-exclamation-circle"></i><span></span>
+      </div>
+
+      <button type="submit" class="btn-primary" id="register-btn">
+        <span id="register-btn-text">Hesap Oluştur</span>
+        <i class="fas fa-spinner fa-spin hidden" id="register-spin"></i>
+      </button>
+    </div>
+  </form>
+
+  <!-- ── FORGOT FORM ── -->
+  <div id="forgot-form" style="display:none">
+    <div class="text-center mb-6">
+      <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+        <i class="fas fa-envelope text-primary text-xl"></i>
+      </div>
+      <h2 class="font-bold text-lg">Şifreni Sıfırla</h2>
+      <p class="text-xs text-gray-500 mt-1">E-posta adresini gir, sıfırlama bağlantısı gönderelim.</p>
+    </div>
+    <div class="space-y-4">
+      <input type="email" id="f-email" placeholder="ornek@email.com">
+      <div id="forgot-msg" class="hidden text-xs text-center py-2 px-3 rounded-lg"></div>
+      <button type="button" onclick="doForgot()" class="btn-primary">Sıfırlama Bağlantısı Gönder</button>
+      <button type="button" onclick="switchTab('login')" class="w-full text-sm text-gray-500 hover:text-primary py-2 transition">← Giriş sayfasına dön</button>
+    </div>
+  </div>
+
+  <!-- ── SUCCESS CARD ── -->
+  <div class="success-card" id="success-card">
+    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 pop">
+      <i class="fas fa-check-circle text-success text-4xl"></i>
+    </div>
+    <h2 class="text-xl font-bold mb-2" id="success-title">Hoş Geldiniz!</h2>
+    <p class="text-gray-500 text-sm mb-6" id="success-msg">Hesabınız başarıyla oluşturuldu.</p>
+    <button onclick="redirectAfterLogin()" class="btn-primary">Uygulamaya Git <i class="fas fa-arrow-right ml-2"></i></button>
+  </div>
+
+  <p class="text-xs text-center text-gray-400 mt-6">
+    Kaptan mısınız? <a href="captain-app.html" class="text-primary font-medium hover:underline">Kaptan panelini kullanın</a>
+  </p>
+</div>
+
+<script>
+function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
+function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
+// ── Redirect destination ──────────────────────────────────────────────────
+const redirectTo = (()=>{
+  const p = new URLSearchParams(location.search);
+  return p.get('redirect') || 'customer-app.html';
+})();
+
+// Check if already logged in
+const existing = lsGet('auth_user');
+if(existing && existing.id){ window.location.href = redirectTo; }
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+function switchTab(tab){
+  ['login-form','register-form','forgot-form'].forEach(id=>{
+    document.getElementById(id).style.display='none';
+  });
+  document.getElementById('success-card').style.display='none';
+  document.getElementById('tab-row').style.display='flex';
+
+  document.getElementById('tab-login')?.classList.toggle('active', tab==='login');
+  document.getElementById('tab-register')?.classList.toggle('active', tab==='register');
+
+  if(tab==='login'){
+    document.getElementById('login-form').style.display='block';
+  } else if(tab==='register'){
+    document.getElementById('register-form').style.display='block';
+  } else if(tab==='forgot'){
+    document.getElementById('forgot-form').style.display='block';
+    document.getElementById('tab-row').style.display='none';
+  }
+  clearErrors();
+}
+
+function clearErrors(){
+  document.querySelectorAll('.err-msg').forEach(e=>e.classList.remove('show'));
+  document.querySelectorAll('input.error').forEach(e=>e.classList.remove('error'));
+  ['login-error','register-error'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.classList.add('hidden');
+  });
+}
+
+function showErr(inputId, errId){
+  const inp=document.getElementById(inputId);
+  const err=document.getElementById(errId);
+  if(inp)inp.classList.add('error');
+  if(err)err.style.display='block';
+}
+
+function togglePw(inputId, btn){
+  const inp=document.getElementById(inputId);
+  const isText=inp.type==='text';
+  inp.type=isText?'password':'text';
+  btn.querySelector('i').className='fas '+(isText?'fa-eye-slash':'fa-eye')+' text-sm';
+}
+
+// ── Password strength ─────────────────────────────────────────────────────
+function checkStrength(val){
+  const wrap=document.getElementById('strength-wrap');
+  const bar=document.getElementById('strength-bar');
+  const txt=document.getElementById('strength-text');
+  if(!val){wrap.classList.add('hidden');return;}
+  wrap.classList.remove('hidden');
+  let score=0;
+  if(val.length>=8)score++;
+  if(val.length>=12)score++;
+  if(/[A-Z]/.test(val))score++;
+  if(/[0-9]/.test(val))score++;
+  if(/[^A-Za-z0-9]/.test(val))score++;
+  const levels=[
+    {w:'20%',bg:'bg-red-400',label:'Çok Zayıf'},
+    {w:'40%',bg:'bg-orange-400',label:'Zayıf'},
+    {w:'60%',bg:'bg-yellow-400',label:'Orta'},
+    {w:'80%',bg:'bg-blue-400',label:'Güçlü'},
+    {w:'100%',bg:'bg-success',label:'Çok Güçlü'},
+  ];
+  const l=levels[Math.min(score,4)];
+  bar.style.width=l.w;
+  bar.className='strength-bar '+l.bg;
+  txt.textContent=l.label;
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────
+function doLogin(e){
+  e.preventDefault();
+  clearErrors();
+  const email=document.getElementById('l-email').value.trim();
+  const pass=document.getElementById('l-pass').value;
+  let ok=true;
+  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){showErr('l-email','l-email-err');ok=false;}
+  if(!pass){showErr('l-pass','l-pass-err');ok=false;}
+  if(!ok)return;
+
+  setLoading('login-btn','login-btn-text','login-spin',true);
+  setTimeout(()=>{
+    const users=lsGet('cu_users',[]);
+    const user=users.find(u=>u.email===email&&u.password===pass);
+    setLoading('login-btn','login-btn-text','login-spin',false);
+    if(!user){
+      showLoginError('E-posta veya şifre hatalı. Hesabınız yok mu? Kayıt olun.');
+      return;
+    }
+    if(user.durum==='engellendi'){
+      showLoginError('Bu hesap engellenmiştir. Destek için iletişime geçin.');
+      return;
+    }
+    // Update last login
+    user.sonGiris=new Date().toISOString();
+    lsSet('cu_users',users);
+    // Store session
+    const session={id:user.id,name:user.name,email:user.email,sehir:user.sehir||'',phone:user.phone||'',sonGiris:user.sonGiris};
+    lsSet('auth_user',session);
+    showSuccess('Hoş Geldiniz, '+user.name.split(' ')[0]+'!','Giriş başarılı. Yönlendiriliyorsunuz...');
+  },600);
+}
+
+function showLoginError(msg){
+  const el=document.getElementById('login-error');
+  if(!el)return;
+  el.querySelector('span').textContent=msg;
+  el.classList.remove('hidden');
+}
+
+// ── REGISTER ─────────────────────────────────────────────────────────────
+function doRegister(e){
+  e.preventDefault();
+  clearErrors();
+  const name=document.getElementById('r-name').value.trim();
+  const phone=document.getElementById('r-phone').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const city=document.getElementById('r-city').value;
+  const pass=document.getElementById('r-pass').value;
+  const pass2=document.getElementById('r-pass2').value;
+  const terms=document.getElementById('r-terms').checked;
+  let ok=true;
+
+  if(!name||name.length<3){showErr('r-name','r-name-err');ok=false;}
+  if(!phone||!/^0[5][0-9]{9}$/.test(phone.replace(/\s/g,''))){showErr('r-phone','r-phone-err');ok=false;}
+  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){showErr('r-email','r-email-err');ok=false;}
+  if(!pass||pass.length<8){showErr('r-pass','r-pass-err');ok=false;}
+  if(pass!==pass2){showErr('r-pass2','r-pass2-err');ok=false;}
+  if(!terms){document.getElementById('r-terms-err').style.display='block';ok=false;}
+  if(!ok)return;
+
+  setLoading('register-btn','register-btn-text','register-spin',true);
+  setTimeout(()=>{
+    const users=lsGet('cu_users',[]);
+    if(users.find(u=>u.email===email)){
+      setLoading('register-btn','register-btn-text','register-spin',false);
+      showRegisterError('Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.');
+      return;
+    }
+    const newUser={
+      id:'usr_'+Date.now(),
+      name,
+      email,
+      phone:phone.replace(/\s/g,''),
+      sehir:city||'',
+      password:pass,
+      kayitKanali:'mobil_app',
+      turSayisi:0,
+      toplamHarcama:0,
+      createdAt:new Date().toISOString(),
+      sonGiris:new Date().toISOString(),
+      emailOnaylandi:false,
+      durum:'aktif'
+    };
+    users.push(newUser);
+    lsSet('cu_users',users);
+    const session={id:newUser.id,name:newUser.name,email:newUser.email,sehir:newUser.sehir,phone:newUser.phone,sonGiris:newUser.sonGiris};
+    lsSet('auth_user',session);
+    setLoading('register-btn','register-btn-text','register-spin',false);
+    showSuccess('Hesabınız Oluşturuldu!','Merhaba '+name.split(' ')[0]+', DenizBul\'a hoş geldiniz!');
+  },700);
+}
+
+function showRegisterError(msg){
+  const el=document.getElementById('register-error');
+  if(!el)return;
+  el.querySelector('span').textContent=msg;
+  el.classList.remove('hidden');
+}
+
+// ── GUEST LOGIN ───────────────────────────────────────────────────────────
+function guestLogin(){
+  const session={id:'guest_'+Date.now(),name:'Misafir',email:'',sehir:'',phone:'',sonGiris:new Date().toISOString(),isGuest:true};
+  lsSet('auth_user',session);
+  window.location.href=redirectTo;
+}
+
+// ── FORGOT PASSWORD ───────────────────────────────────────────────────────
+function doForgot(){
+  const email=document.getElementById('f-email').value.trim();
+  const msg=document.getElementById('forgot-msg');
+  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){
+    msg.className='text-xs text-center py-2 px-3 rounded-lg bg-red-50 text-red-700';
+    msg.textContent='Geçerli bir e-posta adresi giriniz.';
+    msg.classList.remove('hidden');
+    return;
+  }
+  msg.className='text-xs text-center py-2 px-3 rounded-lg bg-green-50 text-green-700';
+  msg.textContent='✓ Sıfırlama bağlantısı '+email+' adresine gönderildi. (Demo: Gerçek gönderim yapılmaz)';
+  msg.classList.remove('hidden');
+}
+
+// ── SUCCESS ───────────────────────────────────────────────────────────────
+function showSuccess(title,msg){
+  ['login-form','register-form','forgot-form'].forEach(id=>{
+    document.getElementById(id).style.display='none';
+  });
+  document.getElementById('tab-row').style.display='none';
+  document.getElementById('success-title').textContent=title;
+  document.getElementById('success-msg').textContent=msg;
+  const sc=document.getElementById('success-card');
+  sc.style.display='block';
+  setTimeout(redirectAfterLogin,2200);
+}
+
+function redirectAfterLogin(){window.location.href=redirectTo;}
+
+// ── LOADING STATE ─────────────────────────────────────────────────────────
+function setLoading(btnId,txtId,spinId,loading){
+  const btn=document.getElementById(btnId);
+  const txt=document.getElementById(txtId);
+  const spin=document.getElementById(spinId);
+  if(!btn)return;
+  btn.disabled=loading;
+  if(txt)txt.textContent=loading?'Lütfen bekleyin...':btnId.includes('login')?'Giriş Yap':'Hesap Oluştur';
+  if(spin)spin.classList.toggle('hidden',!loading);
+}
+</script>
+</body>
+</html>

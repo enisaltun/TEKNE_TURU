@@ -39,6 +39,10 @@ tr:hover td{background:#f8fafc}
 .chart-bar{display:flex;align-items:flex-end;gap:6px;height:140px}
 .chart-bar>div{flex:1;border-radius:6px 6px 0 0;transition:height .3s}
 @media(max-width:768px){.sidebar{display:none}.main{margin-left:0}}
+.udm-tab-btn{color:#64748b;border-bottom-width:2px;border-color:transparent}
+.udm-tab-btn.active,.udm-tab-btn[data-udm-tab].active{border-color:#0369a1;color:#0369a1}
+#users-bulk-actions{display:none}
+input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:pointer;accent-color:#0369a1}
 </style>
 </head>
 <body>
@@ -54,15 +58,21 @@ tr:hover td{background:#f8fafc}
   <a href="#dashboard" class="active" data-nav="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
   <a href="#captains" data-nav="captains"><i class="fas fa-anchor"></i> Kaptan Yonetimi</a>
   <a href="#users" data-nav="users"><i class="fas fa-users"></i> Kullanici Yonetimi</a>
-  <a href="#tours-bookings" data-nav="tours-bookings"><i class="fas fa-ship"></i> Tur & Rezervasyon</a>
-  <a href="#reservations" data-nav="reservations"><i class="fas fa-calendar-check"></i> Rezervasyonlar <span id="res-badge" style="display:none;background:#f59e0b;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
+  <a href="#tours-bookings" data-nav="tours-bookings"><i class="fas fa-ship"></i> Tur Yonetimi</a>
+  <a href="#reservations" data-nav="reservations"><i class="fas fa-calendar-check"></i> Rezervasyon Yonetimi <span id="res-badge" style="display:none;background:#f59e0b;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
+
+  <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Yonetim</div>
+  <a href="#page-manager" data-nav="page-manager"><i class="fas fa-layer-group"></i> Sayfa Yonetimi <span id="hidden-pages-badge" style="display:none;font-size:9px;background:#ef4444;color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
+  <a href="#cms-web" data-nav="cms-web"><i class="fas fa-edit"></i> Icerik Editoru</a>
+
+  <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Platform</div>
   <a href="#finance" data-nav="finance"><i class="fas fa-wallet"></i> Finans</a>
+  <a href="#marine" data-nav="marine"><i class="fas fa-water"></i> Deniz Verileri</a>
   <a href="#modules" data-nav="modules"><i class="fas fa-puzzle-piece"></i> Modul Yonetimi</a>
 
   <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Sistem</div>
   <a href="#"><i class="fas fa-cog"></i> Ayarlar</a>
   <a href="#"><i class="fas fa-bell"></i> Bildirimler</a>
-  <a href="#"><i class="fas fa-question-circle"></i> Yardim</a>
 
   <div class="mt-auto pt-6 border-t border-gray-800 mt-6">
     <div class="flex items-center gap-2 px-2">
@@ -275,10 +285,11 @@ tr:hover td{background:#f8fafc}
     <!-- Filters -->
     <div class="card mb-4">
       <div class="flex flex-wrap gap-3 items-center">
-        <input type="text" placeholder="Kaptan ara..." class="!w-64 px-3 py-2 border rounded-lg text-sm">
-        <select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Tum Durum</option><option>Aktif</option><option>Bekliyor</option><option>Askida</option></select>
-        <select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Tum Bolgeler</option><option>Antalya</option><option>Istanbul</option><option>Bodrum</option><option>Fethiye</option></select>
-        <select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Siralama: En Yeni</option><option>Puan</option><option>Tur Sayisi</option></select>
+        <input type="text" id="cap-search" placeholder="Kaptan ara..." oninput="renderCaptains()" class="!w-64 px-3 py-2 border rounded-lg text-sm">
+        <select id="cap-filter-durum" onchange="renderCaptains()" class="px-3 py-2 border rounded-lg text-sm !w-auto"><option value="">Tum Durum</option><option value="aktif">Aktif</option><option value="bekliyor">Bekliyor</option><option value="askida">Askida</option></select>
+        <select id="cap-filter-bolge" onchange="renderCaptains()" class="px-3 py-2 border rounded-lg text-sm !w-auto"><option value="">Tum Bolgeler</option><option>Antalya</option><option>Istanbul</option><option>Bodrum</option><option>Fethiye</option><option>Marmaris</option><option>Kas</option><option>Kemer</option><option>Cesme</option><option>Izmir</option></select>
+        <select id="cap-filter-sort" onchange="renderCaptains()" class="px-3 py-2 border rounded-lg text-sm !w-auto"><option value="yeni">En Yeni</option><option value="puan">Puan</option><option value="tur">Tur Sayisi</option></select>
+        <button onclick="document.getElementById('cap-search').value='';document.getElementById('cap-filter-durum').value='';document.getElementById('cap-filter-bolge').value='';document.getElementById('cap-filter-sort').value='yeni';renderCaptains()" class="border px-3 py-2 rounded-lg text-xs text-gray-500 hover:bg-gray-50"><i class="fas fa-times mr-1"></i>Temizle</button>
       </div>
     </div>
 
@@ -302,25 +313,109 @@ tr:hover td{background:#f8fafc}
   <!-- PAGE 3: KULLANICI YONETIMI             -->
   <!-- ======================================= -->
   <section id="page-users" class="page">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-xl font-bold">Kullanici Yonetimi</h1>
-      <button class="border px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-download mr-1"></i> Dis Aktar</button>
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-xl font-bold">Kullanici Yönetimi</h1>
+        <p class="text-sm text-gray-500 mt-0.5">Kayitli ve giris yapan tüm kullanicilari yönetin.</p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <button onclick="openAddUserModal()" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primaryDark transition flex items-center gap-2"><i class="fas fa-user-plus"></i>Kullanici Ekle</button>
+        <button onclick="exportUsersCSV()" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-600 transition flex items-center gap-2"><i class="fas fa-file-csv"></i>CSV Disari Aktar</button>
+        <a href="auth.html" target="_blank" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-600 transition flex items-center gap-2"><i class="fas fa-external-link-alt text-xs"></i>Giris / Kayit Sayfasi</a>
+      </div>
     </div>
-    <div class="grid grid-cols-4 gap-4 mb-6">
-      <div class="stat-card"><div class="stat-icon bg-purple-100 text-purple-600"><i class="fas fa-users"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Toplam</div></div></div>
-      <div class="stat-card"><div class="stat-icon bg-green-100 text-success"><i class="fas fa-user-check"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Aktif (30 gun)</div></div></div>
-      <div class="stat-card"><div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-user-plus"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Bu Hafta Yeni</div></div></div>
-      <div class="stat-card"><div class="stat-icon bg-red-100 text-danger"><i class="fas fa-user-slash"></i></div><div><div class="text-xl font-bold">0</div><div class="text-xs text-gray-500">Engellenen</div></div></div>
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div class="stat-card">
+        <div class="stat-icon bg-purple-100 text-purple-600"><i class="fas fa-users"></i></div>
+        <div><div class="text-2xl font-bold" id="user-stat-toplam">—</div><div class="text-xs text-gray-500">Toplam Kullanici</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-green-100 text-success"><i class="fas fa-user-check"></i></div>
+        <div><div class="text-2xl font-bold" id="user-stat-aktif">—</div><div class="text-xs text-gray-500">Aktif (Son 30 Gün)</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-user-plus"></i></div>
+        <div><div class="text-2xl font-bold" id="user-stat-yeni">—</div><div class="text-xs text-gray-500">Bu Hafta Yeni</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-amber-100 text-accent"><i class="fas fa-wallet"></i></div>
+        <div><div class="text-xl font-bold leading-tight" id="user-stat-harcama">—</div><div class="text-xs text-gray-500">Toplam Harcama</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-red-100 text-danger"><i class="fas fa-user-slash"></i></div>
+        <div><div class="text-2xl font-bold" id="user-stat-engellenen">—</div><div class="text-xs text-gray-500">Engellenen</div></div>
+      </div>
     </div>
+
+    <!-- Filters -->
+    <div class="card mb-4 !py-3">
+      <div class="flex flex-wrap gap-3 items-center">
+        <div class="relative">
+          <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+          <input type="text" id="user-search" placeholder="Ad, e-posta veya telefon ara..." oninput="usersPage=1;renderUsers()" class="pl-8 pr-4 py-2 border rounded-lg text-sm w-60">
+        </div>
+        <select id="user-filter-durum" onchange="usersPage=1;renderUsers()" class="px-3 py-2 border rounded-lg text-sm">
+          <option value="">Tüm Durumlar</option>
+          <option value="aktif">Aktif</option>
+          <option value="pasif">Pasif</option>
+          <option value="engellendi">Engellendi</option>
+        </select>
+        <select id="user-filter-kanal" onchange="usersPage=1;renderUsers()" class="px-3 py-2 border rounded-lg text-sm">
+          <option value="">Tüm Kanallar</option>
+          <option value="web">Web</option>
+          <option value="mobil_app">Mobil App</option>
+          <option value="sosyal_medya">Sosyal Medya</option>
+          <option value="misafir">Misafir</option>
+        </select>
+        <select id="user-filter-sort" onchange="usersPage=1;renderUsers()" class="px-3 py-2 border rounded-lg text-sm">
+          <option value="yeni">En Yeni Kayit</option>
+          <option value="giris">Son Giris</option>
+          <option value="harcama">En Yüksek Harcama</option>
+          <option value="tur">En Çok Tur</option>
+          <option value="az">En Eski</option>
+        </select>
+        <button onclick="document.getElementById('user-search').value='';document.getElementById('user-filter-durum').value='';document.getElementById('user-filter-kanal').value='';document.getElementById('user-filter-sort').value='yeni';usersPage=1;renderUsers();" class="border px-3 py-2 rounded-lg text-xs text-gray-500 hover:bg-gray-50 transition"><i class="fas fa-times mr-1"></i>Temizle</button>
+        <span class="ml-auto text-xs text-gray-400" id="users-count"></span>
+      </div>
+    </div>
+
+    <!-- Table -->
     <div class="card">
-      <div class="flex gap-3 mb-4"><input type="text" placeholder="Kullanici ara..." class="!w-64 px-3 py-2 border rounded-lg text-sm"><select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Tum Durum</option><option>Aktif</option><option>Pasif</option><option>Engelli</option></select></div>
       <div class="table-container">
         <table>
-          <thead><tr><th>Kullanici</th><th>Kayit</th><th>Rez. Sayisi</th><th>Harcama</th><th>Son Giris</th><th>Durum</th><th>Islem</th></tr></thead>
-          <tbody>
-            <tr><td colspan="7" class="text-center text-gray-400 py-6 text-xs">Henuz kayitli kullanici yok</td></tr>
+          <thead>
+            <tr>
+              <th style="width:32px"><input type="checkbox" id="users-select-all" onchange="usersToggleSelectAll(this.checked)" class="rounded"></th>
+              <th>Kullanici</th>
+              <th>Sehir / Kayit</th>
+              <th>Son Giris</th>
+              <th class="text-center">Rez.</th>
+              <th>Harcama</th>
+              <th>Kanal</th>
+              <th>Durum</th>
+              <th class="text-right">Islem</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="9" class="text-center text-gray-400 py-8 text-xs">Yükleniyor...</td></tr>
           </tbody>
         </table>
+      </div>
+      <!-- Bulk actions & pagination -->
+      <div class="flex flex-wrap justify-between items-center mt-4 gap-3">
+        <div class="flex items-center gap-2" id="users-bulk-actions" style="display:none!important">
+          <span class="text-xs text-gray-500" id="users-selected-count">0 secili</span>
+          <button onclick="usersBulkBlock(true)" class="border border-red-200 text-red-500 px-3 py-1 rounded-lg text-xs hover:bg-red-50 transition"><i class="fas fa-ban mr-1"></i>Toplu Engelle</button>
+          <button onclick="usersBulkBlock(false)" class="border border-green-200 text-green-600 px-3 py-1 rounded-lg text-xs hover:bg-green-50 transition"><i class="fas fa-check mr-1"></i>Toplu Aktifle</button>
+          <button onclick="usersBulkDelete()" class="border border-red-200 text-red-500 px-3 py-1 rounded-lg text-xs hover:bg-red-50 transition"><i class="fas fa-trash mr-1"></i>Secilenleri Sil</button>
+        </div>
+        <div class="flex items-center gap-3 ml-auto">
+          <span class="text-xs text-gray-400" id="users-page-info"></span>
+          <div class="flex gap-1" id="users-pagination"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -339,17 +434,21 @@ tr:hover td{background:#f8fafc}
     </div>
     <!-- Tours Tab -->
     <div id="tab-tours">
-      <div class="card">
-        <div class="flex gap-3 mb-4"><input type="text" placeholder="Tur ara..." class="!w-64 px-3 py-2 border rounded-lg text-sm"><select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Tum Kategoriler</option><option>Balik Avi</option><option>Gezi</option><option>Ozel</option><option>Kurumsal</option></select><select class="px-3 py-2 border rounded-lg text-sm !w-auto"><option>Tum Durum</option><option>Aktif</option><option>Pasif</option></select></div>
-        <div class="table-container">
-          <table>
-            <thead><tr><th>Tur</th><th>Kaptan</th><th>Kategori</th><th>Fiyat</th><th>Rez.</th><th>Puan</th><th>Durum</th><th>Islem</th></tr></thead>
-            <tbody id="tours-tbody">
-              <tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Henuz kayitli tur yok</td></tr>
-            </tbody>
-          </table>
+      <div class="card mb-4">
+        <div class="flex flex-wrap gap-3 items-center">
+          <input type="text" id="tour-search" placeholder="Tur veya kaptan ara..." oninput="renderToursBookings()" class="!w-64 px-3 py-2 border rounded-lg text-sm">
+          <select id="tour-filter-kat" onchange="renderToursBookings()" class="px-3 py-2 border rounded-lg text-sm !w-auto"><option value="">Tum Kategoriler</option><option>Balik Avi</option><option>Tekne Gezisi</option><option>Ozel Etkinlik</option><option>Kurumsal</option><option>Yuzme</option></select>
+          <select id="tour-filter-durum" onchange="renderToursBookings()" class="px-3 py-2 border rounded-lg text-sm !w-auto"><option value="">Tum Durum</option><option value="aktif">Aktif</option><option value="bekliyor">Onay Bekliyor</option><option value="pasif">Pasif</option></select>
+          <div class="ml-auto flex gap-2">
+            <button onclick="expandAllCaptainGroups()" class="border px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-50"><i class="fas fa-expand-alt mr-1"></i>Tumunu Ac</button>
+            <button onclick="collapseAllCaptainGroups()" class="border px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-50"><i class="fas fa-compress-alt mr-1"></i>Tumunu Kapat</button>
+          </div>
         </div>
       </div>
+      <div id="tours-groups-container" class="space-y-3">
+        <div class="card text-center text-gray-400 py-8 text-xs">Henuz kayitli tur yok</div>
+      </div>
+      <div class="mt-3 text-xs text-gray-400 text-right" id="tours-group-count"></div>
     </div>
     <!-- Bookings Tab -->
     <div id="tab-bookings" style="display:none">
@@ -469,17 +568,13 @@ tr:hover td{background:#f8fafc}
     <div class="grid grid-cols-2 gap-4 mb-6">
       <div class="card">
         <h3 class="font-semibold text-sm mb-4">Komisyon Raporu</h3>
-        <div class="space-y-3">
-          <div class="flex justify-between items-center"><span class="text-sm">Standart Turlar (%10)</span><span class="font-bold">0 TL</span></div>
-          <div class="flex justify-between items-center"><span class="text-sm">Ozel Etkinlik (%15)</span><span class="font-bold">0 TL</span></div>
-          <div class="flex justify-between items-center"><span class="text-sm">E-ticaret (%8)</span><span class="font-bold">0 TL</span></div>
-          <hr>
-          <div class="flex justify-between items-center"><span class="font-semibold">Toplam Komisyon</span><span class="font-bold text-primary text-lg">0 TL</span></div>
+        <div class="space-y-3" id="fin-komisyon-raporu">
+          <div class="text-xs text-gray-400 text-center py-4">Yükleniyor...</div>
         </div>
       </div>
       <div class="card">
-        <h3 class="font-semibold text-sm mb-4">Odeme Takvimi</h3>
-        <div class="text-xs text-gray-400 text-center py-6">Henuz odeme takvimi yok</div>
+        <h3 class="font-semibold text-sm mb-4">Ödeme Yöntemi Dağılımı</h3>
+        <div id="fin-odeme-takvim" class="text-xs text-gray-400 text-center py-6">Yükleniyor...</div>
       </div>
     </div>
 
@@ -491,9 +586,9 @@ tr:hover td{background:#f8fafc}
       </div>
       <div class="table-container">
         <table>
-          <thead><tr><th>Tarih</th><th>Aciklama</th><th>Tur</th><th>Brut</th><th>Komisyon</th><th>Net</th></tr></thead>
+          <thead><tr><th>Tarih</th><th>Müşteri</th><th>Tur</th><th>Yöntem</th><th>Brüt</th><th>Komisyon</th><th>Kaptan Net</th></tr></thead>
           <tbody>
-            <tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Henuz islem yok</td></tr>
+            <tr><td colspan="7" class="text-center text-gray-400 py-6 text-xs">Yükleniyor...</td></tr>
           </tbody>
         </table>
       </div>
@@ -752,10 +847,24 @@ tr:hover td{background:#f8fafc}
             <div class="toggle on" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center"><i class="fas fa-robot text-orange-600"></i></div><div><div class="text-sm font-medium">AI Asistan</div><div class="text-[10px] text-gray-400">Balıkcı asistanı, hava tahmini, rota onerisi</div></div></div>
+            <div class="flex items-center gap-3"><div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center"><i class="fas fa-robot text-orange-600"></i></div><div><div class="text-sm font-medium">AI Asistan</div><div class="text-[10px] text-gray-400">Balikci asistani, hava tahmini, rota onerisi</div></div></div>
             <div class="toggle" onclick="this.classList.toggle('on')"></div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Marine Science Modules -->
+    <div class="card mt-4">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-semibold text-sm">Deniz Bilimleri Modulleri</h3>
+        <span class="badge bg-cyan-100 text-cyan-700"><i class="fas fa-water mr-1"></i>9 Modul</span>
+      </div>
+      <p class="text-xs text-gray-400 mb-4">Her modülün görünürlüğünü <strong>M</strong> (Müşteri) ve <strong>K</strong> (Kaptan) butonlarıyla ayrı ayrı ayarlayabilirsiniz. Ana geçiş tüm izleyiciler için aktif/pasif yapar.</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="marine-modules-list"></div>
+      <div class="mt-4 p-3 bg-cyan-50 rounded-xl border border-cyan-100 flex items-center gap-2">
+        <i class="fas fa-info-circle text-cyan-600 text-sm flex-shrink-0"></i>
+        <p class="text-xs text-cyan-700">Modul ayarları tarayıcıda kalıcı olarak saklanır. Müşteri ve kaptan panellerinde yalnızca etkin modüller görünür.</p>
       </div>
     </div>
 
@@ -770,6 +879,129 @@ tr:hover td{background:#f8fafc}
       </div>
     </div>
   </section>
+</div>
+
+<!-- ===== KULLANICI DETAY MODALI ===== -->
+<!-- ===== KULLANICI DETAY MODALI ===== -->
+<div id="user-detail-modal" style="display:none" class="fixed inset-0 bg-black/60 z-50 flex items-start justify-center overflow-y-auto pt-6 pb-10 px-4" onclick="if(event.target===this)closeUserDetailModal()">
+  <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-5 border-b bg-gradient-to-r from-purple-50 to-blue-50 rounded-t-2xl">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-2xl font-bold text-purple-600" id="udm-avatar">U</div>
+        <div>
+          <div class="font-bold text-gray-900 text-lg" id="udm-name">—</div>
+          <div class="text-xs text-gray-500 flex items-center gap-2">
+            <span id="udm-email">—</span>
+            <span id="udm-email-verified-badge"></span>
+          </div>
+          <div class="mt-1" id="udm-durum">—</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="udmToggleEdit()" id="udm-edit-btn" class="bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-primary/20 transition"><i class="fas fa-edit mr-1"></i>Düzenle</button>
+        <button onclick="closeUserDetailModal()" class="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/60 transition text-gray-400 text-xl">×</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b px-5 gap-1 bg-gray-50">
+      <button onclick="udmTab('info')" class="udm-tab-btn active px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent transition" data-udm-tab="info">Profil Bilgileri</button>
+      <button onclick="udmTab('bookings')" class="udm-tab-btn px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent transition" data-udm-tab="bookings">Rezervasyonlar <span id="udm-rez-tab-count" class="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-[10px] ml-1">0</span></button>
+      <button onclick="udmTab('activity')" class="udm-tab-btn px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent transition" data-udm-tab="activity">Aktivite</button>
+    </div>
+
+    <!-- Tab: Profil Bilgileri -->
+    <div id="udm-tab-info" class="p-5 space-y-4">
+      <!-- View mode -->
+      <div id="udm-view-mode">
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="bg-gray-50 rounded-xl p-3"><div class="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Telefon</div><div class="font-medium" id="udm-phone">—</div></div>
+          <div class="bg-gray-50 rounded-xl p-3"><div class="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Sehir</div><div class="font-medium" id="udm-sehir">—</div></div>
+          <div class="bg-gray-50 rounded-xl p-3"><div class="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Kayit Tarihi</div><div class="text-sm font-medium" id="udm-kayit">—</div></div>
+          <div class="bg-gray-50 rounded-xl p-3"><div class="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Son Giris</div><div class="text-sm font-medium" id="udm-songiris">—</div></div>
+          <div class="bg-gray-50 rounded-xl p-3"><div class="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Kayit Kanali</div><div class="font-medium" id="udm-kanal">—</div></div>
+          <div class="bg-gray-50 rounded-xl p-3"><div class="text-[10px] text-gray-400 uppercase tracking-wide mb-1">E-posta Onay</div><div class="text-sm font-medium" id="udm-email-verified">—</div></div>
+        </div>
+        <div class="grid grid-cols-3 gap-3 mt-3">
+          <div class="bg-blue-50 rounded-xl p-3 text-center border border-blue-100"><div class="text-xl font-bold text-primary" id="udm-rez-count">0</div><div class="text-[10px] text-gray-500 mt-0.5">Rezervasyon</div></div>
+          <div class="bg-green-50 rounded-xl p-3 text-center border border-green-100"><div class="text-xl font-bold text-success" id="udm-harcama">0 TL</div><div class="text-[10px] text-gray-500 mt-0.5">Toplam Harcama</div></div>
+          <div class="bg-amber-50 rounded-xl p-3 text-center border border-amber-100"><div class="text-xl font-bold text-accent" id="udm-tur-say">0</div><div class="text-[10px] text-gray-500 mt-0.5">Tur Sayisi</div></div>
+        </div>
+      </div>
+      <!-- Edit mode (hidden by default) -->
+      <div id="udm-edit-mode" style="display:none">
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="text-xs font-semibold text-gray-600 block mb-1">Ad Soyad</label><input id="udm-edit-name" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ad Soyad"></div>
+          <div><label class="text-xs font-semibold text-gray-600 block mb-1">E-posta</label><input id="udm-edit-email" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="E-posta" type="email"></div>
+          <div><label class="text-xs font-semibold text-gray-600 block mb-1">Telefon</label><input id="udm-edit-phone" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="05xx..."></div>
+          <div><label class="text-xs font-semibold text-gray-600 block mb-1">Sehir</label><input id="udm-edit-sehir" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Sehir"></div>
+          <div><label class="text-xs font-semibold text-gray-600 block mb-1">Kayit Kanali</label>
+            <select id="udm-edit-kanal" class="w-full px-3 py-2 border rounded-lg text-sm">
+              <option value="web">Web</option><option value="mobil_app">Mobil App</option><option value="sosyal_medya">Sosyal Medya</option><option value="misafir">Misafir</option>
+            </select>
+          </div>
+          <div><label class="text-xs font-semibold text-gray-600 block mb-1">Durum</label>
+            <select id="udm-edit-durum" class="w-full px-3 py-2 border rounded-lg text-sm">
+              <option value="aktif">Aktif</option><option value="pasif">Pasif</option><option value="engellendi">Engellendi</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button onclick="udmSaveEdit()" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primaryDark transition flex-1"><i class="fas fa-save mr-1"></i>Kaydet</button>
+          <button onclick="udmToggleEdit()" class="border px-4 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition">Iptal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Rezervasyonlar -->
+    <div id="udm-tab-bookings" class="p-5" style="display:none">
+      <div id="udm-bookings-list" class="space-y-2"></div>
+    </div>
+
+    <!-- Tab: Aktivite -->
+    <div id="udm-tab-activity" class="p-5" style="display:none">
+      <div id="udm-activity-list" class="space-y-2 text-sm text-gray-600"></div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="flex flex-wrap items-center justify-between gap-2 p-5 border-t bg-gray-50 rounded-b-2xl">
+      <div class="flex gap-2">
+        <button id="udm-block-btn" onclick="udmToggleBlock()" class="border px-3 py-1.5 rounded-lg text-xs font-semibold transition"></button>
+        <button onclick="udmDeleteUser()" class="border border-red-200 text-danger px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-50 transition"><i class="fas fa-trash mr-1"></i>Kullaniciyi Sil</button>
+      </div>
+      <button onclick="closeUserDetailModal()" class="text-xs text-gray-400 hover:text-gray-600 transition">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== KULLANICI EKLEME MODALI ===== -->
+<div id="user-add-modal" style="display:none" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center px-4" onclick="if(event.target===this)closeAddUserModal()">
+  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+    <div class="flex items-center justify-between p-5 border-b">
+      <div><h3 class="font-bold text-base">Yeni Kullanici Ekle</h3><p class="text-xs text-gray-400 mt-0.5">Sisteme manuel kullanici kaydı olusturun</p></div>
+      <button onclick="closeAddUserModal()" class="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 text-xl">×</button>
+    </div>
+    <div class="p-5 space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2"><label class="text-xs font-semibold text-gray-600 block mb-1">Ad Soyad *</label><input id="uam-name" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Örn: Ahmet Yilmaz"></div>
+        <div class="col-span-2"><label class="text-xs font-semibold text-gray-600 block mb-1">E-posta *</label><input id="uam-email" type="email" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="ornek@email.com"></div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Telefon</label><input id="uam-phone" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="05xx xxx xx xx"></div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Sehir</label><input id="uam-sehir" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Antalya"></div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Sifre</label><input id="uam-password" type="password" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="En az 6 karakter"></div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Kayit Kanali</label>
+          <select id="uam-kanal" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="web">Web</option><option value="mobil_app">Mobil App</option><option value="sosyal_medya">Sosyal Medya</option>
+          </select>
+        </div>
+      </div>
+      <div id="uam-error" class="text-xs text-danger bg-red-50 rounded-lg px-3 py-2" style="display:none"></div>
+    </div>
+    <div class="flex gap-2 p-5 pt-0">
+      <button onclick="doAddUser()" class="bg-primary text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-primaryDark transition flex-1"><i class="fas fa-user-plus mr-1"></i>Kullanici Olustur</button>
+      <button onclick="closeAddUserModal()" class="border px-4 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition">Iptal</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== REZERVASYON DETAY MODALI ===== -->
@@ -795,6 +1027,49 @@ tr:hover td{background:#f8fafc}
           <div class="text-xs text-gray-400">Komisyon: <span id="rdm-komisyon"></span></div>
         </div>
       </div>
+
+      <!-- MİSAFİR SAYISI — Belirgin kart -->
+      <div class="rounded-2xl border-2 border-primary/20 bg-gradient-to-r from-blue-50 to-sky-50 p-4">
+        <div class="text-[10px] text-primary font-bold uppercase tracking-wide mb-3"><i class="fas fa-users mr-1"></i>Bu Rezervasyondaki Misafirler</div>
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20">
+            <span class="text-white font-extrabold text-2xl" id="rdm-guests-big">—</span>
+          </div>
+          <div>
+            <div class="text-2xl font-extrabold text-gray-900" id="rdm-guests-label">— kisi</div>
+            <div class="text-xs text-gray-500 mt-0.5" id="rdm-guests-sub">—</div>
+          </div>
+          <div id="rdm-binis-badge" class="ml-auto"></div>
+        </div>
+      </div>
+
+      <!-- TUR DOLULUGU — Kapasite bar -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-4">
+        <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-3"><i class="fas fa-ship mr-1"></i>Tekne Dolulugu</div>
+        <div class="grid grid-cols-3 gap-3 mb-3">
+          <div class="bg-gray-50 rounded-xl p-3 text-center">
+            <div class="text-xl font-extrabold text-primary" id="rdm-cap-kapasite">—</div>
+            <div class="text-[10px] text-gray-400 mt-0.5">Tekne Kapasitesi</div>
+          </div>
+          <div class="bg-blue-50 rounded-xl p-3 text-center">
+            <div class="text-xl font-extrabold text-blue-600" id="rdm-cap-rezerve">—</div>
+            <div class="text-[10px] text-gray-400 mt-0.5">Toplam Rezerve</div>
+          </div>
+          <div class="rounded-xl p-3 text-center" id="rdm-cap-kalan-card">
+            <div class="text-xl font-extrabold" id="rdm-cap-kalan">—</div>
+            <div class="text-[10px] text-gray-400 mt-0.5">Kalan Yer</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs mb-1.5">
+          <span class="text-gray-500">Doluluk orani</span>
+          <span class="font-bold" id="rdm-doluluk-pct">%0</span>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+          <div id="rdm-doluluk-bar" class="h-3 rounded-full transition-all duration-500" style="width:0%;background:#10b981"></div>
+        </div>
+        <div class="text-[10px] text-gray-400 mt-1.5 text-center" id="rdm-cap-note"></div>
+      </div>
+
       <!-- Musteri Bilgi Karti -->
       <div class="border rounded-xl p-4">
         <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-3"><i class="fas fa-user mr-1"></i>Musteri Bilgileri</div>
@@ -806,7 +1081,6 @@ tr:hover td{background:#f8fafc}
             <div class="font-semibold text-sm" id="rdm-musteri">—</div>
             <div class="text-xs text-gray-500" id="rdm-misafir">—</div>
           </div>
-          <div id="rdm-binis-badge"></div>
         </div>
         <div class="grid grid-cols-1 gap-1.5 text-xs">
           <div class="flex items-center gap-2 text-gray-600" id="rdm-email-row" style="display:none!important">
@@ -862,7 +1136,13 @@ tr:hover td{background:#f8fafc}
       <div>
         <div class="text-xs font-semibold text-gray-600 mb-1">Admin Notu (opsiyonel)</div>
         <textarea id="rdm-admin-note" rows="2" placeholder="Bu rezervasyona not ekle..." class="w-full border rounded-xl px-3 py-2 text-sm resize-none"></textarea>
-        <button onclick="saveAdminNote()" class="mt-2 bg-primary text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-primaryDark">Notu Kaydet</button>
+        <div class="flex items-center gap-2 mt-2">
+          <button onclick="saveAdminNote()" class="bg-primary text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-primaryDark">Notu Kaydet</button>
+        </div>
+      </div>
+      <!-- Tamam Butonu -->
+      <div class="border-t pt-4">
+        <button onclick="closeResDetail()" class="w-full bg-gray-900 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-700 transition-colors"><i class="fas fa-check mr-2"></i>Tamam</button>
       </div>
     </div>
   </div>
@@ -880,7 +1160,7 @@ tr:hover td{background:#f8fafc}
       <button onclick="closeCaptainTours()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500"><i class="fas fa-times"></i></button>
     </div>
     <!-- Tur listesi -->
-    <div id="ctm-body" class="p-6 space-y-4">
+    <div id="ctm-body" class="p-6">
       <p class="text-center text-gray-400 text-sm py-8">Henuz tur yok</p>
     </div>
   </div>
@@ -994,7 +1274,7 @@ tr:hover td{background:#f8fafc}
       <!-- stats -->
       <div class="grid grid-cols-4 gap-3">
         <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold text-primary" id="cdm-tours">0</div><div class="text-[10px] text-gray-400 mt-0.5">Tur</div></div>
-        <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold text-success" id="cdm-rezcount">0</div><div class="text-[10px] text-gray-400 mt-0.5">Rezervasyon</div></div>
+        <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold text-success" id="cdm-rezcount">0</div><div class="text-[10px] text-gray-400 mt-0.5" id="cdm-rezcount-sub">Toplam Kisi</div></div>
         <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold" id="cdm-kapasite">—</div><div class="text-[10px] text-gray-400 mt-0.5">Kapasite</div></div>
         <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold text-accent" id="cdm-kazanc">—</div><div class="text-[10px] text-gray-400 mt-0.5">Kazanc</div></div>
       </div>
@@ -1074,7 +1354,7 @@ tr:hover td{background:#f8fafc}
         <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold" id="tdm-price">—</div><div class="text-[10px] text-gray-400 mt-0.5">Fiyat</div></div>
         <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold" id="tdm-sure">—</div><div class="text-[10px] text-gray-400 mt-0.5">Sure</div></div>
         <div class="bg-gray-50 rounded-xl p-3 text-center"><div class="text-sm font-bold" id="tdm-kap">—</div><div class="text-[10px] text-gray-400 mt-0.5">Kapasite</div></div>
-        <div class="bg-amber-50 rounded-xl p-3 text-center"><div class="text-sm font-bold text-amber-700" id="tdm-rez">0</div><div class="text-[10px] text-gray-400 mt-0.5">Rezervasyon</div></div>
+        <div class="bg-amber-50 rounded-xl p-3 text-center"><div class="text-sm font-bold text-amber-700" id="tdm-rez">0</div><div class="text-[10px] text-gray-400 mt-0.5" id="tdm-rez-sub">Rezervasyon</div></div>
       </div>
 
       <!-- captain + created -->
@@ -1128,6 +1408,271 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
+  <!-- ======================================= -->
+  <!-- PAGE: DENİZ VERİLERİ                   -->
+  <!-- ======================================= -->
+  <section id="page-marine" class="page">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-bold">Deniz Verileri</h1>
+        <p class="text-xs text-gray-400 mt-0.5" id="marine-update-time">Son guncelleme: —</p>
+      </div>
+      <button onclick="renderMarineData()" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"><i class="fas fa-sync-alt mr-1"></i> Guncelle</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6 flex-wrap">
+      <button class="tab-btn active px-4 py-2 rounded-full text-sm font-medium" onclick="showMarineTab(this,'mtab-tide')"><i class="fas fa-water mr-1"></i>Gelgit</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="showMarineTab(this,'mtab-wind')"><i class="fas fa-wind mr-1"></i>Ruzgar</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="showMarineTab(this,'mtab-weather')"><i class="fas fa-cloud-sun mr-1"></i>Hava</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="showMarineTab(this,'mtab-depth')"><i class="fas fa-map mr-1"></i>Derinlik</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="showMarineTab(this,'mtab-moon')"><i class="fas fa-moon mr-1"></i>Ay Takvimi</button>
+      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="showMarineTab(this,'mtab-sun')"><i class="fas fa-sun mr-1"></i>Gunes</button>
+    </div>
+
+    <!-- TAB: GELGİT -->
+    <div id="mtab-tide">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="stat-card"><div class="stat-icon bg-blue-100 text-blue-600"><i class="fas fa-arrow-up"></i></div><div><div class="text-xl font-bold text-blue-600" id="tide-hw-height">0.82 m</div><div class="text-xs text-gray-500">Yuksek Su (HW)</div><div class="text-xs font-semibold text-gray-700" id="tide-hw-time">—</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-cyan-100 text-cyan-600"><i class="fas fa-arrow-down"></i></div><div><div class="text-xl font-bold text-cyan-600" id="tide-lw-height">0.12 m</div><div class="text-xs text-gray-500">Alcak Su (LW)</div><div class="text-xs font-semibold text-gray-700" id="tide-lw-time">—</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-teal-100 text-teal-600"><i class="fas fa-ruler-vertical"></i></div><div><div class="text-xl font-bold" id="tide-now">—</div><div class="text-xs text-gray-500">Anlik Su Yuksekligi</div><div class="text-xs text-gray-400" id="tide-trend">—</div></div></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card">
+          <h3 class="font-semibold text-sm mb-4"><i class="fas fa-chart-area text-blue-500 mr-1"></i>Bugunun Gelgit Grafigi</h3>
+          <div id="tide-chart" class="flex items-end gap-0.5 h-24 mb-2"></div>
+          <div class="flex justify-between text-[10px] text-gray-400 mt-1" id="tide-chart-labels"></div>
+        </div>
+        <div class="card">
+          <h3 class="font-semibold text-sm mb-4"><i class="fas fa-calendar-alt text-blue-500 mr-1"></i>3 Gunluk Tahmin</h3>
+          <div id="tide-forecast" class="space-y-3"></div>
+        </div>
+      </div>
+      <div class="card mt-4">
+        <h3 class="font-semibold text-sm mb-4"><i class="fas fa-map-marker-alt text-primary mr-1"></i>Liman Gelgit Tablosu — Bugun</h3>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Liman</th><th>En Yuksek Su</th><th>Saat (HW)</th><th>En Alcak Su</th><th>Saat (LW)</th><th>Genlik</th><th>Bolgesi</th></tr></thead>
+            <tbody id="tide-ports-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: RÜZGAR -->
+    <div id="mtab-wind" style="display:none">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card"><div class="stat-icon bg-sky-100 text-sky-600"><i class="fas fa-wind"></i></div><div><div class="text-xl font-bold" id="wind-avg">—</div><div class="text-xs text-gray-500">Ort. Hiz (km/s)</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-blue-100 text-blue-600"><i class="fas fa-compass"></i></div><div><div class="text-xl font-bold" id="wind-dir">—</div><div class="text-xs text-gray-500">Hakim Yon</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-red-100 text-danger"><i class="fas fa-bolt"></i></div><div><div class="text-xl font-bold" id="wind-gust">—</div><div class="text-xs text-gray-500">Maks. Gustos</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-amber-100 text-accent"><i class="fas fa-ship"></i></div><div><div class="text-xl font-bold" id="wind-beaufort">—</div><div class="text-xs text-gray-500">Beaufort Skalasi</div></div></div>
+      </div>
+      <div class="card">
+        <h3 class="font-semibold text-sm mb-4"><i class="fas fa-broadcast-tower text-sky-600 mr-1"></i>Istasyon Bazli Ruzgar Verileri</h3>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Istasyon</th><th>Bolge</th><th>Hiz (km/s)</th><th>Gustos</th><th>Yon</th><th>Beaufort</th><th>Durum</th><th>Saat</th></tr></thead>
+            <tbody id="wind-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card mt-4">
+        <h3 class="font-semibold text-sm mb-4"><i class="fas fa-chart-bar text-sky-500 mr-1"></i>24 Saatlik Ruzgar Profili</h3>
+        <div id="wind-chart" class="flex items-end gap-1 h-24 mb-2"></div>
+        <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+          <span>00:00</span><span>03:00</span><span>06:00</span><span>09:00</span><span>12:00</span><span>15:00</span><span>18:00</span><span>21:00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: HAVA DURUMU -->
+    <div id="mtab-weather" style="display:none">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card"><div class="stat-icon bg-amber-100 text-amber-500"><i class="fas fa-thermometer-half"></i></div><div><div class="text-xl font-bold" id="wx-temp">—</div><div class="text-xs text-gray-500">Hava Sicakligi</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-blue-100 text-blue-600"><i class="fas fa-tint"></i></div><div><div class="text-xl font-bold" id="wx-humidity">—</div><div class="text-xs text-gray-500">Nem</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-cyan-100 text-cyan-600"><i class="fas fa-water"></i></div><div><div class="text-xl font-bold" id="wx-sea-temp">—</div><div class="text-xs text-gray-500">Deniz Sicakligi</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-gray-100 text-gray-500"><i class="fas fa-eye"></i></div><div><div class="text-xl font-bold" id="wx-vis">—</div><div class="text-xs text-gray-500">Gorunum (km)</div></div></div>
+      </div>
+      <div class="card mb-4">
+        <h3 class="font-semibold text-sm mb-4"><i class="fas fa-calendar-week text-amber-500 mr-1"></i>5 Gunluk Tahmin</h3>
+        <div id="wx-forecast-cards" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
+      </div>
+      <div class="card">
+        <h3 class="font-semibold text-sm mb-4"><i class="fas fa-map-marked-alt text-amber-500 mr-1"></i>Sahil Sehirleri Hava Durumu</h3>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Sehir</th><th>Durum</th><th>Hava (°C)</th><th>Deniz (°C)</th><th>Nem %</th><th>Ruzgar</th><th>Dalgaboy</th><th>UV</th></tr></thead>
+            <tbody id="wx-cities-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: DERİNLİK HARİTASI -->
+    <div id="mtab-depth" style="display:none">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card"><div class="stat-icon bg-indigo-100 text-indigo-600"><i class="fas fa-level-down-alt"></i></div><div><div class="text-xl font-bold text-indigo-600">3627 m</div><div class="text-xs text-gray-500">Akdeniz Maks.</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-anchor"></i></div><div><div class="text-xl font-bold text-primary">1389 m</div><div class="text-xs text-gray-500">Marmara Maks.</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-cyan-100 text-cyan-600"><i class="fas fa-search"></i></div><div><div class="text-xl font-bold text-cyan-600">65 m</div><div class="text-xs text-gray-500">Ort. Kiyi Derinligi</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-teal-100 text-teal-600"><i class="fas fa-route"></i></div><div><div class="text-xl font-bold text-teal-600">124 m</div><div class="text-xs text-gray-500">Bogaz Maks.</div></div></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card">
+          <h3 class="font-semibold text-sm mb-4"><i class="fas fa-map text-indigo-600 mr-1"></i>Bolgesel Batimetri</h3>
+          <div id="depth-svg-wrap" class="overflow-hidden rounded-xl bg-blue-950 p-3 relative" style="height:240px">
+            <svg id="depth-svg" width="100%" height="100%" viewBox="0 0 400 200"></svg>
+          </div>
+          <div class="flex gap-3 mt-3 flex-wrap">
+            <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background:#1e3a5f"></div><span class="text-[10px] text-gray-500">&gt;1000m</span></div>
+            <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background:#1d6fa4"></div><span class="text-[10px] text-gray-500">500-1000m</span></div>
+            <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background:#2196c0"></div><span class="text-[10px] text-gray-500">200-500m</span></div>
+            <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background:#4db6d0"></div><span class="text-[10px] text-gray-500">50-200m</span></div>
+            <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background:#80d0e0"></div><span class="text-[10px] text-gray-500">0-50m</span></div>
+            <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm bg-green-600"></div><span class="text-[10px] text-gray-500">Kara</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="font-semibold text-sm mb-4"><i class="fas fa-table text-indigo-600 mr-1"></i>Derinlik Referans Noktalari</h3>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Bolge / Nokta</th><th>Min (m)</th><th>Ort (m)</th><th>Maks (m)</th><th>Tip</th></tr></thead>
+              <tbody id="depth-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: AY TAKVİMİ -->
+    <div id="mtab-moon" style="display:none">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card col-span-2 md:col-span-1"><div class="stat-icon bg-slate-100 text-slate-600 text-2xl">🌔</div><div><div class="text-xl font-bold" id="moon-phase-name">—</div><div class="text-xs text-gray-500">Bugunun Ay Evresi</div><div class="text-xs font-medium text-gray-700 mt-0.5" id="moon-illumination">—</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-slate-100 text-slate-500"><i class="fas fa-arrow-up"></i></div><div><div class="text-xl font-bold" id="moon-rise">—</div><div class="text-xs text-gray-500">Ay Dogusu</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-slate-200 text-slate-600"><i class="fas fa-arrow-down"></i></div><div><div class="text-xl font-bold" id="moon-set">—</div><div class="text-xs text-gray-500">Ay Batisi</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-amber-50 text-amber-600"><i class="fas fa-fish"></i></div><div><div class="text-xl font-bold" id="moon-fishing">—</div><div class="text-xs text-gray-500">Balik Avi Skoru</div></div></div>
+      </div>
+      <div class="card mb-4">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm"><i class="fas fa-calendar text-slate-500 mr-1"></i>Nisan 2026 Ay Takvimi</h3>
+          <div class="flex gap-3 text-[10px] text-gray-500">
+            <span>🌑 Yeni Ay</span><span>🌓 Ilk Dordun</span><span>🌕 Dolunay</span><span>🌗 Son Dordun</span>
+          </div>
+        </div>
+        <div id="moon-calendar" class="grid grid-cols-7 gap-1"></div>
+        <div class="grid grid-cols-7 gap-1 mt-1 text-center text-[10px] text-gray-400 font-medium">
+          <span>Pzt</span><span>Sal</span><span>Car</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="font-semibold text-sm mb-4"><i class="fas fa-list text-slate-500 mr-1"></i>Onemli Ay Evreleri — Nisan-Mayis 2026</h3>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Evre</th><th>Tarih</th><th>Saat</th><th>Av Etkisi</th><th>Not</th></tr></thead>
+            <tbody id="moon-events-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: GÜNEŞ -->
+    <div id="mtab-sun" style="display:none">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card"><div class="stat-icon bg-orange-100 text-orange-500"><i class="fas fa-sun"></i></div><div><div class="text-xl font-bold text-orange-500" id="sun-rise">—</div><div class="text-xs text-gray-500">Gunes Dogusu (Antalya)</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-orange-200 text-orange-600"><i class="fas fa-moon"></i></div><div><div class="text-xl font-bold text-orange-600" id="sun-set">—</div><div class="text-xs text-gray-500">Gunes Batisi (Antalya)</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-amber-100 text-amber-500"><i class="fas fa-clock"></i></div><div><div class="text-xl font-bold" id="sun-day-length">—</div><div class="text-xs text-gray-500">Gun Uzunlugu</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-yellow-100 text-yellow-600"><i class="fas fa-star"></i></div><div><div class="text-xl font-bold" id="sun-golden">—</div><div class="text-xs text-gray-500">Altin Saat (Fotograf)</div></div></div>
+      </div>
+      <div class="card mb-4">
+        <h3 class="font-semibold text-sm mb-4"><i class="fas fa-table text-orange-500 mr-1"></i>Sahil Sehirleri — Gunes Verileri (21 Nisan 2026)</h3>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Sehir</th><th>Dogus</th><th>Alacakaranlik</th><th>Ogle</th><th>Ikindi Karanligi</th><th>Batis</th><th>Gun Suresi</th><th>Altin Saat</th></tr></thead>
+            <tbody id="sun-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="font-semibold text-sm mb-4"><i class="fas fa-chart-bar text-orange-500 mr-1"></i>Gunes Acisi Gunu Boyunca (Antalya)</h3>
+        <div id="sun-arc" class="relative h-28 bg-gradient-to-b from-sky-100 to-sky-50 rounded-xl overflow-hidden p-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE: SAYFA YÖNETİMİ (TEK EKRAN)       -->
+  <!-- ======================================= -->
+  <section id="page-page-manager" class="page">
+    <!-- Top bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-xl font-bold">Sayfa Yönetimi</h1>
+        <p class="text-sm text-gray-500 mt-1">Sistemdeki tüm sayfaları, bölümleri ve özellikleri tek ekrandan kontrol edin.</p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <button onclick="pmToggleAll(true)" class="bg-success text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition"><i class="fas fa-eye mr-1"></i>Tümünü Göster</button>
+        <button onclick="pmToggleAll(false)" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-600 transition"><i class="fas fa-eye-slash mr-1"></i>Tümünü Gizle</button>
+        <button onclick="pmResetAll()" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-600 transition"><i class="fas fa-undo mr-1"></i>Sıfırla</button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6" id="pm-stats"></div>
+
+    <!-- Filter bar -->
+    <div class="card mb-5 !p-3">
+      <div class="flex flex-wrap gap-2 items-center">
+        <input type="text" id="pm-search" placeholder="Sayfa ara..." oninput="renderPageManager()" class="px-3 py-2 border rounded-lg text-sm w-52">
+        <div class="flex gap-1" id="pm-platform-tabs">
+          <button onclick="pmSetPlatform('all')" class="pm-tab active px-3 py-1.5 rounded-lg text-xs font-semibold border transition" data-pm-tab="all">Tümü</button>
+          <button onclick="pmSetPlatform('web')" class="pm-tab px-3 py-1.5 rounded-lg text-xs font-semibold border transition" data-pm-tab="web"><i class="fas fa-globe mr-1 text-emerald-500"></i>Web Sitesi</button>
+          <button onclick="pmSetPlatform('customer_app')" class="pm-tab px-3 py-1.5 rounded-lg text-xs font-semibold border transition" data-pm-tab="customer_app"><i class="fas fa-mobile-alt mr-1 text-blue-500"></i>Müşteri App</button>
+          <button onclick="pmSetPlatform('captain_app')" class="pm-tab px-3 py-1.5 rounded-lg text-xs font-semibold border transition" data-pm-tab="captain_app"><i class="fas fa-anchor mr-1 text-sky-500"></i>Kaptan App</button>
+          <button onclick="pmSetPlatform('admin')" class="pm-tab px-3 py-1.5 rounded-lg text-xs font-semibold border transition" data-pm-tab="admin"><i class="fas fa-shield-alt mr-1 text-purple-500"></i>Admin Panel</button>
+        </div>
+        <span class="ml-auto text-xs text-gray-400" id="pm-result-count"></span>
+      </div>
+    </div>
+
+    <!-- Page list -->
+    <div id="pm-list"></div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE: WEB SİTESİ İÇERİK EDİTÖRÜ       -->
+  <!-- ======================================= -->
+  <section id="page-cms-web" class="page">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-bold">Web Sitesi İçerik Editörü</h1>
+        <p class="text-sm text-gray-500 mt-1">Tüm metin, renk ve görsel içerikleri buradan düzenleyin. Değişiklikler anında önizlenir.</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="saveCmsContent('web')" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition"><i class="fas fa-save mr-1"></i>Kaydet</button>
+        <button onclick="resetCmsContent('web')" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-600 transition"><i class="fas fa-undo mr-1"></i>Sıfırla</button>
+        <a href="customer-site.html" target="_blank" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1"><i class="fas fa-external-link-alt text-xs"></i>Önizle</a>
+      </div>
+    </div>
+    <div id="cms-web-editor"></div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE: UYGULAMA İÇERİK EDİTÖRÜ          -->
+  <!-- ======================================= -->
+  <section id="page-cms-app" class="page">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-bold">Uygulama İçerik Editörü</h1>
+        <p class="text-sm text-gray-500 mt-1">Müşteri ve kaptan uygulamalarının içerik ve renklerini düzenleyin.</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="saveCmsContent('app')" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition"><i class="fas fa-save mr-1"></i>Kaydet</button>
+        <button onclick="resetCmsContent('app')" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-600 transition"><i class="fas fa-undo mr-1"></i>Sıfırla</button>
+        <a href="customer-app.html" target="_blank" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1"><i class="fas fa-external-link-alt text-xs"></i>Önizle</a>
+      </div>
+    </div>
+    <div id="cms-app-editor"></div>
+  </section>
+
 <!-- ===== TOAST ===== -->
 <div id="toast" class="fixed top-5 right-5 z-50 bg-gray-900 text-white text-sm px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 transition-all duration-300 opacity-0 -translate-y-2 pointer-events-none">
   <i id="toast-icon" class="fas fa-check-circle text-success"></i>
@@ -1136,8 +1681,8 @@ tr:hover td{background:#f8fafc}
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
-const pages=['dashboard','captains','users','tours-bookings','reservations','finance','modules','captain-add'];
-const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur & Rezervasyon','reservations':'Rezervasyon Yonetimi','finance':'Finans','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle'};
+const pages=['dashboard','captains','users','tours-bookings','reservations','page-manager','cms-web','cms-app','finance','marine','modules','captain-add'];
+const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle'};
 
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
 
@@ -1146,14 +1691,20 @@ function handleRoute(){
   pages.forEach(p=>{const el=document.getElementById('page-'+p);if(el)el.classList.toggle('active',p===h)});
   document.querySelectorAll('.sidebar a[data-nav]').forEach(a=>a.classList.toggle('active',a.dataset.nav===h||(h==='captain-add'&&a.dataset.nav==='captains')));
   document.getElementById('page-title').textContent=titles[h]||'';
-  if(h==='dashboard')      renderDashboard();
-  if(h==='captains')       renderCaptains();
-  if(h==='tours-bookings') renderToursBookings();
-  if(h==='reservations')   renderReservations();
-  if(h==='finance')        renderFinance();
+  if(h==='dashboard')           renderDashboard();
+  if(h==='captains')            renderCaptains();
+  if(h==='users')               renderUsers();
+  if(h==='tours-bookings')      renderToursBookings();
+  if(h==='reservations')        renderReservations();
+  if(h==='page-manager')        renderPageManager();
+  if(h==='cms-web')             renderCmsWeb();
+  if(h==='cms-app')             renderCmsApp();
+  if(h==='finance')             renderFinance();
+  if(h==='marine')              renderMarineData();
+  if(h==='modules')             renderMarineModules();
 }
 window.addEventListener('hashchange',handleRoute);
-window.addEventListener('load',handleRoute);
+window.addEventListener('load',()=>{handleRoute();pmUpdateBadge();});
 
 /* ── DASHBOARD ── */
 function renderDashboard(){
@@ -1172,6 +1723,53 @@ function renderDashboard(){
   setEl('dash-stat-bookings',monthlyB.length);
   setEl('dash-stat-revenue',monthlyRev.toLocaleString('tr-TR')+' TL');
   setEl('dash-stat-captains',caps.length);
+
+  // Revenue chart — monthly data from bookings
+  const monthlyRevArr=Array(12).fill(0);
+  bookings.forEach(b=>{
+    if(b.createdAt){const m=new Date(b.createdAt).getMonth();monthlyRevArr[m]+=(b.amount||0);}
+  });
+  const maxRev=Math.max(...monthlyRevArr,1);
+  const chartBars=document.querySelectorAll('.chart-bar>div');
+  chartBars.forEach((col,i)=>{
+    const bar=col.querySelector('div');
+    if(bar){const pct=Math.round(monthlyRevArr[i]/maxRev*90)+5;bar.style.height=pct+'%';bar.style.background=i===now.getMonth()?'#0369a1':'#bae6fd';bar.style.minHeight='4px';}
+  });
+
+  // Category breakdown
+  const catMap={'Balik Avi':0,'Tekne Gezisi':0,'Ozel Etkinlik':0,'Yuzme':0,'Kurumsal':0,'Diger':0};
+  bookings.forEach(b=>{
+    const t=tours.find(x=>x.id===b.tourId);
+    const kat=(t?.kategoriler?.[0]||t?.kategori||'Diger');
+    if(catMap[kat]!==undefined)catMap[kat]++;else catMap['Diger']++;
+  });
+  const totalB=bookings.length||1;
+  const catKeys=['Balik Avi','Tekne Gezisi','Ozel Etkinlik','Yuzme','Kurumsal'];
+  const catBars=document.querySelectorAll('.card:has(h3) .space-y-3:first-of-type > div');
+  catKeys.forEach((k,i)=>{
+    const pct=Math.round((catMap[k]||0)/totalB*100);
+    const els=document.querySelectorAll('#page-dashboard .grid .card')[0]?.querySelectorAll('.space-y-3 > div');
+    if(els&&els[i]){
+      const span=els[i].querySelector('span:last-of-type');if(span)span.textContent=pct+'%';
+      const bar=els[i].querySelector('.h-2 div');if(bar)bar.style.width=pct+'%';
+    }
+  });
+
+  // Region breakdown from tours
+  const regMap={'Antalya':0,'Istanbul':0,'Bodrum':0,'Fethiye':0,'Diger':0};
+  tours.forEach(t=>{const b=t.bolge||t.kalkis||'Diger';let found=false;['Antalya','Istanbul','Bodrum','Fethiye'].forEach(r=>{if(b.includes(r)){regMap[r]++;found=true;}});if(!found)regMap['Diger']++;});
+  const totalT=tours.length||1;
+  const regKeys=['Antalya','Istanbul','Bodrum','Fethiye','Diger'];
+  const regCard=document.querySelectorAll('#page-dashboard .grid .card')[1];
+  if(regCard){
+    const regItems=regCard.querySelectorAll('.space-y-3 > div');
+    regKeys.forEach((k,i)=>{
+      if(regItems[i]){
+        const spans=regItems[i].querySelectorAll('span');if(spans[1])spans[1].textContent=regMap[k]+' tur';
+        const bar=regItems[i].querySelector('.h-2 div');const pct=Math.round(regMap[k]/totalT*100);if(bar)bar.style.width=pct+'%';
+      }
+    });
+  }
 
   const pending=caps.filter(c=>c.durum==='bekliyor');
   const badge=document.getElementById('dash-pending-badge');
@@ -1192,45 +1790,201 @@ function renderDashboard(){
 }
 
 /* ── TOURS & BOOKINGS ── */
-function renderToursBookings(){
-  const tours=lsGet('db_tours',[]);
-  const bookings=lsGet('db_bookings',[]);
-  const pending=tours.filter(t=>t.durum==='bekliyor');
+// Track open captain groups
+const _openGroups=new Set();
 
+function expandAllCaptainGroups(){
+  document.querySelectorAll('[id^="cgroup-body-"]').forEach(el=>{
+    el.style.display='';
+    const gid=el.id.replace('cgroup-body-','');
+    _openGroups.add(gid);
+    const icon=document.getElementById('cgroup-icon-'+gid);
+    if(icon){icon.style.transform='rotate(180deg)';}
+  });
+}
+function collapseAllCaptainGroups(){
+  document.querySelectorAll('[id^="cgroup-body-"]').forEach(el=>{
+    el.style.display='none';
+    const gid=el.id.replace('cgroup-body-','');
+    _openGroups.delete(gid);
+    const icon=document.getElementById('cgroup-icon-'+gid);
+    if(icon){icon.style.transform='rotate(0deg)';}
+  });
+}
+function toggleCaptainGroup(gid){
+  const body=document.getElementById('cgroup-body-'+gid);
+  const icon=document.getElementById('cgroup-icon-'+gid);
+  if(!body)return;
+  const open=body.style.display!=='none'&&body.style.display!=='';
+  body.style.display=open?'none':'';
+  if(icon)icon.style.transform=open?'rotate(0deg)':'rotate(180deg)';
+  if(open)_openGroups.delete(gid);else _openGroups.add(gid);
+}
+function toggleTourReservations(tid){
+  const el=document.getElementById('tour-rez-'+tid);
+  const icon=document.getElementById('tour-rez-icon-'+tid);
+  if(!el)return;
+  const open=el.style.display!=='none'&&el.style.display!=='';
+  el.style.display=open?'none':'';
+  if(icon)icon.style.transform=open?'rotate(0deg)':'rotate(180deg)';
+}
+
+function renderToursBookings(){
+  const allTours=lsGet('db_tours',[]);
+  const bookings=lsGet('db_bookings',[]);
+
+  const search=(document.getElementById('tour-search')?.value||'').toLowerCase();
+  const fKat=document.getElementById('tour-filter-kat')?.value||'';
+  const fDurum=document.getElementById('tour-filter-durum')?.value||'';
+
+  let tours=allTours.filter(t=>{
+    const d=t.durum||(t.aktif===true?'aktif':'bekliyor');
+    if(fDurum&&d!==fDurum)return false;
+    if(fKat){const kat=(t.kategoriler?.[0]||t.kategori||'');if(!kat.toLowerCase().includes(fKat.toLowerCase()))return false;}
+    if(search){const hay=((t.title||t.ad||'')+(t.captainName||'')+(t.kalkis||t.konum||'')).toLowerCase();if(!hay.includes(search))return false;}
+    return true;
+  });
+
+  const pending=tours.filter(t=>t.durum==='bekliyor');
   const tabTours=document.getElementById('tab-btn-tours');
   const tabBookings=document.getElementById('tab-btn-bookings');
   const tabHar=document.getElementById('tab-btn-hareketler');
-  if(tabTours)tabTours.textContent=pending.length?`Turlar (${tours.length}) ⚠ ${pending.length} onay bekliyor`:`Turlar (${tours.length})`;
+  if(tabTours)tabTours.textContent=pending.length?`Turlar (${allTours.length}) ⚠ ${pending.length} bekliyor`:`Turlar (${allTours.length})`;
   if(tabBookings)tabBookings.textContent=`Rezervasyonlar (${bookings.length})`;
   if(tabHar)tabHar.textContent=`Hareketler (${bookings.length})`;
 
-  const toursTbody=document.getElementById('tours-tbody');
-  if(toursTbody){
-    if(!tours.length){toursTbody.innerHTML='<tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Henuz kayitli tur yok</td></tr>';}
-    else{
-      toursTbody.innerHTML=tours.map(t=>{
-        const d=t.durum||(t.aktif===true?'aktif':'bekliyor');
-        const durumBadge=d==='aktif'
-          ?'<span class="badge bg-green-100 text-green-700">Aktif</span>'
-          :d==='pasif'
-          ?'<span class="badge bg-gray-100 text-gray-500">Pasif</span>'
-          :'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-clock mr-0.5"></i>Onay Bekliyor</span>';
-        const actions=d==='bekliyor'
-          ?`<button onclick="quickApproveTour(${t.id})" class="bg-success text-white px-2 py-1 rounded text-xs mr-1 font-medium">Onayla</button><button onclick="quickRejectTour(${t.id})" class="bg-red-100 text-danger px-2 py-1 rounded text-xs mr-1">Reddet</button><button onclick="adminDeleteTour(${t.id})" class="text-danger text-xs hover:underline">Sil</button>`
-          :`<button onclick="quickRejectTour(${t.id})" class="text-gray-400 text-xs hover:text-danger mr-2">${d==='aktif'?'Pasife Al':'Aktif Et'}</button><button onclick="adminDeleteTour(${t.id})" class="text-danger text-xs hover:underline">Sil</button>`;
-        return`<tr class="${d==='bekliyor'?'bg-amber-50':''} cursor-pointer hover:bg-blue-50/40 transition-colors" onclick="openTourDetailModal(${t.id})">
-          <td><div class="font-medium">${t.title||t.ad||'—'}</div><div class="text-[10px] text-gray-400">${t.kalkis||t.konum||'—'} &bull; ${t.sure||'—'}</div></td>
-          <td><div class="text-xs">${t.captainName||'—'}</div></td>
-          <td><span class="badge bg-blue-100 text-blue-700">${t.kategoriler?.[0]||t.kategori||'—'}</span></td>
-          <td>${(t.price||t.fiyat||0).toLocaleString('tr-TR')} TL</td>
-          <td>${bookings.filter(b=>b.tourId===t.id).length}</td>
-          <td>—</td>
-          <td>${durumBadge}</td>
-          <td>${actions}</td>
-        </tr>`;
-      }).join('');
-    }
+  // Group by captain
+  const groupMap=new Map();
+  tours.forEach(t=>{
+    const key=t.captainEmail||t.captainName||'bilinmiyor';
+    if(!groupMap.has(key))groupMap.set(key,{name:t.captainName||'Bilinmiyor',email:t.captainEmail||'',tours:[]});
+    groupMap.get(key).tours.push(t);
+  });
+
+  const container=document.getElementById('tours-groups-container');
+  const countEl=document.getElementById('tours-group-count');
+  if(!container)return;
+
+  if(!tours.length){
+    container.innerHTML='<div class="card text-center text-gray-400 py-10 text-xs"><i class="fas fa-ship text-3xl block mb-3 opacity-20"></i>Filtrelerle eslesen tur yok</div>';
+    if(countEl)countEl.textContent='';
+    return;
   }
+  if(countEl)countEl.textContent=groupMap.size+' kaptan · '+tours.length+' tur · '+bookings.length+' rezervasyon';
+
+  const durumColor={aktif:'bg-green-100 text-green-700',pasif:'bg-gray-100 text-gray-500',bekliyor:'bg-amber-100 text-amber-700'};
+  const durumLabel={aktif:'Aktif',pasif:'Pasif',bekliyor:'Onay Bekliyor'};
+
+  container.innerHTML=[...groupMap.entries()].map(([gid,group])=>{
+    const gTours=group.tours;
+    const gBookings=gTours.flatMap(t=>bookings.filter(b=>b.tourId===t.id));
+    const gActiveBookings=gBookings.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi');
+    const aktifCount=gTours.filter(t=>(t.durum||'aktif')==='aktif').length;
+    const pendingCount=gTours.filter(t=>t.durum==='bekliyor').length;
+    const totalRez=gActiveBookings.length;
+    const totalRev=gActiveBookings.reduce((s,b)=>s+(b.amount||0),0);
+    const totalKisi=gActiveBookings.reduce((s,b)=>s+(b.guests||1),0);
+    const isOpen=_openGroups.has(gid)||pendingCount>0;
+    const initials=(group.name.split(' ').map(w=>w[0]||'').join('').slice(0,2)).toUpperCase();
+
+    // Build tour rows with their reservations
+    const tourRowsHtml=gTours.map(t=>{
+      const d=t.durum||(t.aktif===true?'aktif':'bekliyor');
+      const tBkgs=bookings.filter(b=>b.tourId===t.id);
+      const tActiveBkgs=tBkgs.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi');
+      const tKisi=tActiveBkgs.reduce((s,b)=>s+(b.guests||1),0);
+      const tRev=tActiveBkgs.reduce((s,b)=>s+(b.amount||0),0);
+      const tKap=t.kapasite||0;
+      const tKalan=tKap>0?Math.max(0,tKap-tKisi):null;
+      const tActions=d==='bekliyor'
+        ?`<button onclick="event.stopPropagation();quickApproveTour(${t.id})" class="bg-success text-white px-2 py-1 rounded text-[11px] font-medium hover:bg-green-600">Onayla</button>
+           <button onclick="event.stopPropagation();quickRejectTour(${t.id})" class="bg-red-100 text-danger px-2 py-1 rounded text-[11px] hover:bg-red-200">Reddet</button>
+           <button onclick="event.stopPropagation();adminDeleteTour(${t.id})" class="text-danger text-[11px] hover:underline ml-1">Sil</button>`
+        :`<button onclick="event.stopPropagation();openTourEdit(${t.id},null)" class="border px-2 py-1 rounded text-[11px] hover:bg-gray-50 mr-1">Duzenle</button>
+           <button onclick="event.stopPropagation();quickRejectTour(${t.id})" class="text-gray-400 text-[11px] hover:text-danger mr-1">${d==='aktif'?'Pasife Al':'Aktif Et'}</button>
+           <button onclick="event.stopPropagation();adminDeleteTour(${t.id})" class="text-danger text-[11px] hover:underline">Sil</button>`;
+
+      // Reservations sub-table
+      const rezHtml=tBkgs.length?`
+        <div id="tour-rez-${t.id}" style="display:none">
+          <div style="margin:0 0 0 0;border-top:1px solid #f1f5f9;">
+            <div style="background:#f8fafc;padding:8px 16px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em;display:flex;gap:20px">
+              <span style="flex:0 0 40px">No</span>
+              <span style="flex:1">Musteri</span>
+              <span style="flex:0 0 90px">Tarih / Saat</span>
+              <span style="flex:0 0 60px;text-align:center">Kisi</span>
+              <span style="flex:0 0 90px;text-align:right">Tutar</span>
+              <span style="flex:0 0 100px">Durum</span>
+              <span style="flex:0 0 60px">Islem</span>
+            </div>
+            ${tBkgs.map(b=>{
+              const bDurum=b.durum||'bekliyor';
+              const bBadge={bekliyor:'background:#fef3c7;color:#d97706',onaylandi:'background:#dcfce7;color:#15803d',tamamlandi:'background:#dbeafe;color:#1d4ed8',reddedildi:'background:#fee2e2;color:#dc2626',iptal:'background:#f3f4f6;color:#6b7280'};
+              return`<div style="padding:8px 16px;display:flex;gap:20px;align-items:center;border-top:1px solid #f8fafc;font-size:12px" class="hover:bg-blue-50/30 transition-colors">
+                <span style="flex:0 0 40px;font-family:monospace;font-size:10px;color:#94a3b8">${(b.id||'').slice(-6)}</span>
+                <div style="flex:1;min-width:0">
+                  <div style="font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.customerName||'Misafir'}</div>
+                  ${b.customerEmail?`<div style="font-size:10px;color:#94a3b8">${b.customerEmail}</div>`:''}
+                  ${b.note?`<div style="font-size:10px;color:#f59e0b;font-style:italic">"${b.note.slice(0,40)}"</div>`:''}
+                </div>
+                <span style="flex:0 0 90px;color:#64748b;font-size:11px">${b.tarih||'—'} ${b.saat?'<br><span style="color:#94a3b8">'+b.saat+'</span>':''}</span>
+                <span style="flex:0 0 60px;text-align:center;font-weight:700;font-size:13px">${b.guests||1} kisi</span>
+                <span style="flex:0 0 90px;text-align:right;font-weight:700;color:#0369a1">${(b.amount||0).toLocaleString('tr-TR')} TL</span>
+                <span style="flex:0 0 100px"><span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;${bBadge[bDurum]||bBadge.bekliyor}">${{bekliyor:'Bekliyor',onaylandi:'Onaylandi',tamamlandi:'Tamamlandi',reddedildi:'Reddedildi',iptal:'Iptal'}[bDurum]||bDurum}</span></span>
+                <span style="flex:0 0 60px"><button onclick="openResDetail('${b.id}')" style="background:#eff6ff;color:#1d4ed8;border:none;padding:3px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">Detay</button></span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`:'';
+
+      return`<div style="border-bottom:1px solid #f1f5f9;">
+        <div onclick="event.stopPropagation();openTourDetailModal(${t.id})" style="padding:11px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .12s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+          <span style="width:10px;height:10px;border-radius:50%;background:${{aktif:'#10b981',pasif:'#94a3b8',bekliyor:'#f59e0b'}[d]||'#f59e0b'};flex-shrink:0"></span>
+          <div style="flex:1;min-width:0">
+            <span style="font-weight:600;font-size:13px;color:#1e293b">${t.title||t.ad||'Isimsiz Tur'}</span>
+            <span style="font-size:11px;color:#94a3b8;margin-left:8px">${t.kalkis||t.konum||''} ${t.sure?'· '+t.sure:''}</span>
+          </div>
+          <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:${{aktif:'#dcfce7',pasif:'#f3f4f6',bekliyor:'#fef3c7'}[d]};color:${{aktif:'#15803d',pasif:'#6b7280',bekliyor:'#d97706'}[d]}">${durumLabel[d]||d}</span>
+          <span style="font-size:12px;font-weight:700;color:#0369a1;min-width:70px;text-align:right">${(t.price||t.fiyat||0).toLocaleString('tr-TR')} TL</span>
+          <div style="display:flex;gap:6px;flex-shrink:0">${tActions}</div>
+          ${tKalan!==null?`<span style="font-size:11px;padding:4px 10px;border-radius:8px;font-weight:600;flex-shrink:0;background:${tKalan===0?'#fee2e2':tKalan<=2?'#fef3c7':'#f0fdf4'};color:${tKalan===0?'#dc2626':tKalan<=2?'#d97706':'#15803d'}">${tKalan===0?'Dolu':tKalan+' yer'}</span>`:''}
+          ${tBkgs.length?`<button onclick="event.stopPropagation();toggleTourReservations(${t.id})" style="display:flex;align-items:center;gap:4px;background:#eff6ff;color:#1d4ed8;border:none;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0">
+            <i class="fas fa-users" style="font-size:10px"></i>${tActiveBkgs.length} Rez / ${tKisi} kisi
+            <i id="tour-rez-icon-${t.id}" class="fas fa-chevron-down" style="font-size:9px;transition:transform .2s"></i>
+          </button>`:`<span style="font-size:11px;color:#cbd5e1;padding:4px 10px;flex-shrink:0">Rezervasyon yok</span>`}
+        </div>
+        ${rezHtml}
+      </div>`;
+    }).join('');
+
+    return`<div class="card" style="padding:0;overflow:hidden">
+      <!-- Captain header row -->
+      <div onclick="toggleCaptainGroup('${gid.replace(/'/g,"\\'")}')" style="padding:14px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;background:${pendingCount?'#fffbeb':'#fff'};border-bottom:2px solid ${pendingCount?'#fde68a':'#e2e8f0'};transition:background .15s" onmouseover="this.style.background='${pendingCount?'#fef3c7':'#f8fafc'}'" onmouseout="this.style.background='${pendingCount?'#fffbeb':'#fff'}'">
+        <!-- Avatar -->
+        <div style="width:40px;height:40px;background:linear-gradient(135deg,#0369a1,#0284c7);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:800;font-size:14px">${initials}</div>
+        <!-- Name + email -->
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:14px;color:#0f172a">${group.name}</div>
+          <div style="font-size:11px;color:#94a3b8">${group.email}</div>
+        </div>
+        <!-- Stats pills -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span style="background:#eff6ff;color:#1e40af;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap"><i class="fas fa-ship" style="margin-right:3px;font-size:9px"></i>${gTours.length} tur</span>
+          <span style="background:#f0fdf4;color:#15803d;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap"><i class="fas fa-calendar-check" style="margin-right:3px;font-size:9px"></i>${totalRez} rezervasyon</span>
+          <span style="background:#fefce8;color:#854d0e;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap"><i class="fas fa-users" style="margin-right:3px;font-size:9px"></i>${totalKisi} misafir</span>
+          <span style="background:#fdf4ff;color:#7e22ce;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap">${totalRev.toLocaleString('tr-TR')} TL</span>
+          ${pendingCount?`<span style="background:#fef2f2;color:#dc2626;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;animation:pulse 2s infinite;white-space:nowrap"><i class="fas fa-exclamation-circle" style="margin-right:3px"></i>${pendingCount} onay bekliyor</span>`:''}
+          ${aktifCount?`<span style="background:#dcfce7;color:#15803d;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap">${aktifCount} aktif</span>`:''}
+        </div>
+        <!-- Chevron -->
+        <i id="cgroup-icon-${gid.replace(/'/g,"\\'")}" class="fas fa-chevron-down" style="color:#94a3b8;font-size:13px;transition:transform .25s;flex-shrink:0;transform:rotate(${isOpen?180:0}deg)"></i>
+      </div>
+      <!-- Tours list (collapsible) -->
+      <div id="cgroup-body-${gid.replace(/'/g,"\\'")}" style="display:${isOpen?'':'none'}">
+        ${tourRowsHtml}
+      </div>
+    </div>`;
+  }).join('');
 
   const bookingsTbody=document.getElementById('bookings-tbody');
   if(bookingsTbody){
@@ -1262,6 +2016,8 @@ function openTourDetailModal(id){
   const t=lsGet('db_tours',[]).find(x=>x.id===id);
   if(!t)return;
   const bookings=lsGet('db_bookings',[]).filter(b=>b.tourId===id);
+  const activeBookings=bookings.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi');
+  const activeKisi=activeBookings.reduce((s,b)=>s+(b.guests||1),0);
   const d=t.durum||(t.aktif===true?'aktif':'bekliyor');
   const statusMap={
     aktif:'<span class="badge bg-green-100 text-green-700">Aktif</span>',
@@ -1275,7 +2031,10 @@ function openTourDetailModal(id){
   document.getElementById('tdm-price').textContent=(t.price||t.fiyat||0).toLocaleString('tr-TR')+' TL';
   document.getElementById('tdm-sure').textContent=t.sure||'—';
   document.getElementById('tdm-kap').textContent=(t.kapasite||'—')+' kisi';
-  document.getElementById('tdm-rez').textContent=bookings.length;
+  const rezEl=document.getElementById('tdm-rez');
+  if(rezEl)rezEl.textContent=activeKisi+' kisi';
+  const rezSub=document.getElementById('tdm-rez-sub');
+  if(rezSub)rezSub.textContent=activeBookings.length+' rez';
   const cname=t.captainName||'—';
   document.getElementById('tdm-cap-avatar').textContent=cname[0]||'K';
   document.getElementById('tdm-cap-name').textContent=cname;
@@ -1344,17 +2103,990 @@ function adminDeleteTour(id){
 
 /* ── FINANCE ── */
 function renderFinance(){
+  const payments=lsGet('db_payments',[]);
   const bookings=lsGet('db_bookings',[]);
+  const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
+
   const now=new Date();
   const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
-  const monthlyB=bookings.filter(b=>b.createdAt&&new Date(b.createdAt)>=monthStart);
-  const ciro=monthlyB.reduce((s,b)=>s+(b.amount||0),0);
-  const komisyon=Math.round(ciro*0.1);
-  const net=ciro-komisyon;
+  const monthlyP=payments.filter(p=>p.tarih&&new Date(p.tarih)>=monthStart);
+
+  // Stat cards
+  const toplamCiro=payments.reduce((s,p)=>s+(p.tutar||0),0);
+  const toplamKomisyon=payments.reduce((s,p)=>s+(p.komisyon||Math.round((p.tutar||0)*0.025)),0);
+  const toplamNet=payments.reduce((s,p)=>s+(p.kaptanNet||Math.round((p.tutar||0)*0.875)),0);
+  const ayCiro=monthlyP.reduce((s,p)=>s+(p.tutar||0),0);
+
+  setEl('fin-ciro',ayCiro.toLocaleString('tr-TR')+' TL');
+  setEl('fin-komisyon',toplamKomisyon.toLocaleString('tr-TR')+' TL');
+  setEl('fin-net',toplamNet.toLocaleString('tr-TR')+' TL');
+
+  // Komisyon raporu
+  const stdB=payments.filter(p=>!['Ozel Etkinlik','Kurumsal'].some(k=>p.tourTitle?.includes(k)));
+  const ozelB=payments.filter(p=>p.tourTitle&&(p.tourTitle.includes('Ozel')||p.tourTitle.includes('Kutlama')));
+  const stdKom=stdB.reduce((s,p)=>s+(p.komisyon||Math.round((p.tutar||0)*0.025)),0);
+  const ozelKom=ozelB.reduce((s,p)=>s+Math.round((p.tutar||0)*0.04),0);
+  const komReport=document.getElementById('fin-komisyon-raporu');
+  if(komReport) komReport.innerHTML=`
+    <div class="flex justify-between items-center"><span class="text-sm">Standart Turlar (%10 hizmet + %2.5 platform)</span><span class="font-bold">${stdKom.toLocaleString('tr-TR')} TL</span></div>
+    <div class="flex justify-between items-center"><span class="text-sm">Özel Etkinlik / Kurumsal (%4 ek komisyon)</span><span class="font-bold">${ozelKom.toLocaleString('tr-TR')} TL</span></div>
+    <hr>
+    <div class="flex justify-between items-center"><span class="font-semibold">Toplam Komisyon</span><span class="font-bold text-primary text-lg">${toplamKomisyon.toLocaleString('tr-TR')} TL</span></div>`;
+
+  // Ödeme yöntemi dağılımı
+  const yontemler={};
+  payments.forEach(p=>{yontemler[p.yontem||'Diger']=(yontemler[p.yontem||'Diger']||0)+1;});
+  const odemeEl=document.getElementById('fin-odeme-takvim');
+  if(odemeEl) odemeEl.innerHTML=Object.entries(yontemler).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+    <div class="flex justify-between items-center py-2 border-b last:border-0">
+      <span class="text-sm">${k}</span>
+      <div class="text-right"><span class="font-bold">${v} işlem</span>
+      <span class="text-xs text-gray-400 ml-2">${payments.filter(p=>(p.yontem||'Diger')===k).reduce((s,p)=>s+(p.tutar||0),0).toLocaleString('tr-TR')} TL</span></div>
+    </div>`).join('');
+
+  // Son işlemler tablosu
+  const tbody=document.querySelector('#page-finance table tbody');
+  if(!tbody) return;
+  const recent=payments.slice().sort((a,b)=>new Date(b.tarih||0)-new Date(a.tarih||0)).slice(0,50);
+  if(!recent.length){tbody.innerHTML='<tr><td colspan="7" class="text-center text-gray-400 py-8 text-xs">Henüz ödeme kaydı yok — Seed Data sayfasından veri üretin</td></tr>';return;}
+  tbody.innerHTML=recent.map(p=>{
+    const d=p.tarih?new Date(p.tarih).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    const yontemBadge=p.yontem==='Kredi Karti'||p.yontem==='Banka Karti'
+      ?`<span style="background:#eff6ff;color:#1d4ed8;font-size:10px;padding:2px 6px;border-radius:20px;font-weight:600">${p.yontem}${p.kartTuru?' · '+p.kartTuru:''}${p.kartSon4?' ****'+p.kartSon4:''}</span>`
+      :`<span style="background:#f3f4f6;color:#374151;font-size:10px;padding:2px 6px;border-radius:20px;font-weight:600">${p.yontem||'—'}</span>`;
+    return`<tr>
+      <td class="text-xs text-gray-500">${d}</td>
+      <td><div class="text-xs font-medium">${p.customerName||'—'}</div><div class="text-[10px] text-gray-400">${p.customerEmail||''}</div></td>
+      <td class="text-xs">${(p.tourTitle||'—').slice(0,30)}</td>
+      <td>${yontemBadge}</td>
+      <td class="font-medium text-xs">${(p.tutar||0).toLocaleString('tr-TR')} TL</td>
+      <td class="text-xs text-amber-600">%2.5 · ${(p.komisyon||0).toLocaleString('tr-TR')} TL</td>
+      <td class="font-semibold text-xs text-success">${(p.kaptanNet||0).toLocaleString('tr-TR')} TL</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── KULLANICI YÖNETİMİ ── */
+const DEMO_USERS=[
+  {id:'demo1',name:'Zeynep Arslan',email:'zeynep.arslan@gmail.com',phone:'05321234567',sehir:'Antalya',kayitKanali:'web',turSayisi:5,toplamHarcama:3750,createdAt:new Date(Date.now()-120*86400000).toISOString(),sonGiris:new Date(Date.now()-2*86400000).toISOString(),emailOnaylandi:true,durum:'aktif'},
+  {id:'demo2',name:'Burak Yilmaz',email:'burak.yilmaz@hotmail.com',phone:'05411239876',sehir:'Bodrum',kayitKanali:'mobil_app',turSayisi:12,toplamHarcama:9600,createdAt:new Date(Date.now()-365*86400000).toISOString(),sonGiris:new Date(Date.now()-5*86400000).toISOString(),emailOnaylandi:true,durum:'aktif'},
+  {id:'demo3',name:'Elif Kaya',email:'elif.kaya@icloud.com',phone:'05551239090',sehir:'İzmir',kayitKanali:'sosyal_medya',turSayisi:2,toplamHarcama:1200,createdAt:new Date(Date.now()-45*86400000).toISOString(),sonGiris:new Date(Date.now()-35*86400000).toISOString(),emailOnaylandi:true,durum:'pasif'},
+  {id:'demo4',name:'Murat Cetin',email:'murat.cetin@yahoo.com',phone:'05301239988',sehir:'Fethiye',kayitKanali:'web',turSayisi:0,toplamHarcama:0,createdAt:new Date(Date.now()-7*86400000).toISOString(),sonGiris:new Date(Date.now()-1*86400000).toISOString(),emailOnaylandi:false,durum:'aktif'},
+  {id:'demo5',name:'Seda Polat',email:'seda.polat@gmail.com',phone:'05451238877',sehir:'Marmaris',kayitKanali:'web',turSayisi:8,toplamHarcama:6400,createdAt:new Date(Date.now()-200*86400000).toISOString(),sonGiris:new Date(Date.now()-10*86400000).toISOString(),emailOnaylandi:true,durum:'engellendi'},
+];
+
+let usersPage=1;
+const USERS_PER_PAGE=20;
+let _udmCurrentUid=null;
+
+/* ── Unified user list: real users + demo users (deduped by email) ── */
+function getAllUsers(){
+  const lsUsers=lsGet('cu_users',[]);
+  const emails=new Set(lsUsers.map(u=>u.email||''));
+  return [...lsUsers,...DEMO_USERS.filter(d=>!emails.has(d.email))];
+}
+
+function saveUsers(arr){
+  /* Strip out demo users before saving so localStorage stays clean */
+  const demoEmails=new Set(DEMO_USERS.map(d=>d.email));
+  const real=arr.filter(u=>!demoEmails.has(u.email)||lsGet('cu_users',[]).some(r=>r.email===u.email));
+  localStorage.setItem('cu_users',JSON.stringify(real));
+}
+
+function renderUsers(){
+  const users=getAllUsers();
+  const bookings=lsGet('db_bookings',[]);
+  const now=new Date();
+  const weekAgo=new Date(now-7*86400000);
+  const monthAgo=new Date(now-30*86400000);
+
+  /* Stats */
   const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
-  setEl('fin-ciro',ciro.toLocaleString('tr-TR')+' TL');
-  setEl('fin-komisyon',komisyon.toLocaleString('tr-TR')+' TL');
-  setEl('fin-net',net.toLocaleString('tr-TR')+' TL');
+  setEl('user-stat-toplam',users.length);
+  setEl('user-stat-aktif',users.filter(u=>u.durum!=='engellendi'&&u.sonGiris&&new Date(u.sonGiris)>=monthAgo).length);
+  setEl('user-stat-yeni',users.filter(u=>u.createdAt&&new Date(u.createdAt)>=weekAgo).length);
+  setEl('user-stat-harcama',users.reduce((s,u)=>s+(u.toplamHarcama||0),0).toLocaleString('tr-TR')+' TL');
+  setEl('user-stat-engellenen',users.filter(u=>u.durum==='engellendi').length);
+
+  const search=(document.getElementById('user-search')?.value||'').toLowerCase().trim();
+  const fDurum=document.getElementById('user-filter-durum')?.value||'';
+  const fKanal=document.getElementById('user-filter-kanal')?.value||'';
+  const fSort=document.getElementById('user-filter-sort')?.value||'yeni';
+
+  let filtered=users.filter(u=>{
+    if(search){
+      const hay=((u.name||'')+(u.email||'')+(u.phone||u.telefon||'')+(u.sehir||'')).toLowerCase();
+      if(!hay.includes(search))return false;
+    }
+    if(fDurum){
+      const isAktif=u.durum!=='engellendi'&&u.sonGiris&&new Date(u.sonGiris)>=monthAgo;
+      const isPasif=u.durum!=='engellendi'&&(!u.sonGiris||new Date(u.sonGiris)<monthAgo);
+      if(fDurum==='aktif'&&!isAktif)return false;
+      if(fDurum==='pasif'&&!isPasif)return false;
+      if(fDurum==='engellendi'&&u.durum!=='engellendi')return false;
+    }
+    if(fKanal&&(u.kayitKanali||'web')!==fKanal)return false;
+    return true;
+  });
+
+  if(fSort==='harcama')filtered.sort((a,b)=>(b.toplamHarcama||0)-(a.toplamHarcama||0));
+  else if(fSort==='tur')filtered.sort((a,b)=>(b.turSayisi||0)-(a.turSayisi||0));
+  else if(fSort==='giris')filtered.sort((a,b)=>new Date(b.sonGiris||0)-new Date(a.sonGiris||0));
+  else if(fSort==='az')filtered.sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
+  else filtered.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+
+  const total=filtered.length;
+  const totalPages=Math.max(1,Math.ceil(total/USERS_PER_PAGE));
+  if(usersPage>totalPages)usersPage=1;
+  const paginated=filtered.slice((usersPage-1)*USERS_PER_PAGE,usersPage*USERS_PER_PAGE);
+
+  setEl('users-count',`${total} / ${users.length} kullanici`);
+  const pageInfoEl=document.getElementById('users-page-info');
+  if(pageInfoEl)pageInfoEl.textContent=totalPages>1?`Sayfa ${usersPage} / ${totalPages}`:'';
+
+  /* Pagination */
+  const pagEl=document.getElementById('users-pagination');
+  if(pagEl){
+    pagEl.innerHTML='';
+    if(totalPages>1){
+      const mkBtn=(lbl,pg)=>{
+        const b=document.createElement('button');
+        b.innerHTML=lbl;
+        b.className='px-2.5 py-1 border rounded-lg text-xs '+(pg===usersPage?'bg-primary text-white border-primary':'hover:bg-gray-50');
+        b.onclick=()=>{usersPage=pg;renderUsers();};
+        return b;
+      };
+      if(usersPage>1)pagEl.appendChild(mkBtn('‹',usersPage-1));
+      for(let p=Math.max(1,usersPage-2);p<=Math.min(totalPages,usersPage+2);p++)pagEl.appendChild(mkBtn(p,p));
+      if(usersPage<totalPages)pagEl.appendChild(mkBtn('›',usersPage+1));
+    }
+  }
+
+  /* Table rows */
+  const tbody=document.getElementById('users-tbody');
+  if(!tbody)return;
+  if(!paginated.length){
+    tbody.innerHTML=`<tr><td colspan="9" class="text-center text-gray-400 py-12 text-sm">${total?'<i class="fas fa-filter mr-2"></i>Filtreye uyan kullanici yok.':'<i class="fas fa-users mr-2"></i>Henüz kayitli kullanici bulunmuyor.'}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML=paginated.map(u=>{
+    const name=u.name||u.ad||'—';
+    const email=u.email||'—';
+    const phone=u.phone||u.telefon||'';
+    const uid=u.id||name;
+    const ub=bookings.filter(b=>b.customerEmail===email||b.customerName===name);
+    const rezCount=u.turSayisi||ub.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi').length;
+    const harcama=(u.toplamHarcama||0).toLocaleString('tr-TR')+' TL';
+    const kanal=u.kayitKanali||'web';
+    const sonGirisRaw=u.sonGiris?new Date(u.sonGiris):null;
+    const sonGirisStr=sonGirisRaw?sonGirisRaw.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—';
+    const kayitStr=u.createdAt?new Date(u.createdAt).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—';
+    const isEng=u.durum==='engellendi';
+    const isAktif=!isEng&&sonGirisRaw&&sonGirisRaw>=new Date(now-30*86400000);
+    const durumBadge=isEng?'<span class="badge bg-red-100 text-red-600"><i class="fas fa-ban mr-0.5 text-[9px]"></i>Engellendi</span>':
+      isAktif?'<span class="badge bg-green-100 text-green-700"><i class="fas fa-circle mr-0.5 text-[7px]"></i>Aktif</span>':
+      '<span class="badge bg-gray-100 text-gray-500">Pasif</span>';
+    const kanalBadge={
+      mobil_app:'<span class="badge bg-blue-100 text-blue-700"><i class="fas fa-mobile-alt mr-0.5 text-[9px]"></i>App</span>',
+      sosyal_medya:'<span class="badge bg-pink-100 text-pink-700"><i class="fas fa-share-alt mr-0.5 text-[9px]"></i>Sosyal</span>',
+      misafir:'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-user-clock mr-0.5 text-[9px]"></i>Misafir</span>',
+    }[kanal]||'<span class="badge bg-gray-100 text-gray-600"><i class="fas fa-globe mr-0.5 text-[9px]"></i>Web</span>';
+    const avatarBg=isEng?'bg-red-100 text-red-500':isAktif?'bg-purple-100 text-purple-600':'bg-gray-100 text-gray-400';
+    const verifiedIcon=u.emailOnaylandi===false?'<span title="E-posta dogrulanmadi" class="text-amber-400 text-[10px] ml-1">⚠</span>':'<span title="E-posta dogrulandi" class="text-success text-[10px] ml-1">✓</span>';
+    return`<tr class="hover:bg-blue-50/30 transition-colors ${isEng?'opacity-60':''}">
+      <td><input type="checkbox" class="user-row-check rounded" value="${uid}" onchange="usersUpdateBulkBar()"></td>
+      <td>
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 ${avatarBg} rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0">${(name[0]||'U').toUpperCase()}</div>
+          <div>
+            <div class="font-semibold text-sm flex items-center">${name}${verifiedIcon}</div>
+            <div class="text-[11px] text-gray-400">${email}</div>
+            ${phone?`<div class="text-[11px] text-gray-400">${phone}</div>`:''}
+          </div>
+        </div>
+      </td>
+      <td class="text-xs text-gray-500">${u.sehir||'—'}<div class="text-[10px] text-gray-400">${kayitStr}</div></td>
+      <td class="text-xs text-gray-500">${sonGirisStr}</td>
+      <td class="text-center font-semibold text-sm ${rezCount>0?'text-primary':''}">${rezCount}</td>
+      <td class="font-semibold text-sm ${(u.toplamHarcama||0)>0?'text-success':'text-gray-300'}">${harcama}</td>
+      <td>${kanalBadge}</td>
+      <td>${durumBadge}</td>
+      <td class="text-right">
+        <div class="flex gap-1 justify-end">
+          <button onclick="openUserDetailModal('${uid}')" class="bg-primary/10 text-primary px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-primary/20 transition"><i class="fas fa-eye mr-1 text-[10px]"></i>Detay</button>
+          ${isEng?
+            `<button onclick="toggleUserBlock('${uid}',false)" class="bg-green-50 text-green-600 px-2.5 py-1.5 rounded-lg text-xs hover:bg-green-100 transition"><i class="fas fa-lock-open mr-1 text-[10px]"></i>Aç</button>`:
+            `<button onclick="toggleUserBlock('${uid}',true)" class="bg-red-50 text-danger px-2.5 py-1.5 rounded-lg text-xs hover:bg-red-100 transition"><i class="fas fa-ban mr-1 text-[10px]"></i>Engelle</button>`}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── Bulk selection ── */
+function usersUpdateBulkBar(){
+  const checked=document.querySelectorAll('.user-row-check:checked');
+  const bar=document.getElementById('users-bulk-actions');
+  const cnt=document.getElementById('users-selected-count');
+  if(bar){bar.style.display=checked.length?'flex':'none';}
+  if(cnt)cnt.textContent=checked.length+' secili';
+  const allChk=document.getElementById('users-select-all');
+  const allBoxes=document.querySelectorAll('.user-row-check');
+  if(allChk)allChk.indeterminate=checked.length>0&&checked.length<allBoxes.length;
+}
+function usersToggleSelectAll(v){document.querySelectorAll('.user-row-check').forEach(c=>c.checked=v);usersUpdateBulkBar();}
+function usersGetCheckedIds(){return [...document.querySelectorAll('.user-row-check:checked')].map(c=>c.value);}
+
+function usersBulkBlock(block){
+  const ids=usersGetCheckedIds();
+  if(!ids.length)return;
+  const all=getAllUsers();
+  ids.forEach(uid=>{const u=all.find(x=>(x.id||x.name)===uid);if(u)u.durum=block?'engellendi':'aktif';});
+  saveUsers(all);
+  usersToggleSelectAll(false);
+  renderUsers();
+  showToast(`${ids.length} kullanici ${block?'engellendi':'aktiflestirildi'}`,block?'info':'success');
+}
+
+function usersBulkDelete(){
+  const ids=usersGetCheckedIds();
+  if(!ids.length)return;
+  if(!confirm(`${ids.length} kullaniciy sil?`))return;
+  const all=getAllUsers().filter(u=>!ids.includes(u.id||u.name));
+  saveUsers(all);
+  usersToggleSelectAll(false);
+  renderUsers();
+  showToast(ids.length+' kullanici silindi','info');
+}
+
+function toggleUserBlock(uid,block){
+  const all=getAllUsers();
+  const u=all.find(x=>(x.id||x.name)===uid);
+  if(u){u.durum=block?'engellendi':'aktif';saveUsers(all);}
+  renderUsers();
+  showToast(block?'Kullanici engellendi':'Kullanici bloku kaldirildi',block?'info':'success');
+}
+
+/* ── Detail modal ── */
+function openUserDetailModal(uid){
+  const all=getAllUsers();
+  const u=all.find(x=>(x.id||x.name)===uid||String(x.id)===String(uid));
+  if(!u)return;
+  _udmCurrentUid=uid;
+  const bookings=lsGet('db_bookings',[]);
+  const name=u.name||u.ad||'—';
+  const email=u.email||'—';
+  const ub=bookings.filter(b=>b.customerEmail===email||b.customerName===name);
+  const activeB=ub.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi');
+  const now=new Date();
+  const monthAgo=new Date(now-30*86400000);
+  const isAktif=u.durum!=='engellendi'&&u.sonGiris&&new Date(u.sonGiris)>=monthAgo;
+  const isEng=u.durum==='engellendi';
+
+  document.getElementById('udm-name').textContent=name;
+  document.getElementById('udm-email').textContent=email;
+  document.getElementById('udm-avatar').textContent=(name[0]||'U').toUpperCase();
+  document.getElementById('udm-phone').textContent=u.phone||u.telefon||'—';
+  document.getElementById('udm-sehir').textContent=u.sehir||'—';
+  document.getElementById('udm-kayit').textContent=u.createdAt?new Date(u.createdAt).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'}):'—';
+  document.getElementById('udm-songiris').textContent=u.sonGiris?new Date(u.sonGiris).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+  document.getElementById('udm-kanal').textContent={web:'Web',mobil_app:'Mobil App',sosyal_medya:'Sosyal Medya',misafir:'Misafir'}[u.kayitKanali||'web']||u.kayitKanali||'—';
+  document.getElementById('udm-email-verified').textContent=u.emailOnaylandi===false?'⚠ Dogrulanmadi':'✓ Dogrulandi';
+  document.getElementById('udm-email-verified-badge').innerHTML=u.emailOnaylandi===false?'<span class="text-amber-400 text-xs">⚠ dogrulanmadi</span>':'<span class="text-success text-xs">✓ dogrulandi</span>';
+  document.getElementById('udm-durum').innerHTML=isEng?'<span class="badge bg-red-100 text-red-600">Engellendi</span>':isAktif?'<span class="badge bg-green-100 text-green-700">Aktif</span>':'<span class="badge bg-gray-100 text-gray-500">Pasif</span>';
+  document.getElementById('udm-rez-count').textContent=activeB.length;
+  document.getElementById('udm-harcama').textContent=(u.toplamHarcama||0).toLocaleString('tr-TR')+' TL';
+  document.getElementById('udm-tur-say').textContent=u.turSayisi||activeB.length;
+  document.getElementById('udm-rez-tab-count').textContent=ub.length;
+
+  /* Block button */
+  const blockBtn=document.getElementById('udm-block-btn');
+  if(blockBtn){
+    if(isEng){blockBtn.innerHTML='<i class="fas fa-lock-open mr-1"></i>Engeli Kaldir';blockBtn.className='border border-green-200 text-green-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-green-50 transition';}
+    else{blockBtn.innerHTML='<i class="fas fa-ban mr-1"></i>Engelle';blockBtn.className='border border-red-200 text-danger px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-50 transition';}
+  }
+
+  /* Reservations tab */
+  const bList=document.getElementById('udm-bookings-list');
+  if(bList){
+    bList.innerHTML=ub.length?ub.map(b=>{
+      const bc={tamamlandi:'bg-green-100 text-green-700',onaylandi:'bg-blue-100 text-blue-700',bekliyor:'bg-amber-100 text-amber-700',iptal:'bg-red-100 text-red-500',reddedildi:'bg-red-100 text-red-500'}[b.durum]||'bg-gray-100 text-gray-500';
+      return`<div class="flex justify-between items-center p-3 border rounded-xl hover:bg-gray-50 transition">
+        <div><div class="font-semibold text-sm">${b.tourTitle||b.tourId||'—'}</div><div class="text-[11px] text-gray-400 mt-0.5">${b.tarih||''} ${b.saat||''}</div></div>
+        <div class="text-right"><div class="font-bold text-sm">${(b.amount||0).toLocaleString('tr-TR')} TL</div><span class="badge ${bc}">${b.durum}</span></div>
+      </div>`;
+    }).join(''):'<div class="text-sm text-gray-400 text-center py-8"><i class="fas fa-calendar-times text-2xl mb-2 block"></i>Rezervasyon bulunamadi</div>';
+  }
+
+  /* Activity tab */
+  const aList=document.getElementById('udm-activity-list');
+  if(aList){
+    const events=[];
+    if(u.createdAt)events.push({date:u.createdAt,icon:'fa-user-plus',color:'text-primary',label:`Hesap olusturuldu (${u.kayitKanali||'web'})`});
+    if(u.sonGiris&&u.sonGiris!==u.createdAt)events.push({date:u.sonGiris,icon:'fa-sign-in-alt',color:'text-success',label:'Son giris yapildi'});
+    ub.slice(0,5).forEach(b=>events.push({date:b.createdAt||b.tarih,icon:'fa-calendar-check',color:'text-accent',label:`Rezervasyon: ${b.tourTitle||b.tourId||'Tur'} — ${(b.amount||0).toLocaleString('tr-TR')} TL`}));
+    events.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+    aList.innerHTML=events.length?events.map(e=>`<div class="flex items-start gap-3 py-2 border-b last:border-0">
+      <div class="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas ${e.icon} ${e.color} text-xs"></i></div>
+      <div><div class="text-sm font-medium">${e.label}</div><div class="text-[11px] text-gray-400">${e.date?new Date(e.date).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}):''}</div></div>
+    </div>`).join(''):'<div class="text-sm text-gray-400 text-center py-8">Aktivite bulunamadi</div>';
+  }
+
+  /* Reset to info tab, hide edit mode */
+  udmTab('info');
+  document.getElementById('udm-edit-mode').style.display='none';
+  document.getElementById('udm-view-mode').style.display='';
+
+  document.getElementById('user-detail-modal').style.display='flex';
+}
+
+function closeUserDetailModal(){document.getElementById('user-detail-modal').style.display='none';_udmCurrentUid=null;}
+
+function udmTab(tab){
+  ['info','bookings','activity'].forEach(t=>{
+    const el=document.getElementById('udm-tab-'+t);
+    const btn=document.querySelector(`[data-udm-tab="${t}"]`);
+    if(el)el.style.display=t===tab?'':'none';
+    if(btn){
+      btn.classList.toggle('border-primary',t===tab);
+      btn.classList.toggle('text-primary',t===tab);
+      btn.classList.toggle('border-transparent',t!==tab);
+      btn.classList.toggle('text-gray-500',t!==tab);
+    }
+  });
+}
+
+function udmToggleEdit(){
+  const editMode=document.getElementById('udm-edit-mode');
+  const viewMode=document.getElementById('udm-view-mode');
+  const isEditing=editMode.style.display!=='none';
+  if(isEditing){editMode.style.display='none';viewMode.style.display='';}
+  else{
+    /* Populate edit fields from current user */
+    const all=getAllUsers();
+    const u=all.find(x=>(x.id||x.name)===_udmCurrentUid||String(x.id)===String(_udmCurrentUid));
+    if(u){
+      document.getElementById('udm-edit-name').value=u.name||u.ad||'';
+      document.getElementById('udm-edit-email').value=u.email||'';
+      document.getElementById('udm-edit-phone').value=u.phone||u.telefon||'';
+      document.getElementById('udm-edit-sehir').value=u.sehir||'';
+      document.getElementById('udm-edit-kanal').value=u.kayitKanali||'web';
+      document.getElementById('udm-edit-durum').value=u.durum||'aktif';
+    }
+    editMode.style.display='';viewMode.style.display='none';
+  }
+}
+
+function udmSaveEdit(){
+  const all=getAllUsers();
+  const u=all.find(x=>(x.id||x.name)===_udmCurrentUid||String(x.id)===String(_udmCurrentUid));
+  if(!u){showToast('Kullanici bulunamadi','danger');return;}
+  u.name=document.getElementById('udm-edit-name').value.trim()||u.name;
+  u.email=document.getElementById('udm-edit-email').value.trim()||u.email;
+  u.phone=document.getElementById('udm-edit-phone').value.trim();
+  u.sehir=document.getElementById('udm-edit-sehir').value.trim();
+  u.kayitKanali=document.getElementById('udm-edit-kanal').value;
+  u.durum=document.getElementById('udm-edit-durum').value;
+  saveUsers(all);
+  openUserDetailModal(_udmCurrentUid);
+  renderUsers();
+  showToast('Kullanici guncellendi','success');
+}
+
+function udmToggleBlock(){
+  const all=getAllUsers();
+  const u=all.find(x=>(x.id||x.name)===_udmCurrentUid||String(x.id)===String(_udmCurrentUid));
+  if(!u)return;
+  const willBlock=u.durum!=='engellendi';
+  u.durum=willBlock?'engellendi':'aktif';
+  saveUsers(all);
+  openUserDetailModal(_udmCurrentUid);
+  renderUsers();
+  showToast(willBlock?'Kullanici engellendi':'Engel kaldirildi',willBlock?'info':'success');
+}
+
+function udmDeleteUser(){
+  if(!_udmCurrentUid)return;
+  if(!confirm('Bu kullaniciyi kalici olarak silmek istediginizden emin misiniz?'))return;
+  const all=getAllUsers().filter(x=>(x.id||x.name)!==_udmCurrentUid&&String(x.id)!==String(_udmCurrentUid));
+  saveUsers(all);
+  closeUserDetailModal();
+  renderUsers();
+  showToast('Kullanici silindi','info');
+}
+
+/* ── Add user modal ── */
+function openAddUserModal(){
+  ['uam-name','uam-email','uam-phone','uam-sehir','uam-password'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const errEl=document.getElementById('uam-error');if(errEl)errEl.style.display='none';
+  document.getElementById('user-add-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('uam-name')?.focus(),100);
+}
+function closeAddUserModal(){document.getElementById('user-add-modal').style.display='none';}
+
+function doAddUser(){
+  const name=document.getElementById('uam-name')?.value.trim();
+  const email=document.getElementById('uam-email')?.value.trim().toLowerCase();
+  const phone=document.getElementById('uam-phone')?.value.trim();
+  const sehir=document.getElementById('uam-sehir')?.value.trim();
+  const password=document.getElementById('uam-password')?.value;
+  const kanal=document.getElementById('uam-kanal')?.value||'web';
+  const errEl=document.getElementById('uam-error');
+  const showErr=(m)=>{if(errEl){errEl.textContent=m;errEl.style.display='';}}
+  if(!name){showErr('Ad Soyad zorunludur.');return;}
+  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){showErr('Geçerli bir e-posta giriniz.');return;}
+  const all=getAllUsers();
+  if(all.some(u=>u.email===email)){showErr('Bu e-posta adresi zaten kayitli.');return;}
+  const newUser={
+    id:'u'+Date.now(),name,email,phone,sehir,password:password||'',
+    kayitKanali:kanal,turSayisi:0,toplamHarcama:0,
+    emailOnaylandi:false,durum:'aktif',
+    createdAt:new Date().toISOString(),sonGiris:new Date().toISOString(),
+  };
+  const lsUsers=lsGet('cu_users',[]);
+  lsUsers.push(newUser);
+  localStorage.setItem('cu_users',JSON.stringify(lsUsers));
+  closeAddUserModal();
+  renderUsers();
+  showToast('Kullanici basariyla olusturuldu','success');
+}
+
+function exportUsersCSV(){
+  const users=getAllUsers();
+  const header='Ad Soyad,E-posta,Telefon,Sehir,Kayit Kanali,Rez. Sayisi,Toplam Harcama,Kayit Tarihi,Son Giris,Durum';
+  const rows=users.map(u=>[
+    u.name||'',u.email||'',u.phone||'',u.sehir||'',u.kayitKanali||'',
+    u.turSayisi||0,(u.toplamHarcama||0),
+    u.createdAt?new Date(u.createdAt).toLocaleDateString('tr-TR'):'',
+    u.sonGiris?new Date(u.sonGiris).toLocaleDateString('tr-TR'):'',
+    u.durum||'aktif'
+  ].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
+  const csv=header+'\n'+rows.join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='kullanicilar_'+new Date().toLocaleDateString('tr-TR').replace(/\./g,'-')+'.csv';a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV dosyasi indirildi','success');
+}
+
+/* ── SAYFA YÖNETİMİ ── */
+const PAGE_DEFS={
+  web:[
+    {key:'hero',icon:'fa-home',color:'bg-blue-100 text-blue-600',label:'Ana Sayfa Hero',desc:'Büyük başlık, arama kutusu, arka plan görseli'},
+    {key:'featured',icon:'fa-star',color:'bg-amber-100 text-amber-600',label:'Öne Çıkan Turlar',desc:'Ana sayfada gösterilen tur kartları listesi'},
+    {key:'categories',icon:'fa-th-large',color:'bg-purple-100 text-purple-600',label:'Kategoriler',desc:'Balık avı, tekne gezisi, yüzme vb. kategori blokları'},
+    {key:'regions',icon:'fa-map-marked-alt',color:'bg-green-100 text-green-600',label:'Bölgeler',desc:'Antalya, Bodrum, Fethiye vb. destinasyon kartları'},
+    {key:'how_it_works',icon:'fa-list-ol',color:'bg-sky-100 text-sky-600',label:'Nasıl Çalışır',desc:'Adım adım rezervasyon akışı açıklaması'},
+    {key:'testimonials',icon:'fa-quote-right',color:'bg-pink-100 text-pink-600',label:'Kullanıcı Yorumları',desc:'Müşteri yorumları carousel/grid bölümü'},
+    {key:'sea_conditions',icon:'fa-water',color:'bg-cyan-100 text-cyan-600',label:'Deniz Koşulları',desc:'Güncel hava ve deniz durumu widget\'ı'},
+    {key:'blog',icon:'fa-newspaper',color:'bg-indigo-100 text-indigo-600',label:'Blog / Keşfet',desc:'Rehber yazıları ve seyahat önerileri'},
+    {key:'footer',icon:'fa-grip-horizontal',color:'bg-gray-100 text-gray-600',label:'Footer',desc:'Alt bilgi bölümü — iletişim, sosyal medya, linkler'},
+  ],
+  customer_app:[
+    {key:'home',icon:'fa-home',color:'bg-blue-100 text-blue-600',label:'Ana Sayfa',desc:'Karşılama, öne çıkan turlar, hava durumu'},
+    {key:'search',icon:'fa-search',color:'bg-green-100 text-green-600',label:'Arama',desc:'Tur arama, filtreler, harita görünümü'},
+    {key:'explore',icon:'fa-compass',color:'bg-amber-100 text-amber-600',label:'Keşfet',desc:'Kategoriler, bölgeler, önerilen turlar'},
+    {key:'my_bookings',icon:'fa-calendar-check',color:'bg-purple-100 text-purple-600',label:'Rezervasyonlarım',desc:'Aktif ve geçmiş rezervasyon listesi'},
+    {key:'tools',icon:'fa-water',color:'bg-cyan-100 text-cyan-600',label:'Deniz Araçları',desc:'Hava, gelgit, solunar ve diğer marine modüller'},
+    {key:'messages',icon:'fa-comment-dots',color:'bg-sky-100 text-sky-600',label:'Mesajlar',desc:'Kaptan ile doğrudan mesajlaşma'},
+    {key:'profile',icon:'fa-user',color:'bg-gray-100 text-gray-600',label:'Profil',desc:'Hesap bilgileri, ödeme yöntemleri, çıkış'},
+  ],
+  captain_app:[
+    {key:'dashboard',icon:'fa-chart-line',color:'bg-blue-100 text-blue-600',label:'Dashboard',desc:'Günlük özet, yaklaşan rezervasyonlar, gelir'},
+    {key:'my_tours',icon:'fa-ship',color:'bg-green-100 text-green-600',label:'Turlarım',desc:'Tur listesi, ekleme, düzenleme, silme'},
+    {key:'reservations',icon:'fa-calendar-check',color:'bg-amber-100 text-amber-600',label:'Rezervasyonlar',desc:'Onay bekleyen ve onaylanan rezervasyonlar'},
+    {key:'calendar',icon:'fa-calendar-alt',color:'bg-purple-100 text-purple-600',label:'Takvim',desc:'Müsaitlik ve doluluk takvimi'},
+    {key:'earnings',icon:'fa-wallet',color:'bg-yellow-100 text-yellow-600',label:'Gelirler',desc:'Kazanç özeti, komisyon, ödeme geçmişi'},
+    {key:'tools',icon:'fa-water',color:'bg-cyan-100 text-cyan-600',label:'Deniz Araçları',desc:'Hava, gelgit, solunar ve diğer marine modüller'},
+    {key:'messages',icon:'fa-comment-dots',color:'bg-sky-100 text-sky-600',label:'Mesajlar',desc:'Müşterilerle doğrudan mesajlaşma'},
+    {key:'profile',icon:'fa-anchor',color:'bg-gray-100 text-gray-600',label:'Profil',desc:'Kaptan profili, tekne bilgisi, belgeler'},
+  ]
+};
+
+function getPageSettings(){
+  try{
+    const s=JSON.parse(localStorage.getItem('page_settings')||'{}');
+    // merge defaults
+    ['web','customer_app','captain_app'].forEach(scope=>{
+      if(!s[scope])s[scope]={};
+      (PAGE_DEFS[scope]||[]).forEach(p=>{if(s[scope][p.key]===undefined)s[scope][p.key]=true;});
+    });
+    return s;
+  }catch{
+    const d={web:{},customer_app:{},captain_app:{}};
+    ['web','customer_app','captain_app'].forEach(sc=>(PAGE_DEFS[sc]||[]).forEach(p=>{d[sc][p.key]=true;}));
+    return d;
+  }
+}
+
+function savePageSettings(s){localStorage.setItem('page_settings',JSON.stringify(s));}
+
+function togglePage(scope,key){
+  const s=getPageSettings();
+  s[scope][key]=!s[scope][key];
+  savePageSettings(s);
+  if(scope==='web')renderPagesWeb();
+  else if(scope==='customer_app')renderPagesCustomerApp();
+  else renderPagesCaptainApp();
+}
+
+function renderPageSection(containerId,scope){
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  const s=getPageSettings();
+  const defs=PAGE_DEFS[scope]||[];
+  const aktifCount=defs.filter(d=>s[scope][d.key]!==false).length;
+  el.innerHTML=defs.map(d=>{
+    const aktif=s[scope][d.key]!==false;
+    return`<div class="card flex items-center justify-between gap-4 ${aktif?'':'opacity-60'}">
+      <div class="flex items-center gap-3 flex-1 min-w-0">
+        <div class="w-10 h-10 ${d.color} rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas ${d.icon}"></i></div>
+        <div class="min-w-0">
+          <div class="text-sm font-semibold">${d.label}${aktif?'':' <span class="text-[10px] text-gray-400 font-normal">· Gizli</span>'}</div>
+          <div class="text-[11px] text-gray-400 truncate">${d.desc}</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <span class="text-[10px] font-medium ${aktif?'text-success':'text-gray-400'}">${aktif?'Aktif':'Pasif'}</span>
+        <div class="toggle ${aktif?'on':''}" onclick="togglePage('${scope}','${d.key}')"></div>
+      </div>
+    </div>`;
+  }).join('');
+  // update section header stats
+  const headerEl=el.closest('.page')?.querySelector('.page-stats-badge');
+  if(headerEl)headerEl.textContent=aktifCount+' / '+defs.length+' aktif';
+}
+
+function renderPagesWeb(){renderPageSection('pages-web-list','web');}
+function renderPagesCustomerApp(){renderPageSection('pages-customer-app-list','customer_app');}
+function renderPagesCaptainApp(){renderPageSection('pages-captain-app-list','captain_app');}
+
+/* ── MARINE DATA ── */
+function showMarineTab(btn,tabId){
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['mtab-tide','mtab-wind','mtab-weather','mtab-depth','mtab-moon','mtab-sun'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display=id===tabId?'':'none';
+  });
+}
+
+/* ── MODÜL YÖNETİMİ ── */
+const MARINE_MODULE_DEFS=[
+  {key:'gelgit',label:'Gelgit Takibi',desc:'Günlük med-cezir verileri, saat & yükseklik',icon:'fa-water',color:'blue',href:'marine-gelgit.html'},
+  {key:'ruzgar',label:'Rüzgar Durumu',desc:'Beaufort ölçeği, hız, yön, gust — koy bazlı',icon:'fa-wind',color:'sky',href:'marine-ruzgar.html'},
+  {key:'hava',label:'Hava Durumu',desc:'5 günlük tahmin, deniz sıcaklığı, nem',icon:'fa-cloud-sun',color:'amber',href:'marine-hava.html'},
+  {key:'derinlik',label:'Derinlik Haritası',desc:'Batimetri, seyir ölçekleri, kritik derinlikler',icon:'fa-map',color:'indigo',href:'marine-derinlik.html'},
+  {key:'ay',label:'Ay Takvimi',desc:'Ay evreleri, doğuş-batış, balık avına etkisi',icon:'fa-moon',color:'slate',href:'marine-ay.html'},
+  {key:'gunes',label:'Güneş Doğuş/Batış',desc:'Sahil bazlı alacakaranlık, altın saat verileri',icon:'fa-sun',color:'orange',href:'marine-gunes.html'},
+  {key:'solunar',label:'Solunar Takvim',desc:'Balık aktivitesi, major/minor periyotlar',icon:'fa-fish',color:'teal',href:'marine-solunar.html'},
+  {key:'sicaklik',label:'Su Sıcaklıkları',desc:'Yüzey, derinlik, mevsimsel trend, dalış konforu',icon:'fa-thermometer-half',color:'cyan',href:'marine-sicaklik.html'},
+  {key:'ay_konum',label:'Ay Konumu',desc:'Canlı faz görüntüsü, yükseklik, mesafe, pusula',icon:'fa-satellite',color:'violet',href:'marine-ay-konum.html'},
+];
+
+function getModuleSettings(){
+  const defaults={};
+  MARINE_MODULE_DEFS.forEach(m=>{defaults[m.key]={aktif:true,musteriler:true,kaptanlar:true};});
+  try{const s=localStorage.getItem('module_settings');return s?{...defaults,...JSON.parse(s)}:defaults;}
+  catch{return defaults;}
+}
+function saveModuleSettings(s){localStorage.setItem('module_settings',JSON.stringify(s));}
+
+function toggleModule(key){
+  const s=getModuleSettings();
+  s[key].aktif=!s[key].aktif;
+  saveModuleSettings(s);
+  renderMarineModules();
+}
+function toggleModuleAudience(key,audience){
+  const s=getModuleSettings();
+  s[key][audience]=!s[key][audience];
+  saveModuleSettings(s);
+  renderMarineModules();
+}
+
+function renderMarineModules(){
+  const container=document.getElementById('marine-modules-list');
+  if(!container)return;
+  const s=getModuleSettings();
+  const colorMap={blue:'bg-blue-100 text-blue-600',sky:'bg-sky-100 text-sky-600',amber:'bg-amber-100 text-amber-500',indigo:'bg-indigo-100 text-indigo-600',slate:'bg-slate-100 text-slate-600',orange:'bg-orange-100 text-orange-500',teal:'bg-teal-100 text-teal-600',cyan:'bg-cyan-100 text-cyan-600',violet:'bg-violet-100 text-violet-600'};
+  container.innerHTML=MARINE_MODULE_DEFS.map(m=>{
+    const ms=s[m.key]||{aktif:true,musteriler:true,kaptanlar:true};
+    const iconCls=colorMap[m.color]||'bg-gray-100 text-gray-600';
+    const statusTxt=ms.aktif?'<span class="text-[10px] text-success font-medium">Aktif</span>':'<span class="text-[10px] text-gray-400 font-medium">Pasif</span>';
+    const mBtn=`<button onclick="event.preventDefault();event.stopPropagation();toggleModuleAudience('${m.key}','musteriler')" title="Müşterilere Görünür" class="px-1.5 py-0.5 rounded text-[10px] font-bold border transition ${ms.musteriler?'bg-purple-100 text-purple-700 border-purple-200':'bg-gray-100 text-gray-400 border-gray-200'}">M</button>`;
+    const kBtn=`<button onclick="event.preventDefault();event.stopPropagation();toggleModuleAudience('${m.key}','kaptanlar')" title="Kaptanlara Görünür" class="px-1.5 py-0.5 rounded text-[10px] font-bold border transition ${ms.kaptanlar?'bg-sky-100 text-sky-700 border-sky-200':'bg-gray-100 text-gray-400 border-gray-200'}">K</button>`;
+    return`<div class="flex items-center justify-between p-3 border rounded-xl hover:bg-gray-50 transition-colors ${!ms.aktif?'opacity-60':''}">
+      <a href="${m.href}" target="_blank" class="flex items-center gap-3 flex-1 min-w-0">
+        <div class="w-10 h-10 ${iconCls} rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas ${m.icon}"></i></div>
+        <div class="min-w-0"><div class="text-sm font-medium truncate">${m.label}</div><div class="text-[10px] text-gray-400 truncate">${m.desc}</div></div>
+      </a>
+      <div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
+        ${statusTxt}
+        <i class="fas fa-external-link-alt text-gray-300 text-xs"></i>
+        ${mBtn}${kBtn}
+        <div class="toggle ${ms.aktif?'on':''}" onclick="event.preventDefault();event.stopPropagation();toggleModule('${m.key}')"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMarineData(){
+  const now=new Date();
+  document.getElementById('marine-update-time').textContent='Son guncelleme: '+now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})+' (Simule edilmis veri)';
+  renderTideData(now);
+  renderWindData();
+  renderWeatherData();
+  renderDepthData();
+  renderMoonData(now);
+  renderSunData();
+}
+
+function renderTideData(now){
+  // Semi-diurnal tide simulation (12h 25min period)
+  const T=12.4167*3600*1000; // ms
+  const A=0.35; // amplitude m
+  const base=0.47; // mean sea level m
+  const phaseOffset=2.3; // hours shift for Antalya
+  const tideAt=ms=>{const t=ms/T*2*Math.PI+phaseOffset;return+(base+A*Math.cos(t)).toFixed(2);};
+
+  const dayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+  const nowH=now.getHours()+now.getMinutes()/60;
+
+  // Find HW/LW today
+  let hwT=0,hwH=0,lwT=99,lwH=99;
+  for(let h=0;h<24;h+=0.25){
+    const v=tideAt(dayStart+h*3600000);
+    if(v>hwH){hwH=v;hwT=h;}
+    if(v<lwH){lwH=v;lwT=h;}
+  }
+  const fmtH=h=>{const hh=Math.floor(h);const mm=Math.round((h-hh)*60);return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');};
+  const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
+  setEl('tide-hw-height',hwH.toFixed(2)+' m');setEl('tide-hw-time',fmtH(hwT));
+  setEl('tide-lw-height',lwH.toFixed(2)+' m');setEl('tide-lw-time',fmtH(lwT));
+  const nowV=tideAt(now.getTime());
+  const nextV=tideAt(now.getTime()+1800000);
+  setEl('tide-now',nowV.toFixed(2)+' m');
+  setEl('tide-trend',nextV>nowV?'↑ Yukselen':'↓ Alcalan');
+
+  // Chart (24 bars hourly)
+  const chartEl=document.getElementById('tide-chart');
+  const labelsEl=document.getElementById('tide-chart-labels');
+  if(chartEl){
+    const vals=[];for(let h=0;h<24;h++)vals.push(tideAt(dayStart+h*3600000));
+    const mx=Math.max(...vals);const mn=Math.min(...vals);const range=mx-mn||0.01;
+    chartEl.innerHTML=vals.map((v,i)=>{
+      const pct=Math.round((v-mn)/range*80)+5;
+      const isNow=i===now.getHours();
+      return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px">
+        <div style="width:100%;background:${isNow?'#0369a1':'#bae6fd'};border-radius:3px 3px 0 0;height:${pct}%;min-height:2px;position:relative">${isNow?`<div style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;color:#0369a1;white-space:nowrap">${v.toFixed(2)}m</div>`:''}</div>
+      </div>`;
+    }).join('');
+    if(labelsEl)labelsEl.innerHTML=vals.map((_,i)=>i%4===0?`<span>${String(i).padStart(2,'0')}:00</span>`:'<span></span>').join('');
+  }
+
+  // 3-day forecast
+  const fcEl=document.getElementById('tide-forecast');
+  if(fcEl){
+    const days=['Yarin','2 Gun Sonra','3 Gun Sonra'];
+    fcEl.innerHTML=days.map((d,di)=>{
+      const dStart=dayStart+(di+1)*86400000;
+      let dhwT=0,dhwH=0,dlwH=99,dlwT=0;
+      for(let h=0;h<24;h+=0.5){const v=tideAt(dStart+h*3600000);if(v>dhwH){dhwH=v;dhwT=h;}if(v<dlwH){dlwH=v;dlwT=h;}}
+      return`<div class="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+        <span class="text-xs font-semibold text-gray-700">${d}</span>
+        <div class="flex gap-4 text-xs"><span class="text-blue-600"><i class="fas fa-arrow-up mr-0.5"></i>${dhwH.toFixed(2)}m <span class="text-gray-400">${fmtH(dhwT)}</span></span><span class="text-cyan-600"><i class="fas fa-arrow-down mr-0.5"></i>${dlwH.toFixed(2)}m <span class="text-gray-400">${fmtH(dlwT)}</span></span></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Port table
+  const ports=[
+    {name:'Antalya Liman',bolge:'Akdeniz',hw:0.82,lw:0.12,hwt:'07:24',lwt:'01:18'},
+    {name:'Bodrum Marina',bolge:'Ege',hw:0.68,lw:0.08,hwt:'08:05',lwt:'02:12'},
+    {name:'Fethiye Liman',bolge:'Ege/Akdeniz',hw:0.74,lw:0.10,hwt:'07:48',lwt:'01:44'},
+    {name:'Marmaris Liman',bolge:'Ege/Akdeniz',hw:0.71,lw:0.09,hwt:'08:15',lwt:'02:00'},
+    {name:'Kas Liman',bolge:'Akdeniz',hw:0.85,lw:0.14,hwt:'07:10',lwt:'01:05'},
+    {name:'Cesme Marina',bolge:'Ege',hw:0.52,lw:0.06,hwt:'09:20',lwt:'03:15'},
+    {name:'Istanbul Bogazi',bolge:'Marmara',hw:0.38,lw:0.12,hwt:'10:40',lwt:'04:30'},
+    {name:'Izmir Korfez',bolge:'Ege',hw:0.58,lw:0.07,hwt:'09:05',lwt:'02:58'},
+  ];
+  const portTbody=document.getElementById('tide-ports-tbody');
+  if(portTbody)portTbody.innerHTML=ports.map(p=>`<tr>
+    <td class="font-medium text-sm">${p.name}</td>
+    <td class="font-bold text-blue-600">${p.hw} m</td>
+    <td class="text-xs text-gray-600">${p.hwt}</td>
+    <td class="font-bold text-cyan-600">${p.lw} m</td>
+    <td class="text-xs text-gray-600">${p.lwt}</td>
+    <td><span class="badge bg-blue-100 text-blue-700">${(p.hw-p.lw).toFixed(2)} m</span></td>
+    <td class="text-xs text-gray-500">${p.bolge}</td>
+  </tr>`).join('');
+}
+
+function renderWindData(){
+  const stations=[
+    {name:'Antalya Liman',bolge:'Antalya',hiz:12,gust:18,yon:'KKB',yonDeg:337,bf:2},
+    {name:'Bodrum Havaalani',bolge:'Bodrum',hiz:8,gust:12,yon:'B',yonDeg:270,bf:1},
+    {name:'Fethiye Meteoroloji',bolge:'Fethiye',hiz:15,gust:22,yon:'KB',yonDeg:315,bf:3},
+    {name:'Marmaris Sahil',bolge:'Marmaris',hiz:20,gust:28,yon:'GB',yonDeg:225,bf:4},
+    {name:'Istanbul Saraybumu',bolge:'Istanbul',hiz:22,gust:31,yon:'GGB',yonDeg:202,bf:4},
+    {name:'Izmir Alsancak',bolge:'Izmir',hiz:18,gust:25,yon:'BBG',yonDeg:247,bf:4},
+    {name:'Kas Sahil',bolge:'Kas',hiz:7,gust:11,yon:'K',yonDeg:0,bf:1},
+    {name:'Cesme Marina',bolge:'Cesme',hiz:25,gust:35,yon:'B',yonDeg:270,bf:5},
+    {name:'Kemer Liman',bolge:'Kemer',hiz:10,gust:16,yon:'KKD',yonDeg:22,bf:2},
+    {name:'Side Sahil',bolge:'Side',hiz:13,gust:19,yon:'GB',yonDeg:225,bf:3},
+  ];
+  const bfDesc=['Sakin','Hafif Esinti','Yumusak Meltem','Hafif Meltem','Iliman Meltem','Taze Meltem','Kuvvetli Meltem','Sert Meltem','Siddetli Firtina'];
+  const bfColor=(b)=>b<=2?'bg-green-100 text-green-700':b<=4?'bg-amber-100 text-amber-700':b<=6?'bg-orange-100 text-orange-700':'bg-red-100 text-danger';
+  const avgHiz=Math.round(stations.reduce((s,st)=>s+st.hiz,0)/stations.length);
+  const maxGust=Math.max(...stations.map(s=>s.gust));
+  const hakim=stations.sort((a,b)=>b.hiz-a.hiz)[0];
+  const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
+  setEl('wind-avg',avgHiz+' km/s');
+  setEl('wind-dir',hakim.yon);
+  setEl('wind-gust',maxGust+' km/s');
+  setEl('wind-beaufort','BF '+hakim.bf+' — '+bfDesc[hakim.bf]);
+  const tbody=document.getElementById('wind-tbody');
+  if(tbody)tbody.innerHTML=stations.map(st=>`<tr>
+    <td class="font-medium text-sm">${st.name}</td>
+    <td class="text-xs text-gray-500">${st.bolge}</td>
+    <td><span class="font-bold text-sky-700">${st.hiz}</span> km/s</td>
+    <td class="text-xs text-gray-600">${st.gust} km/s</td>
+    <td><span class="inline-flex items-center gap-1 text-xs"><span style="display:inline-block;transform:rotate(${st.yonDeg}deg)">↑</span>${st.yon}</span></td>
+    <td><span class="badge ${bfColor(st.bf)}">BF ${st.bf}</span></td>
+    <td class="text-xs text-gray-500">${bfDesc[st.bf]||'—'}</td>
+    <td class="text-[10px] text-gray-400">${new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</td>
+  </tr>`).join('');
+  // 24h wind profile chart
+  const chartEl=document.getElementById('wind-chart');
+  if(chartEl){
+    const profile=[8,7,6,5,5,4,8,12,15,18,20,22,24,25,22,20,18,16,14,12,10,9,8,7];
+    const mx=Math.max(...profile);
+    chartEl.innerHTML=profile.map((v,i)=>{
+      const pct=Math.round(v/mx*80)+5;
+      const h=i*1;
+      const isNow=h===new Date().getHours();
+      return`<div style="flex:1;background:${isNow?'#0284c7':'#bae6fd'};border-radius:3px 3px 0 0;height:${pct}%;min-height:2px" title="${v} km/s (${String(h).padStart(2,'0')}:00)"></div>`;
+    }).join('');
+  }
+}
+
+function renderWeatherData(){
+  const now=new Date();
+  const cities=[
+    {name:'Antalya',temp:24,sea:19,hum:55,wind:'12 km/s KB',dalga:'0.5m',uv:8,icon:'☀️',durum:'Acik'},
+    {name:'Bodrum',temp:22,sea:18,hum:58,wind:'8 km/s B',dalga:'0.3m',uv:7,icon:'🌤',durum:'Az Bulutlu'},
+    {name:'Fethiye',temp:23,sea:18,hum:60,wind:'15 km/s KB',dalga:'0.6m',uv:7,icon:'⛅',durum:'Parcali Bulutlu'},
+    {name:'Marmaris',temp:22,sea:17,hum:62,wind:'20 km/s GB',dalga:'0.8m',uv:6,icon:'🌥',durum:'Bulutlu'},
+    {name:'Istanbul',temp:17,sea:13,hum:70,wind:'22 km/s GGB',dalga:'1.2m',uv:5,icon:'☁️',durum:'Kapal'},
+    {name:'Izmir',temp:21,sea:17,hum:60,wind:'18 km/s BBG',dalga:'0.7m',uv:7,icon:'⛅',durum:'Parcali Bulutlu'},
+    {name:'Kas',temp:23,sea:19,hum:52,wind:'7 km/s K',dalga:'0.2m',uv:9,icon:'☀️',durum:'Acik'},
+    {name:'Cesme',temp:20,sea:16,hum:65,wind:'25 km/s B',dalga:'1.0m',uv:6,icon:'🌬',durum:'Kuvvetli Ruzgarli'},
+  ];
+  const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
+  setEl('wx-temp',cities[0].temp+'°C');
+  setEl('wx-humidity',cities[0].hum+'%');
+  setEl('wx-sea-temp',cities[0].sea+'°C');
+  setEl('wx-vis','25 km');
+
+  const wxDays=[
+    {day:'Bug.',icon:'☀️',high:24,low:16,sea:19,durum:'Acik'},
+    {day:'Sal',icon:'🌤',high:23,low:15,sea:19,durum:'Az Bulutlu'},
+    {day:'Car',icon:'⛅',high:22,low:14,sea:18,durum:'Parcali'},
+    {day:'Per',icon:'🌧',high:19,low:13,sea:18,durum:'Yagmurlu'},
+    {day:'Cum',icon:'⛅',high:21,low:14,sea:18,durum:'Parcali'},
+  ];
+  const fcCards=document.getElementById('wx-forecast-cards');
+  if(fcCards)fcCards.innerHTML=wxDays.map(d=>`<div class="card text-center p-3 border-2 ${d.day==='Bug.'?'border-primary':'border-transparent'}">
+    <div class="text-xs font-semibold text-gray-500 mb-1">${d.day}</div>
+    <div class="text-2xl mb-1">${d.icon}</div>
+    <div class="text-sm font-bold">${d.high}°</div>
+    <div class="text-xs text-gray-400">${d.low}°</div>
+    <div class="text-[10px] text-gray-500 mt-1">${d.durum}</div>
+    <div class="text-[10px] text-cyan-600 mt-0.5">Deniz: ${d.sea}°C</div>
+  </div>`).join('');
+
+  const tbody=document.getElementById('wx-cities-tbody');
+  if(tbody)tbody.innerHTML=cities.map(c=>`<tr>
+    <td><span class="mr-1">${c.icon}</span><span class="font-medium">${c.name}</span></td>
+    <td class="text-xs text-gray-600">${c.durum}</td>
+    <td class="font-bold text-amber-600">${c.temp}°C</td>
+    <td class="font-bold text-cyan-600">${c.sea}°C</td>
+    <td>${c.hum}%</td>
+    <td class="text-xs">${c.wind}</td>
+    <td class="text-xs">${c.dalga}</td>
+    <td><span class="badge ${c.uv>=8?'bg-red-100 text-danger':c.uv>=6?'bg-amber-100 text-amber-700':'bg-green-100 text-green-700'}">UV ${c.uv}</span></td>
+  </tr>`).join('');
+}
+
+function renderDepthData(){
+  const regions=[
+    {name:'Istanbul Bogazi (Giris)',min:36,avg:65,max:124,tip:'Bogaz'},
+    {name:'Marmara Denizi (Orta)',min:20,avg:494,max:1389,tip:'Kapali Deniz'},
+    {name:'Canakkale Bogazi',min:25,avg:55,max:103,tip:'Bogaz'},
+    {name:'Kuzey Ege (Giris)',min:40,avg:280,max:910,tip:'Acik Deniz'},
+    {name:'Izmir Korfezi',min:5,avg:35,max:98,tip:'Korfez'},
+    {name:'Cesme Aciklari',min:30,avg:220,max:750,tip:'Kiyi Sulari'},
+    {name:'Bodrum Yarimadasi',min:8,avg:180,max:620,tip:'Kiyi Sulari'},
+    {name:'Marmaris Korfezi',min:5,avg:45,max:148,tip:'Korfez'},
+    {name:'Fethiye Korfezi',min:4,avg:55,max:165,tip:'Korfez'},
+    {name:'Antalya Korfezi',min:20,avg:650,max:2250,tip:'Acik Deniz'},
+    {name:'Kas-Gokova Hatti',min:15,avg:800,max:2300,tip:'Derin Akdeniz'},
+    {name:'Orta Akdeniz',min:500,avg:1500,max:3627,tip:'Derin Okyanus'},
+  ];
+  const tbody=document.getElementById('depth-tbody');
+  if(tbody)tbody.innerHTML=regions.map(r=>`<tr>
+    <td class="font-medium text-sm">${r.name}</td>
+    <td class="text-cyan-600 font-semibold">${r.min} m</td>
+    <td>${r.avg} m</td>
+    <td class="text-indigo-600 font-bold">${r.max} m</td>
+    <td><span class="badge ${r.tip==='Bogaz'?'bg-amber-100 text-amber-700':r.tip==='Korfez'?'bg-green-100 text-green-700':r.tip.includes('Derin')?'bg-indigo-100 text-indigo-700':'bg-blue-100 text-blue-700'}">${r.tip}</span></td>
+  </tr>`).join('');
+
+  // Draw depth map SVG
+  const svg=document.getElementById('depth-svg');
+  if(svg){
+    svg.innerHTML=`
+      <!-- Background ocean -->
+      <rect width="400" height="200" fill="#1e3a5f"/>
+      <!-- Depth zones — simplified Aegean/Mediterranean -->
+      <ellipse cx="200" cy="120" rx="180" ry="70" fill="#1d6fa4" opacity="0.7"/>
+      <ellipse cx="200" cy="120" rx="130" ry="50" fill="#2196c0" opacity="0.7"/>
+      <ellipse cx="200" cy="120" rx="80" ry="32" fill="#4db6d0" opacity="0.7"/>
+      <!-- Land masses (simplified) -->
+      <path d="M0,0 L80,0 L80,60 L50,80 L0,90 Z" fill="#4a7c59"/>
+      <path d="M320,0 L400,0 L400,70 L370,90 L320,60 Z" fill="#4a7c59"/>
+      <path d="M0,160 L60,150 L100,170 L80,200 L0,200 Z" fill="#4a7c59"/>
+      <path d="M310,150 L370,140 L400,160 L400,200 L280,200 Z" fill="#4a7c59"/>
+      <!-- Labels -->
+      <text x="200" y="90" text-anchor="middle" fill="white" font-size="9" font-weight="600" opacity="0.9">EGE DENİZİ</text>
+      <text x="200" y="140" text-anchor="middle" fill="white" font-size="8" opacity="0.7">Akdeniz</text>
+      <text x="200" y="155" text-anchor="middle" fill="#80d0e0" font-size="8">~500-3000m</text>
+      <text x="200" y="108" text-anchor="middle" fill="white" font-size="7" opacity="0.6">200-500m</text>
+      <!-- Depth markers -->
+      <circle cx="120" cy="120" r="3" fill="#fbbf24"/>
+      <text x="125" y="123" fill="#fbbf24" font-size="7">Bodrum 620m</text>
+      <circle cx="280" cy="130" r="3" fill="#fbbf24"/>
+      <text x="240" y="143" fill="#fbbf24" font-size="7">Antalya 2250m</text>
+      <circle cx="50" cy="110" r="3" fill="#fbbf24"/>
+      <text x="55" y="113" fill="#fbbf24" font-size="7">Izmir 98m</text>
+      <!-- Scale -->
+      <text x="10" y="190" fill="#94a3b8" font-size="7">Olcek ~1:5.000.000 | Kuzey Yukari</text>
+      <polygon points="390,15 386,25 390,22 394,25" fill="white" opacity="0.7"/>
+      <text x="390" y="32" text-anchor="middle" fill="white" font-size="7" opacity="0.7">K</text>
+    `;
+  }
+}
+
+function renderMoonData(now){
+  // Moon phase calculation (simplified)
+  const knownNewMoon=new Date('2026-04-03T02:00:00Z').getTime();
+  const lunarPeriod=29.53058867*24*3600*1000;
+  const elapsed=now.getTime()-knownNewMoon;
+  const phase=(((elapsed%lunarPeriod)+lunarPeriod)%lunarPeriod)/lunarPeriod;
+  const illumination=Math.round((1-Math.cos(phase*2*Math.PI))/2*100);
+  const phaseNames=['Yeni Ay','Hilal','Ilk Dordun','Sisen Ay','Dolunay','Solunan Ay','Son Dordun','Egilim Ay'];
+  const phaseEmojis=['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
+  const phaseIdx=Math.round(phase*8)%8;
+  const fishScore=phaseIdx===4?'Mukemmel ★★★★★':phaseIdx===0?'Zayif ★☆☆☆☆':phaseIdx===2||phaseIdx===6?'Iyi ★★★★☆':'Orta ★★★☆☆';
+  const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
+  setEl('moon-phase-name',phaseEmojis[phaseIdx]+' '+phaseNames[phaseIdx]);
+  setEl('moon-illumination','Aydinlanma: %'+illumination);
+  setEl('moon-rise','21:32');
+  setEl('moon-set','06:48');
+  setEl('moon-fishing',fishScore);
+
+  // April 2026 calendar
+  const calEl=document.getElementById('moon-calendar');
+  if(calEl){
+    const firstDay=new Date(2026,3,1).getDay()||7; // Mon=1
+    const moonPhaseForDay=d=>{
+      const dt=new Date(2026,3,d).getTime();
+      const e=(((dt-knownNewMoon)%lunarPeriod)+lunarPeriod)%lunarPeriod/lunarPeriod;
+      return Math.round(e*8)%8;
+    };
+    const emojis=['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
+    let html='';
+    for(let i=1;i<firstDay;i++)html+='<div></div>';
+    for(let d=1;d<=30;d++){
+      const pi=moonPhaseForDay(d);
+      const isToday=d===now.getDate()&&now.getMonth()===3&&now.getFullYear()===2026;
+      html+=`<div class="text-center p-1 rounded-lg ${isToday?'bg-primary text-white':'hover:bg-gray-50'}" style="cursor:default">
+        <div class="text-[9px] ${isToday?'text-white':'text-gray-400'}">${d}</div>
+        <div class="text-base leading-none">${emojis[pi]}</div>
+      </div>`;
+    }
+    calEl.innerHTML=html;
+  }
+
+  // Key events table
+  const events=[
+    {evre:'🌑 Yeni Ay',tarih:'3 Nisan 2026',saat:'02:15',etki:'Zayif Av',not:'Balik aktivitesi dusuk'},
+    {evre:'🌓 Ilk Dordun',tarih:'10 Nisan 2026',saat:'18:43',etki:'Iyi Av',not:'Sabah ve aksam erken saatler'},
+    {evre:'🌕 Dolunay',tarih:'18 Nisan 2026',saat:'09:22',etki:'Mukemmel',not:'Gece avciliginda zirve'},
+    {evre:'🌗 Son Dordun',tarih:'25 Nisan 2026',saat:'14:08',etki:'Iyi Av',not:'Deniz alti hareketlenir'},
+    {evre:'🌑 Yeni Ay',tarih:'2 Mayis 2026',saat:'21:30',etki:'Zayif Av',not:'Yeni donem baslangici'},
+    {evre:'🌕 Dolunay',tarih:'17 Mayis 2026',saat:'22:15',etki:'Mukemmel',not:'Yaz doneminin ilk dolunayı'},
+  ];
+  const evTbody=document.getElementById('moon-events-tbody');
+  if(evTbody)evTbody.innerHTML=events.map(ev=>`<tr>
+    <td class="font-medium">${ev.evre}</td>
+    <td>${ev.tarih}</td>
+    <td class="text-xs text-gray-600">${ev.saat}</td>
+    <td><span class="badge ${ev.etki==='Mukemmel'?'bg-green-100 text-green-700':ev.etki==='Iyi Av'?'bg-blue-100 text-blue-700':'bg-gray-100 text-gray-500'}">${ev.etki}</span></td>
+    <td class="text-xs text-gray-500">${ev.not}</td>
+  </tr>`).join('');
+}
+
+function renderSunData(){
+  const cities=[
+    {name:'Antalya',dogus:'06:15',alacak:'05:48',ogle:'13:00',ikindi:'20:12',batis:'19:42',sure:'13s 27d',altin:'06:15–06:45 / 19:12–19:42'},
+    {name:'Bodrum',dogus:'06:22',alacak:'05:54',ogle:'13:04',ikindi:'20:15',batis:'19:48',sure:'13s 26d',altin:'06:22–06:52 / 19:18–19:48'},
+    {name:'Fethiye',dogus:'06:19',alacak:'05:51',ogle:'13:02',ikindi:'20:13',batis:'19:45',sure:'13s 26d',altin:'06:19–06:49 / 19:15–19:45'},
+    {name:'Marmaris',dogus:'06:21',alacak:'05:53',ogle:'13:03',ikindi:'20:14',batis:'19:47',sure:'13s 26d',altin:'06:21–06:51 / 19:17–19:47'},
+    {name:'Istanbul',dogus:'06:14',alacak:'05:45',ogle:'12:57',ikindi:'20:08',batis:'19:36',sure:'13s 22d',altin:'06:14–06:44 / 19:06–19:36'},
+    {name:'Izmir',dogus:'06:22',alacak:'05:54',ogle:'13:04',ikindi:'20:16',batis:'19:48',sure:'13s 26d',altin:'06:22–06:52 / 19:18–19:48'},
+    {name:'Kas',dogus:'06:17',alacak:'05:49',ogle:'13:01',ikindi:'20:12',batis:'19:44',sure:'13s 27d',altin:'06:17–06:47 / 19:14–19:44'},
+    {name:'Cesme',dogus:'06:26',alacak:'05:57',ogle:'13:07',ikindi:'20:19',batis:'19:52',sure:'13s 26d',altin:'06:26–06:56 / 19:22–19:52'},
+  ];
+  const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
+  setEl('sun-rise',cities[0].dogus);
+  setEl('sun-set',cities[0].batis);
+  setEl('sun-day-length',cities[0].sure);
+  setEl('sun-golden',cities[0].altin.split('/')[1].trim());
+
+  const tbody=document.getElementById('sun-tbody');
+  if(tbody)tbody.innerHTML=cities.map(c=>`<tr>
+    <td class="font-medium">${c.name}</td>
+    <td class="text-orange-500 font-bold">${c.dogus}</td>
+    <td class="text-xs text-amber-400">${c.alacak}</td>
+    <td class="text-xs text-gray-500">${c.ogle}</td>
+    <td class="text-xs text-amber-400">${c.ikindi}</td>
+    <td class="text-orange-600 font-bold">${c.batis}</td>
+    <td><span class="badge bg-blue-100 text-blue-700">${c.sure}</span></td>
+    <td class="text-[10px] text-amber-600">${c.altin}</td>
+  </tr>`).join('');
+
+  // Sun arc visualization
+  const arcEl=document.getElementById('sun-arc');
+  if(arcEl){
+    const now=new Date();const h=now.getHours()+now.getMinutes()/60;
+    const sunrise=6.25,sunset=19.7;const dayLen=sunset-sunrise;
+    const sunPct=Math.max(0,Math.min(100,((h-sunrise)/dayLen)*100));
+    const isDay=h>=sunrise&&h<=sunset;
+    arcEl.innerHTML=`
+      <div style="position:relative;height:100%;overflow:hidden">
+        <svg width="100%" height="100%" viewBox="0 0 500 100" preserveAspectRatio="none">
+          <defs><linearGradient id="skyG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:${isDay?'#93c5fd':'#1e293b'}"/><stop offset="100%" style="stop-color:${isDay?'#fed7aa':'#334155'}"/></linearGradient></defs>
+          <rect width="500" height="100" fill="url(#skyG)"/>
+          <path d="M0,80 Q250,10 500,80" fill="none" stroke="#fbbf24" stroke-width="2" stroke-dasharray="6,3" opacity="0.7"/>
+          <circle cx="${sunPct*5}" cy="${80-Math.sin(sunPct/100*Math.PI)*70}" r="10" fill="#fbbf24" opacity="0.9"/>
+          <text x="20" y="95" fill="white" font-size="9" opacity="0.8">06:15 Dogus</text>
+          <text x="430" y="95" fill="white" font-size="9" opacity="0.8">19:42 Batis</text>
+          <text x="${Math.max(80,Math.min(420,sunPct*5-10))}" y="${80-Math.sin(sunPct/100*Math.PI)*70-14}" fill="#fbbf24" font-size="9" font-weight="700">${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</text>
+        </svg>
+      </div>`;
+  }
 }
 
 /* ── HAREKETLER ── */
@@ -1370,17 +3102,18 @@ function renderHareketler(){
     if(fDurum==='iptal') bookings=bookings.filter(b=>b.durum==='iptal'||b.durum==='reddedildi');
     else bookings=bookings.filter(b=>b.durum===fDurum);
   }
-  if(fOdeme==='odendi')  bookings=bookings.filter(b=>b.odenmis===true);
-  if(fOdeme==='bekliyor')bookings=bookings.filter(b=>!b.odenmis&&(b.durum==='onaylandi'||b.durum==='tamamlandi'));
+  const isOdenmis=b=>b.odemeYapildi===true||b.odenmis===true;
+  if(fOdeme==='odendi')  bookings=bookings.filter(b=>isOdenmis(b));
+  if(fOdeme==='bekliyor')bookings=bookings.filter(b=>!isOdenmis(b)&&(b.durum==='onaylandi'||b.durum==='tamamlandi'));
   if(fKaptan) bookings=bookings.filter(b=>(b.captainName||'').toLowerCase().includes(fKaptan));
 
   // Ozet hesapla (tum ham veriden, filtre oncesi)
   const allB=lsGet('db_bookings',[]);
   const toplamCiro=allB.reduce((s,b)=>s+(b.amount||0),0);
   const komisyon=Math.round(toplamCiro*0.1);
-  const bekleyenB=allB.filter(b=>!b.odenmis&&(b.durum==='onaylandi'||b.durum==='tamamlandi'));
+  const bekleyenB=allB.filter(b=>!isOdenmis(b)&&(b.durum==='onaylandi'||b.durum==='tamamlandi'));
   const bekleyen=bekleyenB.reduce((s,b)=>s+Math.round((b.amount||0)*0.9),0);
-  const odendi=allB.filter(b=>b.odenmis).reduce((s,b)=>s+Math.round((b.amount||0)*0.9),0);
+  const odendi=allB.filter(b=>isOdenmis(b)).reduce((s,b)=>s+Math.round((b.amount||0)*0.9),0);
 
   const setEl=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
   setEl('har-toplam-ciro',toplamCiro.toLocaleString('tr-TR')+' TL');
@@ -1402,7 +3135,7 @@ function renderHareketler(){
     const brut=b.amount||0;
     const kom=Math.round(brut*0.1);
     const pay=brut-kom;
-    const odenmis=b.odenmis===true;
+    const odenmis=b.odemeYapildi===true||b.odenmis===true;
 
     const rezBadge=b.durum==='onaylandi'?'<span class="badge bg-green-100 text-green-700">Onaylandi</span>':
       b.durum==='bekliyor'?'<span class="badge bg-amber-100 text-amber-700">Bekliyor</span>':
@@ -1445,7 +3178,7 @@ function renderHareketler(){
 function markOdendi(id){
   const db=lsGet('db_bookings',[]);
   const b=db.find(x=>x.id===id);
-  if(b){b.odenmis=true;b.odenmeTarihi=new Date().toLocaleDateString('tr-TR');}
+  if(b){b.odenmis=true;b.odemeYapildi=true;b.odenmeTarihi=new Date().toLocaleDateString('tr-TR');}
   localStorage.setItem('db_bookings',JSON.stringify(db));
   renderHareketler();
   showToast('Odeme yapildi olarak isaretlendi','success');
@@ -1455,8 +3188,8 @@ function markAllOdendi(){
   const db=lsGet('db_bookings',[]);
   let count=0;
   db.forEach(b=>{
-    if(!b.odenmis&&(b.durum==='tamamlandi'||b.durum==='onaylandi')){
-      b.odenmis=true;b.odenmeTarihi=new Date().toLocaleDateString('tr-TR');count++;
+    if(!(b.odemeYapildi||b.odenmis)&&(b.durum==='tamamlandi'||b.durum==='onaylandi')){
+      b.odenmis=true;b.odemeYapildi=true;b.odenmeTarihi=new Date().toLocaleDateString('tr-TR');count++;
     }
   });
   localStorage.setItem('db_bookings',JSON.stringify(db));
@@ -1506,15 +3239,35 @@ function renderCaptains(){
   // stat kartlari guncelle
   const statNums=document.querySelectorAll('#page-captains .stat-card .text-xl');
   if(statNums.length>=4){statNums[0].textContent=total;statNums[1].textContent=aktif;statNums[2].textContent=bekliyor;statNums[3].textContent=askida;}
-  countEl.textContent=total+' kaptan';
+
+  // Filtrele
+  const search=(document.getElementById('cap-search')?.value||'').toLowerCase();
+  const fDurum=document.getElementById('cap-filter-durum')?.value||'';
+  const fBolge=document.getElementById('cap-filter-bolge')?.value||'';
+  const fSort=document.getElementById('cap-filter-sort')?.value||'yeni';
+  const allTours=lsGet('db_tours',[]);
+
+  let filtered=captains.filter(c=>{
+    if(fDurum&&c.durum!==fDurum)return false;
+    if(fBolge&&!(c.bolge||'').includes(fBolge))return false;
+    if(search){const h=(c.ad+c.soyad+c.email+c.tekne+c.bolge).toLowerCase();if(!h.includes(search))return false;}
+    return true;
+  });
+  if(fSort==='puan')filtered.sort((a,b)=>(b.puan||0)-(a.puan||0));
+  else if(fSort==='tur')filtered.sort((a,b)=>allTours.filter(t=>t.captainEmail===b.email).length-allTours.filter(t=>t.captainEmail===a.email).length);
+
+  countEl.textContent=filtered.length+'/'+total+' kaptan';
 
   if(total===0){
     tbody.innerHTML='<tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Henuz kayitli kaptan yok</td></tr>';
     return;
   }
+  if(!filtered.length){
+    tbody.innerHTML='<tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Filtreyle eslesen kaptan yok</td></tr>';
+    return;
+  }
 
-  const allTours=lsGet('db_tours',[]);
-  tbody.innerHTML=captains.map(c=>{
+  tbody.innerHTML=filtered.map(c=>{
     const initials=(c.ad[0]+(c.soyad[0]||'')).toUpperCase();
     const myTours=allTours.filter(t=>t.captainEmail===c.email);
     const tourCount=myTours.length;
@@ -1556,7 +3309,11 @@ function openCaptainDetailModal(id){
   document.getElementById('cdm-phone').textContent=c.telefon||'—';
   document.getElementById('cdm-status-badge').innerHTML=statusMap[c.durum]||statusMap.bekliyor;
   document.getElementById('cdm-tours').textContent=allTours.length;
-  document.getElementById('cdm-rezcount').textContent=allBookings.length;
+  const activeAllB=allBookings.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi');
+  const totalKisiCap=activeAllB.reduce((s,b)=>s+(b.guests||1),0);
+  document.getElementById('cdm-rezcount').textContent=totalKisiCap;
+  const rzSubEl=document.getElementById('cdm-rezcount-sub');
+  if(rzSubEl)rzSubEl.textContent=activeAllB.length+' rezervasyon';
   document.getElementById('cdm-kapasite').textContent=(c.kapasite||'—')+' kisi';
   document.getElementById('cdm-kazanc').textContent=totalKazanc?totalKazanc.toLocaleString('tr-TR')+' TL':'—';
   document.getElementById('cdm-tekne').textContent=c.tekne||'—';
@@ -1583,10 +3340,13 @@ function openCaptainDetailModal(id){
     const dColor={aktif:'bg-green-100 text-green-700',pasif:'bg-gray-100 text-gray-500',bekliyor:'bg-amber-100 text-amber-700'};
     document.getElementById('cdm-tours-list').innerHTML=allTours.map(t=>{
       const d=t.durum||'bekliyor';
-      const tRez=lsGet('db_bookings',[]).filter(b=>b.tourId===t.id).length;
+      const tAllRez=lsGet('db_bookings',[]).filter(b=>b.tourId===t.id);
+      const tActRez=tAllRez.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi');
+      const tKisiCount=tActRez.reduce((s,b)=>s+(b.guests||1),0);
+      const tKap=t.kapasite||0;
       return`<div class="flex items-center justify-between gap-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer" onclick="closeCaptainDetailModal();openTourDetailModal(${t.id})">
         <div><div class="text-sm font-medium">${t.title||t.ad||'—'}</div><div class="text-[10px] text-gray-400">${t.kalkis||t.konum||'—'} &bull; ${t.sure||'—'}</div></div>
-        <div class="flex items-center gap-2 flex-shrink-0"><span class="text-xs text-gray-500">${tRez} rez.</span><span class="badge ${dColor[d]||'bg-gray-100 text-gray-500'} text-[10px]">${{aktif:'Aktif',pasif:'Pasif',bekliyor:'Onay Bekliyor'}[d]||d}</span></div>
+        <div class="flex items-center gap-2 flex-shrink-0"><span class="text-xs text-gray-500">${tActRez.length} rez / ${tKisiCount} kisi${tKap?` · ${tKap-tKisiCount} yer kaldi`:''}</span><span class="badge ${dColor[d]||'bg-gray-100 text-gray-500'} text-[10px]">${{aktif:'Aktif',pasif:'Pasif',bekliyor:'Onay Bekliyor'}[d]||d}</span></div>
       </div>`;
     }).join('');
   }else{toursSec.style.display='none';}
@@ -1693,45 +3453,83 @@ function renderCaptainToursModal(captainId){
     body.innerHTML='<p class="text-center text-gray-400 text-sm py-10"><i class="fas fa-ship text-3xl block mb-3 opacity-30"></i>Bu kaptanin henuz turu yok</p>';
     return;
   }
-  const durumColor={aktif:'bg-green-100 text-green-700',pasif:'bg-gray-100 text-gray-500',bekliyor:'bg-amber-100 text-amber-700'};
-  const durumLabel={aktif:'Aktif',pasif:'Pasif',bekliyor:'Onay Bekliyor'};
-  body.innerHTML=tours.map(t=>{
+  const durumMeta={
+    aktif:{label:'Aktif',badge:'background:#dcfce7;color:#15803d',accent:'#22c55e',headerBg:'linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%)',icon:'fa-circle-check'},
+    pasif:{label:'Pasif',badge:'background:#f3f4f6;color:#6b7280',accent:'#9ca3af',headerBg:'linear-gradient(135deg,#f9fafb 0%,#f3f4f6 100%)',icon:'fa-circle-pause'},
+    bekliyor:{label:'Onay Bekliyor',badge:'background:#fef3c7;color:#d97706',accent:'#f59e0b',headerBg:'linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%)',icon:'fa-circle-exclamation'}
+  };
+  body.innerHTML=tours.map((t,idx)=>{
     const d=t.durum||'bekliyor';
-    const approveBtn=d!=='aktif'?`<button onclick="adminSetTourDurum(${t.id},'aktif',${captainId})" class="bg-success text-white px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-check mr-1"></i>Onayla</button>`:'';
-    const rejectBtn=d!=='pasif'?`<button onclick="adminSetTourDurum(${t.id},'pasif',${captainId})" class="bg-red-100 text-danger px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-ban mr-1"></i>Reddet</button>`:'';
-    const dahilList=(t.dahil||'').split('\n').filter(Boolean).map(x=>`<li class="flex items-start gap-1"><i class="fas fa-check text-success text-[10px] mt-0.5"></i>${x}</li>`).join('');
-    const haricList=(t.haric||'').split('\n').filter(Boolean).map(x=>`<li class="flex items-start gap-1"><i class="fas fa-times text-danger text-[10px] mt-0.5"></i>${x}</li>`).join('');
-    return`<div class="border rounded-xl p-4 hover:shadow-md transition-shadow">
-      <div class="flex items-start justify-between gap-3 mb-3">
-        <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="font-semibold text-sm">${t.ad||t.title||'—'}</span>
-            <span class="badge ${durumColor[d]||'bg-gray-100 text-gray-500'} text-[10px]">${durumLabel[d]||d}</span>
+    const dm=durumMeta[d]||durumMeta.bekliyor;
+    const approveBtn=d!=='aktif'?`<button onclick="adminSetTourDurum(${t.id},'aktif',${captainId})" style="background:#16a34a;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer"><i class="fas fa-check mr-1"></i>Onayla</button>`:'';
+    const rejectBtn=d!=='pasif'?`<button onclick="adminSetTourDurum(${t.id},'pasif',${captainId})" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer"><i class="fas fa-ban mr-1"></i>Reddet</button>`:'';
+    const bkgs=lsGet('db_bookings',[]).filter(b=>b.tourId===t.id);
+    const activeBkgs=bkgs.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi');
+    const rezerveKisi=activeBkgs.reduce((s,b)=>s+(b.guests||1),0);
+    const kapasite=t.kapasite||8;
+    const doluluk=Math.min(100,Math.round(rezerveKisi/kapasite*100));
+    const dolulukColor=doluluk>=90?'#ef4444':doluluk>=60?'#f59e0b':'#22c55e';
+    const upcomingBkgs=bkgs.filter(b=>b.tarih&&b.durum!=='iptal'&&b.durum!=='reddedildi').sort((a,b)=>a.tarih.split('.').reverse().join('').localeCompare(b.tarih.split('.').reverse().join(''))).slice(0,3);
+    const dahilList=(t.dahil||'').split('\n').filter(Boolean);
+    return`<div style="border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:16px">
+      <!-- HEADER BAND -->
+      <div style="${dm.headerBg};padding:14px 16px;border-left:4px solid ${dm.accent};display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <span style="font-weight:700;font-size:14px;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.ad||t.title||'Isimsiz Tur'}</span>
+            <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;${dm.badge};white-space:nowrap"><i class="fas ${dm.icon} mr-1"></i>${dm.label}</span>
           </div>
-          <div class="text-xs text-gray-400 mt-0.5">${(t.kategoriler||[t.kategori]).filter(Boolean).join(', ')||'—'} · <i class="fas fa-map-marker-alt"></i> ${t.kalkis||t.konum||'—'}</div>
-          <div class="text-[10px] text-gray-400 mt-1"><i class="fas fa-clock mr-0.5"></i>Olusturulma: ${t.createdAt?new Date(t.createdAt).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</div>
+          <div style="font-size:11px;color:#6b7280;display:flex;gap:12px;flex-wrap:wrap">
+            <span><i class="fas fa-tag" style="margin-right:3px;color:${dm.accent}"></i>${(t.kategoriler||[t.kategori]).filter(Boolean).join(', ')||'—'}</span>
+            <span><i class="fas fa-map-marker-alt" style="margin-right:3px;color:${dm.accent}"></i>${t.kalkis||t.konum||'—'}</span>
+            <span><i class="fas fa-clock" style="margin-right:3px;color:#9ca3af"></i>${t.createdAt?new Date(t.createdAt).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'}</span>
+          </div>
         </div>
-        <div class="text-right flex-shrink-0">
-          <div class="text-base font-bold text-primary">${t.fiyat||t.price?Number(t.fiyat||t.price).toLocaleString('tr-TR')+' TL':'—'}</div>
-          <div class="text-[10px] text-gray-400">kisi basina</div>
+        <div style="text-align:right;flex-shrink:0;padding-left:12px">
+          <div style="font-size:16px;font-weight:800;color:#0369a1">${t.fiyat||t.price?Number(t.fiyat||t.price).toLocaleString('tr-TR')+' TL':'Ucretsiz'}</div>
+          <div style="font-size:10px;color:#9ca3af">kisi basina</div>
         </div>
       </div>
-      <div class="grid grid-cols-3 gap-2 mb-3">
-        <div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-xs font-bold">${t.sure||'—'}</div><div class="text-[10px] text-gray-400">Sure</div></div>
-        <div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-xs font-bold">${t.kapasite||'—'} kisi</div><div class="text-[10px] text-gray-400">Kapasite</div></div>
-        <div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-xs font-bold">${lsGet('db_bookings',[]).filter(b=>b.tourId===t.id).length}</div><div class="text-[10px] text-gray-400">Rezervasyon</div></div>
+      <!-- STATS ROW -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-bottom:1px solid #f3f4f6">
+        <div style="padding:12px;text-align:center;border-right:1px solid #f3f4f6">
+          <div style="font-size:13px;font-weight:700;color:#111">${t.sure||'—'}</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:1px">Sure</div>
+        </div>
+        <div style="padding:12px;text-align:center;border-right:1px solid #f3f4f6">
+          <div style="font-size:13px;font-weight:700;color:#111">${kapasite} kisi</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:1px">Kapasite</div>
+        </div>
+        <div style="padding:12px;text-align:center;border-right:1px solid #f3f4f6">
+          <div style="font-size:13px;font-weight:700;color:${dolulukColor}">${rezerveKisi}/${kapasite}</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:1px">Doluluk</div>
+        </div>
+        <div style="padding:12px;text-align:center">
+          <div style="font-size:13px;font-weight:700;color:#111">${bkgs.length}</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:1px">Rezervasyon</div>
+        </div>
       </div>
-      ${(t.saatler&&t.saatler.length)?`<div class="mb-3"><div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5"><i class="fas fa-clock mr-1"></i>Musait Saatler</div><div class="flex flex-wrap gap-1.5">${t.saatler.map(s=>`<span class="bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-medium px-2 py-0.5 rounded-full">${s}</span>`).join('')}</div></div>`:''}
-      ${(()=>{const upcomingBkgs=lsGet('db_bookings',[]).filter(b=>b.tourId===t.id&&b.tarih&&b.durum!=='iptal'&&b.durum!=='reddedildi').sort((a,b)=>a.tarih.split('.').reverse().join('').localeCompare(b.tarih.split('.').reverse().join(''))).slice(0,5);return upcomingBkgs.length?`<div class="mb-3"><div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5"><i class="fas fa-calendar-check mr-1"></i>Yaklasan Rezervasyonlar</div><div class="space-y-1">${upcomingBkgs.map(b=>`<div class="flex items-center justify-between text-[11px] bg-amber-50 rounded-lg px-2.5 py-1.5"><span class="font-medium text-gray-700"><i class="fas fa-calendar-day text-amber-500 mr-1"></i>${b.tarih} ${b.saat||''}</span><span class="text-gray-500">${b.customerName||'Musteri'} &bull; ${b.guests||1} kisi</span><span class="font-semibold text-primary">${(b.amount||0).toLocaleString('tr-TR')} TL</span></div>`).join('')}</div></div>`:'';})()}
-      ${t.aciklama?`<p class="text-xs text-gray-600 mb-3 leading-relaxed">${t.aciklama}</p>`:''}
-      <div class="grid grid-cols-2 gap-3 mb-3">
-        ${dahilList?`<div><div class="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">Dahil</div><ul class="text-xs text-gray-600 space-y-0.5">${dahilList}</ul></div>`:''}
-        ${haricList?`<div><div class="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">Haric</div><ul class="text-xs text-gray-600 space-y-0.5">${haricList}</ul></div>`:''}
+      <!-- DOLULUK BAR -->
+      <div style="background:#f9fafb;padding:10px 16px;border-bottom:1px solid #f3f4f6">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#6b7280;margin-bottom:4px">
+          <span>Tekne Dolulugu</span><span style="font-weight:600;color:${dolulukColor}">%${doluluk}</span>
+        </div>
+        <div style="background:#e5e7eb;border-radius:99px;height:6px;overflow:hidden">
+          <div style="background:${dolulukColor};height:100%;border-radius:99px;width:${doluluk}%;transition:width .4s"></div>
+        </div>
       </div>
-      <div class="flex gap-2 flex-wrap pt-2 border-t">
-        ${approveBtn}${rejectBtn}
-        <button onclick="openTourEdit(${t.id},${captainId})" class="border px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-50"><i class="fas fa-edit mr-1"></i>Duzenle</button>
-        <button onclick="adminDeleteTourFromModal(${t.id},${captainId})" class="text-danger text-xs px-3 py-1.5 rounded-lg hover:bg-red-50 font-medium"><i class="fas fa-trash mr-1"></i>Sil</button>
+      <!-- BODY -->
+      <div style="background:#fff;padding:14px 16px">
+        ${(t.saatler&&t.saatler.length)?`<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px"><i class="fas fa-clock mr-1"></i>Musait Saatler</div><div style="display:flex;flex-wrap:wrap;gap:6px">${t.saatler.map(s=>`<span style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px">${s}</span>`).join('')}</div></div>`:''}
+        ${upcomingBkgs.length?`<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px"><i class="fas fa-calendar-check mr-1"></i>Yaklasan Rezervasyonlar</div><div style="display:flex;flex-direction:column;gap:5px">${upcomingBkgs.map(b=>`<div style="display:flex;justify-content:space-between;align-items:center;background:#fafafa;border:1px solid #f3f4f6;border-radius:10px;padding:8px 10px;font-size:11px"><span style="font-weight:600;color:#374151"><i class="fas fa-calendar-day" style="color:#f59e0b;margin-right:4px"></i>${b.tarih}${b.saat?' · '+b.saat:''}</span><span style="color:#6b7280">${b.customerName||'Musteri'} &bull; ${b.guests||1} kisi</span><span style="font-weight:700;color:#0369a1">${(b.amount||0).toLocaleString('tr-TR')} TL</span></div>`).join('')}</div></div>`:''}
+        ${t.aciklama?`<p style="font-size:12px;color:#6b7280;line-height:1.6;margin-bottom:10px;padding:10px;background:#f9fafb;border-radius:10px;border-left:3px solid ${dm.accent}">${t.aciklama}</p>`:''}
+        ${dahilList.length?`<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Dahil Olanlar</div><div style="display:flex;flex-wrap:wrap;gap:4px">${dahilList.map(x=>`<span style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;font-size:10px;padding:2px 8px;border-radius:20px"><i class="fas fa-check" style="margin-right:3px;font-size:9px"></i>${x}</span>`).join('')}</div></div>`:''}
+        <!-- ACTIONS -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #f3f4f6;margin-top:4px">
+          ${approveBtn}${rejectBtn}
+          <button onclick="openTourEdit(${t.id},${captainId})" style="border:1px solid #e5e7eb;background:#fff;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;color:#374151"><i class="fas fa-edit mr-1"></i>Duzenle</button>
+          <button onclick="adminDeleteTourFromModal(${t.id},${captainId})" style="border:1px solid #fecaca;background:#fef2f2;color:#dc2626;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer"><i class="fas fa-trash mr-1"></i>Sil</button>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -1787,6 +3585,7 @@ function saveTourEdit(){
   t.sure=+document.getElementById('te-sure').value;
   t.kapasite=+document.getElementById('te-kapasite').value;
   t.fiyat=+document.getElementById('te-fiyat').value;
+  t.price=t.fiyat; // customer-app ve customer-site her ikisini de okuyabilsin
   t.aciklama=document.getElementById('te-aciklama').value.trim();
   t.dahil=document.getElementById('te-dahil').value.trim();
   t.haric=document.getElementById('te-haric').value.trim();
@@ -1891,36 +3690,82 @@ function openResDetail(id){
   if(!b)return;
   activeResId=id;
   const durum=b.durum||'bekliyor';
-  document.getElementById('rdm-title').textContent=b.tourTitle||'Rezervasyon';
+  const guests=b.guests||1;
+
+  const setEl=(eid,t)=>{const e=document.getElementById(eid);if(e)e.textContent=t;};
+
+  setEl('rdm-title',b.tourTitle||'Rezervasyon');
   document.getElementById('rdm-no').textContent='#'+(b.id||'').slice(-10);
   document.getElementById('rdm-badge').innerHTML=RES_BADGE[durum]||RES_BADGE.bekliyor;
-  document.getElementById('rdm-amount').textContent=(b.amount||0).toLocaleString('tr-TR')+' TL';
-  document.getElementById('rdm-komisyon').textContent=Math.round((b.amount||0)*0.1).toLocaleString('tr-TR')+' TL';
+  setEl('rdm-amount',(b.amount||0).toLocaleString('tr-TR')+' TL');
+  setEl('rdm-komisyon',Math.round((b.amount||0)*0.1).toLocaleString('tr-TR')+' TL');
+
+  /* ── Misafir sayisi — belirgin kart ── */
+  setEl('rdm-guests-big',guests);
+  setEl('rdm-guests-label',guests+' Kisi');
+  const fiyatKisi=guests>0?Math.round((b.amount||0)/guests):0;
+  setEl('rdm-guests-sub','Kisi basina '+fiyatKisi.toLocaleString('tr-TR')+' TL · Toplam '+( b.amount||0).toLocaleString('tr-TR')+' TL');
+
+  /* ── Kapasite & doluluk ── */
+  const tour=lsGet('db_tours',[]).find(t=>t.id===b.tourId);
+  const kapasite=tour?.kapasite||0;
+  const aktifBkgs=all.filter(x=>x.tourId===b.tourId&&x.durum!=='iptal'&&x.durum!=='reddedildi');
+  const toplamRezKisi=aktifBkgs.reduce((s,x)=>s+(x.guests||1),0);
+  const kalan=kapasite>0?Math.max(0,kapasite-toplamRezKisi):null;
+  const dolulukPct=kapasite>0?Math.min(100,Math.round(toplamRezKisi/kapasite*100)):0;
+  const dolulukColor=dolulukPct>=90?'#ef4444':dolulukPct>=60?'#f59e0b':'#10b981';
+
+  setEl('rdm-cap-kapasite',kapasite>0?kapasite+' kisi':'—');
+  setEl('rdm-cap-rezerve',toplamRezKisi+' kisi');
+  const kalanCard=document.getElementById('rdm-cap-kalan-card');
+  if(kalan===null){
+    setEl('rdm-cap-kalan','—');
+    if(kalanCard)kalanCard.className='rounded-xl p-3 text-center bg-gray-50';
+  } else if(kalan===0){
+    setEl('rdm-cap-kalan','DOLU');
+    if(kalanCard)kalanCard.className='rounded-xl p-3 text-center bg-red-50';
+    document.getElementById('rdm-cap-kalan').style.color='#ef4444';
+  } else {
+    setEl('rdm-cap-kalan',kalan+' kisi');
+    if(kalanCard)kalanCard.className='rounded-xl p-3 text-center '+(kalan<=2?'bg-amber-50':'bg-green-50');
+    document.getElementById('rdm-cap-kalan').style.color=kalan<=2?'#d97706':'#15803d';
+  }
+  setEl('rdm-doluluk-pct','%'+dolulukPct);
+  const bar=document.getElementById('rdm-doluluk-bar');
+  if(bar){bar.style.width=dolulukPct+'%';bar.style.background=dolulukColor;}
+  setEl('rdm-cap-note',kapasite>0
+    ?`Bu tura toplam ${aktifBkgs.length} rezervasyon yapilmis, ${toplamRezKisi}/${kapasite} kisi dolu`
+    :'Kapasite bilgisi mevcut degil');
+
+  /* ── Musteri bilgileri ── */
   const cname=b.customerName||'Misafir';
-  document.getElementById('rdm-musteri').textContent=cname;
-  document.getElementById('rdm-musteri-avatar').textContent=cname[0]||'M';
-  document.getElementById('rdm-misafir').textContent='Toplam '+( b.guests||1)+' misafir';
-  document.getElementById('rdm-guests-full').textContent=(b.guests||1)+' kisi rezerve edildi';
-  /* email */
+  setEl('rdm-musteri',cname);
+  setEl('rdm-musteri-avatar',cname[0]||'M');
+  setEl('rdm-misafir','Toplam '+guests+' misafir rezerve etti');
+  setEl('rdm-guests-full',guests+' kisi bu rezervasyonda');
+
+  const cu_users=lsGet('cu_users',[]);
+  const cuUser=cu_users.find(u=>u.email===b.customerEmail||u.name===cname);
+  const email=b.customerEmail||cuUser?.email||null;
+  const phone=b.customerPhone||cuUser?.phone||null;
   const emailRow=document.getElementById('rdm-email-row');
-  const email=b.customerEmail||(lsGet('cu_users',[]).find(u=>u.name===cname)?.email)||null;
-  if(email){emailRow.style.cssText='';document.getElementById('rdm-email').textContent=email;document.getElementById('rdm-email-link').href='mailto:'+email;}
+  if(email){emailRow.style.cssText='';setEl('rdm-email',email);document.getElementById('rdm-email-link').href='mailto:'+email;}
   else{emailRow.style.cssText='display:none!important';}
-  /* telefon */
   const phoneRow=document.getElementById('rdm-phone-row');
-  const phone=b.customerPhone||(lsGet('cu_users',[]).find(u=>u.name===cname)?.phone)||null;
-  if(phone){phoneRow.style.cssText='';document.getElementById('rdm-phone').textContent=phone;document.getElementById('rdm-phone-link').href='tel:'+phone.replace(/\s/g,'');}
+  if(phone){phoneRow.style.cssText='';setEl('rdm-phone',phone);document.getElementById('rdm-phone-link').href='tel:'+phone.replace(/\s/g,'');}
   else{phoneRow.style.cssText='display:none!important';}
+
   /* binis durumu */
-  const binisBadge=document.getElementById('rdm-binis-badge');
-  binisBadge.innerHTML=b.binisYapildi?'<span class="badge bg-green-100 text-green-700 text-[10px]"><i class="fas fa-check-circle mr-0.5"></i>Binis Yapildi</span>':'';
-  document.getElementById('rdm-tur').textContent=b.tourTitle||'—';
-  document.getElementById('rdm-kaptan').textContent=b.captainName||'—';
-  document.getElementById('rdm-tarih').textContent=b.tarih||'—';
-  document.getElementById('rdm-saat').textContent=b.saat||'—';
-  document.getElementById('rdm-created').textContent=b.createdAt?new Date(b.createdAt).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+  document.getElementById('rdm-binis-badge').innerHTML=b.binisYapildi?'<span class="badge bg-green-100 text-green-700 text-[10px]"><i class="fas fa-check-circle mr-0.5"></i>Binis Yapildi</span>':'';
+
+  setEl('rdm-tur',b.tourTitle||'—');
+  setEl('rdm-kaptan',b.captainName||'—');
+  setEl('rdm-tarih',b.tarih||'—');
+  setEl('rdm-saat',b.saat||'—');
+  setEl('rdm-created',b.createdAt?new Date(b.createdAt).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—');
+
   const noteWrap=document.getElementById('rdm-note-wrap');
-  if(b.note){noteWrap.style.display='';document.getElementById('rdm-note').textContent=b.note;}
+  if(b.note){noteWrap.style.display='';setEl('rdm-note',b.note);}
   else{noteWrap.style.display='none';}
   document.getElementById('rdm-admin-note').value=b.adminNote||'';
   document.getElementById('res-detail-modal').style.display='flex';
@@ -1993,6 +3838,448 @@ function exportBookings(){
 }
 
 document.getElementById('res-detail-modal').addEventListener('click',function(e){if(e.target===this)closeResDetail();});
+
+/* ── İÇERİK YÖNETİMİ (CMS) ── */
+const CMS_DEFAULTS={
+  web:{
+    brandName:'DenizBul',
+    brandSlogan:'Türkiye\'nin Tekne Turu Marketplace\'i',
+    heroTitle:'Harika bir tekne turu keşfet',
+    heroSubtitle:'Balık avı, gezi, özel etkinlik ve daha fazlası. Türkiye\'nin en iyi kaptanlarıyla buluşun.',
+    heroButtonText:'Tur Ara',
+    heroButtonColor:'#0369a1',
+    primaryColor:'#0369a1',
+    accentColor:'#f59e0b',
+    successColor:'#10b981',
+    dangerColor:'#ef4444',
+    heroBg:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80',
+    featuredTitle:'Öne Çıkan Turlar',
+    categoriesTitle:'Tur Kategorileri',
+    footerCompany:'DenizBul.tr',
+    footerDesc:'Türkiye kıyılarında tekne turu rezervasyonu için güvenilir platform.',
+    contactEmail:'info@denizbul.tr',
+    contactPhone:'+90 850 123 45 67',
+  },
+  app:{
+    appName:'DenizBul',
+    appTagline:'Tekne turu bul, rezervasyon yap',
+    homeGreeting:'Merhaba',
+    homeSubGreeting:'Bugün hangi turu keşfediyorsunuz?',
+    searchPlaceholder:'Nereye gitmek istiyorsunuz?',
+    bottomNavHome:'Ana Sayfa',
+    bottomNavSearch:'Ara',
+    bottomNavTools:'Araçlar',
+    bottomNavBookings:'Turlarım',
+    bottomNavProfile:'Profil',
+    primaryColor:'#0369a1',
+    accentColor:'#f59e0b',
+    cardRadius:'16px',
+    splashBg:'#0369a1',
+    splashLogo:'🚢',
+  }
+};
+
+function getCmsContent(scope){
+  try{
+    const stored=JSON.parse(localStorage.getItem('cms_content_'+scope)||'{}');
+    return Object.assign({},CMS_DEFAULTS[scope]||{},stored);
+  }catch{return Object.assign({},CMS_DEFAULTS[scope]||{});}
+}
+
+function saveCmsContent(scope){
+  const container=document.getElementById('cms-'+scope+'-editor');
+  if(!container)return;
+  const data={};
+  container.querySelectorAll('[data-cms-key]').forEach(el=>{
+    data[el.dataset.cmsKey]=el.value||el.textContent;
+  });
+  localStorage.setItem('cms_content_'+scope,JSON.stringify(data));
+  showToast('İçerik kaydedildi','success');
+}
+
+function resetCmsContent(scope){
+  if(!confirm('Tüm '+scope+' içeriği varsayılana sıfırlanacak. Emin misiniz?'))return;
+  localStorage.removeItem('cms_content_'+scope);
+  if(scope==='web')renderCmsWeb();
+  else renderCmsApp();
+  showToast('İçerik sıfırlandı','info');
+}
+
+function cmsField(label,key,value,type='text',hint=''){
+  if(type==='color'){
+    return`<div class="flex items-center justify-between py-3 border-b last:border-0">
+      <div class="flex-1 min-w-0 mr-4">
+        <div class="text-sm font-medium text-gray-800">${label}</div>
+        ${hint?`<div class="text-[11px] text-gray-400 mt-0.5">${hint}</div>`:''}
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="color" data-cms-key="${key}" value="${value}" class="w-10 h-8 rounded cursor-pointer border border-gray-200" title="${label}">
+        <code class="text-[10px] text-gray-400 w-16" id="clr-${key}">${value}</code>
+      </div>
+    </div>`;
+  }
+  if(type==='image'){
+    return`<div class="py-3 border-b last:border-0">
+      <div class="text-sm font-medium text-gray-800 mb-1">${label}</div>
+      ${hint?`<div class="text-[11px] text-gray-400 mb-2">${hint}</div>`:''}
+      <div class="flex gap-2 items-start">
+        <input type="url" data-cms-key="${key}" value="${value}" placeholder="https://..." class="flex-1 px-3 py-2 border rounded-lg text-xs font-mono">
+        ${value?`<img src="${value}" class="w-16 h-12 object-cover rounded-lg border flex-shrink-0" onerror="this.style.display='none'" id="img-prev-${key}">`:``}
+      </div>
+    </div>`;
+  }
+  if(type==='textarea'){
+    return`<div class="py-3 border-b last:border-0">
+      <label class="block text-sm font-medium text-gray-800 mb-1">${label}</label>
+      ${hint?`<div class="text-[11px] text-gray-400 mb-1">${hint}</div>`:''}
+      <textarea data-cms-key="${key}" class="w-full px-3 py-2 border rounded-lg text-sm resize-none" rows="2">${value}</textarea>
+    </div>`;
+  }
+  return`<div class="flex items-center justify-between py-3 border-b last:border-0 gap-4">
+    <div class="flex-1 min-w-0">
+      <div class="text-sm font-medium text-gray-800">${label}</div>
+      ${hint?`<div class="text-[11px] text-gray-400 mt-0.5">${hint}</div>`:''}
+    </div>
+    <input type="${type}" data-cms-key="${key}" value="${value}" class="w-56 px-3 py-2 border rounded-lg text-sm text-right flex-shrink-0">
+  </div>`;
+}
+
+function cmsSection(title,icon,color,fields){
+  return`<div class="card mb-4">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b">
+      <div class="w-8 h-8 ${color} rounded-lg flex items-center justify-center"><i class="fas ${icon} text-sm"></i></div>
+      <h3 class="font-semibold text-sm">${title}</h3>
+    </div>
+    <div>${fields.join('')}</div>
+  </div>`;
+}
+
+/* ── PAGE MANAGER ── */
+const ALL_SYSTEM_PAGES=[
+  /* Web Sitesi */
+  {key:'web_home',      platform:'web',         label:'Ana Sayfa',           desc:'Hero banner, öne çıkan turlar, arama kutusu',         icon:'fa-home',         color:'bg-emerald-100 text-emerald-600'},
+  {key:'web_search',    platform:'web',         label:'Tur Arama',           desc:'Filtreli tur listeleme ve arama sonuçları',            icon:'fa-search',       color:'bg-emerald-100 text-emerald-600'},
+  {key:'web_detail',    platform:'web',         label:'Tur Detay',           desc:'Tur detayı, fotoğraflar, rezervasyon formu',           icon:'fa-ship',         color:'bg-emerald-100 text-emerald-600'},
+  {key:'web_profile',   platform:'web',         label:'Kaptan Profili',      desc:'Kaptan hakkında, değerlendirmeler, turlar',            icon:'fa-user-circle',  color:'bg-emerald-100 text-emerald-600'},
+  {key:'web_account',   platform:'web',         label:'Kullanıcı Hesabım',   desc:'Rezervasyonlar, favoriler, profil bilgileri',          icon:'fa-user',         color:'bg-emerald-100 text-emerald-600'},
+  {key:'web_blog',      platform:'web',         label:'Blog & Haberler',     desc:'İçerik sayfaları ve makale listesi',                  icon:'fa-newspaper',    color:'bg-emerald-100 text-emerald-600'},
+  {key:'web_about',     platform:'web',         label:'Hakkımızda',          desc:'Platform tanıtımı ve ekip sayfası',                   icon:'fa-info-circle',  color:'bg-emerald-100 text-emerald-600'},
+  {key:'web_contact',   platform:'web',         label:'İletişim',            desc:'İletişim formu ve harita',                            icon:'fa-envelope',     color:'bg-emerald-100 text-emerald-600'},
+  {key:'web_footer',    platform:'web',         label:'Footer Bölümü',       desc:'Site altbilgi bağlantıları ve sosyal medya',          icon:'fa-layer-group',  color:'bg-emerald-100 text-emerald-600'},
+  /* Müşteri App */
+  {key:'capp_home',     platform:'customer_app',label:'Ana Sayfa',           desc:'Keşfet akışı, yakın turlar, öneriler',                icon:'fa-home',         color:'bg-blue-100 text-blue-600'},
+  {key:'capp_search',   platform:'customer_app',label:'Arama',               desc:'Tur arama, filtreler, harita görünümü',               icon:'fa-search',       color:'bg-blue-100 text-blue-600'},
+  {key:'capp_favorites',platform:'customer_app',label:'Favoriler',           desc:'Kaydedilen turlar ve kaptanlar',                      icon:'fa-heart',        color:'bg-blue-100 text-blue-600'},
+  {key:'capp_bookings', platform:'customer_app',label:'Rezervasyonlarım',    desc:'Aktif, bekleyen ve geçmiş rezervasyonlar',            icon:'fa-calendar-check',color:'bg-blue-100 text-blue-600'},
+  {key:'capp_messages', platform:'customer_app',label:'Mesajlar',            desc:'Kaptan ile anlık mesajlaşma',                         icon:'fa-comment-dots', color:'bg-blue-100 text-blue-600'},
+  {key:'capp_profile',  platform:'customer_app',label:'Profil',              desc:'Hesap bilgileri, ayarlar, değerlendirmeler',          icon:'fa-user',         color:'bg-blue-100 text-blue-600'},
+  {key:'capp_tools',    platform:'customer_app',label:'Araçlar (Deniz)',      desc:'Deniz araçları modülleri sekmesi',                    icon:'fa-water',        color:'bg-blue-100 text-blue-600'},
+  /* Kaptan App */
+  {key:'kapp_dashboard',platform:'captain_app', label:'Dashboard',           desc:'Günlük özet, gelir, bekleyen rezervasyonlar',         icon:'fa-chart-pie',    color:'bg-sky-100 text-sky-600'},
+  {key:'kapp_tours',    platform:'captain_app', label:'Turlarım',            desc:'Aktif tur listesi, tur ekleme ve düzenleme',          icon:'fa-ship',         color:'bg-sky-100 text-sky-600'},
+  {key:'kapp_calendar', platform:'captain_app', label:'Takvim',              desc:'Müsaitlik takvimi, kapalı günler yönetimi',           icon:'fa-calendar',     color:'bg-sky-100 text-sky-600'},
+  {key:'kapp_bookings', platform:'captain_app', label:'Rezervasyonlar',      desc:'Gelen rezervasyon istekleri ve onaylar',              icon:'fa-calendar-check',color:'bg-sky-100 text-sky-600'},
+  {key:'kapp_messages', platform:'captain_app', label:'Mesajlar',            desc:'Müşteri mesajları ve bildirimler',                    icon:'fa-comment-dots', color:'bg-sky-100 text-sky-600'},
+  {key:'kapp_earnings', platform:'captain_app', label:'Kazançlarım',         desc:'Gelir özeti, ödeme geçmişi',                         icon:'fa-wallet',       color:'bg-sky-100 text-sky-600'},
+  {key:'kapp_profile',  platform:'captain_app', label:'Profil Yönetimi',     desc:'Kaptan profili, belgeler, banka bilgileri',           icon:'fa-user-circle',  color:'bg-sky-100 text-sky-600'},
+  {key:'kapp_reviews',  platform:'captain_app', label:'Değerlendirmeler',    desc:'Müşteri yorumları ve puanlar',                       icon:'fa-star',         color:'bg-sky-100 text-sky-600'},
+  {key:'kapp_tools',    platform:'captain_app', label:'Araçlar (Deniz)',      desc:'Deniz araçları modülleri sekmesi',                    icon:'fa-water',        color:'bg-sky-100 text-sky-600'},
+  {key:'kapp_add_tour', platform:'captain_app', label:'Tur Ekle',            desc:'Yeni tur oluşturma formu',                           icon:'fa-plus-circle',  color:'bg-sky-100 text-sky-600'},
+  /* Admin Panel */
+  {key:'adm_dashboard', platform:'admin',       label:'Dashboard',           desc:'Platform genel istatistikleri ve grafikler',          icon:'fa-chart-pie',    color:'bg-purple-100 text-purple-600'},
+  {key:'adm_captains',  platform:'admin',       label:'Kaptan Yönetimi',     desc:'Kaptan onayları, belge doğrulama, profil yönetimi',   icon:'fa-anchor',       color:'bg-purple-100 text-purple-600'},
+  {key:'adm_users',     platform:'admin',       label:'Kullanıcı Yönetimi',  desc:'Kullanıcı listesi, durum yönetimi',                  icon:'fa-users',        color:'bg-purple-100 text-purple-600'},
+  {key:'adm_tours',     platform:'admin',       label:'Tur Yönetimi',        desc:'Tüm tur onayları ve yönetimi',                       icon:'fa-ship',         color:'bg-purple-100 text-purple-600'},
+  {key:'adm_reservations',platform:'admin',     label:'Rezervasyon Yönetimi',desc:'Tüm rezervasyonlar ve ödeme durumları',              icon:'fa-calendar-check',color:'bg-purple-100 text-purple-600'},
+  {key:'adm_page_mgr',  platform:'admin',       label:'Sayfa Yönetimi',      desc:'Platform genelinde sayfa görünürlük kontrolü',        icon:'fa-layer-group',  color:'bg-purple-100 text-purple-600'},
+  {key:'adm_cms',       platform:'admin',       label:'İçerik Editörü',      desc:'Web ve app içerik, renk ve görsel yönetimi',         icon:'fa-edit',         color:'bg-purple-100 text-purple-600'},
+  {key:'adm_finance',   platform:'admin',       label:'Finans',              desc:'Gelir, ödeme ve komisyon takibi',                    icon:'fa-wallet',       color:'bg-purple-100 text-purple-600'},
+  {key:'adm_marine',    platform:'admin',       label:'Deniz Verileri',      desc:'Deniz hava durumu ve araçlar yönetimi',              icon:'fa-water',        color:'bg-purple-100 text-purple-600'},
+  {key:'adm_modules',   platform:'admin',       label:'Modül Yönetimi',      desc:'Deniz araçları modülü izin ve erişim ayarları',      icon:'fa-puzzle-piece', color:'bg-purple-100 text-purple-600'},
+];
+
+const PM_PLATFORM_META={
+  all:        {label:'Tümü',           icon:'fa-layer-group',  color:'bg-gray-100 text-gray-700',       accentBg:'bg-gray-800'},
+  web:        {label:'Web Sitesi',     icon:'fa-globe',        color:'bg-emerald-100 text-emerald-600', accentBg:'bg-emerald-600'},
+  customer_app:{label:'Müşteri App',   icon:'fa-mobile-alt',   color:'bg-blue-100 text-blue-600',       accentBg:'bg-blue-600'},
+  captain_app:{label:'Kaptan App',     icon:'fa-anchor',       color:'bg-sky-100 text-sky-600',         accentBg:'bg-sky-600'},
+  admin:      {label:'Admin Panel',    icon:'fa-shield-alt',   color:'bg-purple-100 text-purple-600',   accentBg:'bg-purple-600'},
+};
+
+let pmCurrentPlatform='all';
+
+function getPmSettings(){return lsGet('page_settings',{});}
+function savePmSettings(s){localStorage.setItem('page_settings',JSON.stringify(s));}
+
+function pmIsVisible(key){const s=getPmSettings();return s[key]!==false;}
+
+function pmUpdateBadge(){
+  const hidden=ALL_SYSTEM_PAGES.filter(p=>!pmIsVisible(p.key)).length;
+  const badge=document.getElementById('hidden-pages-badge');
+  if(!badge)return;
+  badge.style.display=hidden>0?'inline':'none';
+  badge.textContent=hidden;
+}
+
+function pmSetPlatform(p){
+  pmCurrentPlatform=p;
+  document.querySelectorAll('.pm-tab').forEach(btn=>{
+    const isActive=btn.dataset.pmTab===p;
+    btn.classList.toggle('active',isActive);
+    btn.classList.toggle('bg-primary',isActive);
+    btn.classList.toggle('text-white',isActive);
+    btn.classList.toggle('border-primary',isActive);
+  });
+  renderPageManager();
+}
+
+function pmToggleAll(show){
+  const s=getPmSettings();
+  let pages=ALL_SYSTEM_PAGES;
+  if(pmCurrentPlatform!=='all') pages=pages.filter(p=>p.platform===pmCurrentPlatform);
+  pages.forEach(p=>{s[p.key]=show;});
+  savePmSettings(s);
+  pmUpdateBadge();
+  renderPageManager();
+  showToast(show?'Tüm sayfalar gösterildi':'Tüm sayfalar gizlendi', show?'success':'info');
+}
+
+function pmResetAll(){
+  const s=getPmSettings();
+  let pages=ALL_SYSTEM_PAGES;
+  if(pmCurrentPlatform!=='all') pages=pages.filter(p=>p.platform===pmCurrentPlatform);
+  pages.forEach(p=>{delete s[p.key];});
+  savePmSettings(s);
+  pmUpdateBadge();
+  renderPageManager();
+  showToast('Ayarlar sıfırlandı','info');
+}
+
+function pmTogglePage(key){
+  const s=getPmSettings();
+  s[key]= !pmIsVisible(key);
+  savePmSettings(s);
+  pmUpdateBadge();
+  const toggle=document.querySelector(`[data-pm-toggle="${key}"]`);
+  if(toggle){toggle.classList.toggle('on',s[key]);}
+  const card=document.querySelector(`[data-pm-card="${key}"]`);
+  if(card){
+    const lbl=card.querySelector('.pm-status-lbl');
+    if(lbl){lbl.textContent=s[key]?'Görünür':'Gizli';lbl.className='pm-status-lbl text-xs font-semibold '+(s[key]?'text-success':'text-gray-400');}
+  }
+}
+
+function renderPageManager(){
+  const statsEl=document.getElementById('pm-stats');
+  const listEl=document.getElementById('pm-list');
+  const search=(document.getElementById('pm-search')?.value||'').toLowerCase();
+  if(!statsEl||!listEl)return;
+
+  const platforms=['web','customer_app','captain_app','admin'];
+
+  /* Stats row */
+  const allStats=[{platform:'all',label:'Tümü',icon:'fa-layer-group',bg:'bg-gray-800'},...platforms.map(pf=>{
+    const meta=PM_PLATFORM_META[pf];
+    return{platform:pf,label:meta.label,icon:meta.icon,bg:meta.accentBg};
+  })];
+  statsEl.innerHTML=allStats.map(s=>{
+    const pages=s.platform==='all'?ALL_SYSTEM_PAGES:ALL_SYSTEM_PAGES.filter(p=>p.platform===s.platform);
+    const total=pages.length;
+    const hidden=pages.filter(p=>!pmIsVisible(p.key)).length;
+    const active=total-hidden;
+    const isSelected=pmCurrentPlatform===s.platform;
+    return`<div onclick="pmSetPlatform('${s.platform}')" class="card cursor-pointer transition hover:shadow-md ${isSelected?'ring-2 ring-primary':''}" style="padding:14px">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-7 h-7 ${s.bg} rounded-lg flex items-center justify-center"><i class="fas ${s.icon} text-white text-xs"></i></div>
+        <span class="text-xs font-semibold text-gray-600">${s.label}</span>
+      </div>
+      <div class="text-xl font-bold">${total}</div>
+      <div class="flex gap-2 mt-1">
+        <span class="text-[10px] text-success font-medium">${active} görünür</span>
+        ${hidden>0?`<span class="text-[10px] text-danger font-medium">${hidden} gizli</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  /* Filter pages */
+  let filtered=pmCurrentPlatform==='all'?[...ALL_SYSTEM_PAGES]:ALL_SYSTEM_PAGES.filter(p=>p.platform===pmCurrentPlatform);
+  if(search) filtered=filtered.filter(p=>(p.label+p.desc).toLowerCase().includes(search));
+
+  const resultCount=document.getElementById('pm-result-count');
+  if(resultCount) resultCount.textContent=`${filtered.length} sayfa`;
+
+  if(!filtered.length){
+    listEl.innerHTML=`<div class="text-center py-12 text-gray-400"><i class="fas fa-search text-3xl mb-3 block"></i>Arama sonucu bulunamadı.</div>`;
+    return;
+  }
+
+  /* Group by platform */
+  const groups={};
+  filtered.forEach(p=>{
+    if(!groups[p.platform]) groups[p.platform]=[];
+    groups[p.platform].push(p);
+  });
+
+  const platformOrder=['web','customer_app','captain_app','admin'];
+  let html='';
+  platformOrder.forEach(pf=>{
+    if(!groups[pf]) return;
+    const meta=PM_PLATFORM_META[pf];
+    html+=`<div class="mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 ${meta.accentBg} rounded-lg flex items-center justify-center"><i class="fas ${meta.icon} text-white text-xs"></i></div>
+          <h3 class="font-semibold text-sm">${meta.label}</h3>
+          <span class="text-xs text-gray-400">(${groups[pf].length} sayfa)</span>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="pmTogglePlatform('${pf}',true)" class="text-xs text-success border border-success/30 px-2 py-1 rounded-lg hover:bg-success/5 transition"><i class="fas fa-eye mr-1"></i>Tümünü Göster</button>
+          <button onclick="pmTogglePlatform('${pf}',false)" class="text-xs text-gray-500 border px-2 py-1 rounded-lg hover:bg-gray-50 transition"><i class="fas fa-eye-slash mr-1"></i>Tümünü Gizle</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        ${groups[pf].map(page=>{
+          const visible=pmIsVisible(page.key);
+          return`<div class="card flex items-start gap-3 !p-4 transition hover:shadow-md" data-pm-card="${page.key}">
+            <div class="w-9 h-9 ${page.color} rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i class="fas ${page.icon} text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-semibold text-sm truncate">${page.label}</span>
+                <div class="toggle flex-shrink-0 ${visible?'on':''}" data-pm-toggle="${page.key}" onclick="pmTogglePage('${page.key}')"></div>
+              </div>
+              <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">${page.desc}</p>
+              <span class="pm-status-lbl text-xs font-semibold ${visible?'text-success':'text-gray-400'}">${visible?'Görünür':'Gizli'}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+
+  listEl.innerHTML=html;
+  pmUpdateBadge();
+}
+
+function pmTogglePlatform(pf, show){
+  const s=getPmSettings();
+  ALL_SYSTEM_PAGES.filter(p=>p.platform===pf).forEach(p=>{s[p.key]=show;});
+  savePmSettings(s);
+  renderPageManager();
+  const meta=PM_PLATFORM_META[pf];
+  showToast(`${meta.label}: ${show?'tüm sayfalar gösterildi':'tüm sayfalar gizlendi'}`, show?'success':'info');
+}
+
+function renderCmsWeb(){
+  const el=document.getElementById('cms-web-editor');
+  if(!el)return;
+  const d=getCmsContent('web');
+  el.innerHTML=`
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div>
+        ${cmsSection('Marka & Kimlik','fa-trademark','bg-blue-100 text-primary',[
+          cmsField('Marka Adı','brandName',d.brandName),
+          cmsField('Slogan','brandSlogan',d.brandSlogan),
+          cmsField('İletişim E-postası','contactEmail',d.contactEmail,'email'),
+          cmsField('İletişim Telefonu','contactPhone',d.contactPhone),
+        ])}
+        ${cmsSection('Hero Bölümü','fa-image','bg-amber-100 text-amber-600',[
+          cmsField('Ana Başlık','heroTitle',d.heroTitle),
+          cmsField('Alt Başlık','heroSubtitle',d.heroSubtitle,'text','Kısa açıklama metni'),
+          cmsField('Buton Metni','heroButtonText',d.heroButtonText),
+          cmsField('Hero Arka Plan Görseli','heroBg',d.heroBg,'image','Unsplash URL önerilen'),
+        ])}
+        ${cmsSection('Bölüm Başlıkları','fa-heading','bg-purple-100 text-purple-600',[
+          cmsField('Öne Çıkan Turlar Başlığı','featuredTitle',d.featuredTitle),
+          cmsField('Kategoriler Başlığı','categoriesTitle',d.categoriesTitle),
+        ])}
+      </div>
+      <div>
+        ${cmsSection('Renk Paleti','fa-palette','bg-pink-100 text-pink-600',[
+          cmsField('Ana Renk (Primary)','primaryColor',d.primaryColor,'color','Butonlar, linkler, vurgular'),
+          cmsField('Aksan Rengi','accentColor',d.accentColor,'color','Badge, yıldız, fiyat'),
+          cmsField('Başarı Rengi','successColor',d.successColor,'color','Onay, aktif durum'),
+          cmsField('Tehlike Rengi','dangerColor',d.dangerColor,'color','Hata, iptal, engelleme'),
+          cmsField('Hero Buton Rengi','heroButtonColor',d.heroButtonColor,'color'),
+        ])}
+        ${cmsSection('Footer','fa-grip-horizontal','bg-gray-100 text-gray-600',[
+          cmsField('Şirket Adı','footerCompany',d.footerCompany),
+          cmsField('Footer Açıklaması','footerDesc',d.footerDesc,'textarea'),
+        ])}
+        <div class="card bg-gradient-to-br from-blue-50 to-sky-50 border-blue-200">
+          <div class="flex items-start gap-3">
+            <i class="fas fa-info-circle text-primary mt-0.5 flex-shrink-0"></i>
+            <div class="text-xs text-blue-800">
+              <div class="font-semibold mb-1">Nasıl Çalışır?</div>
+              Kaydettiğiniz değerler <code class="bg-white px-1 rounded">cms_content_web</code> localStorage anahtarına yazılır.
+              Web sitesi bu değerleri yüklenirken okur ve uygular. Renk değişiklikleri anında yansır.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderCmsApp(){
+  const el=document.getElementById('cms-app-editor');
+  if(!el)return;
+  const d=getCmsContent('app');
+  el.innerHTML=`
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div>
+        ${cmsSection('Uygulama Kimliği','fa-mobile-alt','bg-blue-100 text-primary',[
+          cmsField('Uygulama Adı','appName',d.appName),
+          cmsField('Kısa Açıklama','appTagline',d.appTagline),
+          cmsField('Splash Arka Plan Rengi','splashBg',d.splashBg,'color','Yükleme ekranı arka planı'),
+          cmsField('Splash Logo / Emoji','splashLogo',d.splashLogo,'text','Emoji veya karakter'),
+        ])}
+        ${cmsSection('Ana Sayfa Metinleri','fa-home','bg-amber-100 text-amber-600',[
+          cmsField('Karşılama Mesajı','homeGreeting',d.homeGreeting,'text','Kullanıcı adından önce gelir'),
+          cmsField('Alt Başlık','homeSubGreeting',d.homeSubGreeting),
+          cmsField('Arama Placeholder','searchPlaceholder',d.searchPlaceholder),
+        ])}
+        ${cmsSection('Alt Navigasyon Etiketleri','fa-bars','bg-green-100 text-green-600',[
+          cmsField('Ana Sayfa','bottomNavHome',d.bottomNavHome),
+          cmsField('Arama','bottomNavSearch',d.bottomNavSearch),
+          cmsField('Araçlar','bottomNavTools',d.bottomNavTools),
+          cmsField('Rezervasyonlarım','bottomNavBookings',d.bottomNavBookings),
+          cmsField('Profil','bottomNavProfile',d.bottomNavProfile),
+        ])}
+      </div>
+      <div>
+        ${cmsSection('Renk Paleti','fa-palette','bg-pink-100 text-pink-600',[
+          cmsField('Ana Renk','primaryColor',d.primaryColor,'color','Butonlar, aktif tab, linkler'),
+          cmsField('Aksan Rengi','accentColor',d.accentColor,'color','Fiyat, yıldız, özel vurgular'),
+          cmsField('Kart Köşe Yarıçapı','cardRadius',d.cardRadius,'text','ör. 16px, 12px, 24px'),
+        ])}
+        <div class="card">
+          <div class="font-semibold text-sm mb-3"><i class="fas fa-eye text-primary mr-1"></i>Canlı Önizleme</div>
+          <div class="rounded-2xl p-4 text-white text-sm font-semibold text-center mb-3" id="cms-preview-header" style="background:${d.primaryColor}">
+            ${d.appName} — ${d.appTagline}
+          </div>
+          <div class="flex gap-2 justify-around text-xs text-gray-500 border rounded-xl p-3" id="cms-preview-nav">
+            <div class="flex flex-col items-center gap-1"><i class="fas fa-home" style="color:${d.primaryColor}"></i>${d.bottomNavHome}</div>
+            <div class="flex flex-col items-center gap-1"><i class="fas fa-search text-gray-300"></i>${d.bottomNavSearch}</div>
+            <div class="flex flex-col items-center gap-1"><i class="fas fa-water text-gray-300"></i>${d.bottomNavTools}</div>
+            <div class="flex flex-col items-center gap-1"><i class="fas fa-calendar text-gray-300"></i>${d.bottomNavBookings}</div>
+            <div class="flex flex-col items-center gap-1"><i class="fas fa-user text-gray-300"></i>${d.bottomNavProfile}</div>
+          </div>
+          <p class="text-[11px] text-gray-400 mt-2 text-center">Kaydet butonuna bastıktan sonra uygulamada görünür</p>
+        </div>
+      </div>
+    </div>`;
+
+  // Live preview on color input change
+  el.querySelectorAll('input[type="color"]').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const preview=document.getElementById('cms-preview-header');
+      if(preview&&inp.dataset.cmsKey==='primaryColor')preview.style.background=inp.value;
+      const code=document.getElementById('clr-'+inp.dataset.cmsKey);
+      if(code)code.textContent=inp.value;
+    });
+  });
+}
 
 function showToast(msg,type='success'){
   const t=document.getElementById('toast');

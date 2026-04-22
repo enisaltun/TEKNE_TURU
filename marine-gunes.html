@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Güneş Doğuş/Batış — DenizBul</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',accent:'#f59e0b',success:'#10b981'}}}}</script>
+<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');*{font-family:'Inter',sans-serif}</style>
+<script>function goBack(){var f=localStorage.getItem("marine_from");if(f)window.location.href=f;else if(document.referrer&&document.referrer.indexOf(location.hostname)>=0)history.back();else window.location.href="index.html";}</script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div class="bg-gradient-to-r from-orange-500 to-amber-400 text-white">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a onclick="goBack()" style="cursor:pointer" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition"><i class="fas fa-arrow-left text-sm"></i></a>
+      <div><div class="font-bold text-lg">Güneş Doğuş / Batış</div><div class="text-orange-100 text-xs">Alacakaranlık &bull; Altın Saat &bull; Kıyı Şehirleri</div></div>
+    </div>
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><i class="fas fa-sun text-xl"></i></div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 py-6">
+
+  <!-- Key Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-4 shadow-sm border border-orange-200 text-center">
+      <div class="text-3xl font-extrabold text-orange-500">06:12</div>
+      <div class="text-xs text-gray-500 mt-1">Güneş Doğuşu</div>
+      <div class="text-[10px] text-orange-400 font-medium">Antalya</div>
+    </div>
+    <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-4 shadow-sm border border-orange-200 text-center">
+      <div class="text-3xl font-extrabold text-orange-700">19:47</div>
+      <div class="text-xs text-gray-500 mt-1">Güneş Batışı</div>
+      <div class="text-[10px] text-orange-400 font-medium">Antalya</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-amber-500">13s 35d</div>
+      <div class="text-xs text-gray-500 mt-1">Gündüz Uzunluğu</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-purple-600">05:46</div>
+      <div class="text-xs text-gray-500 mt-1">Şafak (Sivil)</div>
+      <div class="text-[10px] text-gray-400">Tekne çıkışı için</div>
+    </div>
+  </div>
+
+  <!-- Sun Arc SVG -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-chart-bar text-orange-500 mr-1"></i>Güneş Açısı — Gün Boyunca (Antalya)</h3>
+    <svg viewBox="0 0 600 160" class="w-full">
+      <defs>
+        <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#fed7aa"/>
+          <stop offset="100%" style="stop-color:#fff7ed"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="600" height="160" fill="url(#skyGrad)" rx="12"/>
+      <!-- Horizon -->
+      <line x1="0" y1="130" x2="600" y2="130" stroke="#e2e8f0" stroke-width="2"/>
+      <!-- Sun Arc -->
+      <path d="M30,130 Q300,10 570,130" fill="none" stroke="#f97316" stroke-width="3" stroke-dasharray="6,3"/>
+      <!-- Current sun position -->
+      <circle id="sun-dot" cx="300" cy="68" r="14" fill="#f97316" opacity="0.9"/>
+      <text x="300" y="73" fill="white" font-size="14" text-anchor="middle" font-family="Inter" font-weight="700">☀️</text>
+      <!-- Labels -->
+      <text x="30" y="148" fill="#94a3b8" font-size="10" text-anchor="middle" font-family="Inter">06:12 Doğuş</text>
+      <text x="300" y="148" fill="#94a3b8" font-size="10" text-anchor="middle" font-family="Inter">12:59 Öğle</text>
+      <text x="570" y="148" fill="#94a3b8" font-size="10" text-anchor="middle" font-family="Inter">19:47 Batış</text>
+      <!-- Golden Hour shading -->
+      <rect x="0" y="80" width="80" height="50" fill="#fbbf24" opacity="0.15" rx="4"/>
+      <text x="40" y="70" fill="#d97706" font-size="9" text-anchor="middle" font-family="Inter" font-weight="700">Altın Saat</text>
+      <rect x="520" y="80" width="80" height="50" fill="#f97316" opacity="0.15" rx="4"/>
+      <text x="560" y="70" fill="#d97706" font-size="9" text-anchor="middle" font-family="Inter" font-weight="700">Altın Saat</text>
+    </svg>
+    <div class="flex justify-center gap-6 mt-2 text-xs text-gray-500">
+      <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-200 inline-block"></span>Altın Saat (06:12–07:15 / 18:45–19:47)</span>
+      <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-orange-300 inline-block"></span>Güneş Yolu</span>
+    </div>
+  </div>
+
+  <!-- City Table -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-table text-orange-500 mr-1"></i>Sahil Şehirleri — Güneş Verileri (21 Nisan 2026)</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-xs text-gray-400 uppercase tracking-wide border-b">
+          <th class="pb-3 pr-4">Şehir</th><th class="pb-3 pr-4">Doğuş</th><th class="pb-3 pr-4">Batış</th><th class="pb-3 pr-4">Gündüz</th><th class="pb-3 pr-4">Öğle</th><th class="pb-3">Altın Saat (Sabah)</th>
+        </tr></thead>
+        <tbody id="sun-table" class="divide-y divide-gray-50"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Photography & Tour Tips -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-100">
+      <h3 class="font-semibold text-sm text-amber-800 mb-2"><i class="fas fa-camera mr-1"></i>Fotoğrafçılık İpuçları</h3>
+      <ul class="text-xs text-amber-700 space-y-1.5">
+        <li>🌅 Altın Saat: 06:12–07:15 ve 18:45–19:47</li>
+        <li>📸 Mavi Saat: 05:46–06:12 (şafak öncesi)</li>
+        <li>☀️ Sert ışık saatleri: 10:00–16:00 arası</li>
+        <li>🌊 Günbatımı turları için en iyi: 18:30 kalkış</li>
+      </ul>
+    </div>
+    <div class="bg-gradient-to-br from-blue-50 to-sky-50 rounded-2xl p-5 border border-blue-100">
+      <h3 class="font-semibold text-sm text-blue-800 mb-2"><i class="fas fa-ship mr-1"></i>Tur Planlama Önerileri</h3>
+      <ul class="text-xs text-blue-700 space-y-1.5">
+        <li>🎣 Erken sabah balık avı: 05:30 kalkış önerilir</li>
+        <li>🏊 Yüzme turu: 09:00–16:00 ideal ışık</li>
+        <li>🌅 Günbatımı gezi turu: 18:00 kalkış</li>
+        <li>🌙 Gece tur (tam ay): 21:00+ başlangıç</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const cities = [
+  {name:'Antalya',rise:'06:12',set:'19:47',gunduz:'13:35',ogle:'12:59',altin:'06:12–07:15'},
+  {name:'Kemer',rise:'06:13',set:'19:46',gunduz:'13:33',ogle:'13:00',altin:'06:13–07:16'},
+  {name:'Fethiye',rise:'06:14',set:'19:51',gunduz:'13:37',ogle:'13:03',altin:'06:14–07:17'},
+  {name:'Bodrum',rise:'06:17',set:'19:54',gunduz:'13:37',ogle:'13:06',altin:'06:17–07:20'},
+  {name:'Marmaris',rise:'06:15',set:'19:52',gunduz:'13:37',ogle:'13:04',altin:'06:15–07:18'},
+  {name:'İzmir',rise:'06:21',set:'19:56',gunduz:'13:35',ogle:'13:09',altin:'06:21–07:23'},
+  {name:'Çeşme',rise:'06:22',set:'19:57',gunduz:'13:35',ogle:'13:10',altin:'06:22–07:25'},
+  {name:'İstanbul',rise:'06:28',set:'20:02',gunduz:'13:34',ogle:'13:15',altin:'06:28–07:31'},
+];
+document.getElementById('sun-table').innerHTML = cities.map(c => `
+  <tr class="hover:bg-gray-50">
+    <td class="py-2.5 pr-4 font-medium">${c.name}</td>
+    <td class="py-2.5 pr-4 font-semibold text-orange-500">🌅 ${c.rise}</td>
+    <td class="py-2.5 pr-4 font-semibold text-orange-700">🌇 ${c.set}</td>
+    <td class="py-2.5 pr-4 text-blue-600 font-medium">${c.gunduz}</td>
+    <td class="py-2.5 pr-4 text-gray-500">${c.ogle}</td>
+    <td class="py-2.5 text-xs text-amber-600 font-medium">✨ ${c.altin}</td>
+  </tr>`).join('');
+
+// Position sun dot based on current time
+const now = new Date();
+const h = now.getHours() + now.getMinutes()/60;
+const riseH = 6.2, setH = 19.78;
+if (h >= riseH && h <= setH) {
+  const prog = (h - riseH) / (setH - riseH);
+  const x = 30 + prog * 540;
+  const y = 130 - Math.sin(Math.PI * prog) * 120;
+  const dot = document.getElementById('sun-dot');
+  if (dot) { dot.setAttribute('cx', x.toFixed(0)); dot.setAttribute('cy', y.toFixed(0)); }
+}
+</script>
+</body>
+</html>

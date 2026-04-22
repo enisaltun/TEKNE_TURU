@@ -678,6 +678,53 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
   </div>
 </section>
 
+<!-- ================================================================ PAGE: ARAÇLAR / MARINE TOOLS -->
+<section id="page-tools" class="page">
+  <div class="px-4 pt-2 pb-24">
+    <!-- Header -->
+    <div class="flex items-center gap-2 py-3 mb-4">
+      <div class="w-10 h-10 bg-blue-100 rounded-2xl flex items-center justify-center">
+        <i class="fas fa-water text-primary text-lg"></i>
+      </div>
+      <div>
+        <div class="font-bold text-base">Deniz Araçları</div>
+        <div class="text-xs text-gray-400">Hava, gelgit, Ay ve daha fazlası</div>
+      </div>
+    </div>
+    <!-- Module grid (injected by renderTools) -->
+    <div id="tools-grid" class="grid grid-cols-2 gap-3"></div>
+    <div class="mt-4 p-3 bg-blue-50 rounded-2xl text-xs text-blue-700 flex items-start gap-2 border border-blue-100">
+      <i class="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
+      <span>Aktif araçlar admin tarafından yönetilir. Bazı araçlar konumunuza göre otomatik güncellenir.</span>
+    </div>
+  </div>
+</section>
+
+<!-- KAPASİTE UYARI MODAL -->
+<div id="cap-warning-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center" onclick="closeCapWarning()">
+  <div onclick="event.stopPropagation()" style="background:#fff;border-radius:24px;padding:28px 24px;max-width:340px;width:90%;margin:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="width:64px;height:64px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <i class="fas fa-exclamation-triangle" style="color:#ef4444;font-size:26px"></i>
+    </div>
+    <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:8px" id="cap-warn-title">Kapasite Asiliyor!</div>
+    <div style="font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:20px" id="cap-warn-body">Bu tur icin yeterli yer bulunmuyor.</div>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:14px;padding:14px;margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-bottom:6px">
+        <span>Tekne kapasitesi</span><span style="font-weight:700;color:#0369a1" id="cap-warn-max">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-bottom:6px">
+        <span>Mevcut rezervasyonlar</span><span style="font-weight:700;color:#f59e0b" id="cap-warn-current">—</span>
+      </div>
+      <div style="height:1px;background:#fecaca;margin:8px 0"></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#374151">
+        <span style="font-weight:600">Kalan yer</span><span style="font-weight:800;color:#ef4444" id="cap-warn-left">—</span>
+      </div>
+    </div>
+    <div id="cap-warn-suggest" style="font-size:12px;color:#6b7280;margin-bottom:20px"></div>
+    <button onclick="closeCapWarning()" style="width:100%;background:#0369a1;color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">Tamam, Anliyorum</button>
+  </div>
+</div>
+
 <!-- FILTER SHEET -->
 <div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
 <div class="bottom-sheet" id="filter-sheet">
@@ -717,14 +764,14 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 <nav class="bottom-nav" id="bottom-nav">
   <a href="#home" data-nav="home"><i class="fas fa-home"></i>Ana Sayfa</a>
   <a href="#search" data-nav="search"><i class="fas fa-search"></i>Ara</a>
-  <a href="#favorites" data-nav="favorites"><i class="fas fa-heart"></i>Favori</a>
-  <a href="#my-tours" data-nav="my-tours"><i class="fas fa-calendar"></i>Turlarim</a>
+  <a href="#tools" data-nav="tools"><i class="fas fa-water"></i>Araçlar</a>
+  <a href="#my-tours" data-nav="my-tours"><i class="fas fa-calendar"></i>Turlarım</a>
   <a href="#profile" data-nav="profile"><i class="fas fa-user"></i>Profil</a>
 </nav>
 
 <script>
 /* ── CONSTANTS ── */
-const ALL_PAGES=['auth','home','search','detail','captain-profile','booking','payment','confirmation','my-tours','booking-detail','favorites','messages','notifications','profile'];
+const ALL_PAGES=['auth','home','search','detail','captain-profile','booking','payment','confirmation','my-tours','booking-detail','favorites','messages','notifications','profile','tools'];
 const HIDE_NAV=['auth','detail','booking','payment','confirmation','captain-profile','notifications','booking-detail'];
 const CM={
   balik:    {label:'Balik Avi',   icon:'fa-fish',      color:'blue',   grad:'from-blue-400 to-blue-600'},
@@ -869,6 +916,7 @@ function handleRoute(){
   if(h==='captain-profile') renderCaptainProfile();
   if(h==='my-tours') renderMyTours(curTab);
   if(h==='booking-detail') renderBookingDetail();
+  if(h==='tools')    renderTools();
   if(h==='favorites')renderFavorites();
   if(h==='messages') {document.getElementById('msg-list-view').style.display='';document.getElementById('msg-chat-view').style.display='none';renderMsgList();}
   if(h==='notifications') renderNotifs();
@@ -876,6 +924,18 @@ function handleRoute(){
   window.scrollTo(0,0);
 }
 window.addEventListener('hashchange',handleRoute);
+// Apply CMS settings from admin panel
+(function applyCms(){
+  try{
+    const d=JSON.parse(localStorage.getItem('cms_content_app')||'{}');
+    if(d.primaryColor){
+      document.documentElement.style.setProperty('--color-primary',d.primaryColor);
+      const style=document.createElement('style');
+      style.textContent=`.bg-primary{background-color:${d.primaryColor}!important}.text-primary{color:${d.primaryColor}!important}.border-primary{border-color:${d.primaryColor}!important}.bottom-nav a.active{color:${d.primaryColor}!important}`;
+      document.head.appendChild(style);
+    }
+  }catch{}
+})();
 window.addEventListener('load',function(){
   const users=S.get('cu_users',[]);
   if(!users.find(function(u){return u.email==='ayse@test.com';})){
@@ -906,13 +966,51 @@ function getDbTours(){
     .filter(t=>t.durum==='aktif'||t.aktif===true)
     .map(t=>{
       const cat=DB_CAT[t.kategoriler?.[0]||'Tekne Gezisi']||'gezi';
-      return{id:t.id,name:t.title,loc:t.kalkis||'Turkiye',price:t.price||0,rating:4.8,reviews:0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,_db:true};
+      return{id:t.id,name:t.ad||t.title||'Tur',loc:t.kalkis||t.konum||'Turkiye',price:t.price||t.fiyat||0,rating:t.puan||4.8,reviews:t.inceleme||0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||(t.dahil||'').split('\n').filter(Boolean)||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,heroImage:t.heroImage||null,_db:true};
     });
 }
 
 function allTours(){return[...getDbTours(),...SAMPLE];}
 
 function rebuildTourMap(){allTours().forEach(t=>{tourMap[t.id]=t;});}
+
+/* ── TOOLS (Marine Modules) ── */
+const TOOL_DEFS=[
+  {key:'hava',label:'Hava Durumu',icon:'fa-cloud-sun',color:'bg-amber-100 text-amber-600',href:'marine-hava.html',desc:'5 günlük tahmin, rüzgar, nem'},
+  {key:'gelgit',label:'Gelgit',icon:'fa-water',color:'bg-blue-100 text-blue-600',href:'marine-gelgit.html',desc:'Med-cezir saatleri ve yüksekliği'},
+  {key:'ruzgar',label:'Rüzgar',icon:'fa-wind',color:'bg-sky-100 text-sky-600',href:'marine-ruzgar.html',desc:'Beaufort, hız ve yön verileri'},
+  {key:'gunes',label:'Güneş',icon:'fa-sun',color:'bg-orange-100 text-orange-500',href:'marine-gunes.html',desc:'Doğuş, batış, altın saat'},
+  {key:'ay',label:'Ay Takvimi',icon:'fa-moon',color:'bg-slate-200 text-slate-600',href:'marine-ay.html',desc:'Ay evreleri, balık avı etkisi'},
+  {key:'solunar',label:'Solunar',icon:'fa-fish',color:'bg-teal-100 text-teal-600',href:'marine-solunar.html',desc:'Balık aktivite periyotları'},
+  {key:'sicaklik',label:'Su Sıcaklığı',icon:'fa-thermometer-half',color:'bg-cyan-100 text-cyan-600',href:'marine-sicaklik.html',desc:'Yüzey ve derinlik sıcaklıkları'},
+  {key:'ay_konum',label:"Ay'ın Konumu",icon:'fa-satellite',color:'bg-violet-100 text-violet-600',href:'marine-ay-konum.html',desc:'Canlı faz, mesafe, pusula'},
+  {key:'derinlik',label:'Derinlik',icon:'fa-map',color:'bg-indigo-100 text-indigo-600',href:'marine-derinlik.html',desc:'Batimetri ve kritik bölgeler'},
+];
+function getModuleSettings(){
+  try{
+    const d={};TOOL_DEFS.forEach(t=>{d[t.key]={aktif:true,musteriler:true,kaptanlar:true};});
+    const s=localStorage.getItem('module_settings');
+    return s?Object.assign(d,JSON.parse(s)):d;
+  }catch{const d={};TOOL_DEFS.forEach(t=>{d[t.key]={aktif:true,musteriler:true,kaptanlar:true};});return d;}
+}
+function renderTools(){
+  const grid=document.getElementById('tools-grid');
+  if(!grid)return;
+  const ms=getModuleSettings();
+  const visible=TOOL_DEFS.filter(t=>{const s=ms[t.key];return !s||s.aktif!==false&&s.musteriler!==false;});
+  if(!visible.length){
+    grid.innerHTML='<div class="col-span-2 text-center py-12 text-xs text-gray-400"><i class="fas fa-tools text-3xl block mb-2 opacity-20"></i>Şu an aktif araç bulunmuyor</div>';
+    return;
+  }
+  grid.innerHTML=visible.map(t=>`
+    <a href="${t.href}" onclick="localStorage.setItem('marine_from','customer-app.html')" class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col items-center text-center active:scale-95 transition-transform">
+      <div class="w-12 h-12 ${t.color} rounded-2xl flex items-center justify-center mb-2">
+        <i class="fas ${t.icon} text-xl"></i>
+      </div>
+      <div class="text-sm font-semibold leading-tight">${t.label}</div>
+      <div class="text-[10px] text-gray-400 mt-0.5 leading-tight">${t.desc}</div>
+    </a>`).join('');
+}
 
 /* ── HOME ── */
 function renderHome(){
@@ -1058,6 +1156,47 @@ function toggleDetailFav(){
 }
 
 /* ── BOOKING ── */
+// ── TUR AKTİF GÜN KONTROL YARDIMCILARI ──
+function sezonAylariniAl(sezon){
+  if(!sezon||sezon==='Tum Yil')return null; // null = tüm aylar
+  const MAP={
+    'Yaz (Haz-Eyl)':[5,6,7,8],
+    'Haz-Eyl':[5,6,7,8],
+    'May-Eyl':[4,5,6,7,8],
+    'Nis-Eki':[3,4,5,6,7,8,9],
+    'Nisan-Ekim':[3,4,5,6,7,8,9],
+    'Yaz':[5,6,7,8],
+  };
+  for(const[key,months] of Object.entries(MAP)){
+    if(sezon.includes(key.split('(').pop().split(')')[0].trim())||sezon===key)return months;
+  }
+  // Try to detect "Haz" "Eyl" patterns
+  const start={'Oca':0,'Sub':1,'Mar':2,'Nis':3,'May':4,'Haz':5,'Tem':6,'Agu':7,'Eyl':8,'Eki':9,'Kas':10,'Ara':11};
+  const keys=Object.keys(start);
+  const found=keys.filter(k=>sezon.includes(k));
+  if(found.length>=2)return Array.from({length:12},(_,i)=>i).filter(i=>i>=start[found[0]]&&i<=start[found[found.length-1]]);
+  return null; // belirsiz → tüm aylar aktif
+}
+
+function gunAktifMi(date, tur){
+  // 1. Sezon kontrolü
+  const aktifAylar=sezonAylariniAl(tur.sezon||tur.sezon||null);
+  if(aktifAylar&&!aktifAylar.includes(date.getMonth()))return'sezon-disi';
+
+  // 2. Kapasite kontrolü: bu güne ait mevcut rezervasyonların toplamı
+  const dateStr=date.toLocaleDateString('tr-TR');
+  const allBookings=S.get('db_bookings',[]);
+  const gunRezervasyonlar=allBookings.filter(b=>
+    b.tourId===tur.id &&
+    b.tarih===dateStr &&
+    b.durum!=='iptal'&&b.durum!=='reddedildi'
+  );
+  const gunKisi=gunRezervasyonlar.reduce((s,b)=>s+(b.guests||1),0);
+  if(gunKisi>=(tur.kapasite||8))return'dolu';
+
+  return'aktif';
+}
+
 function renderBooking(){
   const t=selTour;if(!t)return;
   const m=CM[t.cat]||CM.gezi;
@@ -1065,30 +1204,83 @@ function renderBooking(){
   iconEl.className=`w-14 h-14 bg-gradient-to-br ${m.grad} rounded-xl flex items-center justify-center flex-shrink-0`;
   iconEl.innerHTML=`<i class="fas ${m.icon} text-white/80 text-xl"></i>`;
   document.getElementById('booking-tour-name').textContent=t.name;
-  const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
-  const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);
-  document.getElementById('booking-tour-meta').textContent=`${t.loc} • ${t.dur} • Max ${t.kapasite} kisi`;
-  document.getElementById('booking-cap-note').textContent=kalanKisi===0?'Bu tur dolu!':`${kalanKisi} yer kaldi (toplam ${t.kapasite} kisi)`;
-  document.getElementById('booking-cap-note').className=kalanKisi===0?'text-xs text-danger font-semibold':'text-xs text-gray-400';
-  guestVal=Math.min(guestVal,kalanKisi||1);
-  document.getElementById('guest-count-val').textContent=guestVal;
 
-  // Date strip — next 10 days
+  // Genel kapasite (tüm rezervasyonlar toplamı, tarihe bakılmaksızın)
+  const tumRezervasyonlar=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi');
+  const genelRezKisi=tumRezervasyonlar.reduce((s,b)=>s+(b.guests||1),0);
+  const genelKalan=Math.max(0,(t.kapasite||8)-genelRezKisi);
+  document.getElementById('booking-tour-meta').textContent=`${t.loc} • ${t.dur} • Max ${t.kapasite} kisi`;
+
+  // Date strip — 14 gün (aktif/pasif ayrımı ile)
   const DAYS=['Paz','Pzt','Sal','Car','Per','Cum','Cmt'];
   const MONTHS=['Oca','Sub','Mar','Nis','May','Haz','Tem','Agu','Eyl','Eki','Kas','Ara'];
   const today=new Date();
   let dHtml='';
-  for(let i=1;i<=10;i++){
+  let firstAvailable=null;
+
+  for(let i=1;i<=14;i++){
     const d=new Date(today);d.setDate(today.getDate()+i);
     const str=d.toLocaleDateString('tr-TR');
-    if(!selDate&&i===1)selDate=str;
-    dHtml+=`<div class="date-btn${selDate===str?' sel':''}" onclick="pickDate('${str}',this)">
-      <div class="text-[10px] text-gray-500">${DAYS[d.getDay()]}</div>
-      <div class="font-bold${selDate===str?' text-primary':''}">${d.getDate()}</div>
-      <div class="text-[10px] text-gray-500">${MONTHS[d.getMonth()]}</div>
-    </div>`;
+    const durum=gunAktifMi(d,t);
+    const isActive=durum==='aktif';
+    const isSel=selDate===str;
+
+    if(isActive&&!firstAvailable)firstAvailable=str;
+
+    if(durum==='sezon-disi'){
+      dHtml+=`<div class="date-btn" style="opacity:0.3;cursor:not-allowed;pointer-events:none">
+        <div class="text-[10px] text-gray-400">${DAYS[d.getDay()]}</div>
+        <div class="font-bold text-gray-300">${d.getDate()}</div>
+        <div class="text-[10px] text-gray-300">${MONTHS[d.getMonth()]}</div>
+        <div style="font-size:8px;color:#d1d5db;margin-top:2px">Sezon Dışı</div>
+      </div>`;
+    } else if(durum==='dolu'){
+      dHtml+=`<div class="date-btn" style="opacity:0.45;cursor:not-allowed;pointer-events:none;background:#fef2f2;border-color:#fecaca">
+        <div class="text-[10px] text-red-300">${DAYS[d.getDay()]}</div>
+        <div class="font-bold text-red-300">${d.getDate()}</div>
+        <div class="text-[10px] text-red-200">${MONTHS[d.getMonth()]}</div>
+        <div style="font-size:8px;color:#f87171;margin-top:2px;font-weight:600">Dolu</div>
+      </div>`;
+    } else {
+      dHtml+=`<div class="date-btn${isSel?' sel':''}" onclick="pickDate('${str}',this)">
+        <div class="text-[10px] text-gray-500">${DAYS[d.getDay()]}</div>
+        <div class="font-bold${isSel?' text-primary':''}">${d.getDate()}</div>
+        <div class="text-[10px] text-gray-500">${MONTHS[d.getMonth()]}</div>
+      </div>`;
+    }
   }
+
+  // Seçili tarih aktif değilse ilk aktif günü seç
+  if(!selDate||gunAktifMi(new Date(selDate.split('.').reverse().join('-')),t)!=='aktif'){
+    selDate=firstAvailable||null;
+  }
+
   document.getElementById('date-strip').innerHTML=dHtml;
+  // sel class'ı doğru hücreye uygula
+  document.querySelectorAll('.date-btn').forEach(btn=>{
+    const onclick=btn.getAttribute('onclick')||'';
+    const match=onclick.match(/pickDate\('([^']+)'/);
+    if(match&&match[1]===selDate){
+      btn.classList.add('sel');
+      const bold=btn.querySelector('.font-bold');
+      if(bold)bold.classList.add('text-primary');
+    }
+  });
+
+  // Kapasite notu: seçili güne göre
+  const selDateStatus=selDate?gunAktifMi(new Date(selDate.split('.').reverse().join('-')),t):'aktif';
+  if(selDate){
+    const gunRez=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.tarih===selDate&&b.durum!=='iptal'&&b.durum!=='reddedildi');
+    const gunKisi=gunRez.reduce((s,b)=>s+(b.guests||1),0);
+    const gunKalan=Math.max(0,(t.kapasite||8)-gunKisi);
+    document.getElementById('booking-cap-note').textContent=gunKalan===0?'Bu tarihte tur dolu!':`${gunKalan} yer kaldi (${selDate})`;
+    document.getElementById('booking-cap-note').className=gunKalan===0?'text-xs text-danger font-semibold':'text-xs text-gray-400';
+    guestVal=Math.min(guestVal,Math.max(1,gunKalan));
+  } else {
+    document.getElementById('booking-cap-note').textContent='Bu dönemde uygun tarih yok';
+    document.getElementById('booking-cap-note').className='text-xs text-danger font-semibold';
+  }
+  document.getElementById('guest-count-val').textContent=guestVal;
 
   // Time slots
   const slots=t.saatler?.length?t.saatler:['09:00','10:00'];
@@ -1098,13 +1290,42 @@ function renderBooking(){
   updPrice();
 }
 
-function pickDate(str,el){selDate=str;document.querySelectorAll('.date-btn').forEach(b=>{b.classList.remove('sel');b.querySelector('.font-bold').classList.remove('text-primary');});el.classList.add('sel');el.querySelector('.font-bold').classList.add('text-primary');}
+function pickDate(str,el){
+  selDate=str;
+  document.querySelectorAll('.date-btn').forEach(b=>{
+    b.classList.remove('sel');
+    const bold=b.querySelector('.font-bold');
+    if(bold)bold.classList.remove('text-primary');
+  });
+  el.classList.add('sel');
+  const bold=el.querySelector('.font-bold');
+  if(bold)bold.classList.add('text-primary');
+  // Kapasite notunu seçilen güne göre güncelle
+  const t=selTour;if(!t)return;
+  const gunRez=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.tarih===str&&b.durum!=='iptal'&&b.durum!=='reddedildi');
+  const gunKisi=gunRez.reduce((s,b)=>s+(b.guests||1),0);
+  const gunKalan=Math.max(0,(t.kapasite||8)-gunKisi);
+  const noteEl=document.getElementById('booking-cap-note');
+  if(noteEl){
+    noteEl.textContent=gunKalan===0?'Bu tarihte tur dolu!':`${gunKalan} yer kaldi (${str})`;
+    noteEl.className=gunKalan===0?'text-xs text-danger font-semibold':'text-xs text-gray-400';
+  }
+  guestVal=Math.min(guestVal,Math.max(1,gunKalan));
+  document.getElementById('guest-count-val').textContent=guestVal;
+  updPrice();
+}
 function pickTime(t,el){selTime=t;document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');}
 function adjGuest(d){
   const t=selTour;if(!t)return;
-  const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
-  const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);
-  guestVal=Math.max(1,Math.min(kalanKisi,guestVal+d));
+  // Seçili tarihe özel kapasite
+  const gunRez=selDate?S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.tarih===selDate&&b.durum!=='iptal'&&b.durum!=='reddedildi'):[];
+  const gunKisi=gunRez.reduce((s,b)=>s+(b.guests||1),0);
+  const kalanKisi=Math.max(0,(t.kapasite||8)-gunKisi);
+  if(d>0&&guestVal>=kalanKisi){
+    if(typeof showCapWarning==='function')showCapWarning(t.kapasite,gunKisi,kalanKisi,guestVal+d);
+    return;
+  }
+  guestVal=Math.max(1,Math.min(kalanKisi||1,guestVal+d));
   document.getElementById('guest-count-val').textContent=guestVal;
   updPrice();
 }
@@ -1130,13 +1351,31 @@ function renderPayment(){
 }
 
 /* ── CONFIRM BOOKING ── */
+function showCapWarning(kapasite,rezerveKisi,kalanKisi,istenen){
+  const overlay=document.getElementById('cap-warning-overlay');
+  document.getElementById('cap-warn-max').textContent=kapasite+' kisi';
+  document.getElementById('cap-warn-current').textContent=rezerveKisi+' kisi';
+  document.getElementById('cap-warn-left').textContent=kalanKisi===0?'Dolu!':kalanKisi+' kisi';
+  if(kalanKisi===0){
+    document.getElementById('cap-warn-title').textContent='Bu Tur Dolu!';
+    document.getElementById('cap-warn-body').textContent='Maalesef bu tur icin tum yerler dolu. Farkli bir tarih veya tur secmeyi deneyin.';
+    document.getElementById('cap-warn-suggest').textContent='';
+  }else{
+    document.getElementById('cap-warn-title').textContent='Kapasite Asiliyor!';
+    document.getElementById('cap-warn-body').textContent=`${istenen} kisilik rezervasyon yapamazsiniz. Bu turda yalnizca ${kalanKisi} yer kalmistir.`;
+    document.getElementById('cap-warn-suggest').textContent=`Ipucu: Kisi sayisini en fazla ${kalanKisi} olarak secebilirsiniz.`;
+  }
+  overlay.style.display='flex';
+}
+function closeCapWarning(){document.getElementById('cap-warning-overlay').style.display='none';}
+
 function doBooking(){
   const t=selTour;
   if(!t){showToast('Lutfen bir tur secin','danger');return;}
   const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
   const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);
-  if(kalanKisi<=0){showToast('Bu tur dolu, rezervasyon yapilamiyor.','danger');return;}
-  if(guestVal>kalanKisi){showToast(`Sadece ${kalanKisi} yer kaldi. Kisi sayisini azaltin.`,'danger');return;}
+  if(kalanKisi<=0){showCapWarning(t.kapasite,rezerveKisi,0,0);return;}
+  if(guestVal>kalanKisi){showCapWarning(t.kapasite,rezerveKisi,kalanKisi,guestVal);return;}
   const total=t.price+Math.round(t.price*.1);
   const profile=S.get('cu_profile',{name:'Misafir'});
   const b={

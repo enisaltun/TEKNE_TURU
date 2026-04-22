@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solunar Takvim — DenizBul</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',accent:'#f59e0b',success:'#10b981'}}}}</script>
+<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');*{font-family:'Inter',sans-serif}
+.activity-bar{height:8px;border-radius:4px;transition:width .3s}
+</style>
+<script>function goBack(){var f=localStorage.getItem("marine_from");if(f)window.location.href=f;else if(document.referrer&&document.referrer.indexOf(location.hostname)>=0)history.back();else window.location.href="index.html";}</script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div class="bg-gradient-to-r from-teal-700 to-emerald-600 text-white">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a onclick="goBack()" style="cursor:pointer" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition"><i class="fas fa-arrow-left text-sm"></i></a>
+      <div><div class="font-bold text-lg">Solunar Takvim</div><div class="text-teal-100 text-xs">Balık Aktivitesi &bull; Major/Minor Periyot &bull; 7 Günlük Tahmin</div></div>
+    </div>
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl">🎣</div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 py-6">
+
+  <!-- Bugünün Özeti -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-3xl mb-1" id="activity-icon">🟢</div>
+      <div class="text-sm font-bold" id="activity-label">—</div>
+      <div class="text-xs text-gray-500 mt-0.5">Şu anki aktivite</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-teal-600" id="next-period-time">—</div>
+      <div class="text-xs text-gray-500 mt-1">Sonraki Periyot</div>
+      <div class="text-[10px] text-teal-500 font-medium" id="next-period-type">—</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-amber-500" id="moon-phase-icon">🌕</div>
+      <div class="text-xs text-gray-500 mt-1">Ay Evresi</div>
+      <div class="text-[10px] text-gray-400" id="moon-phase-name">—</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-emerald-600" id="day-score">—</div>
+      <div class="text-xs text-gray-500 mt-1">Günlük Skor</div>
+      <div class="text-[10px] text-gray-400">100 üzerinden</div>
+    </div>
+  </div>
+
+  <!-- Bugünün Periyotları -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-clock text-teal-600 mr-1"></i>Bugünün Solunar Periyotları</h3>
+    <div class="space-y-3" id="periods-list"></div>
+    <div class="mt-4 p-3 bg-teal-50 rounded-xl text-xs text-teal-700 border border-teal-100">
+      <strong>Solunar Teorisi (John Alden Knight, 1926):</strong> Ay'ın konumuna göre balık ve deniz canlılarının beslenme aktivitesi artar. <strong>Major periyot</strong> (~2 saat): Ay tam üstte veya tam altta. <strong>Minor periyot</strong> (~1 saat): Ay doğarken veya batarken.
+    </div>
+  </div>
+
+  <!-- Saatlik Aktivite Grafiği -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-chart-area text-teal-600 mr-1"></i>Saatlik Aktivite Profili</h3>
+    <div id="hourly-chart" class="flex items-end gap-1 h-24"></div>
+    <div class="flex justify-between text-[10px] text-gray-400 mt-1 px-0.5" id="hourly-labels"></div>
+    <div class="flex gap-4 mt-3 text-xs text-gray-500 justify-center">
+      <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span>Yüksek Aktivite</span>
+      <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-400 inline-block"></span>Orta</span>
+      <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-gray-200 inline-block"></span>Düşük</span>
+    </div>
+  </div>
+
+  <!-- 7 Günlük Tahmin -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-calendar-week text-teal-600 mr-1"></i>7 Günlük Solunar Takvim</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-xs text-gray-400 uppercase tracking-wide border-b">
+          <th class="pb-3 pr-4">Gün</th>
+          <th class="pb-3 pr-4">Ay Evresi</th>
+          <th class="pb-3 pr-4">Major Periyot</th>
+          <th class="pb-3 pr-4">Minor Periyot</th>
+          <th class="pb-3 pr-4">Skor</th>
+          <th class="pb-3">Değerlendirme</th>
+        </tr></thead>
+        <tbody id="weekly-table" class="divide-y divide-gray-50"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Bölge & Tür Rehberi -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-5 border border-teal-100">
+      <h3 class="font-semibold text-sm text-teal-800 mb-2"><i class="fas fa-fish mr-1"></i>Hangi Balık, Hangi Periyotta?</h3>
+      <ul class="text-xs text-teal-700 space-y-1.5">
+        <li>🐟 <strong>Lüfer / Çinekop:</strong> Major periyotlarda yüzeye çıkar</li>
+        <li>🦑 <strong>Ahtapot / Kalamar:</strong> Dolunay major periyotu ideal</li>
+        <li>🐠 <strong>Çipura / Levrek:</strong> Sabah minor periyotu tercih eder</li>
+        <li>🦈 <strong>Orkinos:</strong> Yüksek enerji — tüm major periyotlar</li>
+        <li>🐡 <strong>Palamut:</strong> Akşam major periyotu en verimli</li>
+      </ul>
+    </div>
+    <div class="bg-gradient-to-br from-blue-50 to-sky-50 rounded-2xl p-5 border border-blue-100">
+      <h3 class="font-semibold text-sm text-blue-800 mb-2"><i class="fas fa-map-marker-alt mr-1"></i>Ege & Akdeniz Notları</h3>
+      <ul class="text-xs text-blue-700 space-y-1.5">
+        <li>📍 Bodrum bölgesi: Gelgit etkisi düşük, solunar etkisi belirgin</li>
+        <li>📍 İstanbul Boğazı: Akıntı + solunar kombinasyonu güçlü</li>
+        <li>📍 Fethiye koyları: Durgun su → solunar etkisi daha net</li>
+        <li>📍 Antalya körfezi: Sabah major periyotları en verimli</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Moon phase from known new moon
+const newMoonRef = new Date('2026-04-03T00:00:00');
+const lunarPeriod = 29.53 * 86400000;
+const now = new Date();
+const elapsed = now.getTime() - newMoonRef.getTime();
+const moonAge = ((elapsed % lunarPeriod) + lunarPeriod) % lunarPeriod / lunarPeriod * 29.53;
+const moonPct = moonAge / 29.53;
+
+const phaseData = [
+  {min:0,max:1.5,icon:'🌑',name:'Yeni Ay',score:55},
+  {min:1.5,max:7.4,icon:'🌒',name:'Hilal',score:62},
+  {min:7.4,max:8.5,icon:'🌓',name:'İlk Dördün',score:78},
+  {min:8.5,max:14.7,icon:'🌔',name:'Şişen Ay',score:85},
+  {min:14.7,max:15.5,icon:'🌕',name:'Dolunay',score:97},
+  {min:15.5,max:22.1,icon:'🌖',name:'Küçülen Ay',score:88},
+  {min:22.1,max:23.5,icon:'🌗',name:'Son Dördün',score:76},
+  {min:23.5,max:29.53,icon:'🌘',name:'Yanan Hilal',score:60},
+];
+const phaseInfo = phaseData.find(p => moonAge >= p.min && moonAge < p.max) || phaseData[0];
+
+// Solunar period calculation
+// Moon overhead: moonAge/29.53 * 24 hours from midnight
+// Underfoot: +12h, Rise: -6h from overhead, Set: +6h from overhead
+function getMoonEvents(dayOffset=0) {
+  const dayMoonAge = ((moonAge + dayOffset * (24/24.8)) % 29.53 + 29.53) % 29.53;
+  const dayPhasePct = dayMoonAge / 29.53;
+  // Moon overhead at roughly: moonrise = dayPhasePct * 24h from midnight
+  const moonrise = (dayPhasePct * 24) % 24;
+  const moonset = (moonrise + 12.4) % 24;
+  const moonOverhead = (moonrise + 6.2) % 24;
+  const moonUnderfoot = (moonrise + 18.6) % 24;
+  return { moonrise, moonset, moonOverhead, moonUnderfoot, moonAge: dayMoonAge };
+}
+
+function fmtH(h) {
+  const hh = Math.floor(((h % 24) + 24) % 24);
+  const mm = Math.round((h - Math.floor(h)) * 60);
+  return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+}
+
+function solunarScore(h, events) {
+  let score = 10;
+  const periods = [
+    { t: events.moonOverhead, type: 'major', dur: 1.5 },
+    { t: events.moonUnderfoot, type: 'major', dur: 1.5 },
+    { t: events.moonrise, type: 'minor', dur: 0.75 },
+    { t: events.moonset, type: 'minor', dur: 0.75 },
+  ];
+  for (const p of periods) {
+    let diff = Math.abs(h - p.t);
+    if (diff > 12) diff = 24 - diff;
+    const halfDur = p.dur;
+    if (diff < halfDur) {
+      const strength = (1 - diff / halfDur);
+      score += (p.type === 'major' ? 80 : 45) * strength;
+    }
+  }
+  return Math.min(100, Math.round(score));
+}
+
+// Today's events
+const todayEvents = getMoonEvents(0);
+const currentH = now.getHours() + now.getMinutes()/60;
+const currentScore = solunarScore(currentH, todayEvents);
+
+// Activity label
+const actLabel = currentScore >= 70 ? ['Yüksek Aktivite','🟢'] :
+                 currentScore >= 40 ? ['Orta Aktivite','🟡'] :
+                                      ['Düşük Aktivite','🔴'];
+document.getElementById('activity-icon').textContent = actLabel[1];
+document.getElementById('activity-label').textContent = actLabel[0];
+document.getElementById('moon-phase-icon').textContent = phaseInfo.icon;
+document.getElementById('moon-phase-name').textContent = phaseInfo.name;
+document.getElementById('day-score').textContent = phaseInfo.score;
+
+// Find next best period
+const allPeriods = [
+  { time: todayEvents.moonOverhead, label: 'Major — Ay Tepe Noktası', type: 'major' },
+  { time: todayEvents.moonUnderfoot, label: 'Major — Ay Dip Noktası', type: 'major' },
+  { time: todayEvents.moonrise, label: 'Minor — Ay Doğuşu', type: 'minor' },
+  { time: todayEvents.moonset, label: 'Minor — Ay Batışı', type: 'minor' },
+].sort((a,b) => {
+  const da = (a.time - currentH + 24) % 24;
+  const db = (b.time - currentH + 24) % 24;
+  return da - db;
+});
+const next = allPeriods[0];
+document.getElementById('next-period-time').textContent = fmtH(next.time);
+document.getElementById('next-period-type').textContent = next.label;
+
+// Periods list
+const periodsHtml = [
+  { time: todayEvents.moonOverhead, label: 'Major Periyot — Ay Tepe Noktasında', dur: '~2 saat', type: 'major' },
+  { time: todayEvents.moonUnderfoot, label: 'Major Periyot — Ay Dip Noktasında', dur: '~2 saat', type: 'major' },
+  { time: todayEvents.moonrise, label: 'Minor Periyot — Ay Doğuşu', dur: '~1 saat', type: 'minor' },
+  { time: todayEvents.moonset, label: 'Minor Periyot — Ay Batışı', dur: '~1 saat', type: 'minor' },
+].sort((a,b) => a.time - b.time).map(p => {
+  const isPast = p.time < currentH;
+  const isNow = Math.abs(p.time - currentH) < (p.type === 'major' ? 1.5 : 0.75);
+  const bg = isNow ? 'bg-teal-50 border-teal-300' : isPast ? 'bg-gray-50 border-gray-100 opacity-60' : 'bg-white border-gray-200';
+  const badge = p.type === 'major' ? 'bg-teal-100 text-teal-700' : 'bg-amber-100 text-amber-700';
+  const statusText = isNow ? '<span class="text-teal-600 font-bold text-xs animate-pulse">● AKTİF</span>' : isPast ? '<span class="text-gray-400 text-xs">Geçti</span>' : '<span class="text-gray-500 text-xs">Bekliyor</span>';
+  return `<div class="flex items-center justify-between p-3 rounded-xl border ${bg}">
+    <div class="flex items-center gap-3">
+      <div class="text-2xl font-bold text-teal-700">${fmtH(p.time)}</div>
+      <div><div class="text-sm font-medium">${p.label}</div><div class="text-xs text-gray-500">${p.dur}</div></div>
+    </div>
+    <div class="flex items-center gap-2">
+      ${statusText}
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${badge}">${p.type === 'major' ? 'MAJOR' : 'minor'}</span>
+    </div>
+  </div>`;
+}).join('');
+document.getElementById('periods-list').innerHTML = periodsHtml;
+
+// Hourly chart
+const hours = Array.from({length:24},(_,i)=>i);
+const hourScores = hours.map(h => solunarScore(h + 0.5, todayEvents));
+const maxScore = Math.max(...hourScores);
+document.getElementById('hourly-chart').innerHTML = hours.map((h,i) => {
+  const s = hourScores[i];
+  const heightPct = Math.round(s / maxScore * 100);
+  const color = s >= 70 ? 'bg-emerald-500' : s >= 40 ? 'bg-amber-400' : 'bg-gray-200';
+  const isNow = h === now.getHours();
+  return `<div class="flex-1 flex flex-col items-center">
+    <div class="w-full rounded-t-sm ${color} ${isNow ? 'ring-2 ring-teal-500' : ''}" style="height:${heightPct}%"></div>
+  </div>`;
+}).join('');
+document.getElementById('hourly-labels').innerHTML = hours.filter(h => h % 3 === 0).map(h => `<span>${String(h).padStart(2,'0')}</span>`).join('');
+
+// Weekly table
+const days = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+const today = now.getDay();
+let weekHtml = '';
+for (let d = 0; d < 7; d++) {
+  const ev = getMoonEvents(d);
+  const dayPhase = phaseData.find(p => ev.moonAge >= p.min && ev.moonAge < p.max) || phaseData[0];
+  const dayScore = dayPhase.score + Math.round(Math.random() * 6 - 3);
+  const label = dayScore >= 85 ? '<span class="text-emerald-600 font-semibold">Mükemmel</span>' :
+                dayScore >= 70 ? '<span class="text-teal-600 font-semibold">İyi</span>' :
+                dayScore >= 55 ? '<span class="text-amber-600">Orta</span>' :
+                '<span class="text-gray-400">Zayıf</span>';
+  const dayDate = new Date(now);
+  dayDate.setDate(dayDate.getDate() + d);
+  const dayName = d === 0 ? 'Bugün' : d === 1 ? 'Yarın' : `${days[dayDate.getDay()]} ${dayDate.getDate()}/${dayDate.getMonth()+1}`;
+  weekHtml += `<tr class="${d===0?'bg-teal-50':'hover:bg-gray-50'}">
+    <td class="py-2.5 pr-4 font-medium">${dayName}</td>
+    <td class="py-2.5 pr-4">${dayPhase.icon} ${dayPhase.name}</td>
+    <td class="py-2.5 pr-4 font-semibold text-teal-700">${fmtH(ev.moonOverhead)} & ${fmtH(ev.moonUnderfoot)}</td>
+    <td class="py-2.5 pr-4 text-amber-600">${fmtH(ev.moonrise)} & ${fmtH(ev.moonset)}</td>
+    <td class="py-2.5 pr-4"><div class="flex items-center gap-2"><div class="w-16 bg-gray-100 rounded-full h-2"><div class="h-2 rounded-full ${dayScore>=80?'bg-emerald-500':dayScore>=60?'bg-amber-400':'bg-gray-300'}" style="width:${dayScore}%"></div></div><span class="text-xs font-bold">${dayScore}</span></div></td>
+    <td class="py-2.5">${label}</td>
+  </tr>`;
+}
+document.getElementById('weekly-table').innerHTML = weekHtml;
+</script>
+</body>
+</html>

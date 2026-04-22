@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gelgit Takibi — DenizBul</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',accent:'#f59e0b',success:'#10b981',danger:'#ef4444'}}}}</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{font-family:'Inter',sans-serif}
+.wave-bar{transition:height .4s ease}
+</style>
+<script>function goBack(){var f=localStorage.getItem("marine_from");if(f)window.location.href=f;else if(document.referrer&&document.referrer.indexOf(location.hostname)>=0)history.back();else window.location.href="index.html";}</script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<!-- Header -->
+<div class="bg-gradient-to-r from-blue-700 to-blue-500 text-white">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a onclick="goBack()" style="cursor:pointer" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition"><i class="fas fa-arrow-left text-sm"></i></a>
+      <div>
+        <div class="font-bold text-lg leading-none">Gelgit Takibi</div>
+        <div class="text-blue-200 text-xs mt-0.5">Med-Cezir Verileri &bull; Türkiye Kıyıları</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="text-right">
+        <div class="text-xs text-blue-200">Son güncelleme</div>
+        <div class="text-sm font-semibold" id="update-time">—</div>
+      </div>
+      <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><i class="fas fa-water text-xl"></i></div>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 py-6">
+
+  <!-- Live Stats Row -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-blue-100 text-center">
+      <div class="text-3xl font-extrabold text-blue-600" id="tide-now">—</div>
+      <div class="text-xs text-gray-500 mt-1">Şu An (metre)</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-green-600" id="tide-high">—</div>
+      <div class="text-xs text-gray-500 mt-1">Yüksek Su</div>
+      <div class="text-[10px] text-gray-400" id="tide-high-time">—</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-red-500" id="tide-low">—</div>
+      <div class="text-xs text-gray-500 mt-1">Alçak Su</div>
+      <div class="text-[10px] text-gray-400" id="tide-low-time">—</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-amber-600" id="tide-trend">—</div>
+      <div class="text-xs text-gray-500 mt-1">Trend</div>
+      <div class="text-[10px] text-gray-400" id="tide-trend-sub">—</div>
+    </div>
+  </div>
+
+  <!-- Chart + Info -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="md:col-span-2 bg-white rounded-2xl p-5 shadow-sm border">
+      <h3 class="font-semibold text-sm mb-4"><i class="fas fa-chart-area text-blue-500 mr-1"></i>24 Saatlik Gelgit Grafiği — Antalya</h3>
+      <div class="flex items-end gap-1 h-32 px-2" id="tide-chart"></div>
+      <div class="flex justify-between text-[10px] text-gray-400 mt-1 px-2" id="tide-chart-labels"></div>
+    </div>
+    <div class="bg-white rounded-2xl p-5 shadow-sm border">
+      <h3 class="font-semibold text-sm mb-4"><i class="fas fa-info-circle text-blue-500 mr-1"></i>Gelgit Bilgisi</h3>
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Gelgit Tipi</span><span class="font-semibold">Yarı-Günlük</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Gelgit Aralığı</span><span class="font-semibold">~0.8 m</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Periyot</span><span class="font-semibold">12s 25d</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Referans Datum</span><span class="font-semibold">LAT</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">İstasyon</span><span class="font-semibold">Antalya</span></div>
+      </div>
+      <div class="mt-4 p-3 bg-blue-50 rounded-xl text-xs text-blue-700">
+        <i class="fas fa-fish mr-1"></i>Akıntı hızı yüksek — <strong>olta balıkçılığı için ideal.</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Port Table -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-map-marker-alt text-blue-500 mr-1"></i>Liman Gelgit Tablosu — Bugün</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-xs text-gray-400 uppercase tracking-wide border-b">
+          <th class="pb-3 pr-4">Liman</th><th class="pb-3 pr-4">Şu An</th><th class="pb-3 pr-4">Yüksek</th><th class="pb-3 pr-4">Saat</th><th class="pb-3 pr-4">Alçak</th><th class="pb-3 pr-4">Saat</th><th class="pb-3">Trend</th>
+        </tr></thead>
+        <tbody id="port-table" class="divide-y divide-gray-50"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Weekly Forecast -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-calendar-week text-blue-500 mr-1"></i>7 Günlük Gelgit Tahmini — Antalya</h3>
+    <div class="grid grid-cols-7 gap-2" id="weekly-tide"></div>
+  </div>
+
+</div>
+
+<script>
+const now = new Date();
+const T = 12.4167 * 3600000;
+const base = 0.35, A = 0.42;
+function tideAt(ms) {
+  const phase = (2 * Math.PI * ((ms / T) % 1));
+  return +(base + A * Math.cos(phase)).toFixed(2);
+}
+const nowMs = now.getTime();
+const curTide = tideAt(nowMs);
+const nextHourMs = nowMs + 3600000;
+const trend = tideAt(nextHourMs) > curTide;
+
+document.getElementById('update-time').textContent = now.toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'});
+document.getElementById('tide-now').textContent = curTide.toFixed(2) + ' m';
+document.getElementById('tide-trend').innerHTML = trend ? '<i class="fas fa-arrow-up"></i>' : '<i class="fas fa-arrow-down"></i>';
+document.getElementById('tide-trend').className = trend ? 'text-2xl font-bold text-green-600' : 'text-2xl font-bold text-red-500';
+document.getElementById('tide-trend-sub').textContent = trend ? 'Yükseliyor' : 'Alçalıyor';
+
+// Find today's high & low
+let maxT = -Infinity, minT = Infinity, maxTime, minTime;
+for (let h = 0; h < 24; h++) {
+  const t = tideAt(nowMs - (now.getHours() * 3600000) + h * 3600000);
+  if (t > maxT) { maxT = t; maxTime = h; }
+  if (t < minT) { minT = t; minTime = h; }
+}
+document.getElementById('tide-high').textContent = maxT.toFixed(2) + ' m';
+document.getElementById('tide-high-time').textContent = String(maxTime).padStart(2,'0') + ':00';
+document.getElementById('tide-low').textContent = minT.toFixed(2) + ' m';
+document.getElementById('tide-low-time').textContent = String(minTime).padStart(2,'0') + ':00';
+
+// Chart
+const todayStart = nowMs - (now.getHours() * 3600000 + now.getMinutes() * 60000);
+const vals = Array.from({length:24}, (_, h) => tideAt(todayStart + h * 3600000));
+const mx = Math.max(...vals), mn = Math.min(...vals);
+const chart = document.getElementById('tide-chart');
+const labels = document.getElementById('tide-chart-labels');
+chart.innerHTML = vals.map((v, h) => {
+  const pct = Math.round(((v - mn) / (mx - mn)) * 100);
+  const col = v >= maxT * 0.9 ? '#2563eb' : v <= minT * 1.1 ? '#ef4444' : '#60a5fa';
+  return `<div class="flex-1 flex flex-col items-center gap-0.5 relative group">
+    <div class="wave-bar w-full rounded-t-sm cursor-pointer" style="height:${pct}%;min-height:4px;background:${col}" title="${v.toFixed(2)}m"></div>
+  </div>`;
+}).join('');
+labels.innerHTML = Array.from({length:24}, (_, h) => `<span>${h % 4 === 0 ? String(h).padStart(2,'0')+'h' : ''}</span>`).join('');
+
+// Port table
+const ports = [
+  {name:'Antalya', offset:0},
+  {name:'Kemer', offset:0.02},
+  {name:'Fethiye', offset:-0.05},
+  {name:'Bodrum', offset:-0.08},
+  {name:'Marmaris', offset:-0.06},
+  {name:'İzmir', offset:0.04},
+  {name:'İstanbul (B.)', offset:0.12},
+  {name:'Çeşme', offset:0.03},
+];
+document.getElementById('port-table').innerHTML = ports.map(p => {
+  const ct = (curTide + p.offset).toFixed(2);
+  const ht = (maxT + p.offset).toFixed(2);
+  const lt = (minT + p.offset).toFixed(2);
+  const tr = parseFloat(ct) > parseFloat(lt) + 0.1;
+  return `<tr class="hover:bg-gray-50">
+    <td class="py-2.5 pr-4 font-medium">${p.name}</td>
+    <td class="py-2.5 pr-4 font-bold text-blue-600">${ct} m</td>
+    <td class="py-2.5 pr-4 text-green-600 font-semibold">${ht} m</td>
+    <td class="py-2.5 pr-4 text-gray-400 text-xs">${String(maxTime).padStart(2,'0')}:00</td>
+    <td class="py-2.5 pr-4 text-red-500 font-semibold">${lt} m</td>
+    <td class="py-2.5 pr-4 text-gray-400 text-xs">${String(minTime).padStart(2,'0')}:00</td>
+    <td class="py-2.5"><span class="text-xs font-semibold ${tr?'text-green-600':'text-red-500'}">${tr?'↑ Yükseliyor':'↓ Alçalıyor'}</span></td>
+  </tr>`;
+}).join('');
+
+// Weekly forecast
+const days = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+const today = now.getDay();
+document.getElementById('weekly-tide').innerHTML = Array.from({length:7}, (_, i) => {
+  const d = (today + i) % 7;
+  const dayMs = todayStart + i * 86400000;
+  const dayVals = Array.from({length:24}, (_, h) => tideAt(dayMs + h * 3600000));
+  const dMax = Math.max(...dayVals).toFixed(2);
+  const dMin = Math.min(...dayVals).toFixed(2);
+  return `<div class="bg-gray-50 rounded-xl p-3 text-center border ${i===0?'border-blue-300 bg-blue-50':'border-gray-100'}">
+    <div class="text-[10px] font-semibold text-gray-500 mb-1">${days[d]}</div>
+    <div class="text-sm font-bold text-green-600">${dMax}m</div>
+    <div class="text-xs text-red-500">${dMin}m</div>
+    <div class="text-[9px] text-gray-400 mt-1">maks/min</div>
+  </div>`;
+}).join('');
+</script>
+</body>
+</html>

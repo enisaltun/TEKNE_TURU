@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Derinlik Haritası — DenizBul</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',accent:'#f59e0b',success:'#10b981'}}}}</script>
+<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');*{font-family:'Inter',sans-serif}</style>
+<script>function goBack(){var f=localStorage.getItem("marine_from");if(f)window.location.href=f;else if(document.referrer&&document.referrer.indexOf(location.hostname)>=0)history.back();else window.location.href="index.html";}</script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div class="bg-gradient-to-r from-indigo-700 to-indigo-500 text-white">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a onclick="goBack()" style="cursor:pointer" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition"><i class="fas fa-arrow-left text-sm"></i></a>
+      <div><div class="font-bold text-lg">Derinlik Haritası</div><div class="text-indigo-200 text-xs">Batimetri &bull; Seyir Ölçekleri &bull; Kritik Bölgeler</div></div>
+    </div>
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><i class="fas fa-map text-xl"></i></div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 py-6">
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-3xl font-extrabold text-indigo-600">2,540m</div>
+      <div class="text-xs text-gray-500 mt-1">Maks. Derinlik (TR)</div>
+      <div class="text-[10px] text-gray-400">Akdeniz Derin Çukuru</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-blue-500">45m</div>
+      <div class="text-xs text-gray-500 mt-1">Ort. Kıyı Derinliği</div>
+      <div class="text-[10px] text-gray-400">0–5 km açık</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-green-600">8m</div>
+      <div class="text-xs text-gray-500 mt-1">Min. Seyir Derinliği</div>
+      <div class="text-[10px] text-gray-400">Motor yat önerisi</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-amber-600">24</div>
+      <div class="text-xs text-gray-500 mt-1">İzlenen Bölge</div>
+      <div class="text-[10px] text-gray-400">Kritik sığlık noktası</div>
+    </div>
+  </div>
+
+  <!-- SVG Depth Map -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-map text-indigo-600 mr-1"></i>Türkiye Kıyıları — Batimetri Haritası (Şematik)</h3>
+    <svg viewBox="0 0 700 280" class="w-full rounded-xl" style="background:linear-gradient(180deg,#bfdbfe 0%,#3b82f6 40%,#1d4ed8 70%,#1e3a8a 100%)">
+      <!-- Depth zones -->
+      <rect x="0" y="0" width="700" height="40" fill="#bfdbfe" opacity="0.6"/>
+      <rect x="0" y="40" width="700" height="60" fill="#60a5fa" opacity="0.5"/>
+      <rect x="0" y="100" width="700" height="80" fill="#3b82f6" opacity="0.5"/>
+      <rect x="0" y="180" width="700" height="100" fill="#1d4ed8" opacity="0.6"/>
+      <!-- Coastline (rough) -->
+      <path d="M0,30 Q50,20 100,35 Q150,15 200,28 Q250,10 300,25 Q350,18 400,32 Q450,12 500,28 Q550,20 600,35 Q650,18 700,30 L700,0 L0,0 Z" fill="#e0f2fe"/>
+      <!-- Depth labels -->
+      <text x="350" y="65" fill="white" font-size="11" text-anchor="middle" font-family="Inter" font-weight="600">0 – 50m (Kıyı kuşağı)</text>
+      <text x="350" y="135" fill="white" font-size="11" text-anchor="middle" font-family="Inter" font-weight="600">50 – 200m (Kıta sahanlığı)</text>
+      <text x="350" y="220" fill="#bfdbfe" font-size="11" text-anchor="middle" font-family="Inter" font-weight="600">200 – 2500m (Derin deniz)</text>
+      <!-- Critical shallow markers -->
+      <circle cx="150" cy="38" r="8" fill="#ef4444" opacity="0.9"/>
+      <text x="150" y="22" fill="#dc2626" font-size="9" text-anchor="middle" font-family="Inter" font-weight="700">⚠ Sığ</text>
+      <circle cx="420" cy="42" r="8" fill="#ef4444" opacity="0.9"/>
+      <text x="420" y="26" fill="#dc2626" font-size="9" text-anchor="middle" font-family="Inter" font-weight="700">⚠ Sığ</text>
+      <circle cx="600" cy="36" r="8" fill="#f59e0b" opacity="0.9"/>
+      <text x="600" y="20" fill="#d97706" font-size="9" text-anchor="middle" font-family="Inter" font-weight="700">⚠ Dikkat</text>
+      <!-- City labels -->
+      <text x="100" y="14" fill="#0c4a6e" font-size="10" text-anchor="middle" font-family="Inter" font-weight="700">Antalya</text>
+      <text x="300" y="12" fill="#0c4a6e" font-size="10" text-anchor="middle" font-family="Inter" font-weight="700">Fethiye</text>
+      <text x="500" y="14" fill="#0c4a6e" font-size="10" text-anchor="middle" font-family="Inter" font-weight="700">İzmir</text>
+      <text x="660" y="12" fill="#0c4a6e" font-size="10" text-anchor="middle" font-family="Inter" font-weight="700">İstanbul</text>
+      <!-- Legend -->
+      <rect x="10" y="250" width="12" height="12" fill="#bfdbfe"/>
+      <text x="26" y="261" fill="white" font-size="9" font-family="Inter">0–50m</text>
+      <rect x="80" y="250" width="12" height="12" fill="#60a5fa"/>
+      <text x="96" y="261" fill="white" font-size="9" font-family="Inter">50–200m</text>
+      <rect x="160" y="250" width="12" height="12" fill="#1d4ed8"/>
+      <text x="176" y="261" fill="white" font-size="9" font-family="Inter">200m+</text>
+      <circle cx="260" cy="256" r="6" fill="#ef4444"/>
+      <text x="270" y="261" fill="white" font-size="9" font-family="Inter">Kritik sığlık</text>
+    </svg>
+  </div>
+
+  <!-- Depth Reference Table -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-table text-indigo-600 mr-1"></i>Derinlik Referans Noktaları</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-xs text-gray-400 uppercase tracking-wide border-b">
+          <th class="pb-3 pr-4">Bölge</th><th class="pb-3 pr-4">Derinlik Aralığı</th><th class="pb-3 pr-4">Önerilen Tekne</th><th class="pb-3 pr-4">Not</th><th class="pb-3">Durum</th>
+        </tr></thead>
+        <tbody class="divide-y divide-gray-50">
+          <tr class="hover:bg-gray-50"><td class="py-2.5 pr-4 font-medium">Antalya Marina</td><td class="py-2.5 pr-4">3–8m</td><td class="py-2.5 pr-4">≤12m tekne</td><td class="py-2.5 pr-4 text-xs text-gray-500">Giriş kanalı dikkat</td><td class="py-2.5"><span class="text-green-600 text-xs font-semibold">✓ Normal</span></td></tr>
+          <tr class="hover:bg-gray-50"><td class="py-2.5 pr-4 font-medium">Kemer Körfezi</td><td class="py-2.5 pr-4">15–80m</td><td class="py-2.5 pr-4">Tüm tekneler</td><td class="py-2.5 pr-4 text-xs text-gray-500">Berrak su, kayalık kıyı</td><td class="py-2.5"><span class="text-green-600 text-xs font-semibold">✓ Normal</span></td></tr>
+          <tr class="hover:bg-gray-50"><td class="py-2.5 pr-4 font-medium">Fethiye Körfezi</td><td class="py-2.5 pr-4">5–120m</td><td class="py-2.5 pr-4">Tüm tekneler</td><td class="py-2.5 pr-4 text-xs text-gray-500">12 Ada güzergahı</td><td class="py-2.5"><span class="text-green-600 text-xs font-semibold">✓ Normal</span></td></tr>
+          <tr class="hover:bg-gray-50"><td class="py-2.5 pr-4 font-medium">Bodrum Boğazı</td><td class="py-2.5 pr-4">4–25m</td><td class="py-2.5 pr-4">≤15m tekne</td><td class="py-2.5 pr-4 text-xs text-gray-500">Akıntı kuvvetli olabilir</td><td class="py-2.5"><span class="text-amber-600 text-xs font-semibold">⚠ Dikkat</span></td></tr>
+          <tr class="hover:bg-gray-50"><td class="py-2.5 pr-4 font-medium">Kaş–Kekova</td><td class="py-2.5 pr-4">2–15m</td><td class="py-2.5 pr-4">≤10m / düz dip</td><td class="py-2.5 pr-4 text-xs text-gray-500">Batık kent bölgesi</td><td class="py-2.5"><span class="text-amber-600 text-xs font-semibold">⚠ Dikkat</span></td></tr>
+          <tr class="hover:bg-gray-50"><td class="py-2.5 pr-4 font-medium">Çeşme Körfezi</td><td class="py-2.5 pr-4">8–60m</td><td class="py-2.5 pr-4">Tüm tekneler</td><td class="py-2.5 pr-4 text-xs text-gray-500">Poyraz etkisi kuvvetli</td><td class="py-2.5"><span class="text-green-600 text-xs font-semibold">✓ Normal</span></td></tr>
+          <tr class="hover:bg-gray-50"><td class="py-2.5 pr-4 font-medium">Boğaziçi</td><td class="py-2.5 pr-4">25–120m</td><td class="py-2.5 pr-4">Lisanslı kılavuz</td><td class="py-2.5 pr-4 text-xs text-gray-500">Akıntı 4-8 knot</td><td class="py-2.5"><span class="text-red-600 text-xs font-semibold">⚠ Özel İzin</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tip Box -->
+  <div class="bg-indigo-50 rounded-2xl p-5 border border-indigo-100">
+    <h3 class="font-semibold text-sm text-indigo-800 mb-2"><i class="fas fa-lightbulb mr-1"></i>Seyir Güvenliği İpuçları</h3>
+    <ul class="text-xs text-indigo-700 space-y-1.5">
+      <li><i class="fas fa-check-circle mr-1"></i>Tekne draftı + 2m güvenlik payı bırakın (örn. 1.5m draft → 3.5m+ derinlik gerekli)</li>
+      <li><i class="fas fa-check-circle mr-1"></i>Kayalık bölgelerde ekoscandır veya ECHOSOUNDER kullanın</li>
+      <li><i class="fas fa-check-circle mr-1"></i>Deniz haritası güncel mi? Her yıl güncellenen Türk deniz haritalarını kullanın (SHOD)</li>
+      <li><i class="fas fa-check-circle mr-1"></i>Batık/kayalık işaretlerine (kırmızı boya) yaklaşmayın</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

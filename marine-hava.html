@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hava Durumu — DenizBul</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',accent:'#f59e0b',success:'#10b981'}}}}</script>
+<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');*{font-family:'Inter',sans-serif}
+.spin{animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+<script>function goBack(){var f=localStorage.getItem("marine_from");if(f)window.location.href=f;else if(document.referrer&&document.referrer.indexOf(location.hostname)>=0)history.back();else window.location.href="index.html";}</script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div class="bg-gradient-to-r from-amber-500 to-orange-400 text-white">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a onclick="goBack()" style="cursor:pointer" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition"><i class="fas fa-arrow-left text-sm"></i></a>
+      <div>
+        <div class="font-bold text-lg">Hava Durumu</div>
+        <div class="text-amber-100 text-xs" id="update-info">Yükleniyor...</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="refreshWeather(true)" id="refresh-btn" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition" title="Şimdi Güncelle">
+        <i class="fas fa-sync-alt text-sm" id="refresh-icon"></i>
+      </button>
+      <button onclick="toggleApiKeyPanel()" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition" title="API Ayarları">
+        <i class="fas fa-key text-sm"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- API Key Panel -->
+<div id="api-key-panel" style="display:none" class="bg-amber-50 border-b border-amber-200">
+  <div class="max-w-5xl mx-auto px-6 py-4">
+    <div class="flex items-start gap-3">
+      <i class="fas fa-key text-amber-500 mt-1 flex-shrink-0"></i>
+      <div class="flex-1">
+        <div class="font-semibold text-amber-800 text-sm mb-1">OpenWeatherMap API Anahtarı</div>
+        <p class="text-xs text-amber-700 mb-3">
+          Gerçek zamanlı hava verisi için ücretsiz API anahtarı gerekir.
+          <a href="https://openweathermap.org/api" target="_blank" class="underline font-semibold">openweathermap.org</a>'dan ücretsiz kayıt olun.
+          Veriler günde 3 kez güncellenir (sabah, öğlen, akşam) ve tarayıcıda önbelleğe alınır.
+        </p>
+        <div class="flex gap-2">
+          <input type="text" id="api-key-input" placeholder="API anahtarınızı yapıştırın..." class="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm bg-white">
+          <button onclick="saveApiKey()" class="bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-600 transition">Kaydet</button>
+          <button onclick="clearApiKey()" class="border border-amber-300 text-amber-700 px-3 py-2 rounded-lg text-sm hover:bg-amber-100 transition">Sil</button>
+        </div>
+        <div class="text-[10px] text-amber-600 mt-1.5" id="api-key-status"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 py-6">
+
+  <!-- Key Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-4 shadow-sm border border-amber-200 text-center">
+      <div class="text-3xl font-extrabold text-amber-500" id="stat-temp">—</div>
+      <div class="text-xs text-gray-500 mt-1">Hava Sıcaklığı</div>
+      <div class="text-[10px] text-gray-400" id="stat-city">Yükleniyor</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-blue-500" id="stat-sea">—</div>
+      <div class="text-xs text-gray-500 mt-1">Deniz Suyu</div>
+      <div class="text-[10px] text-gray-400">Yüzey Sıcaklığı</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-teal-600" id="stat-hum">—</div>
+      <div class="text-xs text-gray-500 mt-1">Nem</div>
+      <div class="text-[10px] text-gray-400">Bağıl Nem</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-purple-600" id="stat-wind">—</div>
+      <div class="text-xs text-gray-500 mt-1">Rüzgar</div>
+      <div class="text-[10px] text-gray-400" id="stat-wind-dir">—</div>
+    </div>
+  </div>
+
+  <!-- 5-Day Forecast -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-semibold text-sm"><i class="fas fa-calendar-week text-amber-500 mr-1"></i>5 Günlük Tahmin — <span id="forecast-city">Antalya</span></h3>
+      <div class="flex gap-1">
+        <button onclick="setForecastCity('Antalya,TR')" class="px-2 py-1 rounded text-xs border hover:bg-gray-50" id="fc-btn-Antalya">Antalya</button>
+        <button onclick="setForecastCity('Bodrum,TR')" class="px-2 py-1 rounded text-xs border hover:bg-gray-50" id="fc-btn-Bodrum">Bodrum</button>
+        <button onclick="setForecastCity('Fethiye,TR')" class="px-2 py-1 rounded text-xs border hover:bg-gray-50" id="fc-btn-Fethiye">Fethiye</button>
+        <button onclick="setForecastCity('Istanbul,TR')" class="px-2 py-1 rounded text-xs border hover:bg-gray-50" id="fc-btn-Istanbul">İstanbul</button>
+      </div>
+    </div>
+    <div class="grid grid-cols-5 gap-3" id="forecast-cards">
+      <div class="col-span-5 text-center text-gray-400 py-4 text-xs">Yükleniyor...</div>
+    </div>
+  </div>
+
+  <!-- City Table -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-semibold text-sm"><i class="fas fa-map-marked-alt text-amber-500 mr-1"></i>Sahil Şehirleri Hava Durumu</h3>
+      <span class="text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded-full" id="data-source-badge">Simüle Veri</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-xs text-gray-400 uppercase tracking-wide border-b">
+          <th class="pb-3 pr-4">Şehir</th><th class="pb-3 pr-4">Durum</th><th class="pb-3 pr-4">Hava°C</th><th class="pb-3 pr-4">Deniz°C</th><th class="pb-3 pr-4">Nem%</th><th class="pb-3 pr-4">Rüzgar</th><th class="pb-3 pr-4">Dalga</th><th class="pb-3">UV</th>
+        </tr></thead>
+        <tbody id="city-table" class="divide-y divide-gray-50"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Marine Alert -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border">
+    <h3 class="font-semibold text-sm mb-3"><i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>Denizcilik Uyarıları</h3>
+    <div class="space-y-2" id="alerts"></div>
+  </div>
+
+</div>
+
+<script>
+// ── CONFIG ──
+const WEATHER_CITIES=[
+  {name:'Antalya',q:'Antalya,TR',lat:36.88,lon:30.70,seaTemp:20},
+  {name:'Kemer',q:'Kemer,TR',lat:36.60,lon:30.55,seaTemp:19},
+  {name:'Fethiye',q:'Fethiye,TR',lat:36.65,lon:29.12,seaTemp:19},
+  {name:'Bodrum',q:'Bodrum,TR',lat:37.03,lon:27.43,seaTemp:18},
+  {name:'Marmaris',q:'Marmaris,TR',lat:36.86,lon:28.27,seaTemp:19},
+  {name:'İzmir',q:'Izmir,TR',lat:38.42,lon:27.14,seaTemp:17},
+  {name:'Çeşme',q:'Cesme,TR',lat:38.32,lon:26.30,seaTemp:16},
+  {name:'İstanbul',q:'Istanbul,TR',lat:41.01,lon:28.95,seaTemp:13},
+];
+let activeForecastCity='Antalya,TR';
+
+// ── SESSION LOGIC (3x per day) ──
+function getSession(date){
+  const h=date.getHours();
+  if(h>=4&&h<12)return'morning';
+  if(h>=12&&h<18)return'noon';
+  return'evening';
+}
+function getCacheKey(){
+  const d=new Date();
+  return`weather_cache_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}_${getSession(d)}`;
+}
+function loadCache(){
+  try{const v=localStorage.getItem(getCacheKey());return v?JSON.parse(v):null;}catch{return null;}
+}
+function saveCache(data){
+  // Remove old cache keys to save space
+  Object.keys(localStorage).filter(k=>k.startsWith('weather_cache_')&&k!==getCacheKey()).forEach(k=>localStorage.removeItem(k));
+  localStorage.setItem(getCacheKey(),JSON.stringify({data,ts:Date.now()}));
+}
+
+// ── API KEY ──
+function getApiKey(){return localStorage.getItem('ow_api_key')||'';}
+function saveApiKey(){
+  const k=document.getElementById('api-key-input').value.trim();
+  if(!k){alert('Lütfen geçerli bir API anahtarı girin.');return;}
+  localStorage.setItem('ow_api_key',k);
+  document.getElementById('api-key-status').textContent='✓ API anahtarı kaydedildi. Yenileniyor...';
+  document.getElementById('api-key-panel').style.display='none';
+  refreshWeather(true);
+}
+function clearApiKey(){
+  localStorage.removeItem('ow_api_key');
+  Object.keys(localStorage).filter(k=>k.startsWith('weather_cache_')).forEach(k=>localStorage.removeItem(k));
+  document.getElementById('api-key-status').textContent='API anahtarı silindi. Simüle veri kullanılıyor.';
+  loadAndRender();
+}
+function toggleApiKeyPanel(){
+  const p=document.getElementById('api-key-panel');
+  p.style.display=p.style.display==='none'?'':'none';
+  const key=getApiKey();
+  document.getElementById('api-key-input').value=key;
+  document.getElementById('api-key-status').textContent=key?'✓ API anahtarı kayıtlı':'Henüz API anahtarı girilmedi — simüle veri kullanılıyor';
+}
+
+// ── DIRECTION ──
+const windDirs=['K','KKD','KD','DKD','D','DGD','GD','GGD','G','GGB','GB','BGD','B','BKB','KB','KKB'];
+function degToDir(d){return windDirs[Math.round(d/22.5)%16];}
+function msToKmh(ms){return Math.round(ms*3.6);}
+function owIconToEmoji(icon){
+  const map={'01d':'☀️','01n':'🌙','02d':'🌤','02n':'🌤','03d':'⛅','03n':'⛅','04d':'☁️','04n':'☁️','09d':'🌧','09n':'🌧','10d':'🌦','10n':'🌦','11d':'⛈','11n':'⛈','13d':'❄️','13n':'❄️','50d':'🌫','50n':'🌫'};
+  return map[icon]||'🌡';
+}
+
+// ── STATIC FALLBACK DATA ──
+const STATIC_CITIES=[
+  {name:'Antalya',icon:'☀️',temp:24,sea:20,hum:62,wind:'18 km/s GB',dalga:'0.5m',uv:7,durum:'Güneşli'},
+  {name:'Kemer',icon:'🌤',temp:23,sea:19,hum:65,wind:'14 km/s B',dalga:'0.4m',uv:7,durum:'Az Bulutlu'},
+  {name:'Fethiye',icon:'⛅',temp:22,sea:19,hum:70,wind:'22 km/s GD',dalga:'0.8m',uv:6,durum:'Parçalı'},
+  {name:'Bodrum',icon:'🌬️',temp:21,sea:18,hum:72,wind:'28 km/s K',dalga:'1.2m',uv:6,durum:'Rüzgarlı'},
+  {name:'Marmaris',icon:'⛅',temp:22,sea:19,hum:68,wind:'19 km/s KB',dalga:'0.7m',uv:6,durum:'Parçalı'},
+  {name:'İzmir',icon:'☀️',temp:23,sea:17,hum:60,wind:'16 km/s B',dalga:'0.5m',uv:7,durum:'Güneşli'},
+  {name:'Çeşme',icon:'🌬️',temp:20,sea:16,hum:65,wind:'35 km/s B',dalga:'1.8m',uv:6,durum:'Kuvvetli Rüzgarlı'},
+  {name:'İstanbul',icon:'🌤',temp:17,sea:13,hum:75,wind:'24 km/s KD',dalga:'0.9m',uv:4,durum:'Az Bulutlu'},
+];
+const STATIC_FORECAST=[
+  {day:'Bugün',icon:'☀️',high:24,low:16,desc:'Açık'},
+  {day:'Yarın',icon:'⛅',high:22,low:15,desc:'Parçalı Bulutlu'},
+  {day:'Çrş',icon:'🌤',high:19,low:13,desc:'Hafif Rüzgarlı'},
+  {day:'Prş',icon:'☀️',high:21,low:14,desc:'Güneşli'},
+  {day:'Cum',icon:'🌥',high:25,low:17,desc:'Değişken Bulutlu'},
+];
+
+// ── RENDER ──
+function renderTable(cities){
+  document.getElementById('city-table').innerHTML=cities.map(c=>`
+    <tr class="hover:bg-gray-50">
+      <td class="py-2.5 pr-4"><span class="mr-1">${c.icon}</span><span class="font-medium">${c.name}</span></td>
+      <td class="py-2.5 pr-4 text-xs text-gray-600">${c.durum}</td>
+      <td class="py-2.5 pr-4 font-bold text-amber-600">${c.temp}°</td>
+      <td class="py-2.5 pr-4 font-semibold text-blue-500">${c.sea}°</td>
+      <td class="py-2.5 pr-4">${c.hum}%</td>
+      <td class="py-2.5 pr-4 text-xs">${c.wind}</td>
+      <td class="py-2.5 pr-4 text-xs">${c.dalga||'—'}</td>
+      <td class="py-2.5"><span class="font-bold ${c.uv>=7?'text-red-600':c.uv>=5?'text-amber-600':'text-green-600'}">${c.uv||'—'}</span></td>
+    </tr>`).join('');
+}
+
+function renderForecast(items,cityName){
+  document.getElementById('forecast-city').textContent=cityName;
+  document.getElementById('forecast-cards').innerHTML=items.map((d,i)=>`
+    <div class="text-center p-3 rounded-xl ${i===0?'bg-amber-50 border border-amber-200':'bg-gray-50'}">
+      <div class="text-xs font-semibold text-gray-500 mb-1">${d.day}</div>
+      <div class="text-3xl mb-1">${d.icon}</div>
+      <div class="text-sm font-bold">${d.high}°</div>
+      <div class="text-xs text-gray-400">${d.low}°</div>
+      <div class="text-[10px] text-gray-500 mt-1">${d.desc}</div>
+    </div>`).join('');
+}
+
+function renderStats(city){
+  document.getElementById('stat-temp').textContent=city.temp+'°C';
+  document.getElementById('stat-city').textContent=city.name;
+  document.getElementById('stat-sea').textContent=city.sea+'°C';
+  document.getElementById('stat-hum').textContent=city.hum+'%';
+  const parts=city.wind.split(' ');
+  document.getElementById('stat-wind').textContent=parts.slice(0,2).join(' ');
+  document.getElementById('stat-wind-dir').textContent=parts.slice(2).join(' ')||'—';
+}
+
+function renderAlerts(cities){
+  const alerts=[];
+  cities.forEach(c=>{
+    const windSpd=parseInt(c.wind)||0;
+    if(windSpd>=30)alerts.push({level:'warning',icon:'🌬️',text:`${c.name}: Kuvvetli rüzgar uyarısı (${c.wind}). Küçük tekne seferleri önerilmez.`});
+    else if(windSpd>=20)alerts.push({level:'info',icon:'💨',text:`${c.name}: ${c.wind} rüzgar. Yelkenli seyri için uygun, motor yatlar dikkat.`});
+  });
+  if(!alerts.length)alerts.push({level:'success',icon:'☀️',text:'Tüm izlenen bölgelerde seyir koşulları normal. Herhangi bir denizcilik uyarısı bulunmuyor.'});
+  const alertColors={warning:'bg-amber-50 border-amber-200 text-amber-800',info:'bg-blue-50 border-blue-200 text-blue-800',success:'bg-green-50 border-green-200 text-green-800'};
+  document.getElementById('alerts').innerHTML=alerts.map(a=>`
+    <div class="flex items-start gap-2 p-3 rounded-xl border ${alertColors[a.level]}">
+      <span class="text-lg flex-shrink-0">${a.icon}</span>
+      <p class="text-xs leading-relaxed">${a.text}</p>
+    </div>`).join('');
+}
+
+function setUpdateInfo(fromApi,ts){
+  const time=ts?new Date(ts).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'—';
+  const session={morning:'sabah',noon:'öğlen',evening:'akşam'}[getSession(new Date())];
+  document.getElementById('update-info').textContent=fromApi?`OpenWeather · Son güncelleme: ${time} (${session} oturumu)`:`Simüle veri · ${time} · API anahtarı giriniz`;
+  document.getElementById('data-source-badge').textContent=fromApi?'OpenWeather API':'Simüle Veri';
+  document.getElementById('data-source-badge').className=fromApi?'text-[10px] text-green-700 bg-green-100 px-2 py-1 rounded-full':'text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded-full';
+}
+
+function renderStatic(){
+  renderTable(STATIC_CITIES);
+  renderStats(STATIC_CITIES[0]);
+  renderForecast(STATIC_FORECAST,'Antalya');
+  renderAlerts(STATIC_CITIES);
+  setUpdateInfo(false,Date.now());
+}
+
+// ── OPENWEATHER FETCH ──
+async function fetchCityWeather(city,apiKey){
+  const url=`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city.q)}&appid=${apiKey}&units=metric&lang=tr`;
+  const r=await fetch(url);
+  if(!r.ok)throw new Error(`HTTP ${r.status} for ${city.name}`);
+  const d=await r.json();
+  return{
+    name:city.name,
+    icon:owIconToEmoji(d.weather[0]?.icon),
+    temp:Math.round(d.main.temp),
+    sea:city.seaTemp,
+    hum:d.main.humidity,
+    wind:`${msToKmh(d.wind.speed)} km/s ${degToDir(d.wind.deg||0)}`,
+    dalga:'—',
+    uv:'—',
+    durum:d.weather[0]?.description||'—',
+  };
+}
+
+async function fetchForecast(cityQ,apiKey){
+  const url=`https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(cityQ)}&appid=${apiKey}&units=metric&lang=tr&cnt=40`;
+  const r=await fetch(url);
+  if(!r.ok)throw new Error(`Forecast HTTP ${r.status}`);
+  const d=await r.json();
+  // Group by day, take noon slot or first available
+  const days={};
+  d.list.forEach(item=>{
+    const date=item.dt_txt.split(' ')[0];
+    if(!days[date]||item.dt_txt.includes('12:00'))days[date]=item;
+  });
+  const today=new Date();
+  const dayNames=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+  return Object.entries(days).slice(0,5).map(([dateStr,item],i)=>{
+    const d2=new Date(dateStr);
+    const label=i===0?'Bugün':i===1?'Yarın':dayNames[d2.getDay()]+' '+d2.getDate();
+    return{
+      day:label,
+      icon:owIconToEmoji(item.weather[0]?.icon),
+      high:Math.round(item.main.temp_max),
+      low:Math.round(item.main.temp_min),
+      desc:item.weather[0]?.description||'',
+    };
+  });
+}
+
+let activeForecastCityQ='Antalya,TR';
+
+async function setForecastCity(cityQ){
+  activeForecastCityQ=cityQ;
+  const cityName=WEATHER_CITIES.find(c=>c.q===cityQ)?.name||cityQ;
+  const apiKey=getApiKey();
+  if(!apiKey){renderForecast(STATIC_FORECAST,cityName);return;}
+  document.getElementById('forecast-cards').innerHTML='<div class="col-span-5 text-center text-gray-400 py-4 text-xs"><i class="fas fa-spinner spin mr-1"></i>Yükleniyor...</div>';
+  try{
+    const fc=await fetchForecast(cityQ,apiKey);
+    renderForecast(fc,cityName);
+  }catch{renderForecast(STATIC_FORECAST,cityName);}
+}
+
+async function fetchAllCities(apiKey){
+  const results=await Promise.allSettled(WEATHER_CITIES.map(c=>fetchCityWeather(c,apiKey)));
+  return results.map((r,i)=>r.status==='fulfilled'?r.value:STATIC_CITIES[i]);
+}
+
+async function refreshWeather(force=false){
+  const apiKey=getApiKey();
+  const icon=document.getElementById('refresh-icon');
+  icon.classList.add('spin');
+  document.getElementById('refresh-btn').disabled=true;
+
+  try{
+    if(!apiKey){renderStatic();return;}
+
+    // Check cache (unless force refresh)
+    if(!force){
+      const cached=loadCache();
+      if(cached){
+        renderTable(cached.data.cities);
+        renderStats(cached.data.cities[0]);
+        renderAlerts(cached.data.cities);
+        setUpdateInfo(true,cached.ts);
+        renderForecast(cached.data.forecast||STATIC_FORECAST,WEATHER_CITIES.find(c=>c.q===activeForecastCityQ)?.name||'Antalya');
+        return;
+      }
+    }
+
+    // Fetch live data
+    const [cities,forecast]=await Promise.all([
+      fetchAllCities(apiKey),
+      fetchForecast(activeForecastCityQ,apiKey).catch(()=>STATIC_FORECAST),
+    ]);
+    saveCache({cities,forecast});
+    renderTable(cities);
+    renderStats(cities[0]);
+    renderAlerts(cities);
+    renderForecast(forecast,WEATHER_CITIES.find(c=>c.q===activeForecastCityQ)?.name||'Antalya');
+    setUpdateInfo(true,Date.now());
+
+  }catch(err){
+    console.error('Weather fetch error:',err);
+    renderStatic();
+    document.getElementById('update-info').textContent='Hata: API anahtarını kontrol edin — simüle veri gösteriliyor';
+  }finally{
+    icon.classList.remove('spin');
+    document.getElementById('refresh-btn').disabled=false;
+  }
+}
+
+function loadAndRender(){
+  const apiKey=getApiKey();
+  if(!apiKey){renderStatic();return;}
+  const cached=loadCache();
+  if(cached){
+    renderTable(cached.data.cities);
+    renderStats(cached.data.cities[0]);
+    renderAlerts(cached.data.cities);
+    renderForecast(cached.data.forecast||STATIC_FORECAST,WEATHER_CITIES.find(c=>c.q===activeForecastCityQ)?.name||'Antalya');
+    setUpdateInfo(true,cached.ts);
+  } else {
+    refreshWeather(false);
+  }
+}
+
+// Init
+loadAndRender();
+</script>
+</body>
+</html>

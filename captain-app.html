@@ -481,10 +481,14 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
         </div>
         <div>
           <label class="text-xs font-medium text-gray-500 mb-2 block">Sezon</label>
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
             <div class="pill selected" onclick="selectSingle(this)">Tum Yil</div>
             <div class="pill" onclick="selectSingle(this)">Yaz (Haz-Eyl)</div>
             <div class="pill" onclick="selectSingle(this)">Kis (Eki-May)</div>
+            <div class="pill" onclick="selectSingle(this)">Tek Seferlik</div>
+          </div>
+          <div id="tek-seferlik-tarih" style="display:none" class="mt-2">
+            <input type="date" id="tek-seferlik-date" class="w-full border rounded-xl px-3 py-2.5 text-sm" style="color:#0369a1;font-weight:600">
           </div>
         </div>
       </div>
@@ -492,18 +496,65 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
 
     <!-- Step 4: Includes -->
     <div class="wizard-step fade-in" id="wizard-4" style="display:none">
-      <h2 class="font-semibold mb-4">Tura Dahil Olanlar</h2>
-      <div class="space-y-2">
-        <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded" checked><span class="text-sm">Balik avi ekipmanlari</span></label>
-        <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded" checked><span class="text-sm">Yem ve olta</span></label>
-        <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded" checked><span class="text-sm">Can yelekleri</span></label>
-        <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded" checked><span class="text-sm">Cay / Kahve ikrami</span></label>
-        <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Ogle yemegi</span></label>
-        <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Snorkel seti</span></label>
-        <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded" checked><span class="text-sm">Fotografci</span></label>
-        <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Muzik sistemi</span></label>
+      <h2 class="font-semibold mb-1">Tura Dahil Olanlar</h2>
+      <p class="text-xs text-gray-400 mb-4">Musteri ilaninda goruntulenir</p>
+
+      <!-- Balik Avi Ekipmanlari -->
+      <div class="mb-3">
+        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Balikcilik Ekipmanlari</div>
+        <div class="space-y-2">
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Kiralık olta</span><span class="text-[10px] text-gray-400 ml-auto">Dahil</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Olta takimi (kanca+misina+kurşun)</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Çapari seti</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Yem (canlı / yapay)</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Kurşun ve aparat seti</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Kanca çeşitleri</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Misina (çeşitli kalınlık)</span></label>
+        </div>
       </div>
-      <button class="w-full border-2 border-dashed rounded-xl py-3.5 text-sm text-gray-500 mt-3"><i class="fas fa-plus mr-1"></i> Ozel Icerik Ekle</button>
+
+      <!-- Guvenlik & Konfor -->
+      <div class="mb-3">
+        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Güvenlik & Konfor</div>
+        <div class="space-y-2">
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded" checked><span class="text-sm">Can yelekleri</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Ilk yardım çantası</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Güneş koruyucu</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Snorkel seti</span></label>
+        </div>
+      </div>
+
+      <!-- Ikram & Yemek -->
+      <div class="mb-3">
+        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">İkram & Yemek</div>
+        <div class="space-y-2">
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded" checked><span class="text-sm">Çay / Kahve ikramı</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Su ve meşrubat</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Sandviç / atıştırmalık</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Öğle yemeği</span></label>
+        </div>
+      </div>
+
+      <!-- Eglence -->
+      <div class="mb-4">
+        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Eğlence & Diğer</div>
+        <div class="space-y-2">
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Müzik sistemi</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Fotoğrafçı</span></label>
+          <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox" class="accent-primary w-5 h-5 rounded"><span class="text-sm">Ücretsiz Wi-Fi</span></label>
+        </div>
+      </div>
+
+      <!-- Ozel Icerik Ekle -->
+      <div id="custom-includes-list" class="space-y-2 mb-3"></div>
+      <button onclick="showCustomIncludeInput()" class="w-full border-2 border-dashed border-primary/30 rounded-xl py-3 text-sm text-primary font-medium" id="add-custom-btn">
+        <i class="fas fa-plus mr-1"></i> Özel İçerik Ekle
+      </button>
+      <div id="custom-include-input-wrap" style="display:none" class="mt-2 flex gap-2">
+        <input type="text" id="custom-include-input" placeholder="Örn: Balık temizleme servisi..." class="flex-1 border rounded-xl px-3 py-2.5 text-sm" onkeydown="if(event.key==='Enter')addCustomInclude()">
+        <button onclick="addCustomInclude()" class="bg-primary text-white px-4 rounded-xl text-sm font-semibold">Ekle</button>
+        <button onclick="document.getElementById('custom-include-input-wrap').style.display='none'" class="text-gray-400 px-2 text-xl">&times;</button>
+      </div>
     </div>
 
     <!-- Step 5: Preview -->
@@ -1129,6 +1180,55 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
   </div>
 </section>
 
+<!-- ================================================================ PAGE: ARAÇLAR (KAPTAN) -->
+<section id="page-tools" class="page">
+  <div class="px-4 pt-2 pb-24">
+    <div class="flex items-center gap-2 py-3 mb-4">
+      <div class="w-10 h-10 bg-blue-100 rounded-2xl flex items-center justify-center">
+        <i class="fas fa-water text-primary text-lg"></i>
+      </div>
+      <div>
+        <div class="font-bold text-base">Deniz Araçları</div>
+        <div class="text-xs text-gray-400">Profesyonel kaptan araç seti</div>
+      </div>
+    </div>
+    <div id="captain-tools-grid" class="grid grid-cols-2 gap-3"></div>
+    <div class="mt-4 p-3 bg-blue-50 rounded-2xl text-xs text-blue-700 flex items-start gap-2 border border-blue-100">
+      <i class="fas fa-compass mt-0.5 flex-shrink-0"></i>
+      <span>Araçlar admin paneli üzerinden yönetilir. Solunar takvim, gelgit ve hava verisi gerçek zamanlı güncellenir.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== KAPASİTE UYARI MODAL (KAPTAN) ===== -->
+<div id="cap-block-overlay" style="display:none;position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:24px;padding:28px 24px;max-width:340px;width:88%;margin:auto;text-align:center">
+    <div style="width:64px;height:64px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <i class="fas fa-ship" style="color:#ef4444;font-size:26px"></i>
+    </div>
+    <div style="font-size:17px;font-weight:800;color:#111;margin-bottom:8px">Tekne Kapasitesi Doldu!</div>
+    <div style="font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:16px" id="cap-block-body">Bu rezervasyonu onaylarsaniz tekne kapasitesi asilacak.</div>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:14px;padding:14px;margin-bottom:20px;text-align:left">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-bottom:6px">
+        <span>Tekne kapasitesi</span><span style="font-weight:700;color:#0369a1" id="cap-block-max">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-bottom:6px">
+        <span>Onaylanmis rezervasyonlar</span><span style="font-weight:700;color:#f59e0b" id="cap-block-current">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-bottom:6px">
+        <span>Bu rezervasyon</span><span style="font-weight:700;color:#ef4444" id="cap-block-req">—</span>
+      </div>
+      <div style="height:1px;background:#fecaca;margin:8px 0"></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px">
+        <span style="font-weight:600;color:#374151">Kalan yer</span>
+        <span style="font-weight:800;color:#ef4444" id="cap-block-left">—</span>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#9ca3af;margin-bottom:20px">Emniyet kurallari geregi tekne kapasitesi asilmamalidir. Bu rezervasyonu reddedin veya baska bir rezervasyonu iptal edin.</p>
+    <button onclick="document.getElementById('cap-block-overlay').style.display='none'" style="width:100%;background:#0369a1;color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">Anladim</button>
+  </div>
+</div>
+
 <!-- ===== QR SCANNER FULLSCREEN ===== -->
 <div id="qr-screen" style="display:none;position:fixed;inset:0;z-index:70;background:#000;flex-direction:column">
   <!-- header -->
@@ -1206,13 +1306,14 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
     <i class="fas fa-calendar-check"></i>Rezervasyon
     <span class="absolute -top-0.5 right-2 w-4 h-4 bg-danger text-white text-[8px] rounded-full flex items-center justify-center">1</span>
   </a>
+  <a href="#tools" data-nav="tools"><i class="fas fa-water"></i>Araçlar</a>
   <a href="#profile" data-nav="profile"><i class="fas fa-user-cog"></i>Profil</a>
 </nav>
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
 /* ── CONSTANTS ── */
-const allPages=['dashboard','my-tours','create-tour','calendar','bookings','messages','earnings','notifications','profile'];
+const allPages=['dashboard','my-tours','create-tour','calendar','bookings','messages','earnings','notifications','profile','tools'];
 const hideNavPages=['messages','calendar','earnings','notifications','create-tour'];
 
 const CAT_META={
@@ -1272,6 +1373,7 @@ function handleRoute(){
   if(h==='my-tours')   renderMyTours();
   if(h==='bookings')   renderBookings();
   if(h==='profile')    renderProfile();
+  if(h==='tools')      renderCaptainTools();
   if(h==='create-tour'){currentStep=1;updateWizardUI();for(let i=1;i<=5;i++){const w=document.getElementById('wizard-'+i);if(w)w.style.display=i===1?'block':'none';}}
 }
 window.addEventListener('hashchange',handleRoute);
@@ -1440,7 +1542,28 @@ function updateWizardUI(){
   document.getElementById('wizard-next').style.display=currentStep<5?'':'none';
 }
 function togglePillCat(el){el.classList.toggle('selected')}
-function selectSingle(el){el.parentElement.querySelectorAll('.pill').forEach(p=>p.classList.remove('selected'));el.classList.add('selected')}
+function selectSingle(el){
+  el.parentElement.querySelectorAll('.pill').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+  const isTekSeferlik=el.textContent.trim()==='Tek Seferlik';
+  const tarihDiv=document.getElementById('tek-seferlik-tarih');
+  if(tarihDiv){tarihDiv.style.display=isTekSeferlik?'block':'none';}
+}
+function showCustomIncludeInput(){
+  const wrap=document.getElementById('custom-include-input-wrap');
+  if(wrap){wrap.style.display='flex';document.getElementById('custom-include-input').focus();}
+}
+function addCustomInclude(){
+  const inp=document.getElementById('custom-include-input');
+  const val=inp?inp.value.trim():'';
+  if(!val)return;
+  const li=document.createElement('label');
+  li.className='flex items-center gap-3 card cursor-pointer';
+  li.innerHTML=`<input type="checkbox" class="accent-primary w-5 h-5 rounded" checked><span class="text-sm">${val}</span><button type="button" onclick="this.closest('label').remove()" class="ml-auto text-gray-300 hover:text-danger text-lg leading-none">&times;</button>`;
+  document.getElementById('custom-includes-list').appendChild(li);
+  inp.value='';
+  document.getElementById('custom-include-input-wrap').style.display='none';
+}
 let capacity=8;
 function changeCapacity(d){capacity=Math.max(1,Math.min(30,capacity+d));document.getElementById('capacity-val').textContent=capacity;calcPerPerson();}
 function calcPerPerson(){const p=document.getElementById('tour-price-input').value;document.getElementById('per-person-calc').textContent=p?`${capacity} kisi icin kisi basi: ${Math.round(p/capacity)} TL`:`${capacity} kisi icin kisi basi: — TL`;}
@@ -1454,6 +1577,9 @@ function publishTour(){
   const descEl=document.querySelector('#wizard-2 textarea');
   const priceEl=document.getElementById('tour-price-input');
   const saatler=[...document.querySelectorAll('#wizard-3 .pill.selected')].map(el=>el.textContent.trim()).filter(s=>/^\d{2}:\d{2}$/.test(s));
+  const sezonEl=document.querySelector('#wizard-3 .flex.flex-wrap .pill.selected');
+  let sezon=sezonEl?sezonEl.textContent.trim():'Tum Yil';
+  if(sezon==='Tek Seferlik'){const d=document.getElementById('tek-seferlik-date');if(d&&d.value)sezon='Tek Seferlik: '+d.value;}
   const includes=[...document.querySelectorAll('#wizard-4 input:checked')].map(el=>el.parentElement.querySelector('span')?.textContent.trim()).filter(Boolean);
   const kalkisEl=document.querySelector('#wizard-2 select');
   const tour={
@@ -1463,7 +1589,9 @@ function publishTour(){
     kategoriler:cats.length?cats:['Tekne Gezisi'],
     sure:durEl?durEl.textContent.trim():'—',
     price:+(priceEl?.value||0),
+    fiyat:+(priceEl?.value||0),
     kapasite:capacity,
+    sezon,
     saatler:saatler.length?saatler:['09:00'],
     includes,
     kalkis:kalkisEl?.value||cap.bolge||'—',
@@ -1527,7 +1655,13 @@ function captainAccept(id){
   const kapasite=tour?.kapasite||999;
   const mevcutKisi=db.filter(x=>x.id!==id&&x.tourId===b.tourId&&x.durum!=='iptal'&&x.durum!=='reddedildi').reduce((s,x)=>s+(x.guests||1),0);
   if(mevcutKisi+(b.guests||1)>kapasite){
-    showToast(`Kapasite asiliyor! Teknede ${kapasite-mevcutKisi} yer kaldi, bu rezervasyon ${b.guests||1} kisi.`,'danger');
+    const kalan=Math.max(0,kapasite-mevcutKisi);
+    document.getElementById('cap-block-max').textContent=kapasite+' kisi';
+    document.getElementById('cap-block-current').textContent=mevcutKisi+' kisi';
+    document.getElementById('cap-block-req').textContent=(b.guests||1)+' kisi';
+    document.getElementById('cap-block-left').textContent=kalan===0?'Dolu!':kalan+' kisi';
+    document.getElementById('cap-block-body').textContent=`"${b.tourTitle||'Bu tur'}" icin tekne kapasitesi asilacak. Bu rezervasyonu onaylayamazsiniz.`;
+    document.getElementById('cap-block-overlay').style.display='flex';
     return;
   }
   b.durum='onaylandi';S.set('db_bookings',db);
@@ -1615,6 +1749,44 @@ function closeChat(){
   renderMsgList();
 }
 function jumpToChat(id){navigateTo('messages');setTimeout(()=>captainOpenChat(id),150);}
+
+/* ── CAPTAIN TOOLS ── */
+const CAPTAIN_TOOL_DEFS=[
+  {key:'hava',label:'Hava Durumu',icon:'fa-cloud-sun',color:'bg-amber-100 text-amber-600',href:'marine-hava.html',desc:'Anlık ve 5 günlük tahmin'},
+  {key:'gelgit',label:'Gelgit',icon:'fa-water',color:'bg-blue-100 text-blue-600',href:'marine-gelgit.html',desc:'Med-cezir saatleri'},
+  {key:'ruzgar',label:'Rüzgar',icon:'fa-wind',color:'bg-sky-100 text-sky-600',href:'marine-ruzgar.html',desc:'Beaufort ve istasyon verileri'},
+  {key:'gunes',label:'Güneş',icon:'fa-sun',color:'bg-orange-100 text-orange-500',href:'marine-gunes.html',desc:'Doğuş, batış, altın saat'},
+  {key:'ay',label:'Ay Takvimi',icon:'fa-moon',color:'bg-slate-200 text-slate-600',href:'marine-ay.html',desc:'Faz ve balık avı rehberi'},
+  {key:'solunar',label:'Solunar',icon:'fa-fish',color:'bg-teal-100 text-teal-600',href:'marine-solunar.html',desc:'Aktivite periyotları'},
+  {key:'sicaklik',label:'Su Sıcaklığı',icon:'fa-thermometer-half',color:'bg-cyan-100 text-cyan-600',href:'marine-sicaklik.html',desc:'Yüzey ve derinlik'},
+  {key:'ay_konum',label:"Ay Konumu",icon:'fa-satellite',color:'bg-violet-100 text-violet-600',href:'marine-ay-konum.html',desc:'Canlı faz ve mesafe'},
+  {key:'derinlik',label:'Derinlik',icon:'fa-map',color:'bg-indigo-100 text-indigo-600',href:'marine-derinlik.html',desc:'Batimetri haritası'},
+];
+function getCaptainModuleSettings(){
+  try{
+    const d={};CAPTAIN_TOOL_DEFS.forEach(t=>{d[t.key]={aktif:true,musteriler:true,kaptanlar:true};});
+    const s=localStorage.getItem('module_settings');
+    return s?Object.assign(d,JSON.parse(s)):d;
+  }catch{const d={};CAPTAIN_TOOL_DEFS.forEach(t=>{d[t.key]={aktif:true,musteriler:true,kaptanlar:true};});return d;}
+}
+function renderCaptainTools(){
+  const grid=document.getElementById('captain-tools-grid');
+  if(!grid)return;
+  const ms=getCaptainModuleSettings();
+  const visible=CAPTAIN_TOOL_DEFS.filter(t=>{const s=ms[t.key];return !s||s.aktif!==false&&s.kaptanlar!==false;});
+  if(!visible.length){
+    grid.innerHTML='<div class="col-span-2 text-center py-12 text-xs text-gray-400"><i class="fas fa-tools text-3xl block mb-2 opacity-20"></i>Şu an aktif araç bulunmuyor</div>';
+    return;
+  }
+  grid.innerHTML=visible.map(t=>`
+    <a href="${t.href}" onclick="localStorage.setItem('marine_from','captain-app.html')" class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col items-center text-center active:scale-95 transition-transform">
+      <div class="w-12 h-12 ${t.color} rounded-2xl flex items-center justify-center mb-2">
+        <i class="fas ${t.icon} text-xl"></i>
+      </div>
+      <div class="text-sm font-semibold leading-tight">${t.label}</div>
+      <div class="text-[10px] text-gray-400 mt-0.5 leading-tight">${t.desc}</div>
+    </a>`).join('');
+}
 
 /* ── PROFILE ── */
 function renderProfile(){

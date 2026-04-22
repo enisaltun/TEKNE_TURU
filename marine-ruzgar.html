@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rüzgar Durumu — DenizBul</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',accent:'#f59e0b',success:'#10b981',danger:'#ef4444'}}}}</script>
+<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');*{font-family:'Inter',sans-serif}</style>
+<script>function goBack(){var f=localStorage.getItem("marine_from");if(f)window.location.href=f;else if(document.referrer&&document.referrer.indexOf(location.hostname)>=0)history.back();else window.location.href="index.html";}</script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div class="bg-gradient-to-r from-sky-600 to-sky-400 text-white">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a onclick="goBack()" style="cursor:pointer" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition"><i class="fas fa-arrow-left text-sm"></i></a>
+      <div><div class="font-bold text-lg">Rüzgar Durumu</div><div class="text-sky-200 text-xs">Beaufort Ölçeği &bull; İstasyon Bazlı Anlık Veri</div></div>
+    </div>
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><i class="fas fa-wind text-xl"></i></div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 py-6">
+
+  <!-- Key Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-3xl font-extrabold text-sky-600" id="wind-speed">—</div>
+      <div class="text-xs text-gray-500 mt-1">Ortalama km/s</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-indigo-600" id="wind-gust">—</div>
+      <div class="text-xs text-gray-500 mt-1">Maksimum Gust</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-amber-600" id="wind-bf">—</div>
+      <div class="text-xs text-gray-500 mt-1">Beaufort</div>
+      <div class="text-[10px] text-gray-400" id="wind-bf-label">—</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-teal-600" id="wind-dir">—</div>
+      <div class="text-xs text-gray-500 mt-1">Yön</div>
+      <div id="wind-arrow" class="text-2xl mt-1">→</div>
+    </div>
+  </div>
+
+  <!-- Station Table -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-broadcast-tower text-sky-600 mr-1"></i>İstasyon Bazlı Rüzgar Verileri</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-xs text-gray-400 uppercase tracking-wide border-b">
+          <th class="pb-3 pr-4">İstasyon</th><th class="pb-3 pr-4">Hız (km/s)</th><th class="pb-3 pr-4">Gust</th><th class="pb-3 pr-4">Yön</th><th class="pb-3 pr-4">Beaufort</th><th class="pb-3">Seyir Durumu</th>
+        </tr></thead>
+        <tbody id="station-table" class="divide-y divide-gray-50"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Beaufort Scale -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-ruler text-sky-600 mr-1"></i>Beaufort Ölçeği Referansı</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+      <div class="p-2 bg-green-50 rounded-lg border border-green-100"><span class="font-bold text-green-700">0–3 BF</span><div class="text-gray-600">Sakin – Hafif rüzgar. Tüm tekneler için uygun.</div></div>
+      <div class="p-2 bg-lime-50 rounded-lg border border-lime-100"><span class="font-bold text-lime-700">4 BF</span><div class="text-gray-600">Ilımlı esinti. Deneyimli tekneciler için uygun.</div></div>
+      <div class="p-2 bg-amber-50 rounded-lg border border-amber-100"><span class="font-bold text-amber-700">5–6 BF</span><div class="text-gray-600">Taze-Kuvvetli esinti. Küçük tekneler dikkatli olmalı.</div></div>
+      <div class="p-2 bg-red-50 rounded-lg border border-red-100"><span class="font-bold text-red-700">7+ BF</span><div class="text-gray-600">Fırtına. Seyir önerilmez, liman koru.</div></div>
+    </div>
+  </div>
+
+  <!-- 24h Wind Profile -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-chart-bar text-sky-500 mr-1"></i>24 Saatlik Rüzgar Profili — Antalya</h3>
+    <div class="flex items-end gap-1 h-28" id="wind-chart"></div>
+    <div class="flex justify-between text-[10px] text-gray-400 mt-1" id="wind-chart-labels"></div>
+  </div>
+
+</div>
+
+<script>
+const stations=[
+  {name:'Antalya Liman',hiz:18,gust:26,yon:'GB',yonDeg:225,bf:4},
+  {name:'Kemer',hiz:14,gust:20,yon:'B',yonDeg:270,bf:3},
+  {name:'Fethiye',hiz:22,gust:31,yon:'GD',yonDeg:150,bf:5},
+  {name:'Bodrum',hiz:28,gust:38,yon:'K',yonDeg:0,bf:6},
+  {name:'Marmaris',hiz:19,gust:27,yon:'KB',yonDeg:315,bf:4},
+  {name:'İzmir Körfezi',hiz:16,gust:22,yon:'B',yonDeg:270,bf:4},
+  {name:'Çeşme',hiz:35,gust:48,yon:'B',yonDeg:270,bf:7},
+  {name:'Kaş',hiz:12,gust:18,yon:'G',yonDeg:180,bf:3},
+  {name:'İstanbul B.',hiz:24,gust:33,yon:'KD',yonDeg:45,bf:5},
+  {name:'Çanakkale',hiz:20,gust:28,yon:'K',yonDeg:0,bf:4},
+];
+const avg=Math.round(stations.reduce((s,st)=>s+st.hiz,0)/stations.length);
+const maxGust=Math.max(...stations.map(s=>s.gust));
+const bfLabels=['Sakin','Hafif Esinti','Az Esintili','Hafif','Orta','Taze','Kuvvetli','Sert','Fırtına','Şiddetli','Çok Şiddetli','Bora'];
+const avgBf=Math.round(stations.reduce((s,st)=>s+st.bf,0)/stations.length);
+document.getElementById('wind-speed').textContent=avg+' km/s';
+document.getElementById('wind-gust').textContent=maxGust+' km/s';
+document.getElementById('wind-bf').textContent=avgBf+' BF';
+document.getElementById('wind-bf-label').textContent=bfLabels[Math.min(avgBf,11)];
+const dirs=['K','KD','D','GD','G','GB','B','KB'];
+const allDirs=stations.map(s=>s.yonDeg);
+const avgDir=Math.round(allDirs.reduce((a,b)=>a+b,0)/allDirs.length);
+const dirIdx=Math.round(avgDir/45)%8;
+document.getElementById('wind-dir').textContent=dirs[dirIdx];
+const arrowDirs=['↑','↗','→','↘','↓','↙','←','↖'];
+document.getElementById('wind-arrow').textContent=arrowDirs[dirIdx];
+
+const bfColor=bf=>bf<=3?'#22c55e':bf<=5?'#f59e0b':'#ef4444';
+const seyir=bf=>bf<=3?'<span class="text-green-600 font-semibold">✓ Uygun</span>':bf<=5?'<span class="text-amber-600 font-semibold">⚠ Dikkatli</span>':'<span class="text-red-600 font-semibold">✗ Sakıncalı</span>';
+document.getElementById('station-table').innerHTML=stations.map(s=>`
+  <tr class="hover:bg-gray-50">
+    <td class="py-2.5 pr-4 font-medium">${s.name}</td>
+    <td class="py-2.5 pr-4"><span class="font-bold" style="color:${bfColor(s.bf)}">${s.hiz} km/s</span></td>
+    <td class="py-2.5 pr-4 text-gray-500">${s.gust} km/s</td>
+    <td class="py-2.5 pr-4">${s.yon}</td>
+    <td class="py-2.5 pr-4"><span class="font-bold px-2 py-0.5 rounded text-xs" style="background:${bfColor(s.bf)}20;color:${bfColor(s.bf)}">${s.bf} BF</span></td>
+    <td class="py-2.5">${seyir(s.bf)}</td>
+  </tr>`).join('');
+
+const windVals=[8,10,12,14,18,22,26,28,30,26,22,18,16,14,12,14,16,18,22,24,20,18,16,14];
+const mx=Math.max(...windVals);
+document.getElementById('wind-chart').innerHTML=windVals.map((v,h)=>{
+  const pct=Math.round(v/mx*100);
+  const col=v>=30?'#ef4444':v>=20?'#f59e0b':'#38bdf8';
+  return`<div class="flex-1 flex flex-col items-center"><div class="w-full rounded-t-sm" style="height:${pct}%;min-height:3px;background:${col}"></div></div>`;
+}).join('');
+document.getElementById('wind-chart-labels').innerHTML=windVals.map((_,h)=>`<span class="flex-1 text-center">${h%4===0?h+'h':''}</span>`).join('');
+</script>
+</body>
+</html>

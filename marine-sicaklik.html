@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deniz Suyu Sıcaklıkları — DenizBul</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',accent:'#f59e0b',success:'#10b981'}}}}</script>
+<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');*{font-family:'Inter',sans-serif}</style>
+<script>function goBack(){var f=localStorage.getItem("marine_from");if(f)window.location.href=f;else if(document.referrer&&document.referrer.indexOf(location.hostname)>=0)history.back();else window.location.href="index.html";}</script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div class="bg-gradient-to-r from-cyan-600 to-blue-500 text-white">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a onclick="goBack()" style="cursor:pointer" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition"><i class="fas fa-arrow-left text-sm"></i></a>
+      <div><div class="font-bold text-lg">Deniz Suyu Sıcaklıkları</div><div class="text-cyan-100 text-xs">Yüzey &bull; Derinlik &bull; Mevsimsel Trend &bull; Türkiye Kıyıları</div></div>
+    </div>
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl">🌊</div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 py-6">
+
+  <!-- Ana Metrikler -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-4 shadow-sm border border-cyan-200 text-center">
+      <div class="text-3xl font-extrabold text-cyan-600" id="avg-temp">21°C</div>
+      <div class="text-xs text-gray-500 mt-1">Ort. Yüzey Sıcaklığı</div>
+      <div class="text-[10px] text-cyan-400 font-medium">Ege & Akdeniz</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-blue-600">17°C</div>
+      <div class="text-xs text-gray-500 mt-1">Derinlik (20m)</div>
+      <div class="text-[10px] text-gray-400">Termokline altı</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-green-600">✓ İdeal</div>
+      <div class="text-xs text-gray-500 mt-1">Yüzme Koşulu</div>
+      <div class="text-[10px] text-gray-400">18°C üzeri = rahat</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-amber-500" id="last-updated">—</div>
+      <div class="text-xs text-gray-500 mt-1">Bölge Sayısı</div>
+      <div class="text-[10px] text-gray-400">İzlenen istasyon</div>
+    </div>
+  </div>
+
+  <!-- Şehir Tablosu -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-table text-cyan-600 mr-1"></i>Kıyı Şehirleri — Güncel Deniz Sıcaklıkları (Nisan 2026)</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-xs text-gray-400 uppercase tracking-wide border-b">
+          <th class="pb-3 pr-3">Şehir / Bölge</th>
+          <th class="pb-3 pr-3">Yüzey</th>
+          <th class="pb-3 pr-3">5m Derinlik</th>
+          <th class="pb-3 pr-3">20m Derinlik</th>
+          <th class="pb-3 pr-3">Trend</th>
+          <th class="pb-3 pr-3">Dalış Konforu</th>
+          <th class="pb-3">Yüzme</th>
+        </tr></thead>
+        <tbody id="temp-table" class="divide-y divide-gray-50"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Mevsimsel Grafik (SVG) -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <h3 class="font-semibold text-sm mb-4"><i class="fas fa-chart-line text-cyan-600 mr-1"></i>Antalya — Yıllık Deniz Sıcaklığı Eğrisi</h3>
+    <svg viewBox="0 0 600 140" class="w-full">
+      <defs>
+        <linearGradient id="tempGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#cffafe;stop-opacity:0.5"/>
+          <stop offset="100%" style="stop-color:#cffafe;stop-opacity:0"/>
+        </linearGradient>
+      </defs>
+      <!-- Grid lines -->
+      <line x1="50" y1="10" x2="590" y2="10" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="50" y1="40" x2="590" y2="40" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="50" y1="70" x2="590" y2="70" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="50" y1="100" x2="590" y2="100" stroke="#e2e8f0" stroke-width="1"/>
+      <!-- Y axis labels -->
+      <text x="40" y="13" fill="#94a3b8" font-size="9" text-anchor="end" font-family="Inter">30°</text>
+      <text x="40" y="43" fill="#94a3b8" font-size="9" text-anchor="end" font-family="Inter">25°</text>
+      <text x="40" y="73" fill="#94a3b8" font-size="9" text-anchor="end" font-family="Inter">20°</text>
+      <text x="40" y="103" fill="#94a3b8" font-size="9" text-anchor="end" font-family="Inter">15°</text>
+      <!-- Monthly data: Jan-Dec temps for Antalya -->
+      <!-- Data: 17,17,18,20,23,26,28,29,27,24,21,18 -->
+      <!-- Scale: (temp-15)/(30-15) * 90, Y = 100 - scaled -->
+      <path d="M55,82 L100,82 L145,76 L190,64 L235,46 L280,28 L325,22 L370,16 L415,28 L460,46 L505,64 L550,76"
+            fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M55,82 L100,82 L145,76 L190,64 L235,46 L280,28 L325,22 L370,16 L415,28 L460,46 L505,64 L550,76 L550,100 L55,100 Z"
+            fill="url(#tempGrad)"/>
+      <!-- Current month marker (April = 4th = index 3) -->
+      <circle cx="190" cy="64" r="6" fill="#0891b2" stroke="white" stroke-width="2"/>
+      <text x="190" y="56" fill="#0891b2" font-size="9" text-anchor="middle" font-family="Inter" font-weight="700">20°</text>
+      <!-- Month labels -->
+      <text x="55" y="118" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="Inter">Oca</text>
+      <text x="100" y="118" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="Inter">Şub</text>
+      <text x="145" y="118" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="Inter">Mar</text>
+      <text x="190" y="118" fill="#0891b2" font-size="9" text-anchor="middle" font-family="Inter" font-weight="700">Nis ←</text>
+      <text x="235" y="118" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="Inter">May</text>
+      <text x="280" y="118" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="Inter">Haz</text>
+      <text x="325" y="118" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="Inter">Tem</text>
+      <text x="370" y="118" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="Inter">Ağu</text>
+      <text x="415" y="118" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="Inter">Eyl</text>
+      <text x="460" y="118" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="Inter">Eki</text>
+      <text x="505" y="118" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="Inter">Kas</text>
+      <text x="550" y="118" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="Inter">Ara</text>
+    </svg>
+  </div>
+
+  <!-- Bilgi Kutuları -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-5 border border-cyan-100">
+      <h3 class="font-semibold text-sm text-cyan-800 mb-2"><i class="fas fa-swimming-pool mr-1"></i>Yüzme Koşulları</h3>
+      <ul class="text-xs text-cyan-700 space-y-1">
+        <li>🥶 &lt;18°C — Soğuk, kısa yüzme</li>
+        <li>😊 18–22°C — Rahat, ideal başlangıç</li>
+        <li>😎 22–26°C — Mükemmel yüzme</li>
+        <li>🏖️ 26°C+ — Akdeniz yazı, çok sıcak</li>
+      </ul>
+    </div>
+    <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-5 border border-indigo-100">
+      <h3 class="font-semibold text-sm text-indigo-800 mb-2"><i class="fas fa-compress-arrows-alt mr-1"></i>Termokline</h3>
+      <ul class="text-xs text-indigo-700 space-y-1">
+        <li>📏 Nisan: Termokline 15–20m</li>
+        <li>📏 Yaz: Termokline 30–50m derine iner</li>
+        <li>🌡️ Yüzey ile derin fark: 5–12°C</li>
+        <li>🤿 Derin dalış: ıslak elbise önerilir</li>
+      </ul>
+    </div>
+    <div class="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-5 border border-teal-100">
+      <h3 class="font-semibold text-sm text-teal-800 mb-2"><i class="fas fa-fish mr-1"></i>Balıkçılık Etkisi</h3>
+      <ul class="text-xs text-teal-700 space-y-1">
+        <li>🌡️ 18–22°C: Çipura, levrek aktif</li>
+        <li>🌡️ 22–26°C: Lüfer göçü başlar</li>
+        <li>🌡️ 26°C+: Orkinos, ton balığı sezon</li>
+        <li>🌡️ &lt;16°C: Kış balıkları (izmarit, istavrit)</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const cities = [
+  { name:'Antalya', region:'Akdeniz', surf:20, d5:18, d20:14, trend:'↑', color:'text-cyan-600' },
+  { name:'Alanya', region:'Akdeniz', surf:21, d5:18, d20:15, trend:'↑', color:'text-cyan-600' },
+  { name:'Fethiye', region:'Ege-Akdeniz', surf:19, d5:17, d20:14, trend:'↑', color:'text-blue-600' },
+  { name:'Bodrum', region:'Ege', surf:18, d5:16, d20:13, trend:'→', color:'text-blue-600' },
+  { name:'Marmaris', region:'Ege', surf:19, d5:17, d20:13, trend:'↑', color:'text-blue-600' },
+  { name:'Kuşadası', region:'Ege', surf:17, d5:15, d20:12, trend:'→', color:'text-sky-600' },
+  { name:'İzmir', region:'Ege (Körfez)', surf:17, d5:15, d20:12, trend:'→', color:'text-sky-600' },
+  { name:'Çeşme', region:'Ege', surf:16, d5:14, d20:11, trend:'↑', color:'text-sky-600' },
+  { name:'İstanbul', region:'Marmara', surf:13, d5:12, d20:10, trend:'↑', color:'text-indigo-600' },
+  { name:'Karadeniz Ereğli', region:'Karadeniz', surf:11, d5:10, d20:9, trend:'↑', color:'text-purple-600' },
+];
+document.getElementById('last-updated').textContent = cities.length;
+document.getElementById('avg-temp').textContent = Math.round(cities.slice(0,5).reduce((s,c)=>s+c.surf,0)/5) + '°C';
+
+function swimLabel(t) {
+  if (t >= 24) return '<span class="text-green-600 font-semibold">🏖️ Sıcak</span>';
+  if (t >= 20) return '<span class="text-green-600 font-semibold">✓ İdeal</span>';
+  if (t >= 18) return '<span class="text-amber-500 font-medium">~ Serinlik</span>';
+  return '<span class="text-blue-500">❄️ Soğuk</span>';
+}
+function diveLabel(t) {
+  if (t >= 18) return '<span class="text-green-600 text-xs">Konforlu</span>';
+  if (t >= 14) return '<span class="text-amber-500 text-xs">Islak Elbise</span>';
+  return '<span class="text-blue-500 text-xs">Kuru Elbise</span>';
+}
+
+document.getElementById('temp-table').innerHTML = cities.map(c => `
+  <tr class="hover:bg-gray-50">
+    <td class="py-2.5 pr-3"><div class="font-medium">${c.name}</div><div class="text-[10px] text-gray-400">${c.region}</div></td>
+    <td class="py-2.5 pr-3 font-bold ${c.color} text-lg">${c.surf}°C</td>
+    <td class="py-2.5 pr-3 text-gray-600">${c.d5}°C</td>
+    <td class="py-2.5 pr-3 text-blue-600">${c.d20}°C</td>
+    <td class="py-2.5 pr-3 font-bold ${c.trend==='↑'?'text-red-400':c.trend==='↓'?'text-blue-400':'text-gray-400'}">${c.trend}</td>
+    <td class="py-2.5 pr-3">${diveLabel(c.surf)}</td>
+    <td class="py-2.5">${swimLabel(c.surf)}</td>
+  </tr>`).join('');
+</script>
+</body>
+</html>

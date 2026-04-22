@@ -38,7 +38,24 @@
   </div>
 
   <!-- Panel Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 text-left">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-left">
+
+    <!-- Auth -->
+    <a href="auth.html" class="card-hover bg-gradient-to-br from-primary to-sky-600 rounded-2xl p-6 shadow-md block text-white">
+      <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+        <i class="fas fa-user-circle text-white text-xl"></i>
+      </div>
+      <div class="font-bold text-lg mb-1">Kullanıcı Girişi</div>
+      <div class="text-white/80 text-sm mb-4">Kayıt ol, giriş yap, misafir olarak devam et.</div>
+      <div class="space-y-1.5">
+        <div class="flex items-center gap-2 text-xs text-white/70"><i class="fas fa-check w-4"></i>Kayıt & giriş formu</div>
+        <div class="flex items-center gap-2 text-xs text-white/70"><i class="fas fa-check w-4"></i>localStorage entegrasyonu</div>
+        <div class="flex items-center gap-2 text-xs text-white/70"><i class="fas fa-check w-4"></i>Şifre güç göstergesi</div>
+      </div>
+      <div class="mt-5 flex items-center gap-2 text-white font-semibold text-sm">
+        Aç <i class="fas fa-arrow-right text-xs"></i>
+      </div>
+    </a>
 
     <!-- Musteri App -->
     <a href="customer-app.html" class="card-hover bg-white rounded-2xl p-6 shadow-md border border-gray-100 block">
@@ -106,6 +123,90 @@
       <div class="mt-5 flex items-center gap-2 text-emerald-600 font-semibold text-sm">
         Aci <i class="fas fa-arrow-right text-xs"></i>
       </div>
+    </a>
+    <!-- Seed Data -->
+    <a href="seed-data.html" class="card-hover bg-white rounded-2xl p-6 shadow-md border border-gray-100 block">
+      <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
+        <i class="fas fa-database text-orange-600 text-xl"></i>
+      </div>
+      <div class="font-bold text-gray-900 text-lg mb-1">Seed Data</div>
+      <div class="text-gray-500 text-sm mb-4">30 kaptan, 45 tur, 250 musteri ve ~400 rezervasyon uret.</div>
+      <div class="space-y-1.5">
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-orange-600 w-4"></i>Gercekci test verisi</div>
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-orange-600 w-4"></i>Tum paneller icin</div>
+        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-orange-600 w-4"></i>localStorage'a aninda yazar</div>
+      </div>
+      <div class="mt-5 flex items-center gap-2 text-orange-600 font-semibold text-sm">
+        Aci <i class="fas fa-arrow-right text-xs"></i>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- Marine Science Modules -->
+<div class="max-w-5xl mx-auto px-6 pb-8">
+  <div class="flex items-center gap-3 mb-4">
+    <div class="w-8 h-8 bg-cyan-100 rounded-xl flex items-center justify-center"><i class="fas fa-water text-cyan-600 text-sm"></i></div>
+    <div>
+      <div class="font-bold text-gray-900">Deniz Bilimleri Modülleri</div>
+      <div class="text-xs text-gray-500">Gerçek zamanlı simüle edilmiş deniz verileri — kaptanlar ve balıkçılar için</div>
+    </div>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+    <a href="marine-gelgit.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
+      <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-water text-blue-600"></i></div>
+      <div class="font-bold text-gray-900 text-sm mb-1">Gelgit</div>
+      <div class="text-gray-500 text-xs">Med-cezir verileri, liman tablosu</div>
+      <div class="mt-3 text-blue-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
+    </a>
+    <a href="marine-ruzgar.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
+      <div class="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-wind text-sky-600"></i></div>
+      <div class="font-bold text-gray-900 text-sm mb-1">Rüzgar</div>
+      <div class="text-gray-500 text-xs">Beaufort, hız, yön, istasyon</div>
+      <div class="mt-3 text-sky-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
+    </a>
+    <a href="marine-hava.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
+      <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-cloud-sun text-amber-500"></i></div>
+      <div class="font-bold text-gray-900 text-sm mb-1">Hava Durumu</div>
+      <div class="text-gray-500 text-xs">5 günlük, deniz sıcaklığı</div>
+      <div class="mt-3 text-amber-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
+    </a>
+    <a href="marine-derinlik.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
+      <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-map text-indigo-600"></i></div>
+      <div class="font-bold text-gray-900 text-sm mb-1">Derinlik</div>
+      <div class="text-gray-500 text-xs">Batimetri, seyir ölçekleri</div>
+      <div class="mt-3 text-indigo-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
+    </a>
+    <a href="marine-ay.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
+      <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-moon text-slate-600"></i></div>
+      <div class="font-bold text-gray-900 text-sm mb-1">Ay Takvimi</div>
+      <div class="text-gray-500 text-xs">Ay evreleri, balık avı etkisi</div>
+      <div class="mt-3 text-slate-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
+    </a>
+    <a href="marine-gunes.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
+      <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-sun text-orange-500"></i></div>
+      <div class="font-bold text-gray-900 text-sm mb-1">Güneş</div>
+      <div class="text-gray-500 text-xs">Doğuş/batış, altın saat</div>
+      <div class="mt-3 text-orange-500 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
+    </a>
+    <a href="marine-solunar.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
+      <div class="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-fish text-teal-600"></i></div>
+      <div class="font-bold text-gray-900 text-sm mb-1">Solunar</div>
+      <div class="text-gray-500 text-xs">Balık aktivitesi, major/minor</div>
+      <div class="mt-3 text-teal-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
+    </a>
+    <a href="marine-sicaklik.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
+      <div class="w-10 h-10 bg-cyan-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-thermometer-half text-cyan-600"></i></div>
+      <div class="font-bold text-gray-900 text-sm mb-1">Su Sıcaklığı</div>
+      <div class="text-gray-500 text-xs">Yüzey, derinlik, mevsimsel</div>
+      <div class="mt-3 text-cyan-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
+    </a>
+    <a href="marine-ay-konum.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
+      <div class="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-satellite text-violet-600"></i></div>
+      <div class="font-bold text-gray-900 text-sm mb-1">Ay Konumu</div>
+      <div class="text-gray-500 text-xs">Canlı faz, yükseklik, mesafe</div>
+      <div class="mt-3 text-violet-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
     </a>
   </div>
 </div>

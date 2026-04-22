@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ay Konumu — DenizBul</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',accent:'#f59e0b',success:'#10b981'}}}}</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{font-family:'Inter',sans-serif}
+.moon-visual{position:relative;width:160px;height:160px;margin:0 auto}
+canvas#moon-canvas{border-radius:50%;box-shadow:0 0 40px rgba(148,163,184,0.4)}
+#moon-glow{position:absolute;inset:-8px;border-radius:50%;background:radial-gradient(circle,rgba(203,213,225,0.15) 60%,transparent 100%);pointer-events:none}
+@keyframes moon-pulse{0%,100%{opacity:0.4}50%{opacity:0.8}}
+#moon-glow{animation:moon-pulse 4s ease-in-out infinite}
+</style>
+<script>function goBack(){var f=localStorage.getItem("marine_from");if(f)window.location.href=f;else if(document.referrer&&document.referrer.indexOf(location.hostname)>=0)history.back();else window.location.href="index.html";}</script>
+</head>
+<body class="bg-slate-900 min-h-screen text-white">
+
+<div class="bg-slate-800/80 border-b border-slate-700">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a onclick="goBack()" style="cursor:pointer" class="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition"><i class="fas fa-arrow-left text-sm"></i></a>
+      <div><div class="font-bold text-lg">Ay'ın Konumu</div><div class="text-slate-400 text-xs">Canlı Konum &bull; Faz Görüntüsü &bull; Perigee / Apogee</div></div>
+    </div>
+    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-2xl" id="hdr-icon">🌙</div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 py-6">
+
+  <!-- Ana Görsel + Stats -->
+  <div class="flex flex-col md:flex-row gap-6 mb-6">
+    <!-- Moon Visual -->
+    <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col items-center justify-center min-w-[220px]">
+      <div class="moon-visual mb-4">
+        <canvas id="moon-canvas" width="160" height="160"></canvas>
+        <div id="moon-glow"></div>
+      </div>
+      <div class="text-center">
+        <div class="text-4xl font-extrabold text-slate-100" id="illum-pct">—</div>
+        <div class="text-xs text-slate-400 mt-1">Aydınlanma Oranı</div>
+        <div class="text-sm font-semibold text-slate-200 mt-2" id="phase-name-main">—</div>
+        <div class="text-xs text-slate-500 mt-0.5" id="phase-icon-main"></div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="flex-1 grid grid-cols-2 gap-3">
+      <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+        <div class="text-xs text-slate-400 mb-1">Ay Yaşı</div>
+        <div class="text-2xl font-bold text-slate-100" id="moon-age">—</div>
+        <div class="text-xs text-slate-500">günlük döngüde</div>
+      </div>
+      <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+        <div class="text-xs text-slate-400 mb-1">Yükseklik Açısı</div>
+        <div class="text-2xl font-bold text-amber-400" id="altitude">—</div>
+        <div class="text-xs text-slate-500">ufuk üstü</div>
+      </div>
+      <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+        <div class="text-xs text-slate-400 mb-1">Azimut</div>
+        <div class="text-2xl font-bold text-slate-100" id="azimuth">—</div>
+        <div class="text-xs text-slate-500" id="azimuth-dir">yön</div>
+      </div>
+      <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+        <div class="text-xs text-slate-400 mb-1">Dünya'ya Uzaklık</div>
+        <div class="text-xl font-bold text-purple-400" id="distance">—</div>
+        <div class="text-xs text-slate-500" id="distance-label">km</div>
+      </div>
+      <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+        <div class="text-xs text-slate-400 mb-1">Ay Doğuşu</div>
+        <div class="text-2xl font-bold text-amber-300" id="rise-time">—</div>
+        <div class="text-xs text-slate-500">bugün (yerel)</div>
+      </div>
+      <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+        <div class="text-xs text-slate-400 mb-1">Ay Batışı</div>
+        <div class="text-2xl font-bold text-slate-300" id="set-time">—</div>
+        <div class="text-xs text-slate-500">bugün (yerel)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gökyüzü Haritası -->
+  <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-6">
+    <h3 class="font-semibold text-sm text-slate-200 mb-4"><i class="fas fa-compass text-slate-400 mr-1"></i>Gökyüzü Pusulası — Ay Konumu</h3>
+    <div class="flex justify-center">
+      <svg viewBox="0 0 300 300" class="w-64 h-64">
+        <!-- Background -->
+        <circle cx="150" cy="150" r="140" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+        <circle cx="150" cy="150" r="100" fill="none" stroke="#1e293b" stroke-width="1"/>
+        <circle cx="150" cy="150" r="60" fill="none" stroke="#1e293b" stroke-width="1"/>
+        <!-- Cardinal directions -->
+        <text x="150" y="22" fill="#94a3b8" font-size="12" text-anchor="middle" font-family="Inter" font-weight="700">K</text>
+        <text x="150" y="288" fill="#94a3b8" font-size="12" text-anchor="middle" font-family="Inter" font-weight="700">G</text>
+        <text x="12" y="155" fill="#94a3b8" font-size="12" text-anchor="middle" font-family="Inter" font-weight="700">B</text>
+        <text x="288" y="155" fill="#94a3b8" font-size="12" text-anchor="middle" font-family="Inter" font-weight="700">D</text>
+        <!-- Horizon line -->
+        <line x1="20" y1="150" x2="280" y2="150" stroke="#334155" stroke-width="1" stroke-dasharray="4,4"/>
+        <!-- Altitude arcs label -->
+        <text x="255" y="155" fill="#475569" font-size="8" text-anchor="middle" font-family="Inter">30°</text>
+        <text x="215" y="155" fill="#475569" font-size="8" text-anchor="middle" font-family="Inter">60°</text>
+        <!-- Moon dot (dynamic) -->
+        <circle id="moon-dot-sky" cx="150" cy="150" r="14" fill="#f8fafc" opacity="0.95"/>
+        <text id="moon-emoji-sky" x="150" y="156" fill="#0f172a" font-size="14" text-anchor="middle" font-family="Inter">🌙</text>
+        <!-- Sun dot (for reference) -->
+        <circle id="sun-dot-sky" cx="150" cy="150" r="8" fill="#fbbf24" opacity="0.7"/>
+        <text x="150" y="154" fill="#451a03" font-size="8" text-anchor="middle" font-family="Inter">☀</text>
+        <!-- Compass tick marks -->
+        <line x1="150" y1="15" x2="150" y2="25" stroke="#475569" stroke-width="1"/>
+        <line x1="150" y1="275" x2="150" y2="285" stroke="#475569" stroke-width="1"/>
+        <line x1="15" y1="150" x2="25" y2="150" stroke="#475569" stroke-width="1"/>
+        <line x1="275" y1="150" x2="285" y2="150" stroke="#475569" stroke-width="1"/>
+      </svg>
+    </div>
+    <p class="text-xs text-slate-500 text-center mt-2">Ay'ın o anki ufuk üzerindeki pozisyonu gösterilmektedir.</p>
+  </div>
+
+  <!-- Perigee / Apogee -->
+  <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-6">
+    <h3 class="font-semibold text-sm text-slate-200 mb-4"><i class="fas fa-satellite text-purple-400 mr-1"></i>Perigee &amp; Apogee — Ay'ın Yaklaşma / Uzaklaşma Döngüsü</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+      <div class="bg-slate-700/50 rounded-xl p-4">
+        <div class="text-xs text-slate-400 mb-1">Son Perigee (En Yakın)</div>
+        <div class="text-lg font-bold text-purple-300" id="last-perigee">—</div>
+        <div class="text-xs text-purple-400 mt-0.5">356.400 km</div>
+        <div class="text-[10px] text-slate-500 mt-1">Gelgit etkisi güçlü, süper ay</div>
+      </div>
+      <div class="bg-slate-700/50 rounded-xl p-4">
+        <div class="text-xs text-slate-400 mb-1">Şu Anki Mesafe</div>
+        <div class="text-2xl font-bold text-slate-100" id="current-dist-card">—</div>
+        <div class="text-xs text-slate-500 mt-0.5" id="dist-status">—</div>
+      </div>
+      <div class="bg-slate-700/50 rounded-xl p-4">
+        <div class="text-xs text-slate-400 mb-1">Sonraki Apogee (En Uzak)</div>
+        <div class="text-lg font-bold text-slate-300" id="next-apogee">—</div>
+        <div class="text-xs text-slate-400 mt-0.5">406.700 km</div>
+        <div class="text-[10px] text-slate-500 mt-1">Gelgit etkisi zayıf, mikro ay</div>
+      </div>
+    </div>
+    <!-- Distance bar -->
+    <div class="mt-4">
+      <div class="flex justify-between text-[10px] text-slate-500 mb-1">
+        <span>Perigee 356.400 km</span>
+        <span>Apogee 406.700 km</span>
+      </div>
+      <div class="bg-slate-700 rounded-full h-3">
+        <div id="dist-bar" class="h-3 rounded-full bg-gradient-to-r from-purple-500 to-slate-400" style="width:50%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Denizcilik İpuçları -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+      <h3 class="font-semibold text-sm text-slate-200 mb-2"><i class="fas fa-ship text-cyan-400 mr-1"></i>Denizci İçin Bugün</h3>
+      <div class="space-y-2 text-xs text-slate-400" id="sailor-tips"></div>
+    </div>
+    <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+      <h3 class="font-semibold text-sm text-slate-200 mb-2"><i class="fas fa-camera text-amber-400 mr-1"></i>Ay Fotoğrafçılığı</h3>
+      <ul class="text-xs text-slate-400 space-y-1.5">
+        <li>📸 Altın oran: Ay doğuşundan 15 dk sonra</li>
+        <li>🌅 Ufuk yakınında: Ay büyük görünür (optik illüzyon)</li>
+        <li>📷 ISO 100, f/8, 1/500s — dolunay için başlangıç</li>
+        <li>🔭 Tele lens: 300mm+ için kraterleri görebilirsiniz</li>
+        <li>🌊 Yansıma: Sakin deniz + düşük ay açısı = sinema karesi</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Moon calculations
+const newMoonRef = new Date('2026-04-03T00:00:00');
+const lunarPeriod = 29.53 * 86400000;
+const anomalyPeriod = 27.55 * 86400000; // anomalistic month for perigee/apogee
+const now = new Date();
+const elapsed = now.getTime() - newMoonRef.getTime();
+const moonAge = ((elapsed % lunarPeriod) + lunarPeriod) % lunarPeriod / lunarPeriod * 29.53;
+const illumPct = Math.round(Math.pow(Math.sin(Math.PI * moonAge / 29.53), 2) * 100);
+
+const phases = [
+  {min:0,max:1.5,icon:'🌑',name:'Yeni Ay'},{min:1.5,max:7.4,icon:'🌒',name:'Hilal Dolmakta'},
+  {min:7.4,max:8.5,icon:'🌓',name:'İlk Dördün'},{min:8.5,max:14.7,icon:'🌔',name:'Şişen Ay'},
+  {min:14.7,max:15.5,icon:'🌕',name:'Dolunay'},{min:15.5,max:22.1,icon:'🌖',name:'Küçülen Ay'},
+  {min:22.1,max:23.5,icon:'🌗',name:'Son Dördün'},{min:23.5,max:29.53,icon:'🌘',name:'Yanan Hilal'},
+];
+const phase = phases.find(p => moonAge >= p.min && moonAge < p.max) || phases[0];
+
+// Current time-based altitude (simplified sinusoidal)
+const h = now.getHours() + now.getMinutes()/60;
+const moonriseFrac = (moonAge / 29.53);
+const moonriseH = (moonriseFrac * 24) % 24;
+const hoursSinceRise = ((h - moonriseH) + 24) % 24;
+const altitude = hoursSinceRise < 12.4
+  ? Math.round(Math.sin(Math.PI * hoursSinceRise / 12.4) * 68)
+  : Math.round(-Math.sin(Math.PI * (hoursSinceRise - 12.4) / 11.6) * 20);
+const azimuthRaw = Math.round(((h / 24) * 360 + 180) % 360);
+const dirs = ['K','KKD','KD','DKD','D','DGD','GD','GGD','G','GGB','GB','BGD','B','BKB','KB','KKB'];
+const azDir = dirs[Math.round(azimuthRaw/22.5)%16];
+
+// Distance calculation (perigee ~ 356400km, apogee ~ 406700km, sinusoidal over anomalistic month)
+const anomalyElapsed = now.getTime() % anomalyPeriod;
+const anomalyFrac = anomalyElapsed / anomalyPeriod;
+const distance = Math.round(381550 - 25150 * Math.cos(2 * Math.PI * anomalyFrac));
+const distBarPct = Math.round((distance - 356400) / (406700 - 356400) * 100);
+
+// Moon rise/set
+function fmtH(h) {
+  const hh = Math.floor(((h % 24) + 24) % 24);
+  const mm = Math.round(((h % 1) + (h < 0 ? 1 : 0)) * 60) % 60;
+  return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+}
+const moonsetH = (moonriseH + 12.4) % 24;
+
+// Update UI
+document.getElementById('hdr-icon').textContent = phase.icon;
+document.getElementById('illum-pct').textContent = '%' + illumPct;
+document.getElementById('phase-name-main').textContent = phase.name;
+document.getElementById('phase-icon-main').textContent = phase.icon + ' ' + moonAge.toFixed(1) + '. gün';
+document.getElementById('moon-age').textContent = moonAge.toFixed(1) + ' gün';
+document.getElementById('altitude').textContent = altitude > 0 ? '+' + altitude + '°' : altitude + '° (altında)';
+document.getElementById('azimuth').textContent = azimuthRaw + '°';
+document.getElementById('azimuth-dir').textContent = azDir + ' yönü';
+document.getElementById('distance').textContent = distance.toLocaleString('tr-TR');
+document.getElementById('distance-label').textContent = 'km — ' + (distance < 370000 ? 'Yakın (Süper Ay yakını)' : distance > 400000 ? 'Uzak (Mikro Ay yakını)' : 'Normal mesafe');
+document.getElementById('rise-time').textContent = fmtH(moonriseH);
+document.getElementById('set-time').textContent = fmtH(moonsetH);
+
+// Perigee / Apogee dates
+const perigeeDate = new Date(now.getTime() - (anomalyFrac * anomalyPeriod));
+perigeeDate.setDate(perigeeDate.getDate() - 2);
+const apogeeDate = new Date(perigeeDate.getTime() + anomalyPeriod / 2);
+document.getElementById('last-perigee').textContent = perigeeDate.toLocaleDateString('tr-TR',{day:'2-digit',month:'long'});
+document.getElementById('next-apogee').textContent = apogeeDate.toLocaleDateString('tr-TR',{day:'2-digit',month:'long'});
+document.getElementById('current-dist-card').textContent = distance.toLocaleString('tr-TR') + ' km';
+document.getElementById('dist-status').textContent = distBarPct < 35 ? 'Perigee\'ye yakın' : distBarPct > 65 ? 'Apogee\'ye yakın' : 'Ortalama mesafe';
+document.getElementById('dist-bar').style.width = distBarPct + '%';
+
+// Sky compass positioning
+if (altitude > 0) {
+  const r = Math.max(10, 130 - altitude * 1.9);
+  const azRad = (azimuthRaw - 90) * Math.PI / 180;
+  const cx = Math.round(150 + r * Math.cos(azRad));
+  const cy = Math.round(150 + r * Math.sin(azRad));
+  document.getElementById('moon-dot-sky').setAttribute('cx', cx);
+  document.getElementById('moon-dot-sky').setAttribute('cy', cy);
+  document.getElementById('moon-emoji-sky').setAttribute('x', cx);
+  document.getElementById('moon-emoji-sky').setAttribute('y', cy+5);
+} else {
+  // Moon below horizon
+  document.getElementById('moon-dot-sky').setAttribute('cy', '175');
+  document.getElementById('moon-emoji-sky').setAttribute('y', '180');
+  document.getElementById('moon-dot-sky').setAttribute('opacity', '0.3');
+}
+// Sun position
+const sunH = now.getHours() + now.getMinutes()/60;
+const sunAlt = Math.sin(Math.PI * (sunH - 6.2) / 13.6) * 65;
+if (sunAlt > 0) {
+  const sunAz = Math.round((sunH / 13.6) * 180);
+  const sr = Math.max(15, 130 - sunAlt * 1.9);
+  const saRad = (sunAz - 90) * Math.PI / 180;
+  document.getElementById('sun-dot-sky').setAttribute('cx', Math.round(150 + sr * Math.cos(saRad)));
+  document.getElementById('sun-dot-sky').setAttribute('cy', Math.round(150 + sr * Math.sin(saRad)));
+} else {
+  document.getElementById('sun-dot-sky').setAttribute('opacity', '0.1');
+}
+
+// Moon canvas rendering
+const canvas = document.getElementById('moon-canvas');
+const ctx = canvas.getContext('2d');
+const W = 160, R = 78, cx = W/2, cy = W/2;
+
+// Dark space background
+ctx.fillStyle = '#0f172a';
+ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
+
+// Moon surface
+ctx.fillStyle = '#e2e8f0';
+ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
+
+// Shadow overlay based on phase
+const waxing = moonAge < 14.77;
+const illumFrac = illumPct / 100;
+ctx.save();
+ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.clip();
+ctx.fillStyle = 'rgba(15,23,42,0.85)';
+if (illumFrac < 0.01) {
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
+} else if (illumFrac > 0.99) {
+  // full moon — no shadow
+} else {
+  const limbAngle = waxing ? Math.PI : 0;
+  const terminatorX = cx + (waxing ? 1 : -1) * R * Math.cos(Math.PI * illumFrac);
+  ctx.beginPath();
+  ctx.arc(cx,cy,R, -Math.PI/2, Math.PI/2, waxing);
+  ctx.ellipse(terminatorX, cy, R * Math.abs(Math.cos(Math.PI * illumFrac)), R, 0, Math.PI/2, -Math.PI/2, !waxing);
+  ctx.closePath(); ctx.fill();
+}
+ctx.restore();
+
+// Subtle craters
+ctx.save(); ctx.globalAlpha = 0.15;
+[[100,85,8],[65,110,5],[115,120,4],[85,65,3],[130,100,6]].forEach(([x,y,r])=>{
+  ctx.fillStyle='#94a3b8'; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+});
+ctx.restore();
+
+// Sailor tips
+const sailorTips = [];
+if (altitude > 30) sailorTips.push('<div class="flex gap-2"><span>🌕</span><span>Ay yüksekte — gece seyiri için görüş iyi</span></div>');
+else if (altitude > 0) sailorTips.push('<div class="flex gap-2"><span>🌙</span><span>Ay düşük açıda — ufuktaki ışık yöneltici</span></div>');
+else sailorTips.push('<div class="flex gap-2"><span>🌑</span><span>Ay ufkun altında — saat '+fmtH(moonriseH)+' doğacak</span></div>');
+if (illumPct > 80) sailorTips.push('<div class="flex gap-2"><span>💡</span><span>Yüksek aydınlanma — gece demirlemesi güvenli</span></div>');
+if (distance < 370000) sailorTips.push('<div class="flex gap-2"><span>⚠️</span><span>Perigee yakını — gelgit genliği normalden %20 yüksek</span></div>');
+sailorTips.push('<div class="flex gap-2"><span>🧭</span><span>Ay '+ azDir +'\'da, yükseklik '+altitude+'°</span></div>');
+document.getElementById('sailor-tips').innerHTML = sailorTips.join('');
+</script>
+</body>
+</html>

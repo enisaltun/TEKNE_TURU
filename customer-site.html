@@ -394,17 +394,16 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
       <!-- Left Content -->
       <div class="flex-1">
         <!-- Title & Tags -->
-        <div class="flex flex-wrap gap-2 mb-2">
+        <div class="flex flex-wrap gap-2 mb-2" id="detail-tags">
           <span class="badge-cat bg-blue-100 text-blue-700"><i class="fas fa-fish mr-1"></i>Balik Avi</span>
-          <span class="badge-cat bg-cyan-100 text-cyan-700"><i class="fas fa-compass mr-1"></i>Gezi</span>
           <span class="badge-cat bg-green-100 text-green-700"><i class="fas fa-bolt mr-1"></i>Aninda Onay</span>
         </div>
-        <h1 class="text-2xl md:text-3xl font-bold mb-1">Kaptan Mehmet ile Balik Avi & Gezi Turu</h1>
+        <h1 class="text-2xl md:text-3xl font-bold mb-1" id="detail-title">Kaptan Mehmet ile Balik Avi & Gezi Turu</h1>
         <div class="flex items-center gap-3 text-sm text-gray-500 mb-4">
-          <span><i class="fas fa-map-marker-alt text-primary"></i> Antalya, Kemer</span>
-          <span><i class="fas fa-clock text-primary"></i> 6 saat</span>
-          <span><i class="fas fa-users text-primary"></i> Max 8 kisi</span>
-          <span class="text-accent font-semibold"><i class="fas fa-star"></i> 4.9 (124 yorum)</span>
+          <span><i class="fas fa-map-marker-alt text-primary"></i> <span id="detail-location">Antalya, Kemer</span></span>
+          <span><i class="fas fa-clock text-primary"></i> <span id="detail-duration">6 saat</span></span>
+          <span><i class="fas fa-users text-primary"></i> Max <span id="detail-capacity">8</span> kisi</span>
+          <span class="text-accent font-semibold"><i class="fas fa-star"></i> <span id="detail-rating">4.9 (124 yorum)</span></span>
         </div>
 
         <!-- Captain Card -->
@@ -412,10 +411,10 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
           <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center"><i class="fas fa-user text-primary text-xl"></i></div>
           <div class="flex-1">
             <div class="flex items-center gap-2">
-              <span class="font-semibold">Kaptan Mehmet Yilmaz</span>
+              <span class="font-semibold" id="detail-captain-name">Kaptan Mehmet Yilmaz</span>
               <span class="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-medium"><i class="fas fa-check-circle"></i> Dogrulanmis</span>
             </div>
-            <div class="text-sm text-gray-500">15 yil deneyim &bull; 312 tur &bull; 4.9 <i class="fas fa-star star text-xs"></i></div>
+            <div class="text-sm text-gray-500" id="detail-captain-meta">15 yil deneyim &bull; 312 tur &bull; 4.9 <i class="fas fa-star star text-xs"></i></div>
           </div>
           <i class="fas fa-chevron-right text-gray-300"></i>
         </a>
@@ -435,22 +434,21 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
         </div>
 
         <!-- Includes -->
-        <div class="mb-6">
+        <div class="mb-6" id="detail-includes-section">
           <h2 class="text-lg font-bold mb-3">Dahil Olanlar</h2>
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-2 gap-2" id="detail-includes">
             <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success"></i> Balik avi ekipmanlari</div>
             <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success"></i> Yem ve olta</div>
             <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success"></i> Cay / Kahve ikrami</div>
             <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success"></i> Can yelekleri</div>
             <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success"></i> Fotografci</div>
-            <div class="flex items-center gap-2 text-sm text-gray-400"><i class="fas fa-times text-gray-300"></i> Ogle yemegi</div>
           </div>
         </div>
 
         <!-- Description -->
         <div class="mb-6">
           <h2 class="text-lg font-bold mb-3">Tur Aciklamasi</h2>
-          <p class="text-sm text-gray-600 leading-relaxed">Antalya Kemer aciklaylarinda profesyonel ekipmanlarla balik avi deneyimi. Sabah erken saatlerde limandan kalkis, acik denizde trolling ve jigging teknikleri ile avlanma. Deneyimli kaptanimiz size en iyi avlanma noktalarini gosterecek. Tuttugunuz baliklari isterseniz teknede pisirebilirsiniz. Yeni baslayanlar icin birebir rehberlik yapilmaktadir.</p>
+          <p class="text-sm text-gray-600 leading-relaxed" id="detail-description">Antalya Kemer aciklaylarinda profesyonel ekipmanlarla balik avi deneyimi. Sabah erken saatlerde limandan kalkis, acik denizde trolling ve jigging teknikleri ile avlanma. Deneyimli kaptanimiz size en iyi avlanma noktalarini gosterecek.</p>
         </div>
 
         <!-- Route Map -->
@@ -504,12 +502,12 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
             </div>
             <div class="p-3 border-b">
               <label class="text-xs font-medium text-gray-500">SAAT</label>
-              <select class="w-full text-sm mt-1 border-0 p-0 bg-transparent">
+              <select id="detail-saat-select" class="w-full text-sm mt-1 border-0 p-0 bg-transparent">
                 <option>06:00</option><option>07:00</option><option>14:00</option>
               </select>
             </div>
             <div class="p-3">
-              <label class="text-xs font-medium text-gray-500">MISAFIR</label>
+              <label class="text-xs font-medium text-gray-500">MISAFIR <span class="text-gray-400 font-normal" id="detail-max-note">(max 8)</span></label>
               <div class="flex items-center justify-between mt-1">
                 <button onclick="changeGuest(-1)" class="w-8 h-8 rounded-full border flex items-center justify-center text-gray-500 hover:bg-gray-100">-</button>
                 <span class="font-medium" id="guest-count">2</span>
@@ -1341,10 +1339,30 @@ const CAT_META={
 };
 
 function getDbTours(){
-  return lsGet('db_tours',[]).map(t=>{
-    const cat=t.kategoriler?.[0]||'Tekne Gezisi';
+  return lsGet('db_tours',[]).filter(t=>t.durum==='aktif').map(t=>{
+    const cat=t.kategoriler?.[0]||t.kategori||'Tekne Gezisi';
     const meta=CAT_META[cat]||CAT_META['Tekne Gezisi'];
-    return{id:t.id,name:t.title,location:t.kalkis||'Turkiye',price:t.price||0,rating:4.8,reviews:0,duration:t.sure||'—',captainName:t.captainName,captainEmail:t.captainEmail,...meta,_isReal:true};
+    const includes=t.includes?.length?t.includes:(t.dahil||'').split('\n').filter(Boolean);
+    return{
+      id:t.id,
+      name:t.ad||t.title||'Tur',
+      location:t.kalkis||t.konum||'Turkiye',
+      price:t.price||t.fiyat||0,
+      rating:t.puan||4.8,
+      reviews:t.inceleme||0,
+      duration:t.sure||'—',
+      captainName:t.captainName||'—',
+      captainEmail:t.captainEmail||null,
+      kapasite:t.kapasite||8,
+      saatler:t.saatler||['09:00'],
+      includes,
+      aciklama:t.aciklama||'',
+      sezon:t.sezon||'',
+      heroImage:t.heroImage||null,
+      ...meta,
+      _isReal:true,
+      _raw:t
+    };
   });
 }
 
@@ -1396,7 +1414,83 @@ function renderAll() {
 }
 
 const tourMap={};
-function selectTourById(id){selectedTour=tourMap[id]||null;}
+function selectTourById(id){
+  selectedTour=tourMap[id]||null;
+  if(selectedTour) renderDetailPage(selectedTour);
+}
+
+function renderDetailPage(t){
+  // Başlık & meta
+  const titleEl=document.getElementById('detail-title');
+  if(titleEl) titleEl.textContent=t.name;
+  const locEl=document.getElementById('detail-location');
+  if(locEl) locEl.textContent=t.location;
+  const durEl=document.getElementById('detail-duration');
+  if(durEl) durEl.textContent=t.duration;
+  const capEl=document.getElementById('detail-capacity');
+  if(capEl) capEl.textContent=t.kapasite;
+  const maxNote=document.getElementById('detail-max-note');
+  if(maxNote) maxNote.textContent='(max '+t.kapasite+')';
+  const ratingEl=document.getElementById('detail-rating');
+  if(ratingEl) ratingEl.textContent=t.reviews>0?`${t.rating} (${t.reviews} yorum)`:t.rating;
+
+  // Kaptan
+  const capNameEl=document.getElementById('detail-captain-name');
+  if(capNameEl) capNameEl.textContent=t.captainName||'—';
+  const capMetaEl=document.getElementById('detail-captain-meta');
+  if(capMetaEl){ const raw=t._raw||{}; capMetaEl.innerHTML=`${raw.turSayisi||'—'} tur &bull; ${t.rating} <i class="fas fa-star star text-xs"></i>`; }
+
+  // Kategori etiketleri
+  const tagsEl=document.getElementById('detail-tags');
+  if(tagsEl){
+    const cats=(t._raw?.kategoriler||[t.cat||'Tekne Gezisi']).map(c=>`<span class="badge-cat bg-blue-100 text-blue-700">${c}</span>`).join('');
+    tagsEl.innerHTML=cats+`<span class="badge-cat bg-green-100 text-green-700"><i class="fas fa-bolt mr-1"></i>Aninda Onay</span>`;
+  }
+
+  // Fiyat
+  const priceEl=document.getElementById('booking-price');
+  if(priceEl) priceEl.textContent=t.price.toLocaleString('tr-TR');
+  updateBookingPrice(t.price);
+
+  // Saat dropdown — kaptanın seçtiği saatler
+  const saatSel=document.getElementById('detail-saat-select');
+  if(saatSel && t.saatler?.length){
+    saatSel.innerHTML=t.saatler.map(s=>`<option value="${s}">${s}</option>`).join('');
+  }
+
+  // Misafir limiti
+  const maxKisi=t.kapasite||8;
+  guestCount=Math.min(guestCount,maxKisi);
+  const gcEl=document.getElementById('guest-count');
+  if(gcEl) gcEl.textContent=guestCount;
+
+  // Dahil olanlar
+  const incEl=document.getElementById('detail-includes');
+  if(incEl && t.includes?.length){
+    incEl.innerHTML=t.includes.map(i=>`<div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success"></i> ${i}</div>`).join('');
+  }
+
+  // Açıklama
+  const descEl=document.getElementById('detail-description');
+  if(descEl && t.aciklama) descEl.textContent=t.aciklama;
+
+  // Paket tabs — gerçek tur için tek paket göster
+  if(t._isReal){
+    const pkgTabs=document.getElementById('detail-package-tabs');
+    const pkgDetails=document.getElementById('package-details');
+    if(pkgTabs) pkgTabs.innerHTML=`<button class="tab-btn active px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap"><i class="fas ${t.icon||'fa-anchor'} mr-1"></i>${t._raw?.kategoriler?.[0]||'Tur'}</button>`;
+    if(pkgDetails) pkgDetails.innerHTML=`<div class="bg-gray-50 rounded-xl p-4">
+      <h3 class="font-semibold mb-1">${t.name}</h3>
+      <p class="text-sm text-gray-600 mb-3">${t.aciklama||'—'}</p>
+      <div class="flex flex-wrap gap-2">${(t.includes||[]).map(i=>`<span class="bg-white text-sm px-3 py-1 rounded-full border"><i class="fas fa-check text-success mr-1"></i>${i}</span>`).join('')}</div>
+      <div class="mt-3 text-right"><span class="text-2xl font-bold text-primary">${t.price.toLocaleString('tr-TR')} TL</span><span class="text-gray-500 text-sm"> / tekne</span></div>
+    </div>`;
+  }
+
+  // Mobil alt bar fiyat
+  const mobilePrice=document.querySelector('.md\\:hidden.fixed.bottom-14 .text-xl');
+  if(mobilePrice) mobilePrice.textContent=t.price.toLocaleString('tr-TR')+' TL';
+}
 
 function tourCard(t, isSearch) {
   tourMap[t.id]=t;
@@ -1504,17 +1598,26 @@ let basePrice = 1800;
 
 function confirmBooking(){
   const t=selectedTour;
+  const saatSel=document.getElementById('detail-saat-select');
+  const tarihInput=document.querySelector('#page-detail input[type=date]');
+  const saat=saatSel?saatSel.value:'—';
+  const tarih=tarihInput&&tarihInput.value?new Date(tarihInput.value).toLocaleDateString('tr-TR'):'—';
+  const sess=lsGet('cu_session',null);
   const booking={
     id:'BK'+Date.now(),
     tourId:t?t.id:null,
     tourTitle:t?t.name:'Tur',
     captainEmail:t?t.captainEmail:null,
     captainName:t?t.captainName:null,
-    customerName:'Misafir',
+    customerName:sess?.name||'Misafir',
+    customerEmail:sess?.email||null,
+    customerPhone:sess?.phone||null,
     guests:guestCount,
     durum:'bekliyor',
     amount:basePrice+Math.round(basePrice*0.1),
-    date:new Date().toLocaleDateString('tr-TR'),
+    tarih,
+    saat,
+    loc:t?t.location:null,
     createdAt:new Date().toISOString()
   };
   const db=lsGet('db_bookings',[]);
@@ -1524,7 +1627,8 @@ function confirmBooking(){
 }
 
 function changeGuest(d) {
-  guestCount = Math.max(1, Math.min(10, guestCount + d));
+  const maxKap=selectedTour?.kapasite||10;
+  guestCount = Math.max(1, Math.min(maxKap, guestCount + d));
   document.getElementById('guest-count').textContent = guestCount;
 }
 

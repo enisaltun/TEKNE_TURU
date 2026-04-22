@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ay Takvimi — DenizBul</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',accent:'#f59e0b',success:'#10b981'}}}}</script>
+<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');*{font-family:'Inter',sans-serif}.moon-cell{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}</style>
+<script>function goBack(){var f=localStorage.getItem("marine_from");if(f)window.location.href=f;else if(document.referrer&&document.referrer.indexOf(location.hostname)>=0)history.back();else window.location.href="index.html";}</script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div class="bg-gradient-to-r from-slate-700 to-slate-500 text-white">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a onclick="goBack()" style="cursor:pointer" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition"><i class="fas fa-arrow-left text-sm"></i></a>
+      <div><div class="font-bold text-lg">Ay Takvimi</div><div class="text-slate-300 text-xs">Ay Evreleri &bull; Balık Avı Etkisi &bull; Özel Günler</div></div>
+    </div>
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-2xl" id="moon-icon">🌙</div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 py-6">
+
+  <!-- Current Moon -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-4xl mb-1" id="phase-icon">🌕</div>
+      <div class="text-sm font-bold" id="phase-name">—</div>
+      <div class="text-xs text-gray-500 mt-0.5" id="phase-pct">—</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-slate-600" id="moon-age">—</div>
+      <div class="text-xs text-gray-500 mt-1">Ay Yaşı (Gün)</div>
+      <div class="text-[10px] text-gray-400" id="moon-cycle">29.53 günlük döngü</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-amber-500" id="moon-rise">—</div>
+      <div class="text-xs text-gray-500 mt-1">Ay Doğuşu</div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border text-center">
+      <div class="text-2xl font-bold text-slate-600" id="moon-set">—</div>
+      <div class="text-xs text-gray-500 mt-1">Ay Batışı</div>
+    </div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-semibold text-sm"><i class="fas fa-calendar text-slate-500 mr-1"></i>Nisan 2026 Ay Takvimi</h3>
+      <span class="text-xs text-gray-400">Her hücre gün ay evresini gösterir</span>
+    </div>
+    <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2 font-medium">
+      <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cmt</div><div>Paz</div>
+    </div>
+    <div class="grid grid-cols-7 gap-1" id="moon-cal"></div>
+    <div class="flex gap-4 mt-3 text-[10px] text-gray-500 justify-center flex-wrap">
+      <span>🌑 Yeni Ay</span><span>🌒 Hilal</span><span>🌓 İlk Dördün</span><span>🌔 Şişen</span><span>🌕 Dolunay</span><span>🌖 Küçülen</span><span>🌗 Son Dördün</span><span>🌘 Yanan</span>
+    </div>
+  </div>
+
+  <!-- Fishing Guide -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-white rounded-2xl p-5 shadow-sm border">
+      <h3 class="font-semibold text-sm mb-3"><i class="fas fa-fish text-blue-500 mr-1"></i>Balık Avı Rehberi — Ay Evresine Göre</h3>
+      <div class="space-y-2 text-xs">
+        <div class="flex items-start gap-2 p-2 bg-green-50 rounded-lg"><span class="text-lg">🌕</span><div><div class="font-semibold text-green-700">Dolunay — Mükemmel</div><div class="text-gray-600">Gece balıkçılığı için ideal. Derin su türleri yüzeye çıkar.</div></div></div>
+        <div class="flex items-start gap-2 p-2 bg-blue-50 rounded-lg"><span class="text-lg">🌓</span><div><div class="font-semibold text-blue-700">İlk/Son Dördün — İyi</div><div class="text-gray-600">Beslenme aktivitesi yüksek. Sabah ve akşam saatleri tercih edin.</div></div></div>
+        <div class="flex items-start gap-2 p-2 bg-amber-50 rounded-lg"><span class="text-lg">🌑</span><div><div class="font-semibold text-amber-700">Yeni Ay — Orta</div><div class="text-gray-600">Karanlık gece, derin balıklar hareket eder. Gündüz avı önerilen.</div></div></div>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl p-5 shadow-sm border">
+      <h3 class="font-semibold text-sm mb-3"><i class="fas fa-calendar-star text-slate-500 mr-1"></i>Nisan 2026 Özel Günler</h3>
+      <div class="space-y-2 text-sm" id="special-days"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const now = new Date();
+const newMoonRef = new Date('2026-04-03T00:00:00');
+const lunarPeriod = 29.53 * 86400000;
+const elapsed = now.getTime() - newMoonRef.getTime();
+const age = ((elapsed % lunarPeriod) / lunarPeriod * 29.53);
+const pct = Math.round(age / 29.53 * 100);
+const phases = [
+  {min:0,max:1.5,icon:'🌑',name:'Yeni Ay'},
+  {min:1.5,max:7.4,icon:'🌒',name:'Hilal Dolmakta'},
+  {min:7.4,max:8.5,icon:'🌓',name:'İlk Dördün'},
+  {min:8.5,max:14.7,icon:'🌔',name:'Şişen Ay'},
+  {min:14.7,max:15.5,icon:'🌕',name:'Dolunay'},
+  {min:15.5,max:22.1,icon:'🌖',name:'Küçülen Ay'},
+  {min:22.1,max:23.5,icon:'🌗',name:'Son Dördün'},
+  {min:23.5,max:29.53,icon:'🌘',name:'Yanan Hilal'},
+];
+const phase = phases.find(p => age >= p.min && age < p.max) || phases[0];
+document.getElementById('phase-icon').textContent = phase.icon;
+document.getElementById('phase-name').textContent = phase.name;
+document.getElementById('phase-pct').textContent = '%' + pct + ' aydınlık';
+document.getElementById('moon-age').textContent = age.toFixed(1);
+document.getElementById('moon-icon').textContent = phase.icon;
+
+// Moon rise/set (approximation)
+const riseH = Math.round((age / 29.53) * 24) % 24;
+document.getElementById('moon-rise').textContent = String(riseH).padStart(2,'0') + ':' + String(Math.round(age*10)%60).padStart(2,'0');
+document.getElementById('moon-set').textContent = String((riseH+12)%24).padStart(2,'0') + ':00';
+
+// April 2026 calendar (starts Wednesday = index 2)
+const phaseForDay = d => {
+  const ms = newMoonRef.getTime() + (d - 3) * 86400000;
+  const a = ((ms - newMoonRef.getTime()) % lunarPeriod + lunarPeriod) % lunarPeriod / lunarPeriod * 29.53;
+  return phases.find(p => a >= p.min && a < p.max)?.icon || '🌑';
+};
+const today = now.getDate();
+const thisMonth = now.getMonth() === 3 && now.getFullYear() === 2026;
+let calHTML = '<div class="calendar-day empty" style="visibility:hidden"></div><div class="calendar-day empty" style="visibility:hidden"></div>'; // April starts on Wednesday
+for (let d = 1; d <= 30; d++) {
+  const icon = phaseForDay(d);
+  const isToday = thisMonth && d === today;
+  calHTML += `<div class="moon-cell ${isToday?'bg-blue-100 ring-2 ring-blue-400':''}" title="${d} Nisan">
+    <span>${icon}</span>
+  </div>`;
+}
+document.getElementById('moon-cal').innerHTML = calHTML;
+
+const specials = [
+  {date:'3 Nis', icon:'🌑', label:'Yeni Ay', color:'text-gray-700'},
+  {date:'11 Nis', icon:'🌓', label:'İlk Dördün', color:'text-blue-600'},
+  {date:'13 Nis', icon:'🎣', label:'Balıkçılık için iyi başlangıç', color:'text-green-600'},
+  {date:'18 Nis', icon:'🌕', label:'Dolunay — Gece avı ideal', color:'text-amber-600'},
+  {date:'25 Nis', icon:'🌗', label:'Son Dördün', color:'text-slate-600'},
+];
+document.getElementById('special-days').innerHTML = specials.map(s => `
+  <div class="flex items-center gap-2 p-2 border rounded-lg hover:bg-gray-50">
+    <span class="text-lg flex-shrink-0">${s.icon}</span>
+    <div><div class="text-xs font-semibold ${s.color}">${s.date}</div><div class="text-xs text-gray-500">${s.label}</div></div>
+  </div>`).join('');
+</script>
+</body>
+</html>
