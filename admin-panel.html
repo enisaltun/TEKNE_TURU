@@ -509,18 +509,18 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card mb-4 !py-3">
+    <!-- Ana Filtreler -->
+    <div class="card mb-2 !py-3">
       <div class="flex flex-wrap gap-3 items-center">
         <div class="relative">
           <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
-          <input type="text" id="user-search" placeholder="Ad, e-posta veya telefon ara..." oninput="usersPage=1;renderUsers()" class="pl-8 pr-4 py-2 border rounded-lg text-sm w-60">
+          <input type="text" id="user-search" placeholder="Ad, e-posta veya telefon ara..." oninput="usersPage=1;renderUsers()" class="pl-8 pr-4 py-2 border rounded-lg text-sm w-64">
         </div>
         <select id="user-filter-durum" onchange="usersPage=1;renderUsers()" class="px-3 py-2 border rounded-lg text-sm">
           <option value="">Tüm Durumlar</option>
-          <option value="aktif">Aktif</option>
-          <option value="pasif">Pasif</option>
-          <option value="engellendi">Engellendi</option>
+          <option value="aktif">● Aktif</option>
+          <option value="pasif">○ Pasif</option>
+          <option value="engellendi">✕ Engellendi</option>
         </select>
         <select id="user-filter-kanal" onchange="usersPage=1;renderUsers()" class="px-3 py-2 border rounded-lg text-sm">
           <option value="">Tüm Kanallar</option>
@@ -529,15 +529,69 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
           <option value="sosyal_medya">Sosyal Medya</option>
           <option value="misafir">Misafir</option>
         </select>
-        <select id="user-filter-sort" onchange="usersPage=1;renderUsers()" class="px-3 py-2 border rounded-lg text-sm">
-          <option value="yeni">En Yeni Kayit</option>
-          <option value="giris">Son Giris</option>
-          <option value="harcama">En Yüksek Harcama</option>
-          <option value="tur">En Çok Tur</option>
-          <option value="az">En Eski</option>
+        <select id="user-filter-plan" onchange="usersPage=1;renderUsers()" class="px-3 py-2 border rounded-lg text-sm">
+          <option value="">Tüm Planlar</option>
+          <option value="free">Ücretsiz</option>
+          <option value="pro">Pro</option>
         </select>
-        <button onclick="document.getElementById('user-search').value='';document.getElementById('user-filter-durum').value='';document.getElementById('user-filter-kanal').value='';document.getElementById('user-filter-sort').value='yeni';usersPage=1;renderUsers();" class="border px-3 py-2 rounded-lg text-xs text-gray-500 hover:bg-gray-50 transition"><i class="fas fa-times mr-1"></i>Temizle</button>
+        <button onclick="usersToggleAdvanced()" id="users-adv-btn" class="border px-3 py-2 rounded-lg text-xs text-gray-600 hover:bg-gray-50 transition flex items-center gap-1.5">
+          <i class="fas fa-sliders-h text-xs"></i> Gelişmiş
+          <span id="users-adv-badge" style="display:none" class="w-4 h-4 bg-primary text-white rounded-full text-[9px] flex items-center justify-center font-bold"></span>
+        </button>
+        <button onclick="usersClearAll()" class="border px-3 py-2 rounded-lg text-xs text-gray-500 hover:bg-gray-50 transition"><i class="fas fa-times mr-1"></i>Temizle</button>
         <span class="ml-auto text-xs text-gray-400" id="users-count"></span>
+      </div>
+
+      <!-- Gelişmiş Filtreler (gizli) -->
+      <div id="users-advanced-panel" style="display:none" class="mt-3 pt-3 border-t grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Şehir</label>
+          <input type="text" id="uf-sehir" placeholder="örn. İstanbul" oninput="usersPage=1;renderUsers()" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Son Giriş</label>
+          <select id="uf-giris" onchange="usersPage=1;renderUsers()" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <option value="">Tüm Zamanlar</option>
+            <option value="7">Son 7 Gün</option>
+            <option value="30">Son 30 Gün</option>
+            <option value="90">Son 90 Gün</option>
+            <option value="never">Hiç Giriş Yapmadı</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Rezervasyon</label>
+          <div class="flex gap-1 items-center">
+            <input type="number" id="uf-rez-min" placeholder="Min" min="0" oninput="usersPage=1;renderUsers()" class="w-full border rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <span class="text-gray-300 text-xs">–</span>
+            <input type="number" id="uf-rez-max" placeholder="Max" min="0" oninput="usersPage=1;renderUsers()" class="w-full border rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+          </div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Harcama (TL)</label>
+          <div class="flex gap-1 items-center">
+            <input type="number" id="uf-harcama-min" placeholder="Min" min="0" oninput="usersPage=1;renderUsers()" class="w-full border rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <span class="text-gray-300 text-xs">–</span>
+            <input type="number" id="uf-harcama-max" placeholder="Max" min="0" oninput="usersPage=1;renderUsers()" class="w-full border rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+          </div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Kayıt Tarihi</label>
+          <select id="uf-kayit" onchange="usersPage=1;renderUsers()" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <option value="">Tüm Zamanlar</option>
+            <option value="7">Son 7 Gün</option>
+            <option value="30">Son 30 Gün</option>
+            <option value="90">Son 90 Gün</option>
+            <option value="365">Son 1 Yıl</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">E-posta Durumu</label>
+          <select id="uf-eposta" onchange="usersPage=1;renderUsers()" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <option value="">Tümü</option>
+            <option value="verified">Doğrulanmış</option>
+            <option value="unverified">Doğrulanmamış</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -548,19 +602,19 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
           <thead>
             <tr>
               <th style="width:32px"><input type="checkbox" id="users-select-all" onchange="usersToggleSelectAll(this.checked)" class="rounded"></th>
-              <th>Kullanici</th>
-              <th>Sehir / Kayit</th>
-              <th>Son Giris</th>
-              <th class="text-center">Rez.</th>
-              <th>Harcama</th>
-              <th>Kanal</th>
-              <th>Plan</th>
-              <th>Durum</th>
+              <th id="uth-name"   onclick="usersColSort('name')"     class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Kullanici</th>
+              <th id="uth-sehir"  onclick="usersColSort('sehir')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Sehir / Kayit</th>
+              <th id="uth-giris"  onclick="usersColSort('giris')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Son Giris</th>
+              <th id="uth-rez"    onclick="usersColSort('rez')"      class="cursor-pointer select-none hover:bg-gray-50 transition text-center whitespace-nowrap">Rez.</th>
+              <th id="uth-harcama" onclick="usersColSort('harcama')" class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Harcama</th>
+              <th id="uth-kanal"  onclick="usersColSort('kanal')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Kanal</th>
+              <th id="uth-plan"   onclick="usersColSort('plan')"     class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Plan</th>
+              <th id="uth-durum"  onclick="usersColSort('durum')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Durum</th>
               <th class="text-right">Islem</th>
             </tr>
           </thead>
           <tbody id="users-tbody">
-            <tr><td colspan="9" class="text-center text-gray-400 py-8 text-xs">Yükleniyor...</td></tr>
+            <tr><td colspan="10" class="text-center text-gray-400 py-8 text-xs">Yükleniyor...</td></tr>
           </tbody>
         </table>
       </div>
@@ -3062,6 +3116,44 @@ function saveUsers(arr){
   localStorage.setItem('cu_users',JSON.stringify(real));
 }
 
+/* ── KULLANICI TABLOSU SIRALAMA STATE ── */
+let _userSortCol='createdAt';
+let _userSortDir='desc'; // 'asc' | 'desc'
+let _usersAdvOpen=false;
+
+function usersColSort(col){
+  if(_userSortCol===col) _userSortDir=_userSortDir==='asc'?'desc':'asc';
+  else { _userSortCol=col; _userSortDir='desc'; }
+  usersPage=1; renderUsers();
+}
+
+function usersToggleAdvanced(){
+  _usersAdvOpen=!_usersAdvOpen;
+  const p=document.getElementById('users-advanced-panel');
+  const b=document.getElementById('users-adv-btn');
+  if(p)p.style.display=_usersAdvOpen?'grid':'none';
+  if(b)b.classList.toggle('bg-primary/10',_usersAdvOpen);
+  if(b)b.classList.toggle('text-primary',_usersAdvOpen);
+}
+
+function usersClearAll(){
+  ['user-search','uf-sehir','uf-rez-min','uf-rez-max','uf-harcama-min','uf-harcama-max'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['user-filter-durum','user-filter-kanal','user-filter-plan','uf-giris','uf-kayit','uf-eposta'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  _userSortCol='createdAt'; _userSortDir='desc'; usersPage=1; renderUsers();
+}
+
+function usersUpdateSortHeaders(){
+  const cols={name:'uth-name',sehir:'uth-sehir',giris:'uth-giris',rez:'uth-rez',harcama:'uth-harcama',kanal:'uth-kanal',plan:'uth-plan',durum:'uth-durum'};
+  const labels={name:'Kullanici',sehir:'Sehir / Kayit',giris:'Son Giris',rez:'Rez.',harcama:'Harcama',kanal:'Kanal',plan:'Plan',durum:'Durum'};
+  Object.entries(cols).forEach(([col,thId])=>{
+    const th=document.getElementById(thId);
+    if(!th)return;
+    const isActive=_userSortCol===col;
+    const arrow=isActive?(_userSortDir==='asc'?' <i class="fas fa-arrow-up text-[9px]"></i>'  :' <i class="fas fa-arrow-down text-[9px]"></i>'):'<span style="opacity:0.2;margin-left:3px"><i class="fas fa-sort text-[9px]"></i></span>';
+    th.innerHTML=`<span class="flex items-center gap-0.5 ${isActive?'text-primary font-bold':''}">${labels[col]}${arrow}</span>`;
+  });
+}
+
 function renderUsers(){
   const users=getAllUsers();
   const bookings=lsGet('db_bookings',[]);
@@ -3077,16 +3169,32 @@ function renderUsers(){
   setEl('user-stat-harcama',users.reduce((s,u)=>s+(u.toplamHarcama||0),0).toLocaleString('tr-TR')+' TL');
   setEl('user-stat-engellenen',users.filter(u=>u.durum==='engellendi').length);
 
+  /* Filtre değerleri */
   const search=(document.getElementById('user-search')?.value||'').toLowerCase().trim();
   const fDurum=document.getElementById('user-filter-durum')?.value||'';
   const fKanal=document.getElementById('user-filter-kanal')?.value||'';
-  const fSort=document.getElementById('user-filter-sort')?.value||'yeni';
+  const fPlan=document.getElementById('user-filter-plan')?.value||'';
+  const fSehir=(document.getElementById('uf-sehir')?.value||'').toLowerCase().trim();
+  const fGiris=document.getElementById('uf-giris')?.value||'';
+  const fKayit=document.getElementById('uf-kayit')?.value||'';
+  const fEposta=document.getElementById('uf-eposta')?.value||'';
+  const fRezMin=parseInt(document.getElementById('uf-rez-min')?.value)||null;
+  const fRezMax=parseInt(document.getElementById('uf-rez-max')?.value)||null;
+  const fHarcMin=parseInt(document.getElementById('uf-harcama-min')?.value)||null;
+  const fHarcMax=parseInt(document.getElementById('uf-harcama-max')?.value)||null;
+
+  /* Gelişmiş filtre aktif mi? badge */
+  const advActive=[fSehir,fGiris,fKayit,fEposta,fRezMin,fRezMax,fHarcMin,fHarcMax].filter(Boolean).length;
+  const badge=document.getElementById('users-adv-badge');
+  if(badge){badge.style.display=advActive?'flex':'none';if(advActive)badge.textContent=advActive;}
 
   let filtered=users.filter(u=>{
+    /* Arama */
     if(search){
       const hay=((u.name||'')+(u.email||'')+(u.phone||u.telefon||'')+(u.sehir||'')).toLowerCase();
       if(!hay.includes(search))return false;
     }
+    /* Durum */
     if(fDurum){
       const isAktif=u.durum!=='engellendi'&&u.sonGiris&&new Date(u.sonGiris)>=monthAgo;
       const isPasif=u.durum!=='engellendi'&&(!u.sonGiris||new Date(u.sonGiris)<monthAgo);
@@ -3094,15 +3202,51 @@ function renderUsers(){
       if(fDurum==='pasif'&&!isPasif)return false;
       if(fDurum==='engellendi'&&u.durum!=='engellendi')return false;
     }
+    /* Kanal */
     if(fKanal&&(u.kayitKanali||'web')!==fKanal)return false;
+    /* Plan */
+    if(fPlan&&(u.plan||'free')!==fPlan)return false;
+    /* Şehir */
+    if(fSehir&&!(u.sehir||'').toLowerCase().includes(fSehir))return false;
+    /* Son giriş aralığı */
+    if(fGiris){
+      if(fGiris==='never'){if(u.sonGiris)return false;}
+      else{const cut=new Date(now-+fGiris*86400000);if(!u.sonGiris||new Date(u.sonGiris)<cut)return false;}
+    }
+    /* Kayıt tarihi */
+    if(fKayit){const cut=new Date(now-+fKayit*86400000);if(!u.createdAt||new Date(u.createdAt)<cut)return false;}
+    /* E-posta */
+    if(fEposta==='verified'&&u.emailOnaylandi===false)return false;
+    if(fEposta==='unverified'&&u.emailOnaylandi!==false)return false;
+    /* Rezervasyon sayısı */
+    const rezC=u.turSayisi||bookings.filter(b=>(b.customerEmail===u.email||b.customerName===(u.name||u.ad))&&b.durum!=='iptal'&&b.durum!=='reddedildi').length;
+    if(fRezMin!==null&&rezC<fRezMin)return false;
+    if(fRezMax!==null&&rezC>fRezMax)return false;
+    /* Harcama */
+    const harc=u.toplamHarcama||0;
+    if(fHarcMin!==null&&harc<fHarcMin)return false;
+    if(fHarcMax!==null&&harc>fHarcMax)return false;
     return true;
   });
 
-  if(fSort==='harcama')filtered.sort((a,b)=>(b.toplamHarcama||0)-(a.toplamHarcama||0));
-  else if(fSort==='tur')filtered.sort((a,b)=>(b.turSayisi||0)-(a.turSayisi||0));
-  else if(fSort==='giris')filtered.sort((a,b)=>new Date(b.sonGiris||0)-new Date(a.sonGiris||0));
-  else if(fSort==='az')filtered.sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
-  else filtered.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+  /* Kolon sıralama */
+  const col=_userSortCol, dir=_userSortDir==='asc'?1:-1;
+  filtered.sort((a,b)=>{
+    switch(col){
+      case 'name':    return dir*((a.name||a.ad||'').localeCompare(b.name||b.ad||'','tr'));
+      case 'sehir':   return dir*((a.sehir||'').localeCompare(b.sehir||'','tr'));
+      case 'giris':   return dir*(new Date(a.sonGiris||0)-new Date(b.sonGiris||0));
+      case 'rez':     return dir*((a.turSayisi||0)-(b.turSayisi||0));
+      case 'harcama': return dir*((a.toplamHarcama||0)-(b.toplamHarcama||0));
+      case 'kanal':   return dir*((a.kayitKanali||'web').localeCompare(b.kayitKanali||'web','tr'));
+      case 'plan':    return dir*((a.plan||'free').localeCompare(b.plan||'free','tr'));
+      case 'durum':   return dir*((a.durum||'').localeCompare(b.durum||'','tr'));
+      default:        return dir*(new Date(a.createdAt||0)-new Date(b.createdAt||0));
+    }
+  });
+
+  /* Kolon başlıklarını güncelle */
+  usersUpdateSortHeaders();
 
   const total=filtered.length;
   const totalPages=Math.max(1,Math.ceil(total/USERS_PER_PAGE));
@@ -3135,7 +3279,7 @@ function renderUsers(){
   const tbody=document.getElementById('users-tbody');
   if(!tbody)return;
   if(!paginated.length){
-    tbody.innerHTML=`<tr><td colspan="9" class="text-center text-gray-400 py-12 text-sm">${total?'<i class="fas fa-filter mr-2"></i>Filtreye uyan kullanici yok.':'<i class="fas fa-users mr-2"></i>Henüz kayitli kullanici bulunmuyor.'}</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="10" class="text-center text-gray-400 py-12 text-sm">${total?'<i class="fas fa-filter mr-2"></i>Filtreye uyan kullanici yok.':'<i class="fas fa-users mr-2"></i>Henüz kayitli kullanici bulunmuyor.'}</td></tr>`;
     return;
   }
 
