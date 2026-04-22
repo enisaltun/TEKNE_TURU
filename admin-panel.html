@@ -65,11 +65,9 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Yonetim</div>
   <a href="#page-manager" data-nav="page-manager"><i class="fas fa-layer-group"></i> Sayfa Yonetimi <span id="hidden-pages-badge" style="display:none;font-size:9px;background:#ef4444;color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
   <a href="#cms-web" data-nav="cms-web"><i class="fas fa-edit"></i> Icerik Editoru</a>
-  <div style="margin:8px 4px;background:#1e293b;border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-    <div style="display:flex;align-items:center;gap:8px">
-      <i class="fas fa-store" style="width:18px;text-align:center;color:#f59e0b"></i>
-      <span style="font-size:12px;color:#cbd5e1;font-weight:500">Magaza</span>
-    </div>
+  <a href="#shop-admin" data-nav="shop-admin"><i class="fas fa-store" style="color:#f59e0b"></i> <span style="color:#f59e0b;font-weight:600">Mağaza Yönetimi</span> <span id="shop-pending-badge" style="display:none;background:#f59e0b;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
+  <div style="margin:4px 4px 4px 28px;background:#1e293b;border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <span style="font-size:11px;color:#94a3b8">Mağaza açık/kapalı</span>
     <div id="sidebar-shop-toggle" class="toggle" onclick="sidebarToggleShop()" style="cursor:pointer;flex-shrink:0"></div>
   </div>
 
@@ -805,6 +803,157 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
             <tr><td colspan="7" class="text-center text-gray-400 py-6 text-xs">Yükleniyor...</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE: MAĞAZA YÖNETİMİ                 -->
+  <!-- ======================================= -->
+  <section id="page-shop-admin" class="page">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h1 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-store text-amber-500"></i> Mağaza Yönetimi</h1>
+        <p class="text-xs text-gray-400 mt-0.5">Satıcılar, ürünler, siparişler ve komisyon yönetimi</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="shopAdminOpenProduct(null)" class="bg-amber-500 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-amber-600">
+          <i class="fas fa-plus"></i> Ürün Ekle
+        </button>
+        <div style="background:#1e293b;border-radius:12px;padding:8px 14px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:#94a3b8">Mağaza</span>
+          <div id="shop-admin-main-toggle" class="toggle" onclick="sidebarToggleShop();shopAdminUpdateToggle()" style="cursor:pointer"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-5 gap-3 mb-5">
+      <div class="stat-card"><div class="stat-icon bg-amber-100 text-amber-600"><i class="fas fa-box-open"></i></div><div><div class="text-xl font-bold" id="sa-stat-urun">0</div><div class="text-xs text-gray-500">Aktif Ürün</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-shopping-cart"></i></div><div><div class="text-xl font-bold" id="sa-stat-siparis">0</div><div class="text-xs text-gray-500">Toplam Sipariş</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-green-100 text-success"><i class="fas fa-money-bill-wave"></i></div><div><div class="text-xl font-bold" id="sa-stat-ciro">0 TL</div><div class="text-xs text-gray-500">Toplam Ciro</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-purple-100 text-purple-600"><i class="fas fa-percentage"></i></div><div><div class="text-xl font-bold" id="sa-stat-komisyon">0 TL</div><div class="text-xs text-gray-500">Komisyon Geliri</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-orange-100 text-orange-500"><i class="fas fa-clock"></i></div><div><div class="text-xl font-bold" id="sa-stat-bekleyen">0</div><div class="text-xs text-gray-500">Onay Bekleyen</div></div></div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="flex gap-1 mb-4 p-1 bg-gray-100 rounded-xl w-fit">
+      <button onclick="saSetTab('products')" id="sa-tab-products" class="sa-tab px-4 py-2 rounded-lg text-sm font-medium bg-white shadow text-gray-800">Ürünler</button>
+      <button onclick="saSetTab('orders')" id="sa-tab-orders" class="sa-tab px-4 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-white/60">Siparişler</button>
+      <button onclick="saSetTab('sellers')" id="sa-tab-sellers" class="sa-tab px-4 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-white/60">Satıcılar</button>
+      <button onclick="saSetTab('categories')" id="sa-tab-categories" class="sa-tab px-4 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-white/60">Kategoriler</button>
+      <button onclick="saSetTab('settings')" id="sa-tab-settings" class="sa-tab px-4 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-white/60">Komisyon & Ayarlar</button>
+    </div>
+
+    <!-- TAB: ÜRÜNLER -->
+    <div id="sa-panel-products">
+      <div class="card mb-3 !py-3">
+        <div class="flex flex-wrap gap-3 items-center">
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+            <input type="text" id="sa-prod-search" placeholder="Ürün veya satıcı ara..." oninput="saRenderProducts()" class="pl-8 pr-4 py-2 border rounded-lg text-sm w-56">
+          </div>
+          <select id="sa-prod-kat" onchange="saRenderProducts()" class="border rounded-lg px-3 py-2 text-sm">
+            <option value="">Tüm Kategoriler</option>
+            <option>Olta & Aksesuar</option><option>Tekne Ekipmanı</option><option>Güvenlik</option><option>Giyim</option><option>Elektronik</option><option>Yem & Sahte Yem</option>
+          </select>
+          <select id="sa-prod-durum" onchange="saRenderProducts()" class="border rounded-lg px-3 py-2 text-sm">
+            <option value="">Tüm Durumlar</option>
+            <option value="aktif">Aktif</option><option value="bekliyor">Onay Bekliyor</option><option value="reddedildi">Reddedildi</option><option value="pasif">Pasif</option>
+          </select>
+          <select id="sa-prod-sort" onchange="saRenderProducts()" class="border rounded-lg px-3 py-2 text-sm">
+            <option value="yeni">En Yeni</option><option value="satis">En Çok Satan</option><option value="fiyat-y">Fiyat (Yüksek→Düşük)</option><option value="fiyat-d">Fiyat (Düşük→Yüksek)</option>
+          </select>
+          <span class="ml-auto text-xs text-gray-400" id="sa-prod-count"></span>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="sa-products-grid"></div>
+    </div>
+
+    <!-- TAB: SİPARİŞLER -->
+    <div id="sa-panel-orders" style="display:none">
+      <div class="card mb-3 !py-3">
+        <div class="flex flex-wrap gap-3 items-center">
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+            <input type="text" id="sa-ord-search" placeholder="Sipariş no veya müşteri..." oninput="saRenderOrders()" class="pl-8 pr-4 py-2 border rounded-lg text-sm w-56">
+          </div>
+          <select id="sa-ord-durum" onchange="saRenderOrders()" class="border rounded-lg px-3 py-2 text-sm">
+            <option value="">Tüm Durumlar</option>
+            <option value="bekliyor">Bekliyor</option><option value="hazirlaniyor">Hazırlanıyor</option><option value="kargoda">Kargoda</option><option value="teslim-edildi">Teslim Edildi</option><option value="iptal">İptal</option>
+          </select>
+          <span class="ml-auto text-xs text-gray-400" id="sa-ord-count"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Sipariş No</th><th>Müşteri</th><th>Ürün</th><th>Satıcı</th><th>Tutar</th><th>Komisyon</th><th>Tarih</th><th>Durum</th><th></th></tr></thead>
+            <tbody id="sa-orders-tbody"><tr><td colspan="9" class="text-center text-gray-400 py-8 text-xs">Yükleniyor...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: SATICILAR -->
+    <div id="sa-panel-sellers" style="display:none">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="sa-sellers-grid"></div>
+    </div>
+
+    <!-- TAB: KATEGORİLER -->
+    <div id="sa-panel-categories" style="display:none">
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card">
+          <h3 class="font-semibold text-sm mb-4 flex items-center gap-2"><i class="fas fa-tags text-amber-500 text-xs"></i> Mevcut Kategoriler</h3>
+          <div id="sa-cat-list" class="space-y-2"></div>
+        </div>
+        <div class="card">
+          <h3 class="font-semibold text-sm mb-4">Yeni Kategori</h3>
+          <div class="space-y-3">
+            <input type="text" id="sa-cat-name" placeholder="Kategori adı" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+            <input type="text" id="sa-cat-icon" placeholder="Font Awesome ikon (fa-fish)" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+            <button onclick="saAddCategory()" class="w-full bg-amber-500 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-amber-600"><i class="fas fa-plus mr-1"></i> Ekle</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: KOMİSYON & AYARLAR -->
+    <div id="sa-panel-settings" style="display:none">
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card">
+          <h3 class="font-semibold text-sm mb-5 flex items-center gap-2"><i class="fas fa-percentage text-amber-500 text-xs"></i> Komisyon Oranları</h3>
+          <div class="space-y-4" id="sa-commission-rows"></div>
+          <button onclick="saSaveCommissions()" class="mt-4 bg-amber-500 text-white w-full rounded-xl py-2.5 text-sm font-semibold hover:bg-amber-600"><i class="fas fa-save mr-1"></i> Kaydet</button>
+        </div>
+        <div class="card">
+          <h3 class="font-semibold text-sm mb-5 flex items-center gap-2"><i class="fas fa-cog text-amber-500 text-xs"></i> Mağaza Ayarları</h3>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between py-3 border-b">
+              <div><div class="text-sm font-medium">Ürün Onay Zorunluluğu</div><div class="text-xs text-gray-400">Her yeni ürün admin onayı beklesin</div></div>
+              <div id="sa-toggle-approval" class="toggle on" onclick="saToggleSetting('approval',this)" style="cursor:pointer"></div>
+            </div>
+            <div class="flex items-center justify-between py-3 border-b">
+              <div><div class="text-sm font-medium">Yorum Onay Zorunluluğu</div><div class="text-xs text-gray-400">Ürün yorumları önce admin görür</div></div>
+              <div id="sa-toggle-reviews" class="toggle" onclick="saToggleSetting('reviews',this)" style="cursor:pointer"></div>
+            </div>
+            <div class="flex items-center justify-between py-3 border-b">
+              <div><div class="text-sm font-medium">Stok Sıfırında Gizle</div><div class="text-xs text-gray-400">Stok biten ürünler listede görünmesin</div></div>
+              <div id="sa-toggle-stockhide" class="toggle on" onclick="saToggleSetting('stockhide',this)" style="cursor:pointer"></div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Minimum Sipariş Tutarı (TL)</label>
+              <input type="number" id="sa-min-order" value="0" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Ücretsiz Kargo Limiti (TL)</label>
+              <input type="number" id="sa-free-shipping" value="500" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+            </div>
+            <button onclick="saShopSettings()" class="w-full bg-amber-500 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-amber-600"><i class="fas fa-save mr-1"></i> Ayarları Kaydet</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -2226,6 +2375,89 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <span id="toast-text"></span>
 </div>
 
+<!-- ===== MAĞAZA ÜRÜN MODALI ===== -->
+<div id="sa-product-modal" style="display:none" class="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto pt-6 pb-10 px-4">
+  <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl my-4">
+    <div class="flex items-center justify-between px-6 py-4 border-b">
+      <h2 id="sa-prod-modal-title" class="font-bold text-base">Ürün Ekle</h2>
+      <button onclick="saCloseProduct()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><i class="fas fa-times text-sm"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+      <input type="hidden" id="sa-prod-id">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Ürün Adı *</label>
+          <input type="text" id="sa-prod-name" placeholder="örn. Karbon Olta Kamışı 3m" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Kategori *</label>
+          <select id="sa-prod-kat-f" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+            <option value="">Seçin</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Satıcı</label>
+          <select id="sa-prod-seller-f" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+            <option value="">Admin (Platform)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Fiyat (TL) *</label>
+          <input type="number" id="sa-prod-price" placeholder="0" min="0" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">İndirimli Fiyat (TL)</label>
+          <input type="number" id="sa-prod-sale-price" placeholder="İndirim yoksa boş" min="0" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Stok Adedi</label>
+          <input type="number" id="sa-prod-stock" placeholder="999" min="0" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Durum</label>
+          <select id="sa-prod-status" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+            <option value="aktif">Aktif</option>
+            <option value="bekliyor">Onay Bekliyor</option>
+            <option value="pasif">Pasif</option>
+            <option value="reddedildi">Reddedildi</option>
+          </select>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Açıklama</label>
+          <textarea id="sa-prod-desc" rows="3" placeholder="Ürün açıklaması..." class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"></textarea>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Etiketler (virgülle ayırın)</label>
+          <input type="text" id="sa-prod-tags" placeholder="olta, kamış, karbon, deniz" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">İkon (Font Awesome)</label>
+          <input type="text" id="sa-prod-icon" placeholder="fa-fish" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Ürün Rengi</label>
+          <div class="flex gap-2 mt-1">
+            <button onclick="saProdColor(this,'#0369a1')" style="background:#0369a1" class="sa-prod-clr w-7 h-7 rounded-full border-2 border-white shadow ring-2 ring-primary"></button>
+            <button onclick="saProdColor(this,'#059669')" style="background:#059669" class="sa-prod-clr w-7 h-7 rounded-full border-2 border-white shadow"></button>
+            <button onclick="saProdColor(this,'#d97706')" style="background:#d97706" class="sa-prod-clr w-7 h-7 rounded-full border-2 border-white shadow"></button>
+            <button onclick="saProdColor(this,'#7c3aed')" style="background:#7c3aed" class="sa-prod-clr w-7 h-7 rounded-full border-2 border-white shadow"></button>
+            <button onclick="saProdColor(this,'#dc2626')" style="background:#dc2626" class="sa-prod-clr w-7 h-7 rounded-full border-2 border-white shadow"></button>
+            <button onclick="saProdColor(this,'#475569')" style="background:#475569" class="sa-prod-clr w-7 h-7 rounded-full border-2 border-white shadow"></button>
+          </div>
+        </div>
+        <div class="col-span-2 flex items-center gap-3 py-2 border-t">
+          <input type="checkbox" id="sa-prod-featured" class="rounded">
+          <label for="sa-prod-featured" class="text-sm text-gray-700 cursor-pointer">Öne çıkan ürün olarak işaretle</label>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3 px-6 pb-5">
+      <button onclick="saCloseProduct()" class="flex-1 border rounded-xl py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50">İptal</button>
+      <button onclick="saSaveProduct()" class="flex-1 bg-amber-500 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-amber-600"><i class="fas fa-check mr-1"></i> Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== ABONELİK PAKET MODALI ===== -->
 <div id="sub-package-modal" style="display:none" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
   <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
@@ -2329,8 +2561,8 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
-const pages=['dashboard','captains','users','tours-bookings','reservations','page-manager','cms-web','cms-app','finance','subscriptions','marine','modules','captain-add','platform-control','mucbir'];
-const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','subscriptions':'Abonelik & Üyelik','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi','mucbir':'Mucbir Sebepler Yonetimi'};
+const pages=['dashboard','captains','users','tours-bookings','reservations','page-manager','cms-web','cms-app','finance','subscriptions','shop-admin','marine','modules','captain-add','platform-control','mucbir'];
+const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','subscriptions':'Abonelik & Üyelik','shop-admin':'Mağaza Yönetimi','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi','mucbir':'Mucbir Sebepler Yonetimi'};
 
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
 
@@ -2349,6 +2581,7 @@ function handleRoute(){
   if(h==='cms-app')             renderCmsApp();
   if(h==='finance')             renderFinance();
   if(h==='subscriptions')       renderSubscriptions();
+  if(h==='shop-admin')         renderShopAdmin();
   if(h==='marine')              renderMarineData();
   if(h==='modules')             renderMarineModules();
   if(h==='platform-control')    renderPlatformControl();
@@ -6041,6 +6274,394 @@ function systemReset(seedCaptain){
   }
   showToast('Sistem sıfırlandı'+(seedCaptain?' — demo kaptan oluşturuldu':''),'success');
   setTimeout(()=>location.reload(),1800);
+}
+
+/* ═══════════════════════════════════════════════════
+   MAĞAZA YÖNETİM MODÜLÜ
+   ═══════════════════════════════════════════════════ */
+
+const SA_DEFAULT_CATS=[
+  {id:'cat_olta',    name:'Olta & Aksesuar',    icon:'fa-fish'},
+  {id:'cat_tekne',   name:'Tekne Ekipmanı',     icon:'fa-ship'},
+  {id:'cat_guvenlik',name:'Güvenlik',            icon:'fa-life-ring'},
+  {id:'cat_giyim',   name:'Giyim & Aksesuar',   icon:'fa-tshirt'},
+  {id:'cat_elektronik',name:'Elektronik & Navigasyon',icon:'fa-compass'},
+  {id:'cat_yem',     name:'Yem & Sahte Yem',    icon:'fa-water'},
+];
+
+const SA_DEFAULT_PRODUCTS=[
+  {id:'p1',name:'Karbon Olta Kamışı 3m',kategori:'Olta & Aksesuar',fiyat:850,satisFiyat:749,stok:45,durum:'aktif',satisAdedi:128,renk:'#0369a1',ikon:'fa-fish',aciklama:'Yüksek modüllü karbon fiber yapı, hafif ve dayanıklı.',featured:true,satici:'DenizBul Store',tags:'olta,kamış,karbon'},
+  {id:'p2',name:'GPS Balık Bulucu',kategori:'Elektronik & Navigasyon',fiyat:3200,satisFiyat:null,stok:12,durum:'aktif',satisAdedi:34,renk:'#7c3aed',ikon:'fa-satellite-dish',aciklama:'500m derinlik okuma, renkli ekran.',featured:false,satici:'MarineShop',tags:'gps,sonar,balık'},
+  {id:'p3',name:'Can Yeleği CE Onaylı',kategori:'Güvenlik',fiyat:450,satisFiyat:399,stok:88,durum:'aktif',satisAdedi:215,renk:'#dc2626',ikon:'fa-life-ring',aciklama:'ISO 12402-5 sertifikalı, 50N kaldırma gücü.',featured:true,satici:'SafetyMarine',tags:'can yeleği,güvenlik,CE'},
+  {id:'p4',name:'Silikon Ahtapot Yemi 5li',kategori:'Yem & Sahte Yem',fiyat:120,satisFiyat:null,stok:200,durum:'aktif',satisAdedi:340,renk:'#059669',ikon:'fa-water',aciklama:'Gece fosforlu, 5 renk seçeneği.',featured:false,satici:'DenizBul Store',tags:'yem,ahtapot,silikon'},
+  {id:'p5',name:'Su Geçirmez Tekne Çantası',kategori:'Tekne Ekipmanı',fiyat:280,satisFiyat:249,stok:0,durum:'aktif',satisAdedi:67,renk:'#d97706',ikon:'fa-ship',aciklama:'500D tarpaulin, 20L, tamamen su geçirmez.',featured:false,satici:'MarineShop',tags:'çanta,su geçirmez,tekne'},
+  {id:'p6',name:'UPF50+ Balıkçı Gömleği',kategori:'Giyim & Aksesuar',fiyat:320,satisFiyat:null,stok:35,durum:'bekliyor',satisAdedi:0,renk:'#475569',ikon:'fa-tshirt',aciklama:'UV koruma faktörü 50+, hızlı kuruma.',featured:false,satici:'FishWear',tags:'gömlek,UV,giyim'},
+];
+
+const SA_DEFAULT_ORDERS=[
+  {id:'SO001',musteri:'Hakan Erdem',urun:'Karbon Olta Kamışı 3m',satici:'DenizBul Store',tutar:749,komisyon:75,tarih:'18.04.2026',durum:'teslim-edildi'},
+  {id:'SO002',musteri:'Arda Gur',urun:'GPS Balık Bulucu',satici:'MarineShop',tutar:3200,komisyon:320,tarih:'17.04.2026',durum:'kargoda'},
+  {id:'SO003',musteri:'Mine Toprak',urun:'Can Yeleği CE Onaylı',satici:'SafetyMarine',tutar:399,komisyon:40,tarih:'16.04.2026',durum:'hazirlaniyor'},
+  {id:'SO004',musteri:'Didem Arslan',urun:'Silikon Ahtapot Yemi 5li',satici:'DenizBul Store',tutar:120,komisyon:12,tarih:'15.04.2026',durum:'teslim-edildi'},
+  {id:'SO005',musteri:'Fatma Ozkan',urun:'Su Geçirmez Tekne Çantası',satici:'MarineShop',tutar:249,komisyon:25,tarih:'14.04.2026',durum:'bekliyor'},
+  {id:'SO006',musteri:'Ozan Dogan',urun:'Karbon Olta Kamışı 3m',satici:'DenizBul Store',tutar:749,komisyon:75,tarih:'13.04.2026',durum:'iptal'},
+];
+
+const SA_DEFAULT_SELLERS=[
+  {id:'s1',name:'DenizBul Store',email:'magaza@denizbul.tr',telefon:'0850 000 0001',urunSayisi:12,toplamSatis:45800,komisyon:10,durum:'aktif',bakiye:41220,joinDate:'01.01.2026'},
+  {id:'s2',name:'MarineShop',email:'info@marineshop.com',telefon:'0532 111 2233',urunSayisi:8,toplamSatis:28400,komisyon:12,durum:'aktif',bakiye:24992,joinDate:'15.02.2026'},
+  {id:'s3',name:'SafetyMarine',email:'satis@safetymarine.com',telefon:'0541 333 4455',urunSayisi:5,toplamSatis:15600,komisyon:10,durum:'aktif',bakiye:14040,joinDate:'01.03.2026'},
+  {id:'s4',name:'FishWear',email:'fishwear@gmail.com',telefon:'0555 666 7788',urunSayisi:3,toplamSatis:0,komisyon:15,durum:'bekliyor',bakiye:0,joinDate:'20.04.2026'},
+];
+
+function saGetProducts(){return lsGet('db_shop_products',null)||(localStorage.setItem('db_shop_products',JSON.stringify(SA_DEFAULT_PRODUCTS)),SA_DEFAULT_PRODUCTS);}
+function saSaveProducts(p){localStorage.setItem('db_shop_products',JSON.stringify(p));}
+function saGetOrders(){return lsGet('db_shop_orders',null)||(localStorage.setItem('db_shop_orders',JSON.stringify(SA_DEFAULT_ORDERS)),SA_DEFAULT_ORDERS);}
+function saSaveOrders(o){localStorage.setItem('db_shop_orders',JSON.stringify(o));}
+function saGetSellers(){return lsGet('db_shop_sellers',null)||(localStorage.setItem('db_shop_sellers',JSON.stringify(SA_DEFAULT_SELLERS)),SA_DEFAULT_SELLERS);}
+function saGetCats(){return lsGet('db_shop_cats',null)||(localStorage.setItem('db_shop_cats',JSON.stringify(SA_DEFAULT_CATS)),SA_DEFAULT_CATS);}
+function saSaveCats(c){localStorage.setItem('db_shop_cats',JSON.stringify(c));}
+function saGetShopSettings(){return lsGet('db_shop_settings',{approval:true,reviews:false,stockhide:true,minOrder:0,freeShipping:500,commissions:{'Olta & Aksesuar':10,'Tekne Ekipmanı':10,'Güvenlik':8,'Giyim & Aksesuar':12,'Elektronik & Navigasyon':10,'Yem & Sahte Yem':12}});}
+
+let _saTab='products';
+let _saProdColor='#0369a1';
+
+function saSetTab(t){
+  _saTab=t;
+  ['products','orders','sellers','categories','settings'].forEach(tab=>{
+    document.getElementById('sa-panel-'+tab).style.display=tab===t?'block':'none';
+    const btn=document.getElementById('sa-tab-'+tab);
+    if(btn){btn.classList.toggle('bg-white',tab===t);btn.classList.toggle('shadow',tab===t);btn.classList.toggle('text-gray-800',tab===t);btn.classList.toggle('text-gray-500',tab!==t);}
+  });
+  if(t==='products')saRenderProducts();
+  if(t==='orders')saRenderOrders();
+  if(t==='sellers')saRenderSellers();
+  if(t==='categories')saRenderCategories();
+  if(t==='settings')saRenderSettings();
+}
+
+function renderShopAdmin(){
+  const prods=saGetProducts();
+  const orders=saGetOrders();
+  const aktif=prods.filter(p=>p.durum==='aktif');
+  const ciro=orders.filter(o=>o.durum==='teslim-edildi').reduce((s,o)=>s+(o.tutar||0),0);
+  const kom=orders.filter(o=>o.durum==='teslim-edildi').reduce((s,o)=>s+(o.komisyon||0),0);
+  const bekleyen=prods.filter(p=>p.durum==='bekliyor').length;
+  document.getElementById('sa-stat-urun').textContent=aktif.length;
+  document.getElementById('sa-stat-siparis').textContent=orders.length;
+  document.getElementById('sa-stat-ciro').textContent=ciro.toLocaleString('tr-TR')+' TL';
+  document.getElementById('sa-stat-komisyon').textContent=kom.toLocaleString('tr-TR')+' TL';
+  document.getElementById('sa-stat-bekleyen').textContent=bekleyen;
+  const badge=document.getElementById('shop-pending-badge');
+  if(badge){badge.style.display=bekleyen?'inline':'none';badge.textContent=bekleyen;}
+  shopAdminUpdateToggle();
+  saSetTab(_saTab);
+}
+
+function shopAdminUpdateToggle(){
+  const el=document.getElementById('shop-admin-main-toggle');
+  if(el)el.classList.toggle('on',isShopOpen());
+}
+
+/* ── ÜRÜNLER ── */
+function saRenderProducts(){
+  const prods=saGetProducts();
+  const search=(document.getElementById('sa-prod-search')?.value||'').toLowerCase();
+  const kat=document.getElementById('sa-prod-kat')?.value||'';
+  const durum=document.getElementById('sa-prod-durum')?.value||'';
+  const sort=document.getElementById('sa-prod-sort')?.value||'yeni';
+
+  let list=prods.filter(p=>{
+    if(search&&!((p.name||'')+(p.aciklama||'')+(p.satici||'')+(p.tags||'')).toLowerCase().includes(search))return false;
+    if(kat&&p.kategori!==kat)return false;
+    if(durum&&p.durum!==durum)return false;
+    return true;
+  });
+  if(sort==='satis')list.sort((a,b)=>(b.satisAdedi||0)-(a.satisAdedi||0));
+  else if(sort==='fiyat-y')list.sort((a,b)=>(b.fiyat||0)-(a.fiyat||0));
+  else if(sort==='fiyat-d')list.sort((a,b)=>(a.fiyat||0)-(b.fiyat||0));
+
+  const el=document.getElementById('sa-products-grid');
+  const cnt=document.getElementById('sa-prod-count');
+  if(cnt)cnt.textContent=list.length+' ürün';
+  if(!el)return;
+
+  const DURUM_STYLE={aktif:{bg:'#dcfce7',col:'#16a34a',lbl:'Aktif'},bekliyor:{bg:'#fef3c7',col:'#d97706',lbl:'Onay Bekliyor'},reddedildi:{bg:'#fee2e2',col:'#dc2626',lbl:'Reddedildi'},pasif:{bg:'#f1f5f9',col:'#64748b',lbl:'Pasif'}};
+  if(!list.length){el.innerHTML='<div class="col-span-3 text-center text-gray-400 py-12 text-sm"><i class="fas fa-box-open mr-2"></i>Ürün bulunamadı</div>';return;}
+
+  el.innerHTML=list.map(p=>{
+    const ds=DURUM_STYLE[p.durum]||DURUM_STYLE.pasif;
+    const discountPct=p.satisFiyat?Math.round((1-p.satisFiyat/p.fiyat)*100):null;
+    return`<div class="card hover:shadow-lg transition-shadow relative">
+      ${p.featured?'<div style="position:absolute;top:12px;right:12px;background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;z-index:1">⭐ ÖÇIKAN</div>':''}
+      <div style="height:100px;background:${p.renk||'#0369a1'}18;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;position:relative">
+        <i class="fas ${p.ikon||'fa-box'}" style="font-size:36px;color:${p.renk||'#0369a1'}"></i>
+        ${p.stok===0?'<div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:#dc2626;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px">STOK YOK</div>':''}
+        ${discountPct?`<div style="position:absolute;top:8px;left:8px;background:#dc2626;color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px">%${discountPct}</div>`:''}
+      </div>
+      <div class="text-xs text-gray-400 mb-1">${p.kategori||'—'} · <span class="font-medium">${p.satici||'—'}</span></div>
+      <div class="font-bold text-sm mb-1 leading-tight">${p.name}</div>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="font-bold text-base" style="color:${p.renk||'#0369a1'}">${(p.satisFiyat||p.fiyat).toLocaleString('tr-TR')} TL</span>
+        ${p.satisFiyat?`<span class="text-xs text-gray-400 line-through">${p.fiyat.toLocaleString('tr-TR')} TL</span>`:''}
+      </div>
+      <div class="flex items-center justify-between mb-3">
+        <span style="background:${ds.bg};color:${ds.col};font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600">${ds.lbl}</span>
+        <span class="text-xs text-gray-400">Stok: <b>${p.stok}</b> · Satış: <b>${p.satisAdedi||0}</b></span>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="shopAdminOpenProduct('${p.id}')" class="flex-1 border rounded-xl py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"><i class="fas fa-pen mr-1"></i>Düzenle</button>
+        ${p.durum==='bekliyor'?`<button onclick="saApproveProduct('${p.id}')" class="flex-1 bg-green-50 border border-green-200 text-green-700 rounded-xl py-1.5 text-xs font-semibold hover:bg-green-100"><i class="fas fa-check mr-1"></i>Onayla</button>`:''}
+        <button onclick="saDeleteProduct('${p.id}')" class="border rounded-xl py-1.5 px-2.5 text-xs text-red-400 hover:bg-red-50"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── SİPARİŞLER ── */
+function saRenderOrders(){
+  const orders=saGetOrders();
+  const search=(document.getElementById('sa-ord-search')?.value||'').toLowerCase();
+  const durum=document.getElementById('sa-ord-durum')?.value||'';
+
+  let list=orders.filter(o=>{
+    if(search&&!((o.id||'')+(o.musteri||'')+(o.urun||'')).toLowerCase().includes(search))return false;
+    if(durum&&o.durum!==durum)return false;
+    return true;
+  });
+
+  const DURUM={bekliyor:{bg:'#fef3c7',col:'#d97706',lbl:'Bekliyor'},hazirlaniyor:{bg:'#dbeafe',col:'#1d4ed8',lbl:'Hazırlanıyor'},kargoda:{bg:'#e0f2fe',col:'#0284c7',lbl:'Kargoda'},
+    'teslim-edildi':{bg:'#dcfce7',col:'#16a34a',lbl:'Teslim Edildi'},iptal:{bg:'#fee2e2',col:'#dc2626',lbl:'İptal'}};
+
+  const cnt=document.getElementById('sa-ord-count');
+  if(cnt)cnt.textContent=list.length+' sipariş';
+  const tbody=document.getElementById('sa-orders-tbody');
+  if(!tbody)return;
+  if(!list.length){tbody.innerHTML='<tr><td colspan="9" class="text-center text-gray-400 py-8 text-xs">Sipariş bulunamadı</td></tr>';return;}
+  tbody.innerHTML=list.map(o=>{
+    const ds=DURUM[o.durum]||{bg:'#f1f5f9',col:'#64748b',lbl:o.durum};
+    const nextStatus={bekliyor:'hazirlaniyor',hazirlaniyor:'kargoda',kargoda:'teslim-edildi'};
+    const ns=nextStatus[o.durum];
+    return`<tr>
+      <td class="font-mono text-xs font-bold">#${o.id}</td>
+      <td class="text-sm">${o.musteri||'—'}</td>
+      <td class="text-xs text-gray-600 max-w-[140px]"><div class="truncate">${o.urun||'—'}</div></td>
+      <td class="text-xs text-gray-500">${o.satici||'—'}</td>
+      <td class="font-semibold text-sm">${(o.tutar||0).toLocaleString('tr-TR')} TL</td>
+      <td class="text-xs text-success font-semibold">${(o.komisyon||0).toLocaleString('tr-TR')} TL</td>
+      <td class="text-xs text-gray-500">${o.tarih||'—'}</td>
+      <td><span style="background:${ds.bg};color:${ds.col};font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;white-space:nowrap">${ds.lbl}</span></td>
+      <td>${ns?`<button onclick="saAdvanceOrder('${o.id}')" class="border rounded-lg px-2 py-1 text-[10px] text-gray-600 hover:bg-gray-50 whitespace-nowrap">→ ${DURUM[ns].lbl}</button>`:'<span class="text-gray-300 text-xs">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function saAdvanceOrder(id){
+  const orders=saGetOrders();
+  const next={bekliyor:'hazirlaniyor',hazirlaniyor:'kargoda',kargoda:'teslim-edildi'};
+  const o=orders.find(x=>x.id===id);
+  if(o&&next[o.durum]){o.durum=next[o.durum];saSaveOrders(orders);saRenderOrders();renderShopAdmin();}
+}
+
+/* ── SATICILAR ── */
+function saRenderSellers(){
+  const sellers=saGetSellers();
+  const el=document.getElementById('sa-sellers-grid');
+  if(!el)return;
+  el.innerHTML=sellers.map(s=>{
+    const isAktif=s.durum==='aktif';
+    return`<div class="card">
+      <div class="flex items-center gap-3 mb-4">
+        <div style="width:44px;height:44px;background:${isAktif?'#dbeafe':'#f1f5f9'};border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:${isAktif?'#0369a1':'#94a3b8'}">${(s.name||'?')[0].toUpperCase()}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-sm truncate">${s.name}</div>
+          <div class="text-xs text-gray-400 truncate">${s.email}</div>
+        </div>
+        <span style="background:${isAktif?'#dcfce7':'#fef3c7'};color:${isAktif?'#16a34a':'#d97706'};font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600">${isAktif?'Aktif':'Bekliyor'}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <div class="text-center p-2 bg-gray-50 rounded-xl">
+          <div class="font-bold text-primary text-sm">${s.urunSayisi||0}</div>
+          <div class="text-[10px] text-gray-400">Ürün</div>
+        </div>
+        <div class="text-center p-2 bg-gray-50 rounded-xl">
+          <div class="font-bold text-success text-sm">${(s.toplamSatis||0).toLocaleString('tr-TR')}</div>
+          <div class="text-[10px] text-gray-400">Satış TL</div>
+        </div>
+        <div class="text-center p-2 bg-gray-50 rounded-xl">
+          <div class="font-bold text-amber-600 text-sm">%${s.komisyon||10}</div>
+          <div class="text-[10px] text-gray-400">Komisyon</div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+        <span>Bakiye: <b class="text-success">${(s.bakiye||0).toLocaleString('tr-TR')} TL</b></span>
+        <span>Kayıt: ${s.joinDate||'—'}</span>
+      </div>
+      <div class="flex gap-2">
+        ${!isAktif?`<button onclick="saApproveSeller('${s.id}')" class="flex-1 bg-green-50 border border-green-200 text-green-700 rounded-xl py-1.5 text-xs font-semibold hover:bg-green-100"><i class="fas fa-check mr-1"></i>Onayla</button>`:''}
+        <button onclick="saPaySeller('${s.id}')" class="flex-1 border rounded-xl py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"><i class="fas fa-money-bill-wave mr-1 text-success"></i>Ödeme Yap</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function saApproveSeller(id){
+  const sellers=saGetSellers();const s=sellers.find(x=>x.id===id);if(s){s.durum='aktif';localStorage.setItem('db_shop_sellers',JSON.stringify(sellers));saRenderSellers();showToast(s.name+' satıcısı onaylandı','success');}
+}
+function saPaySeller(id){
+  const sellers=saGetSellers();const s=sellers.find(x=>x.id===id);if(!s||!s.bakiye)return showToast('Ödenecek bakiye yok','error');
+  const amount=s.bakiye;s.bakiye=0;localStorage.setItem('db_shop_sellers',JSON.stringify(sellers));saRenderSellers();showToast(s.name+' için '+amount.toLocaleString('tr-TR')+' TL ödeme yapıldı','success');
+}
+
+/* ── KATEGORİLER ── */
+function saRenderCategories(){
+  const cats=saGetCats();
+  const el=document.getElementById('sa-cat-list');
+  if(!el)return;
+  el.innerHTML=cats.map(c=>`<div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+    <div class="flex items-center gap-3">
+      <div style="width:32px;height:32px;background:#fef3c7;border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="fas ${c.icon} text-amber-500 text-sm"></i></div>
+      <span class="text-sm font-medium">${c.name}</span>
+    </div>
+    <button onclick="saDeleteCat('${c.id}')" class="text-red-400 hover:text-red-600 text-xs px-2"><i class="fas fa-trash"></i></button>
+  </div>`).join('');
+}
+
+function saAddCategory(){
+  const name=(document.getElementById('sa-cat-name')?.value||'').trim();
+  const icon=(document.getElementById('sa-cat-icon')?.value||'fa-tag').trim();
+  if(!name){showToast('Kategori adı zorunlu','error');return;}
+  const cats=saGetCats();
+  cats.push({id:'cat_'+Date.now(),name,icon});
+  saSaveCats(cats);
+  document.getElementById('sa-cat-name').value='';
+  document.getElementById('sa-cat-icon').value='';
+  saRenderCategories();
+  showToast('Kategori eklendi','success');
+}
+
+function saDeleteCat(id){
+  saSaveCats(saGetCats().filter(c=>c.id!==id));saRenderCategories();showToast('Kategori silindi');
+}
+
+/* ── KOMİSYON AYARLARI ── */
+function saRenderSettings(){
+  const settings=saGetShopSettings();
+  const el=document.getElementById('sa-commission-rows');
+  if(el){
+    const cats=saGetCats();
+    el.innerHTML=cats.map(c=>{
+      const val=settings.commissions?.[c.name]||10;
+      return`<div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fas ${c.icon} text-amber-500 text-sm w-5 text-center"></i>
+          <span class="text-sm">${c.name}</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <input type="number" min="0" max="50" value="${val}" data-cat="${c.name}" class="sa-com-input w-16 border rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-amber-300">
+          <span class="text-sm text-gray-400">%</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  // Settings toggles
+  ['approval','reviews','stockhide'].forEach(k=>{
+    const el=document.getElementById('sa-toggle-'+k);
+    if(el)el.classList.toggle('on',!!settings[k]);
+  });
+  const min=document.getElementById('sa-min-order');if(min)min.value=settings.minOrder||0;
+  const free=document.getElementById('sa-free-shipping');if(free)free.value=settings.freeShipping||500;
+}
+
+function saSaveCommissions(){
+  const settings=saGetShopSettings();
+  if(!settings.commissions)settings.commissions={};
+  document.querySelectorAll('.sa-com-input').forEach(inp=>{
+    settings.commissions[inp.dataset.cat]=parseInt(inp.value)||10;
+  });
+  localStorage.setItem('db_shop_settings',JSON.stringify(settings));
+  showToast('Komisyon oranları kaydedildi','success');
+}
+
+function saToggleSetting(key,btn){
+  const settings=saGetShopSettings();
+  settings[key]=!settings[key];
+  btn.classList.toggle('on',settings[key]);
+  localStorage.setItem('db_shop_settings',JSON.stringify(settings));
+}
+
+function saShopSettings(){
+  const settings=saGetShopSettings();
+  settings.minOrder=parseInt(document.getElementById('sa-min-order')?.value)||0;
+  settings.freeShipping=parseInt(document.getElementById('sa-free-shipping')?.value)||500;
+  localStorage.setItem('db_shop_settings',JSON.stringify(settings));
+  showToast('Ayarlar kaydedildi','success');
+}
+
+/* ── ÜRÜN MODAL ── */
+function shopAdminOpenProduct(id){
+  const cats=saGetCats();
+  const sellers=saGetSellers();
+  const katSel=document.getElementById('sa-prod-kat-f');
+  if(katSel)katSel.innerHTML='<option value="">Seçin</option>'+cats.map(c=>`<option>${c.name}</option>`).join('');
+  const selSel=document.getElementById('sa-prod-seller-f');
+  if(selSel)selSel.innerHTML='<option value="">Admin (Platform)</option>'+sellers.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+
+  const prod=id?saGetProducts().find(p=>p.id===id):null;
+  document.getElementById('sa-prod-modal-title').textContent=prod?'Ürünü Düzenle':'Yeni Ürün';
+  document.getElementById('sa-prod-id').value=prod?prod.id:'';
+  document.getElementById('sa-prod-name').value=prod?prod.name:'';
+  if(katSel)katSel.value=prod?prod.kategori:'';
+  document.getElementById('sa-prod-price').value=prod?prod.fiyat:'';
+  document.getElementById('sa-prod-sale-price').value=prod?prod.satisFiyat||'':'';
+  document.getElementById('sa-prod-stock').value=prod?prod.stok:999;
+  document.getElementById('sa-prod-status').value=prod?prod.durum:'bekliyor';
+  document.getElementById('sa-prod-desc').value=prod?prod.aciklama||'':'';
+  document.getElementById('sa-prod-tags').value=prod?prod.tags||'':'';
+  document.getElementById('sa-prod-icon').value=prod?prod.ikon||'':'fa-box';
+  document.getElementById('sa-prod-featured').checked=prod?!!prod.featured:false;
+  _saProdColor=prod?prod.renk||'#0369a1':'#0369a1';
+  document.querySelectorAll('.sa-prod-clr').forEach(b=>{b.style.outline='none';});
+  document.getElementById('sa-product-modal').style.display='flex';
+}
+function saCloseProduct(){document.getElementById('sa-product-modal').style.display='none';}
+
+function saProdColor(btn,color){
+  _saProdColor=color;
+  document.querySelectorAll('.sa-prod-clr').forEach(b=>b.style.outline='none');
+  btn.style.outline='3px solid #f59e0b';btn.style.outlineOffset='2px';
+}
+
+function saSaveProduct(){
+  const id=document.getElementById('sa-prod-id').value||'p_'+Date.now();
+  const name=document.getElementById('sa-prod-name').value.trim();
+  if(!name){showToast('Ürün adı zorunlu','error');return;}
+  const fiyat=parseFloat(document.getElementById('sa-prod-price').value)||0;
+  const satisFiyatRaw=document.getElementById('sa-prod-sale-price').value.trim();
+  const satisFiyat=satisFiyatRaw?parseFloat(satisFiyatRaw):null;
+  const stok=parseInt(document.getElementById('sa-prod-stock').value)||0;
+  const durum=document.getElementById('sa-prod-status').value;
+  const kategori=document.getElementById('sa-prod-kat-f').value;
+  const aciklama=document.getElementById('sa-prod-desc').value.trim();
+  const tags=document.getElementById('sa-prod-tags').value.trim();
+  const ikon=document.getElementById('sa-prod-icon').value.trim()||'fa-box';
+  const featured=document.getElementById('sa-prod-featured').checked;
+
+  const prods=saGetProducts();
+  const idx=prods.findIndex(p=>p.id===id);
+  const updated={id,name,kategori,fiyat,satisFiyat,stok,durum,aciklama,tags,ikon,renk:_saProdColor,featured,satici:'DenizBul Store',satisAdedi:prods[idx]?.satisAdedi||0};
+  if(idx>=0)prods[idx]=updated;else prods.unshift(updated);
+  saSaveProducts(prods);
+  saCloseProduct();
+  renderShopAdmin();
+  showToast('Ürün kaydedildi','success');
+}
+
+function saApproveProduct(id){
+  const prods=saGetProducts();const p=prods.find(x=>x.id===id);if(p){p.durum='aktif';saSaveProducts(prods);saRenderProducts();renderShopAdmin();showToast('Ürün onaylandı','success');}
+}
+function saDeleteProduct(id){
+  saSaveProducts(saGetProducts().filter(p=>p.id!==id));saRenderProducts();renderShopAdmin();showToast('Ürün silindi');
 }
 
 /* ═══════════════════════════════════════════════════
