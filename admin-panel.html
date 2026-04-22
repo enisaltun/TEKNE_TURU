@@ -76,6 +76,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Platform</div>
   <a href="#platform-control" data-nav="platform-control"><i class="fas fa-sliders-h"></i> Platform Kontrol <span id="maintenance-badge" style="display:none;font-size:9px;background:#ef4444;color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px">Bakım</span></a>
   <a href="#finance" data-nav="finance"><i class="fas fa-wallet"></i> Finans</a>
+  <a href="#subscriptions" data-nav="subscriptions"><i class="fas fa-id-card"></i> Abonelik & Üyelik</a>
   <a href="#marine" data-nav="marine"><i class="fas fa-water"></i> Deniz Verileri</a>
   <a href="#modules" data-nav="modules"><i class="fas fa-puzzle-piece"></i> Modul Yonetimi</a>
 
@@ -750,6 +751,102 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
             <tr><td colspan="7" class="text-center text-gray-400 py-6 text-xs">Yükleniyor...</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE: ABONELİK & ÜYELİK               -->
+  <!-- ======================================= -->
+  <section id="page-subscriptions" class="page">
+
+    <!-- Başlık + yeni paket butonu -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-bold">Abonelik & Üyelik</h1>
+        <p class="text-xs text-gray-400 mt-0.5">Kaptan üyelik paketleri, aidatlar ve aktif abonelikler</p>
+      </div>
+      <button onclick="subOpenPackageModal(null)" class="bg-primary text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-primaryDark">
+        <i class="fas fa-plus"></i> Yeni Paket
+      </button>
+    </div>
+
+    <!-- Özet istatistikler -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="stat-card">
+        <div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-users"></i></div>
+        <div><div class="text-xl font-bold" id="sub-stat-aktif">0</div><div class="text-xs text-gray-500">Aktif Üye</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-green-100 text-success"><i class="fas fa-money-bill-wave"></i></div>
+        <div><div class="text-xl font-bold" id="sub-stat-gelir">0 TL</div><div class="text-xs text-gray-500">Aylık Gelir</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-amber-100 text-amber-600"><i class="fas fa-clock"></i></div>
+        <div><div class="text-xl font-bold" id="sub-stat-bekleyen">0</div><div class="text-xs text-gray-500">Süresi Dolan</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-purple-100 text-purple-600"><i class="fas fa-star"></i></div>
+        <div><div class="text-xl font-bold" id="sub-stat-premium">0</div><div class="text-xs text-gray-500">Premium Üye</div></div>
+      </div>
+    </div>
+
+    <!-- Ana içerik: 2 kolon -->
+    <div class="grid grid-cols-3 gap-5">
+
+      <!-- SOL: Paket tanımları -->
+      <div class="col-span-1">
+        <div class="card">
+          <h3 class="font-semibold text-sm mb-4 flex items-center gap-2">
+            <i class="fas fa-boxes text-primary text-xs"></i> Abonelik Paketleri
+          </h3>
+          <div id="sub-packages-list" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- SAĞ: Üye listesi -->
+      <div class="col-span-2">
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-sm flex items-center gap-2">
+              <i class="fas fa-id-card text-primary text-xs"></i> Aktif Üyeler
+            </h3>
+            <!-- Filtreler -->
+            <div class="flex gap-1.5">
+              <button onclick="subSetFilter('all')" data-sf="all" class="sub-ftab px-3 py-1 rounded-lg text-xs font-medium bg-primary text-white">Tümü</button>
+              <button onclick="subSetFilter('aktif')" data-sf="aktif" class="sub-ftab px-3 py-1 rounded-lg text-xs font-medium border text-gray-600 hover:bg-gray-50">Aktif</button>
+              <button onclick="subSetFilter('suresi-dolmus')" data-sf="suresi-dolmus" class="sub-ftab px-3 py-1 rounded-lg text-xs font-medium border text-gray-600 hover:bg-gray-50">Süresi Dolmuş</button>
+              <button onclick="subSetFilter('iptal')" data-sf="iptal" class="sub-ftab px-3 py-1 rounded-lg text-xs font-medium border text-gray-600 hover:bg-gray-50">İptal</button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table id="sub-members-table">
+              <thead>
+                <tr>
+                  <th>Kaptan</th>
+                  <th>Paket</th>
+                  <th>Başlangıç</th>
+                  <th>Bitiş</th>
+                  <th>Tutar</th>
+                  <th>Durum</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="sub-members-body">
+                <tr><td colspan="7" class="text-center text-gray-400 py-6 text-xs">Yükleniyor...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Ödeme takvimi -->
+        <div class="card mt-4">
+          <h3 class="font-semibold text-sm mb-4 flex items-center gap-2">
+            <i class="fas fa-calendar-alt text-primary text-xs"></i> Bu Ay Ödeme Takvimi
+          </h3>
+          <div id="sub-payment-timeline" class="space-y-2"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -2075,10 +2172,111 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <span id="toast-text"></span>
 </div>
 
+<!-- ===== ABONELİK PAKET MODALI ===== -->
+<div id="sub-package-modal" style="display:none" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b">
+      <h2 id="sub-pkg-modal-title" class="font-bold text-base">Paket Ekle</h2>
+      <button onclick="subClosePackageModal()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><i class="fas fa-times text-sm"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+      <input type="hidden" id="sub-pkg-id">
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Paket Adı *</label>
+        <input type="text" id="sub-pkg-name" placeholder="örn. Standart, Premium..." class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Aylık Fiyat (TL) *</label>
+          <input type="number" id="sub-pkg-price-monthly" placeholder="0" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Yıllık Fiyat (TL)</label>
+          <input type="number" id="sub-pkg-price-yearly" placeholder="0" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Komisyon Oranı (%)</label>
+        <input type="number" id="sub-pkg-commission" placeholder="15" min="0" max="100" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Maksimum Tur Sayısı</label>
+        <input type="number" id="sub-pkg-max-tours" placeholder="Sınırsız için boş bırakın" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Özellikler (her satıra bir özellik)</label>
+        <textarea id="sub-pkg-features" rows="4" placeholder="Öncelikli destek&#10;Gelişmiş analitik&#10;Öne çıkarma" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"></textarea>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Renk</label>
+        <div class="flex gap-2" id="sub-pkg-color-picker">
+          <button onclick="subSelectColor(this,'#0369a1')" style="background:#0369a1" class="sub-color-btn w-7 h-7 rounded-full border-2 border-white shadow ring-2 ring-primary"></button>
+          <button onclick="subSelectColor(this,'#7c3aed')" style="background:#7c3aed" class="sub-color-btn w-7 h-7 rounded-full border-2 border-white shadow"></button>
+          <button onclick="subSelectColor(this,'#059669')" style="background:#059669" class="sub-color-btn w-7 h-7 rounded-full border-2 border-white shadow"></button>
+          <button onclick="subSelectColor(this,'#d97706')" style="background:#d97706" class="sub-color-btn w-7 h-7 rounded-full border-2 border-white shadow"></button>
+          <button onclick="subSelectColor(this,'#dc2626')" style="background:#dc2626" class="sub-color-btn w-7 h-7 rounded-full border-2 border-white shadow"></button>
+          <button onclick="subSelectColor(this,'#475569')" style="background:#475569" class="sub-color-btn w-7 h-7 rounded-full border-2 border-white shadow"></button>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3 px-6 pb-5">
+      <button onclick="subClosePackageModal()" class="flex-1 border rounded-xl py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50">İptal</button>
+      <button onclick="subSavePackage()" class="flex-1 bg-primary text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-primaryDark"><i class="fas fa-check mr-1"></i> Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ABONELİK ATAMA MODALI ===== -->
+<div id="sub-assign-modal" style="display:none" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+  <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b">
+      <h2 class="font-bold text-base">Abonelik Yönet</h2>
+      <button onclick="subCloseAssignModal()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><i class="fas fa-times text-sm"></i></button>
+    </div>
+    <div class="p-5 space-y-4">
+      <input type="hidden" id="sub-assign-member-id">
+      <div id="sub-assign-captain-info" class="bg-slate-50 rounded-xl px-4 py-3 text-sm"></div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Paket</label>
+        <select id="sub-assign-pkg" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"></select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Başlangıç</label>
+          <input type="date" id="sub-assign-start" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Bitiş</label>
+          <input type="date" id="sub-assign-end" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Ödeme Dönemi</label>
+        <select id="sub-assign-period" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+          <option value="monthly">Aylık</option>
+          <option value="yearly">Yıllık</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Durum</label>
+        <select id="sub-assign-status" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+          <option value="aktif">Aktif</option>
+          <option value="suresi-dolmus">Süresi Dolmuş</option>
+          <option value="iptal">İptal Edildi</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex gap-3 px-5 pb-5">
+      <button onclick="subCloseAssignModal()" class="flex-1 border rounded-xl py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50">İptal</button>
+      <button onclick="subSaveAssignment()" class="flex-1 bg-primary text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-primaryDark"><i class="fas fa-check mr-1"></i> Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== JAVASCRIPT ===== -->
 <script>
-const pages=['dashboard','captains','users','tours-bookings','reservations','page-manager','cms-web','cms-app','finance','marine','modules','captain-add','platform-control','mucbir'];
-const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi','mucbir':'Mucbir Sebepler Yonetimi'};
+const pages=['dashboard','captains','users','tours-bookings','reservations','page-manager','cms-web','cms-app','finance','subscriptions','marine','modules','captain-add','platform-control','mucbir'];
+const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','subscriptions':'Abonelik & Üyelik','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi','mucbir':'Mucbir Sebepler Yonetimi'};
 
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
 
@@ -2096,6 +2294,7 @@ function handleRoute(){
   if(h==='cms-web')             renderCmsWeb();
   if(h==='cms-app')             renderCmsApp();
   if(h==='finance')             renderFinance();
+  if(h==='subscriptions')       renderSubscriptions();
   if(h==='marine')              renderMarineData();
   if(h==='modules')             renderMarineModules();
   if(h==='platform-control')    renderPlatformControl();
@@ -4110,6 +4309,22 @@ function submitCaptainForm(){
     tarih:new Date().toLocaleDateString('tr-TR')
   });
 
+  const newCaptain=captains[captains.length-1];
+  // Yeni kaptana otomatik ücretsiz plan ata
+  const subMembers=subGetMembers();
+  subMembers.push({
+    id:'mbr_'+newCaptain.id+'_'+Date.now(),
+    captainId:newCaptain.id,
+    captainName:ad+' '+soyad,
+    packageId:'pkg_free',
+    period:'monthly',
+    startDate:new Date().toISOString().slice(0,10),
+    endDate:'',
+    status:'aktif',
+    amount:0,
+  });
+  subSaveMembers(subMembers);
+
   saveCaptains();
   document.getElementById('captain-form').reset();
   renderCaptains();
@@ -5669,6 +5884,306 @@ function systemReset(seedCaptain){
   }
   showToast('Sistem sıfırlandı'+(seedCaptain?' — demo kaptan oluşturuldu':''),'success');
   setTimeout(()=>location.reload(),1800);
+}
+
+/* ═══════════════════════════════════════════════════
+   ABONELİK & ÜYELİK MODÜLÜ
+   ═══════════════════════════════════════════════════ */
+
+// ── Varsayılan paketler (ilk çalıştırmada seed) ──
+const SUB_DEFAULT_PACKAGES=[
+  {id:'pkg_free',    name:'Ücretsiz',  color:'#475569', priceMonthly:0,    priceYearly:0,     commission:20, maxTours:2,    features:['2 aktif tur','Temel destek','Standart listeleme']},
+  {id:'pkg_std',     name:'Standart',  color:'#0369a1', priceMonthly:499,  priceYearly:4990,  commission:15, maxTours:10,   features:['10 aktif tur','Öncelikli destek','Gelişmiş istatistikler','Öne çıkarma (ayda 2)']},
+  {id:'pkg_premium', name:'Premium',   color:'#7c3aed', priceMonthly:999,  priceYearly:9990,  commission:10, maxTours:null, features:['Sınırsız tur','7/24 destek','Tüm analizler','Sınırsız öne çıkarma','Özel profil rozeti']},
+  {id:'pkg_pro',     name:'Pro Tekne', color:'#d97706', priceMonthly:1999, priceYearly:19990, commission:8,  maxTours:null, features:['Sınırsız tur','Özel hesap yöneticisi','API erişimi','Çoklu tekne desteği','Kurumsal fatura']},
+];
+
+function subGetPackages(){
+  const stored=lsGet('db_sub_packages',null);
+  if(!stored){localStorage.setItem('db_sub_packages',JSON.stringify(SUB_DEFAULT_PACKAGES));return SUB_DEFAULT_PACKAGES;}
+  return stored;
+}
+function subSavePackages(pkgs){localStorage.setItem('db_sub_packages',JSON.stringify(pkgs));}
+
+function subGetMembers(){return lsGet('db_sub_members',[]);}
+function subSaveMembers(m){localStorage.setItem('db_sub_members',JSON.stringify(m));}
+
+// Seed demo üyeler (captains varsa)
+function subSeedMembersIfEmpty(){
+  const members=subGetMembers();
+  if(members.length>0) return;
+  const captains=lsGet('db_captains',[]);
+  if(!captains.length) return;
+  const pkgs=subGetPackages();
+  const today=new Date();
+  const fmt=d=>d.toISOString().slice(0,10);
+  const newMembers=captains.slice(0,Math.min(captains.length,4)).map((c,i)=>{
+    const pkg=pkgs[i%pkgs.length];
+    const start=new Date(today);start.setMonth(start.getMonth()-i);
+    const end=new Date(start);end.setFullYear(end.getFullYear()+1);
+    const expired=i===2;
+    return {
+      id:'mbr_'+c.id,
+      captainId:c.id,
+      captainName:(c.ad||'')+(c.soyad?' '+c.soyad:''),
+      packageId:pkg.id,
+      period:'monthly',
+      startDate:fmt(start),
+      endDate:expired?fmt(new Date(today.getTime()-86400000*5)):fmt(end),
+      status:expired?'suresi-dolmus':'aktif',
+      amount:pkg.priceMonthly,
+    };
+  });
+  subSaveMembers(newMembers);
+}
+
+let _subFilter='all';
+let _subPkgColor='#0369a1';
+
+function subSetFilter(f){
+  _subFilter=f;
+  document.querySelectorAll('.sub-ftab').forEach(b=>{
+    const active=b.dataset.sf===f;
+    b.classList.toggle('bg-primary',active);b.classList.toggle('text-white',active);
+    b.classList.toggle('border',!active);b.classList.toggle('text-gray-600',!active);b.classList.toggle('hover:bg-gray-50',!active);
+  });
+  subRenderMembers();
+}
+
+function renderSubscriptions(){
+  subSeedMembersIfEmpty();
+  subRenderStats();
+  subRenderPackages();
+  subRenderMembers();
+  subRenderPaymentTimeline();
+}
+
+function subRenderStats(){
+  const members=subGetMembers();
+  const pkgs=subGetPackages();
+  const aktif=members.filter(m=>m.status==='aktif');
+  const monthly=aktif.reduce((s,m)=>s+(m.amount||0),0);
+  const expired=members.filter(m=>m.status==='suresi-dolmus').length;
+  const premPkgIds=pkgs.filter(p=>p.priceMonthly>=900).map(p=>p.id);
+  const premium=aktif.filter(m=>premPkgIds.includes(m.packageId)).length;
+  document.getElementById('sub-stat-aktif').textContent=aktif.length;
+  document.getElementById('sub-stat-gelir').textContent=monthly.toLocaleString('tr-TR')+ ' TL';
+  document.getElementById('sub-stat-bekleyen').textContent=expired;
+  document.getElementById('sub-stat-premium').textContent=premium;
+}
+
+function subRenderPackages(){
+  const pkgs=subGetPackages();
+  const members=subGetMembers();
+  const el=document.getElementById('sub-packages-list');
+  if(!el) return;
+  el.innerHTML=pkgs.map(pkg=>{
+    const count=members.filter(m=>m.packageId===pkg.id&&m.status==='aktif').length;
+    return `<div style="border:1.5px solid ${pkg.color}20;border-left:4px solid ${pkg.color};border-radius:12px;padding:12px 14px;background:${pkg.color}08">
+      <div class="flex items-start justify-between gap-2 mb-2">
+        <div>
+          <div class="font-bold text-sm" style="color:${pkg.color}">${pkg.name}</div>
+          <div class="text-xs text-gray-500 mt-0.5">${pkg.priceMonthly===0?'Ücretsiz':pkg.priceMonthly.toLocaleString('tr-TR')+' TL/ay'}</div>
+        </div>
+        <div class="flex gap-1.5">
+          <button onclick="subOpenPackageModal('${pkg.id}')" class="w-7 h-7 rounded-lg bg-white border flex items-center justify-center text-gray-500 hover:bg-gray-50 text-xs"><i class="fas fa-pen"></i></button>
+          <button onclick="subDeletePackage('${pkg.id}')" class="w-7 h-7 rounded-lg bg-white border flex items-center justify-center text-red-400 hover:bg-red-50 text-xs"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-1 mb-2">
+        ${pkg.features.slice(0,3).map(f=>`<span style="background:${pkg.color}18;color:${pkg.color};font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600">${f}</span>`).join('')}
+        ${pkg.features.length>3?`<span style="background:#f1f5f9;color:#64748b;font-size:10px;padding:2px 7px;border-radius:20px">+${pkg.features.length-3}</span>`:''}
+      </div>
+      <div class="flex items-center justify-between text-[11px] text-gray-500">
+        <span>Komisyon: <b>${pkg.commission}%</b> · Maks: <b>${pkg.maxTours||'∞'} tur</b></span>
+        <span style="background:${pkg.color};color:#fff;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700">${count} üye</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function subRenderMembers(){
+  const members=subGetMembers();
+  const pkgs=subGetPackages();
+  const tbody=document.getElementById('sub-members-body');
+  if(!tbody) return;
+
+  const today=new Date();today.setHours(0,0,0,0);
+  const filtered=_subFilter==='all'?members:members.filter(m=>m.status===_subFilter);
+
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="7" class="text-center text-gray-400 py-8 text-xs">Kayıt bulunamadı</td></tr>`;return;}
+
+  const pkgMap=Object.fromEntries(pkgs.map(p=>[p.id,p]));
+  const statusCfg={
+    'aktif':      {label:'Aktif',         bg:'#dcfce7',col:'#16a34a'},
+    'suresi-dolmus':{label:'Süresi Dolmuş', bg:'#fef3c7',col:'#d97706'},
+    'iptal':      {label:'İptal',          bg:'#fee2e2',col:'#dc2626'},
+  };
+
+  tbody.innerHTML=filtered.map(m=>{
+    const pkg=pkgMap[m.packageId]||{name:'—',color:'#94a3b8'};
+    const sc=statusCfg[m.status]||{label:m.status,bg:'#f1f5f9',col:'#64748b'};
+    const endDate=m.endDate?new Date(m.endDate):null;
+    const daysLeft=endDate?Math.ceil((endDate-today)/86400000):null;
+    const endStr=m.endDate||'—';
+    const daysLabel=daysLeft===null?'':(daysLeft<=0?'<span style="color:#dc2626;font-weight:700;font-size:10px">Geçti</span>':(daysLeft<=7?`<span style="color:#d97706;font-size:10px">${daysLeft}g kaldı</span>`:`<span style="color:#94a3b8;font-size:10px">${daysLeft}g</span>`));
+    return `<tr>
+      <td>
+        <div class="font-semibold text-sm">${m.captainName||'Kaptan'}</div>
+        <div class="text-xs text-gray-400">${m.period==='yearly'?'Yıllık':'Aylık'}</div>
+      </td>
+      <td><span style="background:${pkg.color}18;color:${pkg.color};font-size:11px;padding:3px 9px;border-radius:20px;font-weight:700">${pkg.name}</span></td>
+      <td class="text-xs text-gray-600">${m.startDate||'—'}</td>
+      <td class="text-xs text-gray-600">${endStr} ${daysLabel}</td>
+      <td class="text-sm font-semibold">${m.amount?m.amount.toLocaleString('tr-TR')+' TL':'—'}</td>
+      <td><span style="background:${sc.bg};color:${sc.col};font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600">${sc.label}</span></td>
+      <td>
+        <button onclick="subOpenAssignModal('${m.id}')" class="border rounded-lg px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-50"><i class="fas fa-pen mr-1"></i>Düzenle</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function subRenderPaymentTimeline(){
+  const members=subGetMembers();
+  const pkgs=subGetPackages();
+  const el=document.getElementById('sub-payment-timeline');
+  if(!el) return;
+
+  const now=new Date();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const monthEnd=new Date(now.getFullYear(),now.getMonth()+1,0);
+
+  const pkgMap=Object.fromEntries(pkgs.map(p=>[p.id,p]));
+  const aktif=members.filter(m=>m.status==='aktif');
+
+  if(!aktif.length){el.innerHTML='<div class="text-xs text-gray-400 text-center py-4">Aktif üye yok</div>';return;}
+
+  // Ödeme günleri: başlangıç gününe göre bu ayki karşılık
+  const events=aktif.map(m=>{
+    const startDay=m.startDate?new Date(m.startDate).getDate():1;
+    const payDate=new Date(now.getFullYear(),now.getMonth(),startDay);
+    if(payDate<monthStart) payDate.setMonth(payDate.getMonth()+1);
+    const pkg=pkgMap[m.packageId]||{name:'—',color:'#94a3b8'};
+    return {name:m.captainName,pkg:pkg.name,color:pkg.color,amount:m.amount||0,date:payDate,paid:payDate<now};
+  }).sort((a,b)=>a.date-b.date);
+
+  el.innerHTML=events.map(e=>{
+    const dateStr=e.date.toLocaleDateString('tr-TR',{day:'numeric',month:'short'});
+    return `<div class="flex items-center gap-3 p-2.5 rounded-xl border ${e.paid?'bg-green-50 border-green-100':'bg-white'}">
+      <div style="width:40px;height:40px;border-radius:10px;background:${e.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="fas fa-calendar-day text-white text-xs"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-semibold truncate">${e.name}</div>
+        <div class="text-xs text-gray-400">${e.pkg} · ${dateStr}</div>
+      </div>
+      <div class="text-right flex-shrink-0">
+        <div class="text-sm font-bold text-gray-800">${e.amount.toLocaleString('tr-TR')} TL</div>
+        <div class="text-[10px] font-semibold" style="color:${e.paid?'#16a34a':'#d97706'}">${e.paid?'Ödendi':'Bekliyor'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Paket Modalı ──
+function subOpenPackageModal(pkgId){
+  const pkgs=subGetPackages();
+  const pkg=pkgId?pkgs.find(p=>p.id===pkgId):null;
+  document.getElementById('sub-pkg-modal-title').textContent=pkg?'Paketi Düzenle':'Yeni Paket';
+  document.getElementById('sub-pkg-id').value=pkg?pkg.id:'';
+  document.getElementById('sub-pkg-name').value=pkg?pkg.name:'';
+  document.getElementById('sub-pkg-price-monthly').value=pkg?pkg.priceMonthly:'';
+  document.getElementById('sub-pkg-price-yearly').value=pkg?pkg.priceYearly:'';
+  document.getElementById('sub-pkg-commission').value=pkg?pkg.commission:15;
+  document.getElementById('sub-pkg-max-tours').value=pkg&&pkg.maxTours?pkg.maxTours:'';
+  document.getElementById('sub-pkg-features').value=pkg?(pkg.features||[]).join('\n'):'';
+  _subPkgColor=pkg?pkg.color:'#0369a1';
+  document.querySelectorAll('.sub-color-btn').forEach(b=>{
+    const isActive=b.style.background===_subPkgColor||b.getAttribute('style').includes(_subPkgColor.replace('#',''));
+    b.style.outline=isActive?'3px solid #0369a1':'none';
+    b.style.outlineOffset='2px';
+  });
+  document.getElementById('sub-package-modal').style.display='flex';
+}
+function subClosePackageModal(){document.getElementById('sub-package-modal').style.display='none';}
+
+function subSelectColor(btn,color){
+  _subPkgColor=color;
+  document.querySelectorAll('.sub-color-btn').forEach(b=>{b.style.outline='none';});
+  btn.style.outline='3px solid #0369a1';btn.style.outlineOffset='2px';
+}
+
+function subSavePackage(){
+  const id=document.getElementById('sub-pkg-id').value||'pkg_'+Date.now();
+  const name=document.getElementById('sub-pkg-name').value.trim();
+  if(!name){showToast('Paket adı zorunlu','error');return;}
+  const priceMonthly=parseInt(document.getElementById('sub-pkg-price-monthly').value)||0;
+  const priceYearly=parseInt(document.getElementById('sub-pkg-price-yearly').value)||0;
+  const commission=parseInt(document.getElementById('sub-pkg-commission').value)||0;
+  const maxToursRaw=document.getElementById('sub-pkg-max-tours').value.trim();
+  const maxTours=maxToursRaw?parseInt(maxToursRaw):null;
+  const features=document.getElementById('sub-pkg-features').value.split('\n').map(s=>s.trim()).filter(Boolean);
+
+  const pkgs=subGetPackages();
+  const idx=pkgs.findIndex(p=>p.id===id);
+  const updated={id,name,color:_subPkgColor,priceMonthly,priceYearly,commission,maxTours,features};
+  if(idx>=0) pkgs[idx]=updated; else pkgs.push(updated);
+  subSavePackages(pkgs);
+  subClosePackageModal();
+  renderSubscriptions();
+  showToast('Paket kaydedildi','success');
+}
+
+function subDeletePackage(pkgId){
+  const members=subGetMembers();
+  const inUse=members.some(m=>m.packageId===pkgId&&m.status==='aktif');
+  if(inUse){showToast('Bu paket aktif üyelerde kullanılıyor, silinemez','error');return;}
+  const pkgs=subGetPackages().filter(p=>p.id!==pkgId);
+  subSavePackages(pkgs);
+  renderSubscriptions();
+  showToast('Paket silindi','success');
+}
+
+// ── Atama Modalı ──
+function subOpenAssignModal(memberId){
+  const members=subGetMembers();
+  const pkgs=subGetPackages();
+  const m=members.find(x=>x.id===memberId);
+  if(!m) return;
+
+  document.getElementById('sub-assign-member-id').value=memberId;
+  document.getElementById('sub-assign-captain-info').innerHTML=`<span class="font-semibold">${m.captainName}</span> <span class="text-gray-400 text-xs ml-2">ID: ${m.captainId}</span>`;
+  const sel=document.getElementById('sub-assign-pkg');
+  sel.innerHTML=pkgs.map(p=>`<option value="${p.id}" ${p.id===m.packageId?'selected':''}>${p.name} — ${p.priceMonthly===0?'Ücretsiz':p.priceMonthly.toLocaleString('tr-TR')+' TL/ay'}</option>`).join('');
+  document.getElementById('sub-assign-start').value=m.startDate||'';
+  document.getElementById('sub-assign-end').value=m.endDate||'';
+  document.getElementById('sub-assign-period').value=m.period||'monthly';
+  document.getElementById('sub-assign-status').value=m.status||'aktif';
+  document.getElementById('sub-assign-modal').style.display='flex';
+}
+function subCloseAssignModal(){document.getElementById('sub-assign-modal').style.display='none';}
+
+function subSaveAssignment(){
+  const memberId=document.getElementById('sub-assign-member-id').value;
+  const pkgId=document.getElementById('sub-assign-pkg').value;
+  const startDate=document.getElementById('sub-assign-start').value;
+  const endDate=document.getElementById('sub-assign-end').value;
+  const period=document.getElementById('sub-assign-period').value;
+  const status=document.getElementById('sub-assign-status').value;
+
+  const pkgs=subGetPackages();
+  const pkg=pkgs.find(p=>p.id===pkgId);
+  const amount=pkg?(period==='yearly'?pkg.priceYearly:pkg.priceMonthly):0;
+
+  const members=subGetMembers();
+  const idx=members.findIndex(m=>m.id===memberId);
+  if(idx<0){showToast('Üye bulunamadı','error');return;}
+  members[idx]={...members[idx],packageId:pkgId,startDate,endDate,period,status,amount};
+  subSaveMembers(members);
+  subCloseAssignModal();
+  renderSubscriptions();
+  showToast('Abonelik güncellendi','success');
 }
 </script>
 </body>
