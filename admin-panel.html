@@ -64,6 +64,13 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Yonetim</div>
   <a href="#page-manager" data-nav="page-manager"><i class="fas fa-layer-group"></i> Sayfa Yonetimi <span id="hidden-pages-badge" style="display:none;font-size:9px;background:#ef4444;color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
   <a href="#cms-web" data-nav="cms-web"><i class="fas fa-edit"></i> Icerik Editoru</a>
+  <div style="margin:8px 4px;background:#1e293b;border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <i class="fas fa-store" style="width:18px;text-align:center;color:#f59e0b"></i>
+      <span style="font-size:12px;color:#cbd5e1;font-weight:500">Magaza</span>
+    </div>
+    <div id="sidebar-shop-toggle" class="toggle" onclick="sidebarToggleShop()" style="cursor:pointer;flex-shrink:0"></div>
+  </div>
 
   <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Platform</div>
   <a href="#finance" data-nav="finance"><i class="fas fa-wallet"></i> Finans</a>
@@ -101,7 +108,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <!-- ======================================= -->
   <section id="page-dashboard" class="page active">
     <!-- Stats Row -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
       <div class="stat-card">
         <div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-ship"></i></div>
         <div><div class="text-2xl font-bold" id="dash-stat-tours">0</div><div class="text-xs text-gray-500">Aktif Tur</div></div>
@@ -117,6 +124,17 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
       <div class="stat-card">
         <div class="stat-icon bg-purple-100 text-purple-600"><i class="fas fa-users"></i></div>
         <div><div class="text-2xl font-bold" id="dash-stat-captains">0</div><div class="text-xs text-gray-500">Toplam Kaptan</div></div>
+      </div>
+      <!-- Mağaza hızlı kontrol kartı -->
+      <div class="stat-card flex-col !items-start gap-2 cursor-pointer hover:shadow-md transition" onclick="sidebarToggleShop()" style="justify-content:space-between;padding:16px">
+        <div class="flex items-center justify-between w-full">
+          <div class="stat-icon bg-amber-100 text-amber-600" style="width:40px;height:40px;font-size:16px"><i class="fas fa-store"></i></div>
+          <div id="dash-shop-toggle" class="toggle" style="pointer-events:none"></div>
+        </div>
+        <div>
+          <div class="text-sm font-bold" id="dash-shop-label">Mağaza Aktif</div>
+          <div class="text-xs text-gray-400">Web sitesi mağaza sekmesi</div>
+        </div>
       </div>
     </div>
 
@@ -1704,7 +1722,33 @@ function handleRoute(){
   if(h==='modules')             renderMarineModules();
 }
 window.addEventListener('hashchange',handleRoute);
-window.addEventListener('load',()=>{handleRoute();pmUpdateBadge();});
+window.addEventListener('load',()=>{handleRoute();pmUpdateBadge();initShopToggle();});
+
+/* ── MAĞAZA AÇMA / KAPAMA ── */
+function isShopOpen(){
+  const s=getPmSettings();
+  return s['web_shop']!==false; // varsayılan: açık
+}
+
+function initShopToggle(){
+  const open=isShopOpen();
+  ['sidebar-shop-toggle','dash-shop-toggle'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.toggle('on',open);
+  });
+  const lbl=document.getElementById('dash-shop-label');
+  if(lbl)lbl.textContent=open?'Mağaza Aktif':'Mağaza Kapalı';
+}
+
+function sidebarToggleShop(){
+  const s=getPmSettings();
+  const nowOpen=isShopOpen();
+  s['web_shop']=!nowOpen;
+  savePmSettings(s);
+  initShopToggle();
+  pmUpdateBadge();
+  showToast(nowOpen?'Mağaza kapatıldı — ziyaretçiler göremez':'Mağaza açıldı — ziyaretçiler görebilir', nowOpen?'info':'success');
+}
 
 /* ── DASHBOARD ── */
 function renderDashboard(){
@@ -3962,6 +4006,7 @@ const ALL_SYSTEM_PAGES=[
   {key:'web_detail',    platform:'web',         label:'Tur Detay',           desc:'Tur detayı, fotoğraflar, rezervasyon formu',           icon:'fa-ship',         color:'bg-emerald-100 text-emerald-600'},
   {key:'web_profile',   platform:'web',         label:'Kaptan Profili',      desc:'Kaptan hakkında, değerlendirmeler, turlar',            icon:'fa-user-circle',  color:'bg-emerald-100 text-emerald-600'},
   {key:'web_account',   platform:'web',         label:'Kullanıcı Hesabım',   desc:'Rezervasyonlar, favoriler, profil bilgileri',          icon:'fa-user',         color:'bg-emerald-100 text-emerald-600'},
+  {key:'web_shop',      platform:'web',         label:'Mağaza',              desc:'Balıkçılık malzemeleri ve tekne ekipmanları e-ticaret sayfası', icon:'fa-store',   color:'bg-emerald-100 text-emerald-600'},
   {key:'web_blog',      platform:'web',         label:'Blog & Haberler',     desc:'İçerik sayfaları ve makale listesi',                  icon:'fa-newspaper',    color:'bg-emerald-100 text-emerald-600'},
   {key:'web_about',     platform:'web',         label:'Hakkımızda',          desc:'Platform tanıtımı ve ekip sayfası',                   icon:'fa-info-circle',  color:'bg-emerald-100 text-emerald-600'},
   {key:'web_contact',   platform:'web',         label:'İletişim',            desc:'İletişim formu ve harita',                            icon:'fa-envelope',     color:'bg-emerald-100 text-emerald-600'},

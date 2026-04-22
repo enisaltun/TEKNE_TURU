@@ -1298,8 +1298,27 @@ function navigateTo(page) {
   window.location.hash = '#' + page;
 }
 
+function isShopEnabled(){
+  try{const s=JSON.parse(localStorage.getItem('page_settings')||'{}');return s['web_shop']!==false;}catch{return true;}
+}
+
+function applyShopVisibility(){
+  const open=isShopEnabled();
+  // Nav link
+  document.querySelectorAll('[data-nav="shop"],[data-mob="shop"]').forEach(el=>{
+    el.style.display=open?'':'none';
+  });
+  // Sayfanın kendisi: eğer şu an #shop'taysa ve mağaza kapalıysa ana sayfaya yönlendir
+  if(!open && window.location.hash==='#shop'){
+    window.location.hash='#home';
+  }
+}
+
 function handleRoute() {
+  applyShopVisibility();
   let hash = window.location.hash.replace('#','') || 'home';
+  // Kapalıyken #shop'a doğrudan gitmeye çalışırsa engelle
+  if(hash==='shop' && !isShopEnabled()) hash='home';
   pages.forEach(p => {
     const el = document.getElementById('page-' + p);
     if(el) el.classList.toggle('active', p === hash);
