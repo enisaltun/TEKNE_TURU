@@ -306,7 +306,7 @@ function doLogin(e){
     user.sonGiris=new Date().toISOString();
     lsSet('cu_users',users);
     // Store session
-    const session={id:user.id,name:user.name,email:user.email,sehir:user.sehir||'',phone:user.phone||'',sonGiris:user.sonGiris};
+    const session={id:user.id,name:user.name,email:user.email,sehir:user.sehir||'',phone:user.phone||'',sonGiris:user.sonGiris,plan:user.plan||'free'};
     lsSet('auth_user',session);
     showSuccess('Hoş Geldiniz, '+user.name.split(' ')[0]+'!','Giriş başarılı. Yönlendiriliyorsunuz...');
   },600);
@@ -361,11 +361,12 @@ function doRegister(e){
       createdAt:new Date().toISOString(),
       sonGiris:new Date().toISOString(),
       emailOnaylandi:false,
-      durum:'aktif'
+      durum:'aktif',
+      plan:'free'
     };
     users.push(newUser);
     lsSet('cu_users',users);
-    const session={id:newUser.id,name:newUser.name,email:newUser.email,sehir:newUser.sehir,phone:newUser.phone,sonGiris:newUser.sonGiris};
+    const session={id:newUser.id,name:newUser.name,email:newUser.email,sehir:newUser.sehir,phone:newUser.phone,sonGiris:newUser.sonGiris,plan:'free'};
     lsSet('auth_user',session);
     setLoading('register-btn','register-btn-text','register-spin',false);
     showSuccess('Hesabınız Oluşturuldu!','Merhaba '+name.split(' ')[0]+', DenizBul\'a hoş geldiniz!');

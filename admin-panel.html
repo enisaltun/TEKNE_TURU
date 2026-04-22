@@ -125,6 +125,11 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         <div class="stat-icon bg-purple-100 text-purple-600"><i class="fas fa-users"></i></div>
         <div><div class="text-2xl font-bold" id="dash-stat-captains">0</div><div class="text-xs text-gray-500">Toplam Kaptan</div></div>
       </div>
+      <!-- Pro üye stat -->
+      <div class="stat-card" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff">
+        <div class="stat-icon" style="background:rgba(245,158,11,.2);color:#f59e0b;font-size:20px"><i class="fas fa-crown"></i></div>
+        <div><div class="text-2xl font-bold" id="dash-stat-pro">0</div><div class="text-xs" style="color:rgba(255,255,255,.6)">Pro Üye</div></div>
+      </div>
       <!-- Mağaza hızlı kontrol kartı -->
       <div class="stat-card flex-col !items-start gap-2 cursor-pointer hover:shadow-md transition" onclick="sidebarToggleShop()" style="justify-content:space-between;padding:16px">
         <div class="flex items-center justify-between w-full">
@@ -413,6 +418,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
               <th class="text-center">Rez.</th>
               <th>Harcama</th>
               <th>Kanal</th>
+              <th>Plan</th>
               <th>Durum</th>
               <th class="text-right">Islem</th>
             </tr>
@@ -984,7 +990,8 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
 
     <!-- Footer Actions -->
     <div class="flex flex-wrap items-center justify-between gap-2 p-5 border-t bg-gray-50 rounded-b-2xl">
-      <div class="flex gap-2">
+      <div class="flex gap-2 flex-wrap">
+        <button id="udm-plan-btn" onclick="udmTogglePlan()" class="border px-3 py-1.5 rounded-lg text-xs font-semibold transition"></button>
         <button id="udm-block-btn" onclick="udmToggleBlock()" class="border px-3 py-1.5 rounded-lg text-xs font-semibold transition"></button>
         <button onclick="udmDeleteUser()" class="border border-red-200 text-danger px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-50 transition"><i class="fas fa-trash mr-1"></i>Kullaniciyi Sil</button>
       </div>
@@ -1767,6 +1774,8 @@ function renderDashboard(){
   setEl('dash-stat-bookings',monthlyB.length);
   setEl('dash-stat-revenue',monthlyRev.toLocaleString('tr-TR')+' TL');
   setEl('dash-stat-captains',caps.length);
+  const allU=getAllUsers();
+  setEl('dash-stat-pro',allU.filter(u=>u.plan==='pro').length);
 
   // Revenue chart — monthly data from bookings
   const monthlyRevArr=Array(12).fill(0);
@@ -2336,7 +2345,11 @@ function renderUsers(){
       sosyal_medya:'<span class="badge bg-pink-100 text-pink-700"><i class="fas fa-share-alt mr-0.5 text-[9px]"></i>Sosyal</span>',
       misafir:'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-user-clock mr-0.5 text-[9px]"></i>Misafir</span>',
     }[kanal]||'<span class="badge bg-gray-100 text-gray-600"><i class="fas fa-globe mr-0.5 text-[9px]"></i>Web</span>';
-    const avatarBg=isEng?'bg-red-100 text-red-500':isAktif?'bg-purple-100 text-purple-600':'bg-gray-100 text-gray-400';
+    const isPro=u.plan==='pro';
+    const planBadge=isPro
+      ?'<span class="badge" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff"><i class="fas fa-crown mr-0.5" style="font-size:8px"></i>Pro</span>'
+      :'<span class="badge bg-gray-100 text-gray-400">Ücretsiz</span>';
+    const avatarBg=isEng?'bg-red-100 text-red-500':isPro?'bg-amber-100 text-amber-600':isAktif?'bg-purple-100 text-purple-600':'bg-gray-100 text-gray-400';
     const verifiedIcon=u.emailOnaylandi===false?'<span title="E-posta dogrulanmadi" class="text-amber-400 text-[10px] ml-1">⚠</span>':'<span title="E-posta dogrulandi" class="text-success text-[10px] ml-1">✓</span>';
     return`<tr class="hover:bg-blue-50/30 transition-colors ${isEng?'opacity-60':''}">
       <td><input type="checkbox" class="user-row-check rounded" value="${uid}" onchange="usersUpdateBulkBar()"></td>
@@ -2355,6 +2368,7 @@ function renderUsers(){
       <td class="text-center font-semibold text-sm ${rezCount>0?'text-primary':''}">${rezCount}</td>
       <td class="font-semibold text-sm ${(u.toplamHarcama||0)>0?'text-success':'text-gray-300'}">${harcama}</td>
       <td>${kanalBadge}</td>
+      <td>${planBadge}</td>
       <td>${durumBadge}</td>
       <td class="text-right">
         <div class="flex gap-1 justify-end">
@@ -2443,6 +2457,19 @@ function openUserDetailModal(uid){
   document.getElementById('udm-harcama').textContent=(u.toplamHarcama||0).toLocaleString('tr-TR')+' TL';
   document.getElementById('udm-tur-say').textContent=u.turSayisi||activeB.length;
   document.getElementById('udm-rez-tab-count').textContent=ub.length;
+
+  /* Plan button */
+  const planBtn=document.getElementById('udm-plan-btn');
+  const uPlan=u.plan||'free';
+  if(planBtn){
+    if(uPlan==='pro'){
+      planBtn.innerHTML='<i class="fas fa-crown mr-1" style="color:#f59e0b"></i>Pro — İndir';
+      planBtn.className='border border-amber-300 text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-amber-100 transition';
+    } else {
+      planBtn.innerHTML='<i class="fas fa-crown mr-1" style="color:#f59e0b"></i>Pro\'ya Yükselt';
+      planBtn.className='border border-amber-300 text-amber-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-amber-50 transition';
+    }
+  }
 
   /* Block button */
   const blockBtn=document.getElementById('udm-block-btn');
@@ -2536,6 +2563,19 @@ function udmSaveEdit(){
   openUserDetailModal(_udmCurrentUid);
   renderUsers();
   showToast('Kullanici guncellendi','success');
+}
+
+function udmTogglePlan(){
+  const all=getAllUsers();
+  const u=all.find(x=>(x.id||x.name)===_udmCurrentUid||String(x.id)===String(_udmCurrentUid));
+  if(!u)return;
+  const willPro=u.plan!=='pro';
+  u.plan=willPro?'pro':'free';
+  if(willPro)u.planStarted=new Date().toISOString();
+  saveUsers(all);
+  openUserDetailModal(_udmCurrentUid);
+  renderUsers();
+  showToast(willPro?'Kullanici Pro\'ya yükseltildi':'Pro üyelik geri alindi',willPro?'success':'info');
 }
 
 function udmToggleBlock(){

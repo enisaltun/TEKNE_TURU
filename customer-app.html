@@ -661,6 +661,10 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
         <div class="text-center"><div class="font-bold text-amber-500" id="prof-favs">0</div><div class="text-[9px] text-gray-400">Favori</div></div>
       </div>
     </div>
+    <!-- Plan kartı -->
+    <div id="prof-plan-card" class="mb-4 rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition-transform" onclick="showProModal()">
+      <!-- rendered by renderProfile() -->
+    </div>
     <div class="space-y-1.5">
       <div class="card p-3.5 flex items-center gap-3 card-hover" onclick="navigateTo('my-tours')"><i class="fas fa-calendar-check text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Rezervasyonlarim</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
       <div class="card p-3.5 flex items-center gap-3 card-hover" onclick="navigateTo('favorites')"><i class="fas fa-heart text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Favorilerim</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
@@ -682,23 +686,82 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 <section id="page-tools" class="page">
   <div class="px-4 pt-2 pb-24">
     <!-- Header -->
-    <div class="flex items-center gap-2 py-3 mb-4">
-      <div class="w-10 h-10 bg-blue-100 rounded-2xl flex items-center justify-center">
-        <i class="fas fa-water text-primary text-lg"></i>
+    <div class="flex items-center justify-between py-3 mb-1">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 bg-blue-100 rounded-2xl flex items-center justify-center">
+          <i class="fas fa-water text-primary text-lg"></i>
+        </div>
+        <div>
+          <div class="font-bold text-base">Deniz Bilimleri</div>
+          <div class="text-xs text-gray-400" id="tools-plan-sub">Hava, gelgit, Ay ve daha fazlası</div>
+        </div>
       </div>
-      <div>
-        <div class="font-bold text-base">Deniz Araçları</div>
-        <div class="text-xs text-gray-400">Hava, gelgit, Ay ve daha fazlası</div>
+      <div id="tools-plan-badge"></div>
+    </div>
+    <!-- Pro banner (free users) -->
+    <div id="tools-pro-banner" onclick="showProModal()" class="mb-4 p-3 rounded-2xl cursor-pointer active:scale-95 transition-transform" style="background:linear-gradient(135deg,#1e3a5f,#0369a1);display:none">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-white font-bold text-sm flex items-center gap-1.5"><i class="fas fa-crown text-amber-400"></i> Pro'ya Geç</div>
+          <div class="text-blue-200 text-xs mt-0.5">7 gelişmiş modülün kilidini aç</div>
+        </div>
+        <div class="bg-amber-400 text-gray-900 text-xs font-bold px-3 py-1.5 rounded-xl">99 TL/ay</div>
       </div>
     </div>
     <!-- Module grid (injected by renderTools) -->
     <div id="tools-grid" class="grid grid-cols-2 gap-3"></div>
-    <div class="mt-4 p-3 bg-blue-50 rounded-2xl text-xs text-blue-700 flex items-start gap-2 border border-blue-100">
-      <i class="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
-      <span>Aktif araçlar admin tarafından yönetilir. Bazı araçlar konumunuza göre otomatik güncellenir.</span>
-    </div>
   </div>
 </section>
+
+<!-- ================================================================ PRO UPGRADE MODAL -->
+<div id="pro-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeProModal()">
+  <div onclick="event.stopPropagation()" style="background:#fff;border-radius:28px 28px 0 0;width:100%;max-width:430px;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,16px)">
+    <!-- Pro modal header -->
+    <div style="background:linear-gradient(135deg,#0f172a,#0369a1);border-radius:28px 28px 0 0;padding:28px 24px 24px;text-align:center">
+      <div style="width:56px;height:56px;background:rgba(255,255,255,.15);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <i class="fas fa-crown" style="color:#f59e0b;font-size:26px"></i>
+      </div>
+      <div style="color:#fff;font-size:22px;font-weight:800">DenizBul Pro</div>
+      <div style="color:rgba(255,255,255,.7);font-size:13px;margin-top:4px">Deniz Bilimleri modüllerinin tamamı</div>
+    </div>
+    <div style="padding:20px 24px">
+      <!-- Plan karşılaştırma -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+        <div style="border:2px solid #e2e8f0;border-radius:16px;padding:14px;text-align:center">
+          <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Ücretsiz</div>
+          <div style="font-size:22px;font-weight:800;color:#1e293b;margin-bottom:12px">0₺</div>
+          <div style="font-size:11px;text-align:left;space-y:4px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;color:#10b981"><i class="fas fa-check" style="font-size:9px;width:12px"></i><span>Hava Durumu</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;color:#10b981"><i class="fas fa-check" style="font-size:9px;width:12px"></i><span>Rüzgar</span></div>
+            <div style="display:flex;align-items:center;gap:6px;color:#cbd5e1"><i class="fas fa-lock" style="font-size:9px;width:12px"></i><span>+7 modül kilitli</span></div>
+          </div>
+        </div>
+        <div style="border:2px solid #0369a1;border-radius:16px;padding:14px;text-align:center;background:#f0f9ff;position:relative">
+          <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#f59e0b;color:#fff;font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap">ÖNERİLEN</div>
+          <div style="font-size:11px;color:#0369a1;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Pro</div>
+          <div style="font-size:22px;font-weight:800;color:#0369a1;margin-bottom:2px">99₺</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:10px">/ay</div>
+          <div style="font-size:11px;text-align:left">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#10b981"><i class="fas fa-check" style="font-size:9px;width:12px"></i><span>Hava + Rüzgar</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#10b981"><i class="fas fa-check" style="font-size:9px;width:12px"></i><span>Gelgit & Med-cezir</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#10b981"><i class="fas fa-check" style="font-size:9px;width:12px"></i><span>Güneş Takibi</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#10b981"><i class="fas fa-check" style="font-size:9px;width:12px"></i><span>Ay Takvimi</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#10b981"><i class="fas fa-check" style="font-size:9px;width:12px"></i><span>Solunar Tablosu</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#10b981"><i class="fas fa-check" style="font-size:9px;width:12px"></i><span>Su Sıcaklığı</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#10b981"><i class="fas fa-check" style="font-size:9px;width:12px"></i><span>Ay Konumu</span></div>
+            <div style="display:flex;align-items:center;gap:6px;color:#10b981"><i class="fas fa-check" style="font-size:9px;width:12px"></i><span>Derinlik Haritası</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- CTA -->
+      <button onclick="doUpgradeProCustomer()" style="width:100%;background:linear-gradient(135deg,#0369a1,#0284c7);color:#fff;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px">
+        <i class="fas fa-crown" style="color:#f59e0b"></i> Pro'ya Geç — 99 TL/ay
+      </button>
+      <button onclick="closeProModal()" style="width:100%;background:transparent;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px;font-size:13px;color:#64748b;cursor:pointer">Şimdi Değil</button>
+      <p style="text-align:center;font-size:10px;color:#94a3b8;margin-top:12px">İstediğin zaman iptal edebilirsin. Demo modunda ücret alınmaz.</p>
+    </div>
+  </div>
+</div>
 
 <!-- KAPASİTE UYARI MODAL -->
 <div id="cap-warning-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center" onclick="closeCapWarning()">
@@ -976,16 +1039,30 @@ function rebuildTourMap(){allTours().forEach(t=>{tourMap[t.id]=t;});}
 
 /* ── TOOLS (Marine Modules) ── */
 const TOOL_DEFS=[
-  {key:'hava',label:'Hava Durumu',icon:'fa-cloud-sun',color:'bg-amber-100 text-amber-600',href:'marine-hava.html',desc:'5 günlük tahmin, rüzgar, nem'},
-  {key:'gelgit',label:'Gelgit',icon:'fa-water',color:'bg-blue-100 text-blue-600',href:'marine-gelgit.html',desc:'Med-cezir saatleri ve yüksekliği'},
-  {key:'ruzgar',label:'Rüzgar',icon:'fa-wind',color:'bg-sky-100 text-sky-600',href:'marine-ruzgar.html',desc:'Beaufort, hız ve yön verileri'},
-  {key:'gunes',label:'Güneş',icon:'fa-sun',color:'bg-orange-100 text-orange-500',href:'marine-gunes.html',desc:'Doğuş, batış, altın saat'},
-  {key:'ay',label:'Ay Takvimi',icon:'fa-moon',color:'bg-slate-200 text-slate-600',href:'marine-ay.html',desc:'Ay evreleri, balık avı etkisi'},
-  {key:'solunar',label:'Solunar',icon:'fa-fish',color:'bg-teal-100 text-teal-600',href:'marine-solunar.html',desc:'Balık aktivite periyotları'},
-  {key:'sicaklik',label:'Su Sıcaklığı',icon:'fa-thermometer-half',color:'bg-cyan-100 text-cyan-600',href:'marine-sicaklik.html',desc:'Yüzey ve derinlik sıcaklıkları'},
-  {key:'ay_konum',label:"Ay'ın Konumu",icon:'fa-satellite',color:'bg-violet-100 text-violet-600',href:'marine-ay-konum.html',desc:'Canlı faz, mesafe, pusula'},
-  {key:'derinlik',label:'Derinlik',icon:'fa-map',color:'bg-indigo-100 text-indigo-600',href:'marine-derinlik.html',desc:'Batimetri ve kritik bölgeler'},
+  {key:'hava',   label:'Hava Durumu', icon:'fa-cloud-sun',       color:'bg-amber-100 text-amber-600', href:'marine-hava.html',     desc:'5 günlük tahmin, rüzgar, nem',     pro:false},
+  {key:'ruzgar', label:'Rüzgar',      icon:'fa-wind',            color:'bg-sky-100 text-sky-600',     href:'marine-ruzgar.html',   desc:'Beaufort, hız ve yön verileri',    pro:false},
+  {key:'gelgit', label:'Gelgit',      icon:'fa-water',           color:'bg-blue-100 text-blue-600',   href:'marine-gelgit.html',   desc:'Med-cezir saatleri ve yüksekliği', pro:true},
+  {key:'gunes',  label:'Güneş',       icon:'fa-sun',             color:'bg-orange-100 text-orange-500',href:'marine-gunes.html',   desc:'Doğuş, batış, altın saat',         pro:true},
+  {key:'ay',     label:'Ay Takvimi',  icon:'fa-moon',            color:'bg-slate-200 text-slate-600', href:'marine-ay.html',       desc:'Ay evreleri, balık avı etkisi',    pro:true},
+  {key:'solunar',label:'Solunar',     icon:'fa-fish',            color:'bg-teal-100 text-teal-600',   href:'marine-solunar.html',  desc:'Balık aktivite periyotları',       pro:true},
+  {key:'sicaklik',label:'Su Sıcaklığı',icon:'fa-thermometer-half',color:'bg-cyan-100 text-cyan-600', href:'marine-sicaklik.html', desc:'Yüzey ve derinlik sıcaklıkları',   pro:true},
+  {key:'ay_konum',label:"Ay Konumu",  icon:'fa-satellite',       color:'bg-violet-100 text-violet-600',href:'marine-ay-konum.html',desc:'Canlı faz, mesafe, pusula',        pro:true},
+  {key:'derinlik',label:'Derinlik',   icon:'fa-map',             color:'bg-indigo-100 text-indigo-600',href:'marine-derinlik.html',desc:'Batimetri ve kritik bölgeler',     pro:true},
 ];
+
+function getUserPlan(){
+  try{
+    const session=JSON.parse(localStorage.getItem('auth_user')||'{}');
+    if(session.plan==='pro')return'pro';
+    if(session.email){
+      const users=JSON.parse(localStorage.getItem('cu_users')||'[]');
+      const u=users.find(x=>x.email===session.email);
+      if(u?.plan==='pro')return'pro';
+    }
+    return'free';
+  }catch{return'free';}
+}
+
 function getModuleSettings(){
   try{
     const d={};TOOL_DEFS.forEach(t=>{d[t.key]={aktif:true,musteriler:true,kaptanlar:true};});
@@ -993,23 +1070,75 @@ function getModuleSettings(){
     return s?Object.assign(d,JSON.parse(s)):d;
   }catch{const d={};TOOL_DEFS.forEach(t=>{d[t.key]={aktif:true,musteriler:true,kaptanlar:true};});return d;}
 }
+
 function renderTools(){
   const grid=document.getElementById('tools-grid');
   if(!grid)return;
   const ms=getModuleSettings();
+  const plan=getUserPlan();
+  const isPro=plan==='pro';
+
+  /* Update header badge & banner */
+  const badge=document.getElementById('tools-plan-badge');
+  const sub=document.getElementById('tools-plan-sub');
+  const banner=document.getElementById('tools-pro-banner');
+  if(badge)badge.innerHTML=isPro
+    ?'<span style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px"><i class="fas fa-crown"></i> PRO</span>'
+    :'<span style="background:#f1f5f9;color:#64748b;font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px">Ücretsiz</span>';
+  if(sub)sub.textContent=isPro?'Tüm modüller aktif':'2 / 9 modül aktif';
+  if(banner)banner.style.display=isPro?'none':'';
+
   const visible=TOOL_DEFS.filter(t=>{const s=ms[t.key];return !s||s.aktif!==false&&s.musteriler!==false;});
   if(!visible.length){
     grid.innerHTML='<div class="col-span-2 text-center py-12 text-xs text-gray-400"><i class="fas fa-tools text-3xl block mb-2 opacity-20"></i>Şu an aktif araç bulunmuyor</div>';
     return;
   }
-  grid.innerHTML=visible.map(t=>`
-    <a href="${t.href}" onclick="localStorage.setItem('marine_from','customer-app.html')" class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col items-center text-center active:scale-95 transition-transform">
+  grid.innerHTML=visible.map(t=>{
+    const locked=t.pro&&!isPro;
+    if(locked){
+      return`<div onclick="showProModal()" class="relative bg-white rounded-2xl p-4 shadow-sm border flex flex-col items-center text-center cursor-pointer active:scale-95 transition-transform">
+        <div style="position:absolute;top:8px;right:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:8px;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:.5px">PRO</div>
+        <div class="w-12 h-12 ${t.color} rounded-2xl flex items-center justify-center mb-2" style="opacity:.35">
+          <i class="fas ${t.icon} text-xl"></i>
+        </div>
+        <div class="text-sm font-semibold leading-tight text-gray-400">${t.label}</div>
+        <div class="text-[10px] text-gray-300 mt-0.5 leading-tight">${t.desc}</div>
+        <div class="mt-2 flex items-center gap-1" style="font-size:10px;color:#f59e0b;font-weight:700">
+          <i class="fas fa-lock" style="font-size:9px"></i> Pro ile aç
+        </div>
+      </div>`;
+    }
+    return`<a href="${t.href}" onclick="localStorage.setItem('marine_from','customer-app.html')" class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col items-center text-center active:scale-95 transition-transform">
       <div class="w-12 h-12 ${t.color} rounded-2xl flex items-center justify-center mb-2">
         <i class="fas ${t.icon} text-xl"></i>
       </div>
       <div class="text-sm font-semibold leading-tight">${t.label}</div>
       <div class="text-[10px] text-gray-400 mt-0.5 leading-tight">${t.desc}</div>
-    </a>`).join('');
+    </a>`;
+  }).join('');
+}
+
+/* ── PRO MODAL ── */
+function showProModal(){document.getElementById('pro-modal').style.display='flex';}
+function closeProModal(){document.getElementById('pro-modal').style.display='none';}
+
+function doUpgradeProCustomer(){
+  try{
+    /* Oturumu güncelle */
+    const session=JSON.parse(localStorage.getItem('auth_user')||'{}');
+    session.plan='pro';
+    localStorage.setItem('auth_user',JSON.stringify(session));
+    /* cu_users kaydını güncelle */
+    if(session.email){
+      const users=JSON.parse(localStorage.getItem('cu_users')||'[]');
+      const u=users.find(x=>x.email===session.email);
+      if(u){u.plan='pro';u.planStarted=new Date().toISOString();localStorage.setItem('cu_users',JSON.stringify(users));}
+    }
+  }catch{}
+  closeProModal();
+  renderTools();
+  renderProfile();
+  showToast('Pro üyeliğin aktifleştirildi! Tüm modüller açıldı.');
 }
 
 /* ── HOME ── */
@@ -1751,6 +1880,33 @@ function renderProfile(){
   document.getElementById('prof-tours').textContent=bookings.length;
   document.getElementById('prof-spend').textContent=total.toLocaleString('tr-TR');
   document.getElementById('prof-favs').textContent=favCount;
+
+  /* Plan kartı */
+  const plan=getUserPlan();
+  const planCard=document.getElementById('prof-plan-card');
+  if(planCard){
+    if(plan==='pro'){
+      planCard.innerHTML=`<div style="background:linear-gradient(135deg,#0f172a,#0369a1);padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center"><i class="fas fa-crown" style="color:#f59e0b;font-size:16px"></i></div>
+          <div><div style="color:#fff;font-weight:700;font-size:14px">DenizBul Pro</div><div style="color:rgba(255,255,255,.6);font-size:11px">Tüm modüller aktif</div></div>
+        </div>
+        <span style="background:rgba(245,158,11,.2);color:#f59e0b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid rgba(245,158,11,.3)">AKTİF</span>
+      </div>`;
+      planCard.onclick=null;
+      planCard.style.cursor='default';
+    } else {
+      planCard.innerHTML=`<div style="background:linear-gradient(135deg,#1e3a5f,#0369a1);padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;background:rgba(255,255,255,.1);border-radius:10px;display:flex;align-items:center;justify-content:center"><i class="fas fa-crown" style="color:#f59e0b;font-size:16px"></i></div>
+          <div><div style="color:#fff;font-weight:700;font-size:14px">Pro'ya Geç</div><div style="color:rgba(255,255,255,.6);font-size:11px">7 gelişmiş modülün kilidini aç</div></div>
+        </div>
+        <span style="background:#f59e0b;color:#1e293b;font-size:11px;font-weight:800;padding:6px 12px;border-radius:20px">99 TL/ay</span>
+      </div>`;
+      planCard.onclick=()=>showProModal();
+      planCard.style.cursor='pointer';
+    }
+  }
 }
 
 function saveProfile(){

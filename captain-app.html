@@ -1183,22 +1183,57 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
 <!-- ================================================================ PAGE: ARAÇLAR (KAPTAN) -->
 <section id="page-tools" class="page">
   <div class="px-4 pt-2 pb-24">
-    <div class="flex items-center gap-2 py-3 mb-4">
-      <div class="w-10 h-10 bg-blue-100 rounded-2xl flex items-center justify-center">
-        <i class="fas fa-water text-primary text-lg"></i>
+    <div class="flex items-center justify-between py-3 mb-1">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 bg-blue-100 rounded-2xl flex items-center justify-center">
+          <i class="fas fa-water text-primary text-lg"></i>
+        </div>
+        <div>
+          <div class="font-bold text-base">Deniz Bilimleri</div>
+          <div class="text-xs text-gray-400" id="cap-tools-plan-sub">Profesyonel kaptan araç seti</div>
+        </div>
       </div>
-      <div>
-        <div class="font-bold text-base">Deniz Araçları</div>
-        <div class="text-xs text-gray-400">Profesyonel kaptan araç seti</div>
+      <div id="cap-tools-plan-badge"></div>
+    </div>
+    <!-- Pro banner -->
+    <div id="cap-tools-pro-banner" onclick="showCaptainProModal()" class="mb-4 p-3 rounded-2xl cursor-pointer active:scale-95 transition-transform" style="background:linear-gradient(135deg,#1e3a5f,#0369a1);display:none">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-white font-bold text-sm flex items-center gap-1.5"><i class="fas fa-crown text-amber-400"></i> Pro'ya Geç</div>
+          <div class="text-blue-200 text-xs mt-0.5">7 gelişmiş modülün kilidini aç</div>
+        </div>
+        <div class="bg-amber-400 text-gray-900 text-xs font-bold px-3 py-1.5 rounded-xl">99 TL/ay</div>
       </div>
     </div>
     <div id="captain-tools-grid" class="grid grid-cols-2 gap-3"></div>
-    <div class="mt-4 p-3 bg-blue-50 rounded-2xl text-xs text-blue-700 flex items-start gap-2 border border-blue-100">
-      <i class="fas fa-compass mt-0.5 flex-shrink-0"></i>
-      <span>Araçlar admin paneli üzerinden yönetilir. Solunar takvim, gelgit ve hava verisi gerçek zamanlı güncellenir.</span>
-    </div>
   </div>
 </section>
+
+<!-- PRO UPGRADE MODAL (KAPTAN) -->
+<div id="captain-pro-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeCaptainProModal()">
+  <div onclick="event.stopPropagation()" style="background:#fff;border-radius:28px 28px 0 0;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,16px)">
+    <div style="background:linear-gradient(135deg,#0f172a,#0369a1);border-radius:28px 28px 0 0;padding:24px;text-align:center">
+      <div style="width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
+        <i class="fas fa-crown" style="color:#f59e0b;font-size:24px"></i>
+      </div>
+      <div style="color:#fff;font-size:20px;font-weight:800">Kaptan Pro</div>
+      <div style="color:rgba(255,255,255,.7);font-size:12px;margin-top:4px">Tüm Deniz Bilimleri araçlarına tam erişim</div>
+    </div>
+    <div style="padding:20px 24px">
+      <div style="background:#f0f9ff;border:2px solid #0369a1;border-radius:16px;padding:16px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:700;color:#0369a1;margin-bottom:10px">Pro ile açılan modüller:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">
+          ${['Gelgit & Med-cezir','Güneş Takibi','Ay Takvimi','Solunar Tablosu','Su Sıcaklığı','Ay Konumu','Derinlik Haritası'].map(m=>`<div style="display:flex;align-items:center;gap:5px;color:#10b981"><i class="fas fa-check" style="font-size:9px"></i>${m}</div>`).join('')}
+        </div>
+      </div>
+      <button onclick="doUpgradeProCaptain()" style="width:100%;background:linear-gradient(135deg,#0369a1,#0284c7);color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px">
+        <i class="fas fa-crown" style="color:#f59e0b"></i> Pro'ya Geç — 99 TL/ay
+      </button>
+      <button onclick="closeCaptainProModal()" style="width:100%;background:transparent;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px;font-size:13px;color:#64748b;cursor:pointer">Şimdi Değil</button>
+      <p style="text-align:center;font-size:10px;color:#94a3b8;margin-top:10px">Demo modunda ücret alınmaz.</p>
+    </div>
+  </div>
+</div>
 
 <!-- ===== KAPASİTE UYARI MODAL (KAPTAN) ===== -->
 <div id="cap-block-overlay" style="display:none;position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);align-items:center;justify-content:center">
@@ -1752,16 +1787,27 @@ function jumpToChat(id){navigateTo('messages');setTimeout(()=>captainOpenChat(id
 
 /* ── CAPTAIN TOOLS ── */
 const CAPTAIN_TOOL_DEFS=[
-  {key:'hava',label:'Hava Durumu',icon:'fa-cloud-sun',color:'bg-amber-100 text-amber-600',href:'marine-hava.html',desc:'Anlık ve 5 günlük tahmin'},
-  {key:'gelgit',label:'Gelgit',icon:'fa-water',color:'bg-blue-100 text-blue-600',href:'marine-gelgit.html',desc:'Med-cezir saatleri'},
-  {key:'ruzgar',label:'Rüzgar',icon:'fa-wind',color:'bg-sky-100 text-sky-600',href:'marine-ruzgar.html',desc:'Beaufort ve istasyon verileri'},
-  {key:'gunes',label:'Güneş',icon:'fa-sun',color:'bg-orange-100 text-orange-500',href:'marine-gunes.html',desc:'Doğuş, batış, altın saat'},
-  {key:'ay',label:'Ay Takvimi',icon:'fa-moon',color:'bg-slate-200 text-slate-600',href:'marine-ay.html',desc:'Faz ve balık avı rehberi'},
-  {key:'solunar',label:'Solunar',icon:'fa-fish',color:'bg-teal-100 text-teal-600',href:'marine-solunar.html',desc:'Aktivite periyotları'},
-  {key:'sicaklik',label:'Su Sıcaklığı',icon:'fa-thermometer-half',color:'bg-cyan-100 text-cyan-600',href:'marine-sicaklik.html',desc:'Yüzey ve derinlik'},
-  {key:'ay_konum',label:"Ay Konumu",icon:'fa-satellite',color:'bg-violet-100 text-violet-600',href:'marine-ay-konum.html',desc:'Canlı faz ve mesafe'},
-  {key:'derinlik',label:'Derinlik',icon:'fa-map',color:'bg-indigo-100 text-indigo-600',href:'marine-derinlik.html',desc:'Batimetri haritası'},
+  {key:'hava',   label:'Hava Durumu', icon:'fa-cloud-sun',       color:'bg-amber-100 text-amber-600', href:'marine-hava.html',     desc:'Anlık ve 5 günlük tahmin',    pro:false},
+  {key:'ruzgar', label:'Rüzgar',      icon:'fa-wind',            color:'bg-sky-100 text-sky-600',     href:'marine-ruzgar.html',   desc:'Beaufort ve istasyon verileri',pro:false},
+  {key:'gelgit', label:'Gelgit',      icon:'fa-water',           color:'bg-blue-100 text-blue-600',   href:'marine-gelgit.html',   desc:'Med-cezir saatleri',          pro:true},
+  {key:'gunes',  label:'Güneş',       icon:'fa-sun',             color:'bg-orange-100 text-orange-500',href:'marine-gunes.html',   desc:'Doğuş, batış, altın saat',    pro:true},
+  {key:'ay',     label:'Ay Takvimi',  icon:'fa-moon',            color:'bg-slate-200 text-slate-600', href:'marine-ay.html',       desc:'Faz ve balık avı rehberi',    pro:true},
+  {key:'solunar',label:'Solunar',     icon:'fa-fish',            color:'bg-teal-100 text-teal-600',   href:'marine-solunar.html',  desc:'Aktivite periyotları',        pro:true},
+  {key:'sicaklik',label:'Su Sıcaklığı',icon:'fa-thermometer-half',color:'bg-cyan-100 text-cyan-600', href:'marine-sicaklik.html', desc:'Yüzey ve derinlik',           pro:true},
+  {key:'ay_konum',label:'Ay Konumu',  icon:'fa-satellite',       color:'bg-violet-100 text-violet-600',href:'marine-ay-konum.html',desc:'Canlı faz ve mesafe',         pro:true},
+  {key:'derinlik',label:'Derinlik',   icon:'fa-map',             color:'bg-indigo-100 text-indigo-600',href:'marine-derinlik.html',desc:'Batimetri haritası',          pro:true},
 ];
+
+function getCaptainPlan(){
+  try{
+    const session=JSON.parse(localStorage.getItem('auth_user')||'{}');
+    if(session.plan==='pro')return'pro';
+    const cap=getActiveCaptain();
+    if(cap?.plan==='pro')return'pro';
+    return'free';
+  }catch{return'free';}
+}
+
 function getCaptainModuleSettings(){
   try{
     const d={};CAPTAIN_TOOL_DEFS.forEach(t=>{d[t.key]={aktif:true,musteriler:true,kaptanlar:true};});
@@ -1769,23 +1815,72 @@ function getCaptainModuleSettings(){
     return s?Object.assign(d,JSON.parse(s)):d;
   }catch{const d={};CAPTAIN_TOOL_DEFS.forEach(t=>{d[t.key]={aktif:true,musteriler:true,kaptanlar:true};});return d;}
 }
+
 function renderCaptainTools(){
   const grid=document.getElementById('captain-tools-grid');
   if(!grid)return;
   const ms=getCaptainModuleSettings();
+  const plan=getCaptainPlan();
+  const isPro=plan==='pro';
+
+  /* Update header */
+  const badge=document.getElementById('cap-tools-plan-badge');
+  const sub=document.getElementById('cap-tools-plan-sub');
+  const banner=document.getElementById('cap-tools-pro-banner');
+  if(badge)badge.innerHTML=isPro
+    ?'<span style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px"><i class="fas fa-crown"></i> PRO</span>'
+    :'<span style="background:#f1f5f9;color:#64748b;font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px">Ücretsiz</span>';
+  if(sub)sub.textContent=isPro?'Tüm modüller aktif':'2 / 9 modül aktif';
+  if(banner)banner.style.display=isPro?'none':'';
+
   const visible=CAPTAIN_TOOL_DEFS.filter(t=>{const s=ms[t.key];return !s||s.aktif!==false&&s.kaptanlar!==false;});
   if(!visible.length){
     grid.innerHTML='<div class="col-span-2 text-center py-12 text-xs text-gray-400"><i class="fas fa-tools text-3xl block mb-2 opacity-20"></i>Şu an aktif araç bulunmuyor</div>';
     return;
   }
-  grid.innerHTML=visible.map(t=>`
-    <a href="${t.href}" onclick="localStorage.setItem('marine_from','captain-app.html')" class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col items-center text-center active:scale-95 transition-transform">
+  grid.innerHTML=visible.map(t=>{
+    const locked=t.pro&&!isPro;
+    if(locked){
+      return`<div onclick="showCaptainProModal()" class="relative bg-white rounded-2xl p-4 shadow-sm border flex flex-col items-center text-center cursor-pointer active:scale-95 transition-transform">
+        <div style="position:absolute;top:8px;right:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:8px;font-weight:800;padding:2px 7px;border-radius:20px">PRO</div>
+        <div class="w-12 h-12 ${t.color} rounded-2xl flex items-center justify-center mb-2" style="opacity:.35">
+          <i class="fas ${t.icon} text-xl"></i>
+        </div>
+        <div class="text-sm font-semibold leading-tight text-gray-400">${t.label}</div>
+        <div class="text-[10px] text-gray-300 mt-0.5 leading-tight">${t.desc}</div>
+        <div class="mt-2 flex items-center gap-1" style="font-size:10px;color:#f59e0b;font-weight:700">
+          <i class="fas fa-lock" style="font-size:9px"></i> Pro ile aç
+        </div>
+      </div>`;
+    }
+    return`<a href="${t.href}" onclick="localStorage.setItem('marine_from','captain-app.html')" class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col items-center text-center active:scale-95 transition-transform">
       <div class="w-12 h-12 ${t.color} rounded-2xl flex items-center justify-center mb-2">
         <i class="fas ${t.icon} text-xl"></i>
       </div>
       <div class="text-sm font-semibold leading-tight">${t.label}</div>
       <div class="text-[10px] text-gray-400 mt-0.5 leading-tight">${t.desc}</div>
-    </a>`).join('');
+    </a>`;
+  }).join('');
+}
+
+function showCaptainProModal(){document.getElementById('captain-pro-modal').style.display='flex';}
+function closeCaptainProModal(){document.getElementById('captain-pro-modal').style.display='none';}
+
+function doUpgradeProCaptain(){
+  try{
+    const session=JSON.parse(localStorage.getItem('auth_user')||'{}');
+    session.plan='pro';
+    localStorage.setItem('auth_user',JSON.stringify(session));
+    const cap=getActiveCaptain();
+    if(cap){
+      const caps=S.get('db_captains',[]);
+      const c=caps.find(x=>x.id===cap.id);
+      if(c){c.plan='pro';c.planStarted=new Date().toISOString();S.set('db_captains',caps);}
+    }
+  }catch{}
+  closeCaptainProModal();
+  renderCaptainTools();
+  showToast('Pro üyeliğin aktifleştirildi! Tüm modüller açıldı.');
 }
 
 /* ── PROFILE ── */
