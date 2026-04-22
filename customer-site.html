@@ -32,6 +32,10 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
 .gallery-img:hover{transform:scale(1.02)}
 .tab-btn.active{background:#0369a1;color:#fff}
 .tab-btn{background:#e2e8f0;color:#475569;transition:all .2s}
+.shop-cat-btn.active{background:#0369a1;color:#fff;border-color:#0369a1}
+.shop-cat-btn{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
+.shop-cat-btn:hover:not(.active){background:#e2e8f0}
+.line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .badge-cat{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
 </style>
 </head>
@@ -1225,62 +1229,204 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
 <!-- PAGE 14: E-TICARET / MAGAZA             -->
 <!-- ======================================= -->
 <section id="page-shop" class="page pb-20">
-  <div class="max-w-6xl mx-auto px-4 py-6">
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-2xl font-bold">Magaza</h1>
-        <p class="text-gray-500 text-sm">Balikcilik malzemeleri ve ekipmanlar</p>
-      </div>
-      <button class="relative p-2 text-gray-500 hover:text-primary" onclick="toggleCart()">
-        <i class="fas fa-shopping-cart text-xl"></i>
-        <span class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-accent text-white text-[10px] rounded-full flex items-center justify-center" id="cart-count">3</span>
-      </button>
-    </div>
 
-    <!-- Categories -->
-    <div class="flex gap-2 mb-6 overflow-x-auto">
-      <button class="tab-btn active px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Tumu</button>
-      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Olta & Makine</button>
-      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Yem & Misina</button>
-      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Giyim</button>
-      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Aksesuar</button>
-      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">Tekne Ekipman</button>
-    </div>
-
-    <!-- Products Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="products-grid">
-      <!-- Filled by JS -->
-    </div>
-
-    <!-- Cart Sidebar (hidden by default) -->
-    <div id="cart-sidebar" class="fixed top-0 right-0 w-80 h-full bg-white shadow-2xl z-[60] transform translate-x-full transition-transform" style="display:none">
-      <div class="p-4 border-b flex justify-between items-center">
-        <h3 class="font-bold">Sepetim (3)</h3>
-        <button onclick="toggleCart()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
-      </div>
-      <div class="p-4 space-y-3 overflow-y-auto" style="max-height:calc(100vh - 200px)">
-        <div class="flex gap-3 pb-3 border-b">
-          <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center"><i class="fas fa-fishing text-gray-400"></i></div>
-          <div class="flex-1"><div class="text-sm font-medium">Shimano Olta Seti</div><div class="text-xs text-gray-500">1 adet</div><div class="text-sm font-bold text-primary mt-1">850 TL</div></div>
-          <button class="text-gray-300 hover:text-danger"><i class="fas fa-trash text-sm"></i></button>
+  <!-- SHOP HERO -->
+  <div style="background:linear-gradient(135deg,#0f172a 0%,#0369a1 60%,#0284c7 100%);padding:40px 0 32px">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex flex-col md:flex-row md:items-center gap-4">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center"><i class="fas fa-store text-white text-sm"></i></div>
+            <span class="text-white/70 text-sm font-medium">DenizBul Mağaza</span>
+          </div>
+          <h1 class="text-3xl font-extrabold text-white mb-1">Deniz & Balıkçılık<br>Ekipmanları</h1>
+          <p class="text-blue-200 text-sm">Doğrulanmış satıcılardan güvenli alışveriş</p>
         </div>
-        <div class="flex gap-3 pb-3 border-b">
-          <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center"><i class="fas fa-tshirt text-gray-400"></i></div>
-          <div class="flex-1"><div class="text-sm font-medium">UV Koruma Tisort</div><div class="text-xs text-gray-500">2 adet</div><div class="text-sm font-bold text-primary mt-1">340 TL</div></div>
-          <button class="text-gray-300 hover:text-danger"><i class="fas fa-trash text-sm"></i></button>
+        <div class="flex flex-col gap-2 md:items-end">
+          <div class="relative w-full md:w-80">
+            <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
+            <input type="text" id="shop-search" placeholder="Ürün, marka veya satıcı ara..." oninput="renderShop()" class="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm border-0 focus:outline-none focus:ring-2 focus:ring-white/30" style="background:rgba(255,255,255,.12);color:#fff">
+          </div>
+          <div class="flex gap-2">
+            <a href="magaza-panel.html" target="_blank" class="text-xs text-blue-200 hover:text-white border border-blue-300/30 px-3 py-1.5 rounded-lg transition flex items-center gap-1"><i class="fas fa-store text-[10px]"></i> Satıcı Ol</a>
+            <button onclick="toggleCart()" class="relative flex items-center gap-2 bg-accent text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-amber-500 transition">
+              <i class="fas fa-shopping-cart"></i> Sepet
+              <span class="bg-white text-accent text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center" id="cart-count">0</span>
+            </button>
+          </div>
         </div>
-        <div class="flex gap-3">
-          <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center"><i class="fas fa-box text-gray-400"></i></div>
-          <div class="flex-1"><div class="text-sm font-medium">Suni Yem Seti (20li)</div><div class="text-xs text-gray-500">1 adet</div><div class="text-sm font-bold text-primary mt-1">180 TL</div></div>
-          <button class="text-gray-300 hover:text-danger"><i class="fas fa-trash text-sm"></i></button>
-        </div>
-      </div>
-      <div class="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
-        <div class="flex justify-between mb-3"><span class="text-gray-500">Toplam</span><span class="font-bold text-lg">1,370 TL</span></div>
-        <button class="w-full bg-accent text-white py-3 rounded-xl font-semibold">Odemeye Gec</button>
       </div>
     </div>
   </div>
+
+  <div class="max-w-6xl mx-auto px-4">
+
+    <!-- CATEGORY TABS -->
+    <div class="flex gap-2 py-4 overflow-x-auto scrollbar-hide -mx-4 px-4">
+      <button onclick="shopSetCat('all')" class="shop-cat-btn active whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold border transition" data-cat="all">
+        <i class="fas fa-th-large mr-1"></i>Tümü
+      </button>
+      <button onclick="shopSetCat('olta')" class="shop-cat-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold border transition" data-cat="olta">
+        <i class="fas fa-fishing mr-1 text-blue-500"></i>Olta & Makine
+      </button>
+      <button onclick="shopSetCat('yem')" class="shop-cat-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold border transition" data-cat="yem">
+        <i class="fas fa-fish mr-1 text-green-500"></i>Yem & Misina
+      </button>
+      <button onclick="shopSetCat('giyim')" class="shop-cat-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold border transition" data-cat="giyim">
+        <i class="fas fa-tshirt mr-1 text-purple-500"></i>Giyim
+      </button>
+      <button onclick="shopSetCat('aksesuar')" class="shop-cat-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold border transition" data-cat="aksesuar">
+        <i class="fas fa-glasses mr-1 text-amber-500"></i>Aksesuar
+      </button>
+      <button onclick="shopSetCat('tekne')" class="shop-cat-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold border transition" data-cat="tekne">
+        <i class="fas fa-ship mr-1 text-sky-500"></i>Tekne Ekipman
+      </button>
+    </div>
+
+    <!-- FEATURED SELLERS -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-bold text-base">Öne Çıkan Satıcılar</h2>
+        <a href="magaza-panel.html" target="_blank" class="text-xs text-primary hover:underline">Satıcı Ol →</a>
+      </div>
+      <div class="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4">
+        <div id="sellers-strip" class="flex gap-3"></div>
+      </div>
+    </div>
+
+    <!-- SORT & FILTER BAR -->
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5 pb-3 border-b">
+      <span class="text-sm text-gray-500" id="shop-result-count">Yükleniyor...</span>
+      <div class="flex gap-2 items-center">
+        <select id="shop-sort" onchange="renderShop()" class="px-3 py-1.5 border rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/20">
+          <option value="featured">Öne Çıkanlar</option>
+          <option value="price_asc">En Ucuz</option>
+          <option value="price_desc">En Pahalı</option>
+          <option value="rating">En Yüksek Puan</option>
+          <option value="newest">En Yeni</option>
+        </select>
+        <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+          <input type="checkbox" id="shop-instock" onchange="renderShop()" class="rounded" style="accent-color:#0369a1">
+          Stokta
+        </label>
+      </div>
+    </div>
+
+    <!-- PRODUCT GRID -->
+    <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10"></div>
+
+    <!-- SELLER CTA BANNER -->
+    <div class="rounded-2xl overflow-hidden mb-10" style="background:linear-gradient(135deg,#0f172a,#1e3a5f)">
+      <div class="flex flex-col md:flex-row items-center gap-6 p-6 md:p-8">
+        <div class="w-14 h-14 bg-accent/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-store text-accent text-2xl"></i>
+        </div>
+        <div class="flex-1 text-center md:text-left">
+          <h3 class="text-white font-bold text-lg">DenizBul Mağaza'da Sat</h3>
+          <p class="text-blue-200 text-sm mt-1">Milyonlarca deniz sporu tutkununun eriştiği platforma ürünlerinizi ekleyin. Her 1.000 TL satıştan sadece 89 TL komisyon.</p>
+        </div>
+        <a href="magaza-panel.html" target="_blank" class="bg-accent text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-amber-500 transition whitespace-nowrap flex-shrink-0 flex items-center gap-2">
+          <i class="fas fa-arrow-right"></i> Satıcı Hesabı Aç
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CART SIDEBAR -->
+  <div id="cart-sidebar" class="fixed top-0 right-0 w-full sm:w-96 h-full bg-white shadow-2xl z-[80] flex flex-col" style="display:none;transform:translateX(100%);transition:transform .3s ease">
+    <div class="p-4 border-b flex items-center justify-between bg-gray-50">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-shopping-cart text-primary"></i>
+        <h3 class="font-bold">Sepetim</h3>
+        <span class="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full" id="cart-header-count">0</span>
+      </div>
+      <button onclick="toggleCart()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-500"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4" id="cart-items-list">
+      <div class="text-center py-12 text-gray-400"><i class="fas fa-shopping-cart text-4xl mb-3 block opacity-20"></i><p class="text-sm">Sepetin boş</p></div>
+    </div>
+    <div class="border-t p-4 bg-white">
+      <div class="flex justify-between items-center mb-1 text-sm text-gray-500">
+        <span>Ara toplam</span><span id="cart-subtotal">0 TL</span>
+      </div>
+      <div class="flex justify-between items-center mb-1 text-sm text-gray-500">
+        <span>Kargo</span><span class="text-success text-xs font-semibold">Ücretsiz</span>
+      </div>
+      <div class="flex justify-between items-center font-bold text-lg border-t pt-2 mt-2">
+        <span>Toplam</span><span class="text-primary" id="cart-total">0 TL</span>
+      </div>
+      <button onclick="openCheckout()" class="w-full bg-accent text-white py-3 rounded-xl font-bold mt-3 hover:bg-amber-500 transition flex items-center justify-center gap-2 text-sm">
+        <i class="fas fa-credit-card"></i> Ödemeye Geç
+      </button>
+      <button onclick="toggleCart()" class="w-full text-gray-400 text-xs mt-2 py-1 hover:text-gray-600">Alışverişe Devam Et</button>
+    </div>
+  </div>
+  <div id="cart-overlay" onclick="toggleCart()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:79"></div>
+
+  <!-- PRODUCT DETAIL MODAL -->
+  <div id="product-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)closeProductModal()">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="relative h-56 md:h-72 rounded-t-2xl flex items-center justify-center" id="pm-hero">
+        <button onclick="closeProductModal()" class="absolute top-3 right-3 w-8 h-8 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center"><i class="fas fa-times text-sm"></i></button>
+        <i class="fas fa-box text-white/30 text-8xl" id="pm-hero-icon"></i>
+      </div>
+      <div class="p-5">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h2 class="font-bold text-xl leading-tight" id="pm-name">—</h2>
+          <div class="flex-shrink-0">
+            <div class="text-2xl font-extrabold text-primary" id="pm-price">—</div>
+            <div class="text-xs text-gray-400 line-through text-right" id="pm-orig-price"></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="flex items-center gap-1 text-amber-500 text-sm"><i class="fas fa-star text-xs"></i><span id="pm-rating">—</span><span class="text-gray-400 text-xs" id="pm-reviews"></span></div>
+          <span class="text-gray-300">|</span>
+          <div class="flex items-center gap-1 text-xs text-gray-500"><i class="fas fa-store text-[10px]"></i><span id="pm-seller">—</span></div>
+          <span class="text-gray-300">|</span>
+          <span class="text-xs text-gray-500">Stok: <span id="pm-stock" class="font-semibold text-gray-700">—</span></span>
+        </div>
+        <p class="text-sm text-gray-600 leading-relaxed mb-4" id="pm-desc">—</p>
+        <div id="pm-features" class="mb-5 space-y-1.5"></div>
+        <div class="flex gap-3">
+          <div class="flex items-center border rounded-xl overflow-hidden">
+            <button onclick="pmChangeQty(-1)" class="px-3 py-2.5 hover:bg-gray-50 text-gray-500 font-bold">−</button>
+            <span id="pm-qty" class="px-3 py-2.5 font-semibold text-sm min-w-[40px] text-center">1</span>
+            <button onclick="pmChangeQty(1)" class="px-3 py-2.5 hover:bg-gray-50 text-gray-500 font-bold">+</button>
+          </div>
+          <button onclick="addToCartFromModal()" class="flex-1 bg-primary text-white py-2.5 rounded-xl font-bold hover:bg-primaryDark transition flex items-center justify-center gap-2 text-sm">
+            <i class="fas fa-cart-plus"></i> Sepete Ekle
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKOUT MODAL -->
+  <div id="checkout-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:95;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)closeCheckout()">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+      <div class="bg-gradient-to-r from-primary to-sky-500 p-5 text-white">
+        <div class="flex items-center gap-2 mb-1"><i class="fas fa-lock text-sm"></i><span class="font-bold">Güvenli Ödeme</span></div>
+        <div class="text-blue-100 text-xs">256-bit SSL ile korunan ödeme sayfası</div>
+      </div>
+      <div class="p-5 space-y-3">
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Ad Soyad</label><input class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Ahmet Yilmaz" id="co-name"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="text-xs font-semibold text-gray-600 block mb-1">Kart No</label><input class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="**** **** **** ****" id="co-card" maxlength="19"></div>
+          <div><label class="text-xs font-semibold text-gray-600 block mb-1">CVV</label><input class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="***" maxlength="3"></div>
+        </div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Teslimat Adresi</label><textarea class="w-full border rounded-lg px-3 py-2 text-sm" rows="2" placeholder="Cadde, mahalle, şehir..."></textarea></div>
+        <div class="bg-gray-50 rounded-xl p-3 border">
+          <div class="flex justify-between text-sm mb-1"><span class="text-gray-500">Sipariş Tutarı</span><span class="font-bold" id="co-total">0 TL</span></div>
+          <div class="flex justify-between text-xs text-gray-400"><span>Kargo</span><span class="text-success font-semibold">Ücretsiz</span></div>
+        </div>
+        <button onclick="placeOrder()" class="w-full bg-accent text-white py-3 rounded-xl font-bold hover:bg-amber-500 transition flex items-center justify-center gap-2">
+          <i class="fas fa-check-circle"></i> Siparişi Tamamla
+        </button>
+      </div>
+    </div>
+  </div>
+
 </section>
 
 <!-- ===== TOAST ===== -->
@@ -1405,16 +1551,38 @@ const sampleTours = [
   {id:9,name:'Evlilik Yildonu Kutlamasi',location:'Fethiye',price:5500,rating:5.0,reviews:18,duration:'4 saat',cat:'ozel',catColor:'pink',icon:'fa-heart',img:'from-rose-400 to-pink-600'},
 ];
 
-const products = [
-  {name:'Shimano Olta Seti Pro',price:850,oldPrice:1100,rating:4.8,reviews:45,icon:'fa-fishing',color:'blue'},
-  {name:'UV Koruma Tisort',price:170,oldPrice:220,rating:4.5,reviews:89,icon:'fa-tshirt',color:'cyan'},
-  {name:'Suni Yem Seti (20li)',price:180,oldPrice:null,rating:4.6,reviews:32,icon:'fa-box',color:'green'},
-  {name:'Balik Tarti 50kg',price:340,oldPrice:400,rating:4.7,reviews:28,icon:'fa-weight-hanging',color:'amber'},
-  {name:'Denizci Sapka',price:120,oldPrice:null,rating:4.4,reviews:67,icon:'fa-hat-cowboy',color:'sky'},
-  {name:'Su Gecirmez Canta',price:290,oldPrice:350,rating:4.8,reviews:41,icon:'fa-suitcase',color:'indigo'},
-  {name:'Polarize Gunes Gozlugu',price:420,oldPrice:550,rating:4.9,reviews:56,icon:'fa-glasses',color:'teal'},
-  {name:'Balik Tutucu Eldiven',price:95,oldPrice:null,rating:4.3,reviews:24,icon:'fa-hand-paper',color:'rose'},
+// ===== SHOP DATA =====
+const COMMISSION_RATE = 89 / 1000;
+
+const SHOP_SELLERS = [
+  {id:'s1',name:'Deniz Pro Shop',badge:'Dogrulanmis',rating:4.9,reviews:312,icon:'fa-anchor',color:'blue',totalSales:48200,desc:'Profesyonel balıkçılık ekipmanları'},
+  {id:'s2',name:'Aqua Marine Store',badge:'Premium',rating:4.8,reviews:241,icon:'fa-water',color:'cyan',totalSales:35600,desc:'Deniz sporu ve giyim uzmani'},
+  {id:'s3',name:'Fisher\'s World',badge:'Dogrulanmis',rating:4.7,reviews:189,icon:'fa-fish',color:'teal',totalSales:27900,desc:'Yem ve misina cesitleri'},
+  {id:'s4',name:'Tekne Aksesuar',badge:'Dogrulanmis',rating:4.8,reviews:156,icon:'fa-ship',color:'indigo',totalSales:31400,desc:'Tekne donanim ve ekipman'},
+  {id:'s5',name:'Sport Sea',badge:'Yeni',rating:4.6,reviews:87,icon:'fa-compass',color:'amber',totalSales:14200,desc:'Denizci giyim ve aksesuar'},
+  {id:'s6',name:'BlueDive Gear',badge:'Premium',rating:4.9,reviews:203,icon:'fa-glasses',color:'sky',totalSales:42100,desc:'Dalis ve su sporlari'},
 ];
+
+const SHOP_PRODUCTS = [
+  {id:1,cat:'olta',name:'Shimano FX 2500 Olta Seti',price:850,oldPrice:1100,rating:4.8,reviews:45,icon:'fa-circle-notch',color:'blue',stock:12,featured:true,sellerId:'s1',desc:'Profesyonel dokum olta + makine seti. 200m 0.30mm misina dahil. Hafif aluminyum govde.',features:['200m misina dahil','Aluminyum govde','6+1 bilyali rulman','Yedek spool']},
+  {id:2,cat:'olta',name:'Daiwa Crossfire Spin Set',price:620,oldPrice:null,rating:4.6,reviews:33,icon:'fa-circle-notch',color:'sky',stock:8,featured:false,sellerId:'s1',desc:'Orta agir spin fishing seti. Tum balik turleri icin uygun.',features:['250m misina','Anti-twist sistem','4 bilyali rulman']},
+  {id:3,cat:'olta',name:'Penn Squall Trolling Makinesi',price:2200,oldPrice:2800,rating:4.9,reviews:28,icon:'fa-cogs',color:'gray',stock:4,featured:true,sellerId:'s1',desc:'Derin deniz trolling icin profesyonel makine. Paslanmaz celik govde.',features:['Paslanmaz celik','Level wind sistemi','Max drag 18kg','Soluk tutturucu']},
+  {id:4,cat:'olta',name:'Carbon Karis 2.4m',price:380,oldPrice:480,rating:4.5,reviews:22,icon:'fa-arrows-alt-v',color:'slate',stock:15,featured:false,sellerId:'s3',desc:'Ultra hafif karbon fiber kamis. Uzun mesafe dokum icin ideal.',features:['Karbon fiber','2.4m / 230g','Silikon halka','Tasima kilifi dahil']},
+  {id:5,cat:'yem',name:'Jigging Yem Seti 20li',price:180,oldPrice:null,rating:4.6,reviews:32,icon:'fa-cubes',color:'green',stock:25,featured:true,sellerId:'s3',desc:'20 farkli renk ve boyutta jig seti. Levrek, cipura ve palamut icin.',features:['20 adet jigging yem','Sert silikon govde','3D holografik kaplama','Ozel saklama kutusu']},
+  {id:6,cat:'yem',name:'Fluorocarbon Misina 100m',price:95,oldPrice:120,rating:4.7,reviews:56,icon:'fa-circle-notch',color:'sky',stock:40,featured:false,sellerId:'s3',desc:'Yuksek dayanımli fluorocarbon misina. Neredeyse gorunmez yapisi ile kacak minimuma iner.',features:['100m makara','0.28mm cap','Kirılma mukavemeti 8kg','UV dayanımli']},
+  {id:7,cat:'yem',name:'Canli Yem Kovasi 15L',price:145,oldPrice:null,rating:4.4,reviews:19,icon:'fa-bucket',color:'emerald',stock:18,featured:false,sellerId:'s3',desc:'Aeratorlu canli yem kovasi. Baliklari saglikli tutar.',features:['15 litre','Yerlesiк aerator','Seffaf kapak','Anti-kayma alt']},
+  {id:8,cat:'giyim',name:'UV Koruma Balıkçı Tisort',price:170,oldPrice:220,rating:4.5,reviews:89,icon:'fa-tshirt',color:'cyan',stock:30,featured:true,sellerId:'s2',desc:'UPF 50+ UV koruma. Nem emen ve hizli kuruyan kusmas.',features:['UPF 50+ koruma','Hizli kuruyan','Anti-bakteriyel','S/M/L/XL/XXL']},
+  {id:9,cat:'giyim',name:'Denizci Yagmurluğu Pro',price:580,oldPrice:750,rating:4.8,reviews:41,icon:'fa-user-shield',color:'indigo',stock:10,featured:true,sellerId:'s2',desc:'Tam su gecirmez denizci yagmurluğu. Ruzgar tutmaz, nefes alir.',features:['Su gecirmez membran','Reflektif seritler','Ayarlanabilir kapuşon','3 cep']},
+  {id:10,cat:'aksesuar',name:'Polarize Gunes Gozlugu',price:420,oldPrice:550,rating:4.9,reviews:56,icon:'fa-glasses',color:'teal',stock:20,featured:true,sellerId:'s6',desc:'100% UV400 korumali polarize cam. Denizde yansima engelleme.',features:['UV400 korumali','Polarize cam','Titanyum cerceve','Kilif+bez dahil']},
+  {id:11,cat:'aksesuar',name:'Su Gecirmez Canta 30L',price:290,oldPrice:350,rating:4.8,reviews:41,icon:'fa-suitcase',color:'indigo',stock:14,featured:false,sellerId:'s5',desc:'IPX7 su gecirmezlik. Tekne gezisi ve kamp icin ideal.',features:['IPX7 su gecirmez','30 litre','Roll-top kapatma','Omuz askisi']},
+  {id:12,cat:'tekne',name:'Guverte Dolabi Kilit Seti',price:320,oldPrice:null,rating:4.6,reviews:27,icon:'fa-lock',color:'slate',stock:9,featured:false,sellerId:'s4',desc:'Paslanmaz celik guverte dolabi kilit seti. Tum teknelerle uyumlu.',features:['316 paslanmaz celik','2 anahtar dahil','Deniz suyu dayanımli','Kolay kurulum']},
+];
+
+// Shop state
+let shopCart = [];
+let shopCurrentCat = 'all';
+let shopCurrentProduct = null;
+let pmQty = 1;
 
 const reviews = [
   {name:'Fatma D.',rating:5,text:'Harika bir deneyimdi! Kaptan cok ilgili ve bilgili. 3 buyuk levrek tuttuk. Kesinlikle tekrar geleceğiz.',date:'2 hafta once'},
@@ -1426,7 +1594,7 @@ const reviews = [
 function renderAll() {
   renderPopularTours();
   renderSearchResults();
-  renderProducts();
+  renderShop();
   renderReviews();
   renderCaptainTours();
   selectPackage(0);
@@ -1547,21 +1715,272 @@ function renderSearchResults() {
   document.getElementById('search-results').innerHTML = getAllTours().map(t => tourCard(t,true)).join('');
 }
 
-function renderProducts() {
-  document.getElementById('products-grid').innerHTML = products.map(p => `
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
-      <div class="h-36 bg-${p.color}-50 flex items-center justify-center"><i class="fas ${p.icon} text-${p.color}-400 text-3xl"></i></div>
-      <div class="p-3">
-        <h3 class="font-medium text-sm mb-1">${p.name}</h3>
-        <div class="flex items-center gap-1 text-xs mb-2"><span class="text-amber-500"><i class="fas fa-star"></i> ${p.rating}</span><span class="text-gray-400">(${p.reviews})</span></div>
-        <div class="flex items-center gap-2">
-          <span class="font-bold text-primary">${p.price} TL</span>
-          ${p.oldPrice?`<span class="text-xs text-gray-400 line-through">${p.oldPrice} TL</span>`:''}
-        </div>
-        <button class="w-full mt-2 bg-primary/10 text-primary py-1.5 rounded-lg text-xs font-medium hover:bg-primary hover:text-white transition"><i class="fas fa-cart-plus mr-1"></i> Sepete Ekle</button>
+// ===== SHOP RENDER =====
+function renderShop() {
+  renderSellersStrip();
+  renderProductGrid();
+}
+
+function renderSellersStrip() {
+  const strip = document.getElementById('sellers-strip');
+  if (!strip) return;
+  strip.innerHTML = SHOP_SELLERS.map(s => {
+    const badgeClass = s.badge === 'Premium' ? 'bg-amber-100 text-amber-700' : s.badge === 'Yeni' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700';
+    return `<div class="flex-shrink-0 bg-white rounded-xl border p-3 w-36 card-hover cursor-pointer text-center">
+      <div class="w-12 h-12 bg-${s.color}-50 rounded-full flex items-center justify-center mx-auto mb-2">
+        <i class="fas ${s.icon} text-${s.color}-500 text-lg"></i>
       </div>
-    </div>
-  `).join('');
+      <div class="text-xs font-semibold text-gray-800 leading-tight mb-0.5">${s.name}</div>
+      <div class="text-[10px] text-amber-500"><i class="fas fa-star text-[9px]"></i> ${s.rating} <span class="text-gray-400">(${s.reviews})</span></div>
+      <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1 inline-block ${badgeClass}">${s.badge}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderProductGrid() {
+  const grid = document.getElementById('products-grid');
+  if (!grid) return;
+  const q = (document.getElementById('shop-search')?.value || '').trim().toLowerCase();
+  const sort = document.getElementById('shop-sort')?.value || 'featured';
+  const instock = document.getElementById('shop-instock')?.checked || false;
+
+  let filtered = SHOP_PRODUCTS.filter(p => {
+    if (shopCurrentCat !== 'all' && p.cat !== shopCurrentCat) return false;
+    if (instock && p.stock === 0) return false;
+    if (q && !p.name.toLowerCase().includes(q) && !p.desc.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if (sort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
+  else if (sort === 'price_desc') filtered.sort((a, b) => b.price - a.price);
+  else if (sort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
+  else if (sort === 'newest') filtered.sort((a, b) => b.id - a.id);
+  else filtered.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+
+  const resultEl = document.getElementById('shop-result-count');
+  if (resultEl) resultEl.textContent = filtered.length + ' ürün bulundu';
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400">
+      <i class="fas fa-search text-4xl mb-3 block opacity-20"></i>
+      <p class="text-sm">Arama kriterlerinize uygun ürün bulunamadı</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => {
+    const seller = SHOP_SELLERS.find(s => s.id === p.sellerId);
+    const inCart = shopCart.find(c => c.id === p.id);
+    const discount = p.oldPrice ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
+    return `<div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover cursor-pointer" onclick="openProductDetail(${p.id})">
+      <div class="h-40 bg-${p.color}-50 flex items-center justify-center relative">
+        <i class="fas ${p.icon} text-${p.color}-400 text-4xl"></i>
+        ${p.featured ? '<span class="absolute top-2 left-2 bg-accent text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">ÖNE ÇIKAN</span>' : ''}
+        ${discount > 0 ? `<span class="absolute top-2 right-2 bg-danger text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">%${discount} İND.</span>` : ''}
+      </div>
+      <div class="p-3">
+        <p class="text-[10px] text-gray-400 mb-0.5 truncate">${seller ? seller.name : ''}</p>
+        <h3 class="font-semibold text-sm mb-1 line-clamp-2 leading-tight">${p.name}</h3>
+        <div class="flex items-center gap-1 text-xs mb-2">
+          <span class="text-amber-500"><i class="fas fa-star text-[10px]"></i> ${p.rating}</span>
+          <span class="text-gray-400">(${p.reviews})</span>
+          ${p.stock > 0 && p.stock < 5 ? '<span class="text-danger text-[10px] font-semibold ml-1">Son ' + p.stock + '!</span>' : ''}
+        </div>
+        <div class="flex items-center justify-between gap-1">
+          <div>
+            <div class="font-bold text-primary">${p.price.toLocaleString('tr-TR')} TL</div>
+            ${p.oldPrice ? `<div class="text-xs text-gray-400 line-through">${p.oldPrice.toLocaleString('tr-TR')} TL</div>` : '<div class="text-xs opacity-0">—</div>'}
+          </div>
+          <button onclick="event.stopPropagation();addToCart(${p.id})" class="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1.5 rounded-lg text-xs font-semibold hover:bg-primary hover:text-white transition">
+            <i class="fas fa-cart-plus text-[10px]"></i>${inCart ? ' (' + inCart.qty + ')' : ''}
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function shopSetCat(cat) {
+  shopCurrentCat = cat;
+  document.querySelectorAll('.shop-cat-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === cat);
+  });
+  renderProductGrid();
+}
+
+// ===== CART ACTIONS =====
+function addToCart(productId) {
+  const product = SHOP_PRODUCTS.find(p => p.id === productId);
+  if (!product) return;
+  const existing = shopCart.find(c => c.id === productId);
+  if (existing) { existing.qty++; } else { shopCart.push({id: productId, qty: 1}); }
+  renderCart();
+  renderProductGrid();
+  showToast(product.name.split(' ').slice(0, 3).join(' ') + ' sepete eklendi');
+}
+
+function removeFromCart(productId) {
+  shopCart = shopCart.filter(c => c.id !== productId);
+  renderCart();
+  renderProductGrid();
+}
+
+function changeCartQty(productId, delta) {
+  const item = shopCart.find(c => c.id === productId);
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  renderCart();
+}
+
+function renderCart() {
+  const totalQty = shopCart.reduce((s, c) => s + c.qty, 0);
+  const subtotal = shopCart.reduce((s, c) => {
+    const p = SHOP_PRODUCTS.find(x => x.id === c.id);
+    return s + (p ? p.price * c.qty : 0);
+  }, 0);
+
+  const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setEl('cart-count', totalQty);
+  setEl('cart-header-count', totalQty);
+  setEl('cart-subtotal', subtotal.toLocaleString('tr-TR') + ' TL');
+  setEl('cart-total', subtotal.toLocaleString('tr-TR') + ' TL');
+  setEl('co-total', subtotal.toLocaleString('tr-TR') + ' TL');
+
+  const list = document.getElementById('cart-items-list');
+  if (!list) return;
+  if (!shopCart.length) {
+    list.innerHTML = '<div class="text-center py-12 text-gray-400"><i class="fas fa-shopping-cart text-4xl mb-3 block opacity-20"></i><p class="text-sm">Sepetin boş</p></div>';
+    return;
+  }
+  list.innerHTML = shopCart.map(c => {
+    const p = SHOP_PRODUCTS.find(x => x.id === c.id);
+    if (!p) return '';
+    return `<div class="flex gap-3 py-3 border-b last:border-0 items-start">
+      <div class="w-14 h-14 bg-${p.color}-50 rounded-lg flex items-center justify-center flex-shrink-0">
+        <i class="fas ${p.icon} text-${p.color}-400 text-xl"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold leading-tight mb-1 line-clamp-2">${p.name}</p>
+        <p class="text-primary font-bold text-sm">${(p.price * c.qty).toLocaleString('tr-TR')} TL</p>
+        <div class="flex items-center gap-1 mt-1.5">
+          <button onclick="changeCartQty(${p.id},-1)" class="w-6 h-6 border rounded flex items-center justify-center text-gray-500 hover:bg-gray-50 text-xs font-bold">−</button>
+          <span class="text-xs font-bold px-2">${c.qty}</span>
+          <button onclick="changeCartQty(${p.id},1)" class="w-6 h-6 border rounded flex items-center justify-center text-gray-500 hover:bg-gray-50 text-xs font-bold">+</button>
+        </div>
+      </div>
+      <button onclick="removeFromCart(${p.id})" class="text-gray-300 hover:text-danger transition p-1 flex-shrink-0"><i class="fas fa-trash-alt text-sm"></i></button>
+    </div>`;
+  }).join('');
+}
+
+// ===== PRODUCT DETAIL MODAL =====
+function openProductDetail(id) {
+  const p = SHOP_PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  shopCurrentProduct = p;
+  pmQty = 1;
+
+  const seller = SHOP_SELLERS.find(s => s.id === p.sellerId);
+  const hero = document.getElementById('pm-hero');
+  if (hero) {
+    const grads = {blue:'from-blue-400 to-blue-600',cyan:'from-cyan-400 to-teal-500',green:'from-green-400 to-green-600',gray:'from-gray-400 to-gray-600',slate:'from-slate-400 to-slate-600',teal:'from-teal-400 to-teal-600',amber:'from-amber-400 to-amber-600',indigo:'from-indigo-400 to-indigo-600',sky:'from-sky-400 to-sky-600',emerald:'from-emerald-400 to-emerald-600',indigo2:'from-slate-700 to-slate-900'};
+    hero.className = `relative h-56 md:h-72 rounded-t-2xl flex items-center justify-center bg-gradient-to-br ${grads[p.color]||'from-blue-400 to-blue-600'}`;
+  }
+  const icon = document.getElementById('pm-hero-icon');
+  if (icon) icon.className = `fas ${p.icon} text-white/30 text-8xl`;
+
+  const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setEl('pm-name', p.name);
+  setEl('pm-price', p.price.toLocaleString('tr-TR') + ' TL');
+  setEl('pm-orig-price', p.oldPrice ? p.oldPrice.toLocaleString('tr-TR') + ' TL' : '');
+  setEl('pm-rating', p.rating);
+  setEl('pm-reviews', '(' + p.reviews + ' değerlendirme)');
+  setEl('pm-seller', seller ? seller.name : '');
+  setEl('pm-stock', p.stock > 0 ? p.stock + ' adet' : 'Tükendi');
+  setEl('pm-desc', p.desc);
+  setEl('pm-qty', pmQty);
+
+  const featEl = document.getElementById('pm-features');
+  if (featEl) featEl.innerHTML = (p.features || []).map(f =>
+    `<div class="flex items-center gap-2 text-sm text-gray-700"><i class="fas fa-check-circle text-success text-xs"></i>${f}</div>`
+  ).join('');
+
+  const modal = document.getElementById('product-modal');
+  if (modal) { modal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+}
+
+function closeProductModal() {
+  const modal = document.getElementById('product-modal');
+  if (modal) { modal.style.display = 'none'; document.body.style.overflow = ''; }
+  shopCurrentProduct = null;
+}
+
+function pmChangeQty(delta) {
+  const max = shopCurrentProduct?.stock || 99;
+  pmQty = Math.max(1, Math.min(max, pmQty + delta));
+  const el = document.getElementById('pm-qty');
+  if (el) el.textContent = pmQty;
+}
+
+function addToCartFromModal() {
+  if (!shopCurrentProduct) return;
+  const existing = shopCart.find(c => c.id === shopCurrentProduct.id);
+  if (existing) { existing.qty += pmQty; } else { shopCart.push({id: shopCurrentProduct.id, qty: pmQty}); }
+  renderCart();
+  renderProductGrid();
+  closeProductModal();
+  showToast(shopCurrentProduct.name.split(' ').slice(0, 3).join(' ') + ' sepete eklendi');
+}
+
+// ===== CHECKOUT =====
+function openCheckout() {
+  if (!shopCart.length) { showToast('Sepetiniz bos, once urun ekleyin'); return; }
+  const modal = document.getElementById('checkout-modal');
+  if (modal) modal.style.display = 'flex';
+  // close cart sidebar first
+  const sidebar = document.getElementById('cart-sidebar');
+  const overlay = document.getElementById('cart-overlay');
+  if (sidebar) { sidebar.style.transform = 'translateX(100%)'; setTimeout(() => { sidebar.style.display = 'none'; }, 300); }
+  if (overlay) overlay.style.display = 'none';
+}
+
+function closeCheckout() {
+  const modal = document.getElementById('checkout-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function placeOrder() {
+  const nameEl = document.getElementById('co-name');
+  const cardEl = document.getElementById('co-card');
+  if (!nameEl?.value.trim()) { showToast('Lutfen adinizi girin'); nameEl?.focus(); return; }
+  if (!cardEl?.value.trim()) { showToast('Lutfen kart bilgisi girin'); cardEl?.focus(); return; }
+
+  const subtotal = shopCart.reduce((s, c) => {
+    const p = SHOP_PRODUCTS.find(x => x.id === c.id);
+    return s + (p ? p.price * c.qty : 0);
+  }, 0);
+
+  const order = {
+    id: 'ORD' + Date.now(),
+    items: shopCart.map(c => {
+      const p = SHOP_PRODUCTS.find(x => x.id === c.id);
+      return {id: c.id, name: p?.name || '', qty: c.qty, price: p?.price || 0, sellerId: p?.sellerId || ''};
+    }),
+    total: subtotal,
+    commission: Math.round(subtotal * COMMISSION_RATE * 100) / 100,
+    customerName: nameEl.value.trim(),
+    createdAt: new Date().toISOString(),
+    status: 'confirmed'
+  };
+  const orders = lsGet('db_orders', []);
+  orders.unshift(order);
+  lsSet('db_orders', orders);
+
+  shopCart = [];
+  renderCart();
+  renderProductGrid();
+  closeCheckout();
+  showToast('Siparisini aldik! Cok tesekkurler.');
 }
 
 function renderReviews() {
@@ -1778,15 +2197,20 @@ function toggleFaq(btn) {
   icon.classList.toggle('rotate-180');
 }
 
-// ===== CART =====
+// ===== CART SIDEBAR TOGGLE =====
 function toggleCart() {
   const sidebar = document.getElementById('cart-sidebar');
-  if(sidebar.style.display === 'none') {
-    sidebar.style.display = 'block';
-    setTimeout(() => sidebar.style.transform = 'translateX(0)', 10);
+  const overlay = document.getElementById('cart-overlay');
+  if (!sidebar) return;
+  const isOpen = sidebar.style.display !== 'none';
+  if (!isOpen) {
+    sidebar.style.display = 'flex';
+    if (overlay) overlay.style.display = 'block';
+    setTimeout(() => { sidebar.style.transform = 'translateX(0)'; }, 10);
   } else {
     sidebar.style.transform = 'translateX(100%)';
-    setTimeout(() => sidebar.style.display = 'none', 300);
+    if (overlay) overlay.style.display = 'none';
+    setTimeout(() => { sidebar.style.display = 'none'; }, 300);
   }
 }
 

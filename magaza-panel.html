@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>DenizBul Mağaza Paneli</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+tailwind.config={theme:{extend:{colors:{primary:'#0369a1',primaryDark:'#075985',primaryLight:'#e0f2fe',accent:'#f59e0b',accentDark:'#d97706',surface:'#f8fafc',danger:'#ef4444',success:'#10b981'}}}}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{font-family:'Inter',sans-serif;margin:0;padding:0;box-sizing:border-box}
+body{background:#f8fafc;color:#1e293b;max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:80px}
+.page{display:none;min-height:calc(100vh - 140px)}
+.page.active{display:block}
+.status-bar{background:#0f172a;color:#fff;height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:11px;font-weight:600;position:sticky;top:0;z-index:60}
+.app-header{background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 16px;position:sticky;top:28px;z-index:50}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid #e2e8f0;display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:50}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#94a3b8;padding:4px 8px;cursor:pointer;transition:color .2s}
+.nav-btn.active{color:#0369a1}
+.nav-btn i{font-size:18px}
+.card{background:#fff;border-radius:16px;box-shadow:0 1px 4px rgba(0,0,0,.07);border:1px solid #e2e8f0}
+.stat-card{background:#fff;border-radius:14px;padding:14px;border:1px solid #e2e8f0}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.toggle{width:40px;height:22px;background:#cbd5e1;border-radius:11px;cursor:pointer;transition:background .2s;position:relative;flex-shrink:0}
+.toggle::after{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on{background:#10b981}
+.toggle.on::after{transform:translateX(18px)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:90vh;overflow-y:auto;padding:20px}
+.tab-btn{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;transition:all .2s;background:#f1f5f9;color:#64748b}
+.tab-btn.active{background:#0369a1;color:#fff}
+input[type=text],input[type=number],input[type=email],textarea,select{width:100%;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:14px;transition:border-color .2s;background:#fff}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,161,.12)}
+</style>
+</head>
+<body>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <span id="sb-time">09:41</span>
+  <div class="flex items-center gap-1.5">
+    <i class="fas fa-signal text-[10px]"></i>
+    <i class="fas fa-wifi text-[10px]"></i>
+    <i class="fas fa-battery-three-quarters text-[10px]"></i>
+  </div>
+</div>
+
+<!-- APP HEADER -->
+<div class="app-header">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#0369a1,#0ea5e9)">
+        <i class="fas fa-store text-white text-sm"></i>
+      </div>
+      <div>
+        <div class="font-bold text-sm text-gray-800" id="header-store-name">Mağazam</div>
+        <div class="text-[11px] text-gray-400">DenizBul Satıcı Paneli</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+        <i class="fas fa-bell text-primary text-sm"></i>
+      </div>
+      <button onclick="openLoginModal()" id="header-login-btn" class="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-semibold">Giriş</button>
+      <button onclick="doLogout()" id="header-logout-btn" style="display:none" class="text-xs border border-gray-200 text-gray-500 px-3 py-1.5 rounded-lg">Çıkış</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGES -->
+
+<!-- ===== PAGE: DASHBOARD ===== -->
+<div id="page-dashboard" class="page active px-4 pt-4">
+
+  <!-- Store Status -->
+  <div class="card p-4 mb-4">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <div class="font-bold text-base" id="dash-store-name">Mağaza Adı</div>
+        <div class="text-xs text-gray-400 mt-0.5" id="dash-store-cat">Kategori</div>
+      </div>
+      <div>
+        <div class="text-[10px] text-gray-400 mb-1 text-right">Mağaza Durumu</div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold" id="dash-status-label">Açık</span>
+          <div class="toggle on" id="dash-store-toggle" onclick="toggleStoreStatus()"></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+      <div class="bg-gray-50 rounded-lg p-2 text-center">
+        <div class="font-bold text-gray-800 text-base" id="dash-product-count">0</div>
+        <div>Ürün</div>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-2 text-center">
+        <div class="font-bold text-gray-800 text-base" id="dash-order-count">0</div>
+        <div>Sipariş</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 gap-3 mb-4">
+    <div class="stat-card">
+      <div class="flex items-center gap-2 mb-1">
+        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-lira-sign text-success text-sm"></i></div>
+        <span class="text-xs text-gray-500">Bu Ay Ciro</span>
+      </div>
+      <div class="text-xl font-extrabold text-gray-800" id="dash-revenue">0 TL</div>
+      <div class="text-[11px] text-gray-400 mt-0.5" id="dash-revenue-sub">Toplam satış</div>
+    </div>
+    <div class="stat-card">
+      <div class="flex items-center gap-2 mb-1">
+        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center"><i class="fas fa-percentage text-danger text-sm"></i></div>
+        <span class="text-xs text-gray-500">Komisyon</span>
+      </div>
+      <div class="text-xl font-extrabold text-danger" id="dash-commission">0 TL</div>
+      <div class="text-[11px] text-gray-400 mt-0.5">89 TL / 1.000 TL</div>
+    </div>
+    <div class="stat-card">
+      <div class="flex items-center gap-2 mb-1">
+        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-wallet text-primary text-sm"></i></div>
+        <span class="text-xs text-gray-500">Net Kazanç</span>
+      </div>
+      <div class="text-xl font-extrabold text-primary" id="dash-net">0 TL</div>
+      <div class="text-[11px] text-gray-400 mt-0.5">Komisyon sonrası</div>
+    </div>
+    <div class="stat-card">
+      <div class="flex items-center gap-2 mb-1">
+        <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center"><i class="fas fa-star text-accent text-sm"></i></div>
+        <span class="text-xs text-gray-500">Puan</span>
+      </div>
+      <div class="text-xl font-extrabold text-gray-800" id="dash-rating">—</div>
+      <div class="text-[11px] text-gray-400 mt-0.5" id="dash-reviews">değerlendirme</div>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="font-bold text-sm">Son Siparişler</h2>
+    <button onclick="navigateTo('orders')" class="text-xs text-primary">Tümü →</button>
+  </div>
+  <div id="dash-recent-orders" class="space-y-2 mb-4">
+    <div class="text-center py-8 text-gray-400 text-sm"><i class="fas fa-box-open text-3xl mb-2 block opacity-20"></i>Henüz sipariş yok</div>
+  </div>
+
+  <!-- Commission Info -->
+  <div class="rounded-2xl p-4 mb-4" style="background:linear-gradient(135deg,#0f172a,#1e3a5f)">
+    <div class="flex items-start gap-3">
+      <div class="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-info-circle text-accent"></i>
+      </div>
+      <div>
+        <div class="text-white font-bold text-sm">Komisyon Modeli</div>
+        <div class="text-blue-200 text-xs mt-1 leading-relaxed">Her <strong class="text-white">1.000 TL</strong> satıştan <strong class="text-accent">89 TL</strong> komisyon. Kalan <strong class="text-white">911 TL</strong> doğrudan hesabınıza aktarılır.</div>
+        <button onclick="navigateTo('komisyon')" class="text-accent text-xs font-semibold mt-2 flex items-center gap-1">Hesapla <i class="fas fa-arrow-right text-[10px]"></i></button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== PAGE: PRODUCTS ===== -->
+<div id="page-products" class="page px-4 pt-4">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="font-bold text-base">Ürünlerim</h1>
+    <button onclick="openAddProductModal()" class="flex items-center gap-1.5 bg-primary text-white px-3 py-2 rounded-xl text-xs font-bold">
+      <i class="fas fa-plus text-[10px]"></i> Ürün Ekle
+    </button>
+  </div>
+
+  <!-- Search -->
+  <div class="relative mb-4">
+    <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
+    <input type="text" id="prod-search" placeholder="Ürün ara..." oninput="renderMyProducts()" class="pl-9 pr-4 py-2.5 rounded-xl text-sm">
+  </div>
+
+  <div id="my-products-list" class="space-y-3">
+    <div class="text-center py-10 text-gray-400 text-sm"><i class="fas fa-box text-3xl mb-2 block opacity-20"></i>Henüz ürün eklemediniz</div>
+  </div>
+</div>
+
+<!-- ===== PAGE: ORDERS ===== -->
+<div id="page-orders" class="page px-4 pt-4">
+  <h1 class="font-bold text-base mb-4">Siparişlerim</h1>
+
+  <!-- Filter tabs -->
+  <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+    <button onclick="setOrderFilter('all')" class="tab-btn active whitespace-nowrap order-filter-btn" data-filter="all">Tümü</button>
+    <button onclick="setOrderFilter('confirmed')" class="tab-btn whitespace-nowrap order-filter-btn" data-filter="confirmed">Onaylı</button>
+    <button onclick="setOrderFilter('pending')" class="tab-btn whitespace-nowrap order-filter-btn" data-filter="pending">Bekleyen</button>
+    <button onclick="setOrderFilter('shipped')" class="tab-btn whitespace-nowrap order-filter-btn" data-filter="shipped">Kargoda</button>
+  </div>
+
+  <div id="orders-list" class="space-y-3">
+    <div class="text-center py-10 text-gray-400 text-sm"><i class="fas fa-shopping-bag text-3xl mb-2 block opacity-20"></i>Sipariş bulunamadı</div>
+  </div>
+</div>
+
+<!-- ===== PAGE: KOMISYON ===== -->
+<div id="page-komisyon" class="page px-4 pt-4">
+  <h1 class="font-bold text-base mb-4">Komisyon Hesaplayıcı</h1>
+
+  <!-- Formula Card -->
+  <div class="card p-4 mb-5">
+    <div class="text-center mb-4">
+      <div class="w-14 h-14 bg-danger/10 rounded-2xl flex items-center justify-center mx-auto mb-2">
+        <i class="fas fa-calculator text-danger text-2xl"></i>
+      </div>
+      <div class="font-bold text-sm">Komisyon Formülü</div>
+      <div class="text-2xl font-extrabold text-danger mt-1">89 TL <span class="text-base font-semibold text-gray-500">/ 1.000 TL</span></div>
+      <div class="text-xs text-gray-400 mt-1">= %8,9 komisyon oranı</div>
+    </div>
+    <div class="bg-gray-50 rounded-xl p-3 space-y-2 text-sm">
+      <div class="flex justify-between"><span class="text-gray-500">Komisyon Oranı</span><span class="font-bold text-danger">%8,9</span></div>
+      <div class="flex justify-between"><span class="text-gray-500">Net Kazanç Oranı</span><span class="font-bold text-success">%91,1</span></div>
+      <div class="flex justify-between text-xs text-gray-400"><span>Formül</span><span>Satış × 0,089</span></div>
+    </div>
+  </div>
+
+  <!-- Calculator -->
+  <div class="card p-4 mb-5">
+    <h2 class="font-bold text-sm mb-3">Hesapla</h2>
+    <div class="mb-3">
+      <label class="text-xs font-semibold text-gray-600 block mb-1">Toplam Satış Tutarı (TL)</label>
+      <input type="number" id="calc-input" placeholder="Örnek: 5000" oninput="calcCommission()" class="text-lg font-bold">
+    </div>
+    <div class="space-y-2 text-sm" id="calc-result" style="display:none">
+      <div class="flex justify-between items-center py-2 border-b">
+        <span class="text-gray-500">Toplam Satış</span>
+        <span class="font-bold" id="calc-total-label">—</span>
+      </div>
+      <div class="flex justify-between items-center py-2 border-b">
+        <span class="text-danger font-medium">DenizBul Komisyonu (%8,9)</span>
+        <span class="font-bold text-danger" id="calc-commission-label">—</span>
+      </div>
+      <div class="flex justify-between items-center py-2">
+        <span class="text-success font-bold">Net Kazancınız</span>
+        <span class="text-xl font-extrabold text-success" id="calc-net-label">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Summary -->
+  <div class="card p-4">
+    <h2 class="font-bold text-sm mb-3">Bu Ayki Özet</h2>
+    <div id="komisyon-monthly" class="space-y-2 text-sm">
+      <div class="flex justify-between py-2 border-b"><span class="text-gray-500">Toplam Satış</span><span class="font-bold" id="km-total">0 TL</span></div>
+      <div class="flex justify-between py-2 border-b"><span class="text-danger">Komisyon</span><span class="font-bold text-danger" id="km-commission">0 TL</span></div>
+      <div class="flex justify-between py-2"><span class="text-success font-bold">Net Kazanç</span><span class="font-extrabold text-success text-base" id="km-net">0 TL</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: SETTINGS ===== -->
+<div id="page-settings" class="page px-4 pt-4">
+  <h1 class="font-bold text-base mb-4">Mağaza Ayarları</h1>
+
+  <!-- Store Info -->
+  <div class="card p-4 mb-4">
+    <h2 class="font-semibold text-sm mb-3 text-gray-700">Mağaza Bilgileri</h2>
+    <div class="space-y-3">
+      <div><label class="text-xs font-semibold text-gray-600 block mb-1">Mağaza Adı</label><input type="text" id="set-name" placeholder="Mağazanızın adı"></div>
+      <div><label class="text-xs font-semibold text-gray-600 block mb-1">Kategori</label>
+        <select id="set-cat">
+          <option value="olta">Olta & Makine</option>
+          <option value="yem">Yem & Misina</option>
+          <option value="giyim">Giyim</option>
+          <option value="aksesuar">Aksesuar</option>
+          <option value="tekne">Tekne Ekipman</option>
+          <option value="diger">Diğer</option>
+        </select>
+      </div>
+      <div><label class="text-xs font-semibold text-gray-600 block mb-1">Açıklama</label><textarea id="set-desc" rows="2" placeholder="Mağazanız hakkında kısa bir açıklama..."></textarea></div>
+      <div><label class="text-xs font-semibold text-gray-600 block mb-1">E-posta</label><input type="email" id="set-email" placeholder="magaza@email.com"></div>
+      <div><label class="text-xs font-semibold text-gray-600 block mb-1">Telefon</label><input type="text" id="set-phone" placeholder="05xx xxx xx xx"></div>
+    </div>
+    <button onclick="saveSettings()" class="w-full mt-4 bg-primary text-white py-3 rounded-xl font-bold text-sm">Kaydet</button>
+  </div>
+
+  <!-- Membership -->
+  <div class="card p-4 mb-4">
+    <h2 class="font-semibold text-sm mb-3 text-gray-700">Üyelik Bilgileri</h2>
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+        <i class="fas fa-check-circle text-success text-xl"></i>
+      </div>
+      <div>
+        <div class="font-bold text-sm">Aktif Satıcı Hesabı</div>
+        <div class="text-xs text-gray-400" id="set-member-since">Üye tarihi: —</div>
+      </div>
+    </div>
+    <div class="bg-gray-50 rounded-xl p-3 text-xs text-gray-500 space-y-1">
+      <div class="flex justify-between"><span>Komisyon oranı</span><span class="font-bold text-danger">%8,9</span></div>
+      <div class="flex justify-between"><span>Ürün limiti</span><span class="font-bold">Sınırsız</span></div>
+      <div class="flex justify-between"><span>Ödeme döngüsü</span><span class="font-bold">Haftalık</span></div>
+    </div>
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="card p-4 border-danger/30">
+    <h2 class="font-semibold text-sm mb-3 text-danger">Hesap İşlemleri</h2>
+    <button onclick="doLogout()" class="w-full border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-semibold mb-2">
+      <i class="fas fa-sign-out-alt mr-1"></i> Çıkış Yap
+    </button>
+    <button onclick="if(confirm('Hesabı silmek istediğinizden emin misiniz?'))deleteAccount()" class="w-full border border-danger/30 text-danger py-2.5 rounded-xl text-sm font-semibold">
+      <i class="fas fa-trash mr-1"></i> Hesabı Sil
+    </button>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-btn active" data-nav="dashboard" onclick="navigateTo('dashboard')">
+    <i class="fas fa-chart-pie"></i><span>Panel</span>
+  </div>
+  <div class="nav-btn" data-nav="products" onclick="navigateTo('products')">
+    <i class="fas fa-box"></i><span>Ürünler</span>
+  </div>
+  <div class="nav-btn" data-nav="orders" onclick="navigateTo('orders')">
+    <i class="fas fa-shopping-bag"></i><span>Siparişler</span>
+  </div>
+  <div class="nav-btn" data-nav="komisyon" onclick="navigateTo('komisyon')">
+    <i class="fas fa-percentage"></i><span>Komisyon</span>
+  </div>
+  <div class="nav-btn" data-nav="settings" onclick="navigateTo('settings')">
+    <i class="fas fa-cog"></i><span>Ayarlar</span>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Login Modal -->
+<div id="login-modal" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="font-bold text-lg">Satıcı Girişi</h2>
+      <button onclick="closeLoginModal()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center"><i class="fas fa-times text-gray-500"></i></button>
+    </div>
+    <div id="login-tabs" class="flex gap-2 mb-5">
+      <button onclick="setLoginTab('login')" id="ltab-login" class="tab-btn active flex-1 text-center py-2">Giriş Yap</button>
+      <button onclick="setLoginTab('register')" id="ltab-reg" class="tab-btn flex-1 text-center py-2">Kayıt Ol</button>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-form">
+      <div class="space-y-3 mb-4">
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">E-posta</label><input type="email" id="lf-email" placeholder="magaza@email.com"></div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Şifre</label><input type="password" id="lf-pass" placeholder="••••••"></div>
+      </div>
+      <div id="login-error" style="display:none" class="bg-red-50 text-danger text-xs px-3 py-2 rounded-lg mb-3 flex items-center gap-2"><i class="fas fa-exclamation-circle"></i><span id="login-error-msg"></span></div>
+      <button onclick="doLogin()" class="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm">Giriş Yap</button>
+      <p class="text-center text-xs text-gray-400 mt-3">Demo: <strong>satis@test.com</strong> / <strong>test123</strong></p>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" style="display:none">
+      <div class="space-y-3 mb-4">
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Mağaza Adı</label><input type="text" id="rf-name" placeholder="Deniz Pro Shop"></div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">E-posta</label><input type="email" id="rf-email" placeholder="magaza@email.com"></div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Telefon</label><input type="text" id="rf-phone" placeholder="05xx xxx xx xx"></div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Kategori</label>
+          <select id="rf-cat">
+            <option value="olta">Olta & Makine</option>
+            <option value="yem">Yem & Misina</option>
+            <option value="giyim">Giyim</option>
+            <option value="aksesuar">Aksesuar</option>
+            <option value="tekne">Tekne Ekipman</option>
+          </select>
+        </div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Şifre</label><input type="password" id="rf-pass" placeholder="En az 6 karakter"></div>
+      </div>
+      <div id="reg-error" style="display:none" class="bg-red-50 text-danger text-xs px-3 py-2 rounded-lg mb-3 flex items-center gap-2"><i class="fas fa-exclamation-circle"></i><span id="reg-error-msg"></span></div>
+      <button onclick="doRegister()" class="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm">Kayıt Ol</button>
+      <p class="text-center text-xs text-gray-400 mt-2 leading-relaxed">Kayıt olarak <span class="text-primary font-medium">komisyon modelini</span> kabul etmiş olursunuz.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div id="add-product-modal" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="font-bold text-base" id="add-prod-title">Yeni Ürün Ekle</h2>
+      <button onclick="closeAddProductModal()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center"><i class="fas fa-times text-gray-500"></i></button>
+    </div>
+    <div class="space-y-3">
+      <div><label class="text-xs font-semibold text-gray-600 block mb-1">Ürün Adı *</label><input type="text" id="ap-name" placeholder="Ürün adını girin"></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Fiyat (TL) *</label><input type="number" id="ap-price" placeholder="0.00"></div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Eski Fiyat (TL)</label><input type="number" id="ap-old-price" placeholder="İndirimli ise"></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Kategori</label>
+          <select id="ap-cat">
+            <option value="olta">Olta & Makine</option>
+            <option value="yem">Yem & Misina</option>
+            <option value="giyim">Giyim</option>
+            <option value="aksesuar">Aksesuar</option>
+            <option value="tekne">Tekne Ekipman</option>
+          </select>
+        </div>
+        <div><label class="text-xs font-semibold text-gray-600 block mb-1">Stok Adedi *</label><input type="number" id="ap-stock" placeholder="0"></div>
+      </div>
+      <div><label class="text-xs font-semibold text-gray-600 block mb-1">Açıklama</label><textarea id="ap-desc" rows="2" placeholder="Ürün açıklaması..."></textarea></div>
+      <div><label class="text-xs font-semibold text-gray-600 block mb-1">Özellikler (virgülle ayır)</label><input type="text" id="ap-features" placeholder="200m misina, Alüminyum gövde"></div>
+    </div>
+    <div id="ap-error" style="display:none" class="bg-red-50 text-danger text-xs px-3 py-2 rounded-lg mt-3 flex items-center gap-2"><i class="fas fa-exclamation-circle"></i><span id="ap-error-msg"></span></div>
+    <button onclick="saveProduct()" class="w-full mt-4 bg-primary text-white py-3 rounded-xl font-bold text-sm">Ürünü Kaydet</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="display:none;position:fixed;top:50px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.25)">
+  <i class="fas fa-check-circle text-success mr-2"></i><span id="toast-text"></span>
+</div>
+
+<!-- ===== JS ===== -->
+<script>
+const COMMISSION_RATE = 89 / 1000;
+const PAGES = ['dashboard','products','orders','komisyon','settings'];
+
+// Demo seller
+const DEMO_SELLERS = [
+  {id:'seller-demo',email:'satis@test.com',password:'test123',name:'Deniz Pro Shop',cat:'olta',desc:'Profesyonel balıkçılık ekipmanları ve deniz malzemeleri.',phone:'0532 111 22 33',joinedAt:'2024-01-15T10:00:00Z',status:'open'}
+];
+
+// LS helpers
+function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}}
+function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
+// Current session
+function getSession(){return lsGet('seller_session',null);}
+function isLoggedIn(){return getSession()!==null;}
+function getMe(){
+  const sess=getSession();
+  if(!sess)return null;
+  const sellers=lsGet('db_sellers',[]);
+  const all=[...DEMO_SELLERS.filter(d=>!sellers.find(s=>s.email===d.email)),...sellers];
+  return all.find(s=>s.id===sess.id)||null;
+}
+
+// ===== ROUTING =====
+function navigateTo(page){
+  window.location.hash='#'+page;
+}
+
+function handleRoute(){
+  const hash=window.location.hash.replace('#','')||'dashboard';
+  PAGES.forEach(p=>{
+    const el=document.getElementById('page-'+p);
+    if(el)el.classList.toggle('active',p===hash);
+  });
+  document.querySelectorAll('.nav-btn').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.nav===hash);
+  });
+  window.scrollTo(0,0);
+  if(hash==='dashboard')renderDashboard();
+  if(hash==='products')renderMyProducts();
+  if(hash==='orders')renderOrders();
+  if(hash==='komisyon')renderKomisyon();
+  if(hash==='settings')renderSettings();
+}
+
+window.addEventListener('hashchange',handleRoute);
+window.addEventListener('load',()=>{
+  updateClock();
+  setInterval(updateClock,30000);
+  updateHeader();
+  handleRoute();
+  if(!isLoggedIn()) setTimeout(()=>openLoginModal(),400);
+});
+
+function updateClock(){
+  const now=new Date();
+  const h=now.getHours().toString().padStart(2,'0');
+  const m=now.getMinutes().toString().padStart(2,'0');
+  const el=document.getElementById('sb-time');
+  if(el)el.textContent=h+':'+m;
+}
+
+function updateHeader(){
+  const me=getMe();
+  const loginBtn=document.getElementById('header-login-btn');
+  const logoutBtn=document.getElementById('header-logout-btn');
+  const nameEl=document.getElementById('header-store-name');
+  if(me){
+    if(loginBtn)loginBtn.style.display='none';
+    if(logoutBtn)logoutBtn.style.display='';
+    if(nameEl)nameEl.textContent=me.name;
+  } else {
+    if(loginBtn)loginBtn.style.display='';
+    if(logoutBtn)logoutBtn.style.display='none';
+    if(nameEl)nameEl.textContent='Mağazam';
+  }
+}
+
+// ===== AUTH =====
+function openLoginModal(){
+  document.getElementById('login-modal').classList.add('open');
+}
+function closeLoginModal(){
+  document.getElementById('login-modal').classList.remove('open');
+}
+function setLoginTab(tab){
+  document.getElementById('login-form').style.display=tab==='login'?'block':'none';
+  document.getElementById('register-form').style.display=tab==='register'?'block':'none';
+  document.getElementById('ltab-login').classList.toggle('active',tab==='login');
+  document.getElementById('ltab-reg').classList.toggle('active',tab==='register');
+}
+
+function showAuthErr(type,msg){
+  const id=type==='login'?'login-error':'reg-error';
+  const msgId=type==='login'?'login-error-msg':'reg-error-msg';
+  document.getElementById(id).style.display='flex';
+  document.getElementById(msgId).textContent=msg;
+}
+function hideAuthErr(){
+  ['login-error','reg-error'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display='none';
+  });
+}
+
+function doLogin(){
+  hideAuthErr();
+  const email=(document.getElementById('lf-email').value||'').trim().toLowerCase();
+  const pass=document.getElementById('lf-pass').value||'';
+  if(!email||!pass){showAuthErr('login','E-posta ve şifre gerekli.');return;}
+  const sellers=lsGet('db_sellers',[]);
+  const all=[...DEMO_SELLERS.filter(d=>!sellers.find(s=>s.email===d.email)),...sellers];
+  const seller=all.find(s=>s.email===email&&s.password===pass);
+  if(!seller){showAuthErr('login','E-posta veya şifre hatalı.');return;}
+  lsSet('seller_session',{id:seller.id,email:seller.email,name:seller.name});
+  closeLoginModal();
+  updateHeader();
+  renderDashboard();
+  showToast('Hoşgeldiniz, '+seller.name+'!');
+}
+
+function doRegister(){
+  hideAuthErr();
+  const name=(document.getElementById('rf-name').value||'').trim();
+  const email=(document.getElementById('rf-email').value||'').trim().toLowerCase();
+  const phone=(document.getElementById('rf-phone').value||'').trim();
+  const cat=document.getElementById('rf-cat').value;
+  const pass=document.getElementById('rf-pass').value||'';
+  if(!name){showAuthErr('reg','Mağaza adı gerekli.');return;}
+  if(!email||!email.includes('@')){showAuthErr('reg','Geçerli bir e-posta girin.');return;}
+  if(!pass||pass.length<6){showAuthErr('reg','Şifre en az 6 karakter olmalı.');return;}
+  const sellers=lsGet('db_sellers',[]);
+  const all=[...DEMO_SELLERS,...sellers];
+  if(all.find(s=>s.email===email)){showAuthErr('reg','Bu e-posta zaten kayıtlı.');return;}
+  const newSeller={id:'seller-'+Date.now(),email,password:pass,name,cat,phone,desc:'',joinedAt:new Date().toISOString(),status:'open'};
+  sellers.push(newSeller);
+  lsSet('db_sellers',sellers);
+  lsSet('seller_session',{id:newSeller.id,email:newSeller.email,name:newSeller.name});
+  closeLoginModal();
+  updateHeader();
+  renderDashboard();
+  showToast('Mağazanız oluşturuldu! Hoşgeldiniz.');
+}
+
+function doLogout(){
+  if(!confirm('Çıkış yapmak istediğinizden emin misiniz?'))return;
+  localStorage.removeItem('seller_session');
+  updateHeader();
+  openLoginModal();
+}
+
+function deleteAccount(){
+  const me=getMe();
+  if(!me)return;
+  const sellers=lsGet('db_sellers',[]).filter(s=>s.id!==me.id);
+  lsSet('db_sellers',sellers);
+  localStorage.removeItem('seller_session');
+  updateHeader();
+  openLoginModal();
+}
+
+// ===== DASHBOARD =====
+function renderDashboard(){
+  const me=getMe();
+  if(!me)return;
+
+  const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  setEl('dash-store-name',me.name);
+  setEl('dash-store-cat',me.cat||'—');
+  setEl('dash-rating','4.8');
+  setEl('dash-reviews','142 değerlendirme');
+
+  // Store toggle
+  const toggle=document.getElementById('dash-store-toggle');
+  const label=document.getElementById('dash-status-label');
+  const isOpen=me.status!=='closed';
+  if(toggle){toggle.className='toggle'+(isOpen?' on':'');}
+  if(label){label.textContent=isOpen?'Açık':'Kapalı';label.className='text-xs font-semibold '+(isOpen?'text-success':'text-danger');}
+
+  // My products
+  const myProds=lsGet('seller_products_'+me.id,[]);
+  setEl('dash-product-count',myProds.length);
+
+  // Orders for this seller
+  const allOrders=lsGet('db_orders',[]);
+  const myOrders=allOrders.filter(o=>o.items&&o.items.some(i=>i.sellerId===me.id));
+  setEl('dash-order-count',myOrders.length);
+
+  const thisMonth=new Date();
+  thisMonth.setDate(1);thisMonth.setHours(0,0,0,0);
+  const monthOrders=myOrders.filter(o=>new Date(o.createdAt)>=thisMonth);
+
+  const revenue=monthOrders.reduce((s,o)=>s+o.items.filter(i=>i.sellerId===me.id).reduce((ss,i)=>ss+i.price*i.qty,0),0);
+  const commission=Math.round(revenue*COMMISSION_RATE);
+  const net=revenue-commission;
+
+  setEl('dash-revenue',revenue.toLocaleString('tr-TR')+' TL');
+  setEl('dash-commission',commission.toLocaleString('tr-TR')+' TL');
+  setEl('dash-net',net.toLocaleString('tr-TR')+' TL');
+
+  // Recent orders
+  const recentEl=document.getElementById('dash-recent-orders');
+  if(recentEl){
+    if(!myOrders.length){
+      recentEl.innerHTML='<div class="text-center py-8 text-gray-400 text-sm"><i class="fas fa-box-open text-3xl mb-2 block opacity-20"></i>Henüz sipariş yok</div>';
+    } else {
+      recentEl.innerHTML=myOrders.slice(0,5).map(o=>{
+        const myItems=o.items.filter(i=>i.sellerId===me.id);
+        const total=myItems.reduce((s,i)=>s+i.price*i.qty,0);
+        const date=new Date(o.createdAt).toLocaleDateString('tr-TR');
+        const statusMap={confirmed:'Onaylı',pending:'Bekleyen',shipped:'Kargoda'};
+        const colorMap={confirmed:'bg-green-100 text-green-700',pending:'bg-amber-100 text-amber-700',shipped:'bg-blue-100 text-blue-700'};
+        return `<div class="card p-3 flex items-center gap-3">
+          <div class="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-shopping-bag text-primary text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold truncate">${o.id}</div>
+            <div class="text-[11px] text-gray-400">${myItems.length} ürün · ${date}</div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <div class="font-bold text-sm text-primary">${total.toLocaleString('tr-TR')} TL</div>
+            <span class="badge ${colorMap[o.status]||'bg-gray-100 text-gray-600'} text-[9px]">${statusMap[o.status]||o.status}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+
+function toggleStoreStatus(){
+  const me=getMe();
+  if(!me)return;
+  const sellers=lsGet('db_sellers',[]);
+  const idx=sellers.findIndex(s=>s.id===me.id);
+  if(idx===-1){
+    // demo seller — save to db first
+    const updated={...me,status:me.status==='open'?'closed':'open'};
+    sellers.push(updated);
+    lsSet('db_sellers',sellers);
+  } else {
+    sellers[idx].status=sellers[idx].status==='open'?'closed':'open';
+    lsSet('db_sellers',sellers);
+  }
+  renderDashboard();
+  showToast('Mağaza durumu güncellendi');
+}
+
+// ===== PRODUCTS =====
+function renderMyProducts(){
+  const me=getMe();
+  const list=document.getElementById('my-products-list');
+  if(!list)return;
+  if(!me){list.innerHTML='<div class="text-center py-10 text-gray-400 text-sm">Giriş yapın</div>';return;}
+
+  const q=(document.getElementById('prod-search')?.value||'').trim().toLowerCase();
+  let prods=lsGet('seller_products_'+me.id,[]);
+  if(q)prods=prods.filter(p=>p.name.toLowerCase().includes(q));
+
+  if(!prods.length){
+    list.innerHTML='<div class="text-center py-10 text-gray-400 text-sm"><i class="fas fa-box text-3xl mb-2 block opacity-20"></i>Henüz ürün eklemediniz</div>';
+    return;
+  }
+  list.innerHTML=prods.map((p,i)=>{
+    const discount=p.oldPrice?Math.round((1-p.price/p.oldPrice)*100):0;
+    return `<div class="card p-3 flex items-center gap-3">
+      <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-box text-blue-400 text-xl"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm truncate">${p.name}</div>
+        <div class="text-xs text-gray-400 mt-0.5">${p.cat||'—'} · Stok: ${p.stock}</div>
+        <div class="flex items-center gap-2 mt-1">
+          <span class="font-bold text-primary text-sm">${(+p.price).toLocaleString('tr-TR')} TL</span>
+          ${p.oldPrice?`<span class="text-xs text-gray-400 line-through">${(+p.oldPrice).toLocaleString('tr-TR')} TL</span>`:''}
+          ${discount>0?`<span class="badge bg-danger text-white text-[9px]">%${discount}</span>`:''}
+        </div>
+      </div>
+      <div class="flex gap-2 flex-shrink-0">
+        <button onclick="editProduct(${i})" class="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center"><i class="fas fa-pen text-xs"></i></button>
+        <button onclick="deleteProduct(${i})" class="w-8 h-8 bg-red-50 text-danger rounded-lg flex items-center justify-center"><i class="fas fa-trash text-xs"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let _editProdIdx = -1;
+function openAddProductModal(){
+  _editProdIdx=-1;
+  document.getElementById('add-prod-title').textContent='Yeni Ürün Ekle';
+  ['ap-name','ap-price','ap-old-price','ap-stock','ap-desc','ap-features'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('ap-error').style.display='none';
+  document.getElementById('add-product-modal').classList.add('open');
+}
+
+function closeAddProductModal(){
+  document.getElementById('add-product-modal').classList.remove('open');
+}
+
+function editProduct(idx){
+  const me=getMe();if(!me)return;
+  const prods=lsGet('seller_products_'+me.id,[]);
+  const p=prods[idx];if(!p)return;
+  _editProdIdx=idx;
+  document.getElementById('add-prod-title').textContent='Ürünü Düzenle';
+  document.getElementById('ap-name').value=p.name||'';
+  document.getElementById('ap-price').value=p.price||'';
+  document.getElementById('ap-old-price').value=p.oldPrice||'';
+  document.getElementById('ap-stock').value=p.stock||'';
+  document.getElementById('ap-desc').value=p.desc||'';
+  document.getElementById('ap-features').value=(p.features||[]).join(', ');
+  document.getElementById('ap-cat').value=p.cat||'olta';
+  document.getElementById('ap-error').style.display='none';
+  document.getElementById('add-product-modal').classList.add('open');
+}
+
+function deleteProduct(idx){
+  if(!confirm('Bu ürünü silmek istediğinizden emin misiniz?'))return;
+  const me=getMe();if(!me)return;
+  const prods=lsGet('seller_products_'+me.id,[]);
+  prods.splice(idx,1);
+  lsSet('seller_products_'+me.id,prods);
+  renderMyProducts();
+  showToast('Ürün silindi');
+}
+
+function saveProduct(){
+  const me=getMe();if(!me)return;
+  const name=(document.getElementById('ap-name').value||'').trim();
+  const price=parseFloat(document.getElementById('ap-price').value)||0;
+  const oldPrice=parseFloat(document.getElementById('ap-old-price').value)||null;
+  const stock=parseInt(document.getElementById('ap-stock').value)||0;
+  const cat=document.getElementById('ap-cat').value;
+  const desc=(document.getElementById('ap-desc').value||'').trim();
+  const features=(document.getElementById('ap-features').value||'').split(',').map(f=>f.trim()).filter(Boolean);
+
+  const errEl=document.getElementById('ap-error');
+  const errMsg=document.getElementById('ap-error-msg');
+  if(!name){errEl.style.display='flex';errMsg.textContent='Ürün adı gerekli.';return;}
+  if(price<=0){errEl.style.display='flex';errMsg.textContent='Geçerli bir fiyat girin.';return;}
+  errEl.style.display='none';
+
+  const prods=lsGet('seller_products_'+me.id,[]);
+  const prod={id:'prod-'+Date.now(),name,price,oldPrice,stock,cat,desc,features,sellerId:me.id,createdAt:new Date().toISOString()};
+
+  if(_editProdIdx>=0){prods[_editProdIdx]={...prods[_editProdIdx],...prod};}
+  else{prods.unshift(prod);}
+  lsSet('seller_products_'+me.id,prods);
+  closeAddProductModal();
+  renderMyProducts();
+  showToast(_editProdIdx>=0?'Ürün güncellendi':'Ürün eklendi');
+}
+
+// ===== ORDERS =====
+let _orderFilter='all';
+function setOrderFilter(f){
+  _orderFilter=f;
+  document.querySelectorAll('.order-filter-btn').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.filter===f);
+  });
+  renderOrders();
+}
+
+function renderOrders(){
+  const me=getMe();
+  const list=document.getElementById('orders-list');
+  if(!list)return;
+  if(!me){list.innerHTML='<div class="text-center py-10 text-gray-400 text-sm">Giriş yapın</div>';return;}
+
+  const allOrders=lsGet('db_orders',[]);
+  let myOrders=allOrders.filter(o=>o.items&&o.items.some(i=>i.sellerId===me.id));
+  if(_orderFilter!=='all')myOrders=myOrders.filter(o=>o.status===_orderFilter);
+
+  if(!myOrders.length){
+    list.innerHTML='<div class="text-center py-10 text-gray-400 text-sm"><i class="fas fa-shopping-bag text-3xl mb-2 block opacity-20"></i>Sipariş bulunamadı</div>';
+    return;
+  }
+  const statusMap={confirmed:'Onaylı',pending:'Bekleyen',shipped:'Kargoda',completed:'Tamamlandı'};
+  const colorMap={confirmed:'bg-green-100 text-green-700',pending:'bg-amber-100 text-amber-700',shipped:'bg-blue-100 text-blue-700',completed:'bg-gray-100 text-gray-600'};
+
+  list.innerHTML=myOrders.map(o=>{
+    const myItems=o.items.filter(i=>i.sellerId===me.id);
+    const total=myItems.reduce((s,i)=>s+i.price*i.qty,0);
+    const commission=Math.round(total*COMMISSION_RATE);
+    const net=total-commission;
+    const date=new Date(o.createdAt).toLocaleDateString('tr-TR');
+    return `<div class="card p-4">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <div class="font-bold text-sm">${o.id}</div>
+          <div class="text-xs text-gray-400">${date} · ${o.customerName||'Müşteri'}</div>
+        </div>
+        <span class="badge ${colorMap[o.status]||'bg-gray-100 text-gray-600'}">${statusMap[o.status]||o.status}</span>
+      </div>
+      <div class="space-y-1 mb-3">
+        ${myItems.map(i=>`<div class="flex justify-between text-xs text-gray-600">
+          <span>${i.name} × ${i.qty}</span>
+          <span class="font-semibold">${(i.price*i.qty).toLocaleString('tr-TR')} TL</span>
+        </div>`).join('')}
+      </div>
+      <div class="border-t pt-3 space-y-1 text-xs">
+        <div class="flex justify-between text-gray-500"><span>Brüt Tutar</span><span class="font-bold text-gray-800">${total.toLocaleString('tr-TR')} TL</span></div>
+        <div class="flex justify-between"><span class="text-danger">Komisyon (%8,9)</span><span class="font-bold text-danger">-${commission.toLocaleString('tr-TR')} TL</span></div>
+        <div class="flex justify-between font-bold"><span class="text-success">Net Kazanç</span><span class="text-success">${net.toLocaleString('tr-TR')} TL</span></div>
+      </div>
+      ${o.status==='confirmed'?`<button onclick="markShipped('${o.id}')" class="mt-3 w-full border border-primary text-primary py-2 rounded-xl text-xs font-bold hover:bg-primary hover:text-white transition">
+        <i class="fas fa-truck mr-1"></i> Kargoya Ver
+      </button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function markShipped(orderId){
+  const orders=lsGet('db_orders',[]);
+  const idx=orders.findIndex(o=>o.id===orderId);
+  if(idx>=0){orders[idx].status='shipped';lsSet('db_orders',orders);}
+  renderOrders();
+  showToast('Sipariş kargoya verildi olarak işaretlendi');
+}
+
+// ===== KOMISYON =====
+function renderKomisyon(){
+  const me=getMe();if(!me)return;
+  const allOrders=lsGet('db_orders',[]);
+  const myOrders=allOrders.filter(o=>o.items&&o.items.some(i=>i.sellerId===me.id));
+  const thisMonth=new Date();thisMonth.setDate(1);thisMonth.setHours(0,0,0,0);
+  const monthOrders=myOrders.filter(o=>new Date(o.createdAt)>=thisMonth);
+  const total=monthOrders.reduce((s,o)=>s+o.items.filter(i=>i.sellerId===me.id).reduce((ss,i)=>ss+i.price*i.qty,0),0);
+  const commission=Math.round(total*COMMISSION_RATE);
+  const net=total-commission;
+  const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  setEl('km-total',total.toLocaleString('tr-TR')+' TL');
+  setEl('km-commission',commission.toLocaleString('tr-TR')+' TL');
+  setEl('km-net',net.toLocaleString('tr-TR')+' TL');
+}
+
+function calcCommission(){
+  const val=parseFloat(document.getElementById('calc-input').value)||0;
+  const res=document.getElementById('calc-result');
+  if(!val||val<=0){if(res)res.style.display='none';return;}
+  const commission=Math.round(val*COMMISSION_RATE);
+  const net=val-commission;
+  const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  setEl('calc-total-label',val.toLocaleString('tr-TR')+' TL');
+  setEl('calc-commission-label',commission.toLocaleString('tr-TR')+' TL');
+  setEl('calc-net-label',net.toLocaleString('tr-TR')+' TL');
+  if(res)res.style.display='block';
+}
+
+// ===== SETTINGS =====
+function renderSettings(){
+  const me=getMe();if(!me)return;
+  document.getElementById('set-name').value=me.name||'';
+  document.getElementById('set-email').value=me.email||'';
+  document.getElementById('set-phone').value=me.phone||'';
+  document.getElementById('set-desc').value=me.desc||'';
+  document.getElementById('set-cat').value=me.cat||'olta';
+  const joined=me.joinedAt?new Date(me.joinedAt).toLocaleDateString('tr-TR'):'—';
+  document.getElementById('set-member-since').textContent='Üye tarihi: '+joined;
+}
+
+function saveSettings(){
+  const me=getMe();if(!me)return;
+  const name=(document.getElementById('set-name').value||'').trim();
+  if(!name){showToast('Mağaza adı boş olamaz');return;}
+  const sellers=lsGet('db_sellers',[]);
+  let idx=sellers.findIndex(s=>s.id===me.id);
+  const updated={
+    ...me,
+    name,
+    email:(document.getElementById('set-email').value||'').trim(),
+    phone:(document.getElementById('set-phone').value||'').trim(),
+    desc:(document.getElementById('set-desc').value||'').trim(),
+    cat:document.getElementById('set-cat').value,
+  };
+  if(idx>=0){sellers[idx]=updated;}else{sellers.push(updated);}
+  lsSet('db_sellers',sellers);
+  // Update session name
+  const sess=getSession();
+  if(sess){sess.name=name;lsSet('seller_session',sess);}
+  updateHeader();
+  showToast('Ayarlar kaydedildi');
+}
+
+// ===== TOAST =====
+function showToast(msg){
+  const t=document.getElementById('toast');
+  const txt=document.getElementById('toast-text');
+  if(!t||!txt)return;
+  txt.textContent=msg;
+  t.style.display='block';
+  t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>{t.style.opacity='0';setTimeout(()=>{t.style.display='none';},300);},2800);
+}
+</script>
+</body>
+</html>
