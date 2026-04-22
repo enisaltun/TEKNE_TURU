@@ -618,10 +618,34 @@ const K={
 /* ---- Routing ---- */
 const allPages=['dashboard','create-tour','my-tours','calendar','bookings','messages','earnings','notifications','captain-settings'];
 
+/* ── PAGE VISIBILITY (admin panel page_settings) ── */
+const KPANEL_PAGE_MAP=[
+  {key:'kpanel_home',    hash:'dashboard',        nav:'[data-nav="dashboard"]'},
+  {key:'kpanel_tours',   hash:'my-tours',         nav:'[data-nav="my-tours"]'},
+  {key:'kpanel_create',  hash:'create-tour',      nav:'[data-nav="create-tour"]'},
+  {key:'kpanel_bookings',hash:'bookings',         nav:'[data-nav="bookings"]'},
+  {key:'kpanel_settings',hash:'captain-settings', nav:'[data-nav="captain-settings"]'},
+];
+function applyPageVisibility(){
+  try{
+    const ps=JSON.parse(localStorage.getItem('page_settings')||'{}');
+    KPANEL_PAGE_MAP.forEach(e=>{
+      const v=ps[e.key]!==false;
+      document.querySelectorAll(e.nav).forEach(el=>el.style.display=v?'':'none');
+    });
+    const cur=window.location.hash.replace('#','')||'dashboard';
+    const hidden=KPANEL_PAGE_MAP.find(e=>e.hash===cur&&ps[e.key]===false);
+    if(hidden){window.location.hash='#dashboard';}
+  }catch(ex){}
+}
+
 function navigateTo(p){window.location.hash='#'+p}
 
 function handleRoute(){
+  applyPageVisibility();
   let h=window.location.hash.replace('#','')||'dashboard';
+  // gizli sayfaya hash ile giriş engeli
+  try{const ps=JSON.parse(localStorage.getItem('page_settings')||'{}');const e=KPANEL_PAGE_MAP.find(x=>x.hash===h);if(e&&ps[e.key]===false)h='dashboard';}catch(ex){}
   allPages.forEach(p=>{const el=document.getElementById('page-'+p);if(el)el.classList.toggle('active',p===h)});
   document.querySelectorAll('.bottom-nav a').forEach(a=>a.classList.toggle('active',a.dataset.nav===h));
   window.scrollTo(0,0);

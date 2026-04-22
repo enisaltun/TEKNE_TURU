@@ -1444,27 +1444,38 @@ function navigateTo(page) {
   window.location.hash = '#' + page;
 }
 
-function isShopEnabled(){
-  try{const s=JSON.parse(localStorage.getItem('page_settings')||'{}');return s['web_shop']!==false;}catch{return true;}
-}
+// page_settings key → [nav selectors], hash
+const WEB_PAGE_MAP = [
+  {key:'web_home',     hash:'home',         nav:'[data-nav="home"],[data-mob="home"]'},
+  {key:'web_search',   hash:'search',       nav:'[data-nav="search"],[data-mob="search"]'},
+  {key:'web_explore',  hash:'explore',      nav:'[data-nav="explore"],[data-mob="explore"]'},
+  {key:'web_shop',     hash:'shop',         nav:'[data-nav="shop"],[data-mob="shop"]'},
+  {key:'web_about',    hash:'about',        nav:'[data-nav="about"]'},
+  {key:'web_account',  hash:'profile',      nav:'[data-nav="profile"],[data-mob="profile"]'},
+  {key:'web_bookings', hash:'my-bookings',  nav:'[data-nav="my-bookings"],[data-mob="my-bookings"]'},
+  {key:'web_messages', hash:'messages',     nav:'[data-nav="messages"],[data-mob="messages"]'},
+];
 
-function applyShopVisibility(){
-  const open=isShopEnabled();
-  // Nav link
-  document.querySelectorAll('[data-nav="shop"],[data-mob="shop"]').forEach(el=>{
-    el.style.display=open?'':'none';
-  });
-  // Sayfanın kendisi: eğer şu an #shop'taysa ve mağaza kapalıysa ana sayfaya yönlendir
-  if(!open && window.location.hash==='#shop'){
-    window.location.hash='#home';
-  }
+function applyPageVisibility(){
+  try{
+    const ps=JSON.parse(localStorage.getItem('page_settings')||'{}');
+    WEB_PAGE_MAP.forEach(function(entry){
+      const visible=ps[entry.key]!==false;
+      if(entry.nav){document.querySelectorAll(entry.nav).forEach(function(el){el.style.display=visible?'':'none';});}
+    });
+    // Redirect if current page is hidden
+    const currentHash=window.location.hash.replace('#','')||'home';
+    const hiddenEntry=WEB_PAGE_MAP.find(function(e){return e.hash===currentHash&&ps[e.key]===false;});
+    if(hiddenEntry){window.location.hash='#home';return true;}
+  }catch(e){}
+  return false;
 }
 
 function handleRoute() {
-  applyShopVisibility();
+  applyPageVisibility();
   let hash = window.location.hash.replace('#','') || 'home';
-  // Kapalıyken #shop'a doğrudan gitmeye çalışırsa engelle
-  if(hash==='shop' && !isShopEnabled()) hash='home';
+  // Gizli sayfaya doğrudan hash ile girilmesini engelle
+  try{const ps=JSON.parse(localStorage.getItem('page_settings')||'{}');const e=WEB_PAGE_MAP.find(function(x){return x.hash===hash;});if(e&&ps[e.key]===false)hash='home';}catch(e){}
   pages.forEach(p => {
     const el = document.getElementById('page-' + p);
     if(el) el.classList.toggle('active', p === hash);

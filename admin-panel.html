@@ -1653,6 +1653,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
           <button onclick="pmSetPlatform('web')" class="pm-tab px-3 py-1.5 rounded-lg text-xs font-semibold border transition" data-pm-tab="web"><i class="fas fa-globe mr-1 text-emerald-500"></i>Web Sitesi</button>
           <button onclick="pmSetPlatform('customer_app')" class="pm-tab px-3 py-1.5 rounded-lg text-xs font-semibold border transition" data-pm-tab="customer_app"><i class="fas fa-mobile-alt mr-1 text-blue-500"></i>Müşteri App</button>
           <button onclick="pmSetPlatform('captain_app')" class="pm-tab px-3 py-1.5 rounded-lg text-xs font-semibold border transition" data-pm-tab="captain_app"><i class="fas fa-anchor mr-1 text-sky-500"></i>Kaptan App</button>
+          <button onclick="pmSetPlatform('captain_panel')" class="pm-tab px-3 py-1.5 rounded-lg text-xs font-semibold border transition" data-pm-tab="captain_panel"><i class="fas fa-ship mr-1 text-orange-500"></i>Kaptan Panel</button>
           <button onclick="pmSetPlatform('admin')" class="pm-tab px-3 py-1.5 rounded-lg text-xs font-semibold border transition" data-pm-tab="admin"><i class="fas fa-shield-alt mr-1 text-purple-500"></i>Admin Panel</button>
         </div>
         <span class="ml-auto text-xs text-gray-400" id="pm-result-count"></span>
@@ -4126,55 +4127,56 @@ function cmsSection(title,icon,color,fields){
 
 /* ── PAGE MANAGER ── */
 const ALL_SYSTEM_PAGES=[
-  /* Web Sitesi */
-  {key:'web_home',      platform:'web',         label:'Ana Sayfa',           desc:'Hero banner, öne çıkan turlar, arama kutusu',         icon:'fa-home',         color:'bg-emerald-100 text-emerald-600'},
-  {key:'web_search',    platform:'web',         label:'Tur Arama',           desc:'Filtreli tur listeleme ve arama sonuçları',            icon:'fa-search',       color:'bg-emerald-100 text-emerald-600'},
-  {key:'web_detail',    platform:'web',         label:'Tur Detay',           desc:'Tur detayı, fotoğraflar, rezervasyon formu',           icon:'fa-ship',         color:'bg-emerald-100 text-emerald-600'},
-  {key:'web_profile',   platform:'web',         label:'Kaptan Profili',      desc:'Kaptan hakkında, değerlendirmeler, turlar',            icon:'fa-user-circle',  color:'bg-emerald-100 text-emerald-600'},
-  {key:'web_account',   platform:'web',         label:'Kullanıcı Hesabım',   desc:'Rezervasyonlar, favoriler, profil bilgileri',          icon:'fa-user',         color:'bg-emerald-100 text-emerald-600'},
-  {key:'web_shop',      platform:'web',         label:'Mağaza',              desc:'Balıkçılık malzemeleri ve tekne ekipmanları e-ticaret sayfası', icon:'fa-store',   color:'bg-emerald-100 text-emerald-600'},
-  {key:'web_blog',      platform:'web',         label:'Blog & Haberler',     desc:'İçerik sayfaları ve makale listesi',                  icon:'fa-newspaper',    color:'bg-emerald-100 text-emerald-600'},
-  {key:'web_about',     platform:'web',         label:'Hakkımızda',          desc:'Platform tanıtımı ve ekip sayfası',                   icon:'fa-info-circle',  color:'bg-emerald-100 text-emerald-600'},
-  {key:'web_contact',   platform:'web',         label:'İletişim',            desc:'İletişim formu ve harita',                            icon:'fa-envelope',     color:'bg-emerald-100 text-emerald-600'},
-  {key:'web_footer',    platform:'web',         label:'Footer Bölümü',       desc:'Site altbilgi bağlantıları ve sosyal medya',          icon:'fa-layer-group',  color:'bg-emerald-100 text-emerald-600'},
-  /* Müşteri App */
-  {key:'capp_home',     platform:'customer_app',label:'Ana Sayfa',           desc:'Keşfet akışı, yakın turlar, öneriler',                icon:'fa-home',         color:'bg-blue-100 text-blue-600'},
-  {key:'capp_search',   platform:'customer_app',label:'Arama',               desc:'Tur arama, filtreler, harita görünümü',               icon:'fa-search',       color:'bg-blue-100 text-blue-600'},
-  {key:'capp_favorites',platform:'customer_app',label:'Favoriler',           desc:'Kaydedilen turlar ve kaptanlar',                      icon:'fa-heart',        color:'bg-blue-100 text-blue-600'},
-  {key:'capp_bookings', platform:'customer_app',label:'Rezervasyonlarım',    desc:'Aktif, bekleyen ve geçmiş rezervasyonlar',            icon:'fa-calendar-check',color:'bg-blue-100 text-blue-600'},
-  {key:'capp_messages', platform:'customer_app',label:'Mesajlar',            desc:'Kaptan ile anlık mesajlaşma',                         icon:'fa-comment-dots', color:'bg-blue-100 text-blue-600'},
-  {key:'capp_profile',  platform:'customer_app',label:'Profil',              desc:'Hesap bilgileri, ayarlar, değerlendirmeler',          icon:'fa-user',         color:'bg-blue-100 text-blue-600'},
-  {key:'capp_tools',    platform:'customer_app',label:'Araçlar (Deniz)',      desc:'Deniz araçları modülleri sekmesi',                    icon:'fa-water',        color:'bg-blue-100 text-blue-600'},
-  /* Kaptan App */
-  {key:'kapp_dashboard',platform:'captain_app', label:'Dashboard',           desc:'Günlük özet, gelir, bekleyen rezervasyonlar',         icon:'fa-chart-pie',    color:'bg-sky-100 text-sky-600'},
-  {key:'kapp_tours',    platform:'captain_app', label:'Turlarım',            desc:'Aktif tur listesi, tur ekleme ve düzenleme',          icon:'fa-ship',         color:'bg-sky-100 text-sky-600'},
-  {key:'kapp_calendar', platform:'captain_app', label:'Takvim',              desc:'Müsaitlik takvimi, kapalı günler yönetimi',           icon:'fa-calendar',     color:'bg-sky-100 text-sky-600'},
-  {key:'kapp_bookings', platform:'captain_app', label:'Rezervasyonlar',      desc:'Gelen rezervasyon istekleri ve onaylar',              icon:'fa-calendar-check',color:'bg-sky-100 text-sky-600'},
-  {key:'kapp_messages', platform:'captain_app', label:'Mesajlar',            desc:'Müşteri mesajları ve bildirimler',                    icon:'fa-comment-dots', color:'bg-sky-100 text-sky-600'},
-  {key:'kapp_earnings', platform:'captain_app', label:'Kazançlarım',         desc:'Gelir özeti, ödeme geçmişi',                         icon:'fa-wallet',       color:'bg-sky-100 text-sky-600'},
-  {key:'kapp_profile',  platform:'captain_app', label:'Profil Yönetimi',     desc:'Kaptan profili, belgeler, banka bilgileri',           icon:'fa-user-circle',  color:'bg-sky-100 text-sky-600'},
-  {key:'kapp_reviews',  platform:'captain_app', label:'Değerlendirmeler',    desc:'Müşteri yorumları ve puanlar',                       icon:'fa-star',         color:'bg-sky-100 text-sky-600'},
-  {key:'kapp_tools',    platform:'captain_app', label:'Araçlar (Deniz)',      desc:'Deniz araçları modülleri sekmesi',                    icon:'fa-water',        color:'bg-sky-100 text-sky-600'},
-  {key:'kapp_add_tour', platform:'captain_app', label:'Tur Ekle',            desc:'Yeni tur oluşturma formu',                           icon:'fa-plus-circle',  color:'bg-sky-100 text-sky-600'},
+  /* Web Sitesi — hash eşlemeleri customer-site.html'de kullanılır */
+  {key:'web_home',      platform:'web',          hash:'home',           label:'Ana Sayfa',           desc:'Hero banner, öne çıkan turlar, arama kutusu',                  icon:'fa-home',          color:'bg-emerald-100 text-emerald-600', navSel:'[data-nav="home"],[data-mob="home"]'},
+  {key:'web_search',    platform:'web',          hash:'search',         label:'Tur Arama',           desc:'Filtreli tur listeleme ve arama sonuçları',                     icon:'fa-search',        color:'bg-emerald-100 text-emerald-600', navSel:'[data-nav="search"],[data-mob="search"]'},
+  {key:'web_detail',    platform:'web',          hash:'detail',         label:'Tur Detay',           desc:'Tur detayı, fotoğraflar, rezervasyon formu',                    icon:'fa-ship',          color:'bg-emerald-100 text-emerald-600', navSel:''},
+  {key:'web_account',   platform:'web',          hash:'profile',        label:'Kullanıcı Hesabım',   desc:'Rezervasyonlar, favoriler, profil bilgileri',                   icon:'fa-user',          color:'bg-emerald-100 text-emerald-600', navSel:'[data-nav="profile"],[data-mob="profile"]'},
+  {key:'web_bookings',  platform:'web',          hash:'my-bookings',    label:'Rezervasyonlarım',    desc:'Kullanıcının aktif ve geçmiş rezervasyonları',                  icon:'fa-calendar-check',color:'bg-emerald-100 text-emerald-600', navSel:'[data-nav="my-bookings"],[data-mob="my-bookings"]'},
+  {key:'web_messages',  platform:'web',          hash:'messages',       label:'Mesajlar',            desc:'Kullanıcı-kaptan mesajlaşma sayfası',                           icon:'fa-comment-dots',  color:'bg-emerald-100 text-emerald-600', navSel:'[data-nav="messages"],[data-mob="messages"]'},
+  {key:'web_shop',      platform:'web',          hash:'shop',           label:'Mağaza',              desc:'Balıkçılık malzemeleri ve tekne ekipmanları e-ticaret sayfası',  icon:'fa-store',         color:'bg-emerald-100 text-emerald-600', navSel:'[data-nav="shop"],[data-mob="shop"]'},
+  {key:'web_about',     platform:'web',          hash:'about',          label:'Hakkımızda',          desc:'Platform tanıtımı ve ekip sayfası',                             icon:'fa-info-circle',   color:'bg-emerald-100 text-emerald-600', navSel:'[data-nav="about"]'},
+  {key:'web_explore',   platform:'web',          hash:'explore',        label:'Keşfet',              desc:'Bölge ve kategori keşfetme sayfası',                            icon:'fa-compass',       color:'bg-emerald-100 text-emerald-600', navSel:'[data-nav="explore"]'},
+  {key:'web_login',     platform:'web',          hash:'login',          label:'Giriş / Kayıt',       desc:'Kullanıcı giriş ve kayıt ekranı',                               icon:'fa-sign-in-alt',   color:'bg-emerald-100 text-emerald-600', navSel:''},
+  /* Müşteri App — hash eşlemeleri customer-app.html'de kullanılır */
+  {key:'capp_home',     platform:'customer_app', hash:'home',           label:'Ana Sayfa',           desc:'Keşfet akışı, yakın turlar, öneriler',                          icon:'fa-home',          color:'bg-blue-100 text-blue-600',       navSel:'[data-nav="home"]'},
+  {key:'capp_search',   platform:'customer_app', hash:'search',         label:'Arama',               desc:'Tur arama, filtreler, harita görünümü',                         icon:'fa-search',        color:'bg-blue-100 text-blue-600',       navSel:'[data-nav="search"]'},
+  {key:'capp_favorites',platform:'customer_app', hash:'favorites',      label:'Favoriler',           desc:'Kaydedilen turlar ve kaptanlar',                                icon:'fa-heart',         color:'bg-blue-100 text-blue-600',       navSel:'[data-nav="favorites"]'},
+  {key:'capp_bookings', platform:'customer_app', hash:'my-tours',       label:'Rezervasyonlarım',    desc:'Aktif, bekleyen ve geçmiş rezervasyonlar',                      icon:'fa-calendar-check',color:'bg-blue-100 text-blue-600',       navSel:'[data-nav="my-tours"]'},
+  {key:'capp_messages', platform:'customer_app', hash:'messages',       label:'Mesajlar',            desc:'Kaptan ile anlık mesajlaşma',                                   icon:'fa-comment-dots',  color:'bg-blue-100 text-blue-600',       navSel:'[data-nav="messages"]'},
+  {key:'capp_profile',  platform:'customer_app', hash:'profile',        label:'Profil',              desc:'Hesap bilgileri, ayarlar, değerlendirmeler',                    icon:'fa-user',          color:'bg-blue-100 text-blue-600',       navSel:'[data-nav="profile"]'},
+  {key:'capp_tools',    platform:'customer_app', hash:'tools',          label:'Araçlar (Deniz)',      desc:'Deniz araçları modülleri sekmesi',                              icon:'fa-water',         color:'bg-blue-100 text-blue-600',       navSel:'[data-nav="tools"]'},
+  /* Kaptan App — hash eşlemeleri captain-app.html'de kullanılır */
+  {key:'kapp_dashboard',platform:'captain_app',  hash:'dashboard',      label:'Dashboard',           desc:'Günlük özet, gelir, bekleyen rezervasyonlar',                   icon:'fa-chart-pie',     color:'bg-sky-100 text-sky-600',         navSel:'[data-nav="dashboard"]'},
+  {key:'kapp_tours',    platform:'captain_app',  hash:'my-tours',       label:'Turlarım',            desc:'Aktif tur listesi, tur ekleme ve düzenleme',                    icon:'fa-ship',          color:'bg-sky-100 text-sky-600',         navSel:'[data-nav="my-tours"]'},
+  {key:'kapp_bookings', platform:'captain_app',  hash:'bookings',       label:'Rezervasyonlar',      desc:'Gelen rezervasyon istekleri ve onaylar',                        icon:'fa-calendar-check',color:'bg-sky-100 text-sky-600',         navSel:'[data-nav="bookings"]'},
+  {key:'kapp_tools',    platform:'captain_app',  hash:'tools',          label:'Araçlar (Deniz)',      desc:'Deniz araçları modülleri sekmesi',                              icon:'fa-water',         color:'bg-sky-100 text-sky-600',         navSel:'[data-nav="tools"]'},
+  {key:'kapp_profile',  platform:'captain_app',  hash:'profile',        label:'Profil & Ayarlar',    desc:'Kaptan profili, belgeler, banka bilgileri',                     icon:'fa-user-circle',   color:'bg-sky-100 text-sky-600',         navSel:'[data-nav="profile"]'},
+  {key:'kapp_add_tour', platform:'captain_app',  hash:'create-tour',    label:'Tur Ekle',            desc:'Yeni tur oluşturma formu',                                      icon:'fa-plus-circle',   color:'bg-sky-100 text-sky-600',         navSel:'[data-nav="create-tour"]'},
+  /* Kaptan Panel — hash eşlemeleri captain-panel.html'de kullanılır */
+  {key:'kpanel_home',    platform:'captain_panel',hash:'dashboard',     label:'Ana Sayfa',           desc:'Genel bakış ve günlük özet',                                    icon:'fa-home',          color:'bg-orange-100 text-orange-600',   navSel:'[data-nav="dashboard"]'},
+  {key:'kpanel_tours',   platform:'captain_panel',hash:'my-tours',      label:'Turlarım',            desc:'Tur listesi ve yönetimi',                                       icon:'fa-ship',          color:'bg-orange-100 text-orange-600',   navSel:'[data-nav="my-tours"]'},
+  {key:'kpanel_create',  platform:'captain_panel',hash:'create-tour',   label:'Tur Ekle',            desc:'Yeni tur oluşturma ekranı',                                     icon:'fa-plus-circle',   color:'bg-orange-100 text-orange-600',   navSel:'[data-nav="create-tour"]'},
+  {key:'kpanel_bookings',platform:'captain_panel',hash:'bookings',      label:'Rezervasyonlar',      desc:'Gelen rezervasyon istekleri',                                   icon:'fa-calendar-check',color:'bg-orange-100 text-orange-600',   navSel:'[data-nav="bookings"]'},
+  {key:'kpanel_settings',platform:'captain_panel',hash:'captain-settings',label:'Profil & Ayarlar', desc:'Kaptan profili ve panel ayarları',                              icon:'fa-user-cog',      color:'bg-orange-100 text-orange-600',   navSel:'[data-nav="captain-settings"]'},
   /* Admin Panel */
-  {key:'adm_dashboard', platform:'admin',       label:'Dashboard',           desc:'Platform genel istatistikleri ve grafikler',          icon:'fa-chart-pie',    color:'bg-purple-100 text-purple-600'},
-  {key:'adm_captains',  platform:'admin',       label:'Kaptan Yönetimi',     desc:'Kaptan onayları, belge doğrulama, profil yönetimi',   icon:'fa-anchor',       color:'bg-purple-100 text-purple-600'},
-  {key:'adm_users',     platform:'admin',       label:'Kullanıcı Yönetimi',  desc:'Kullanıcı listesi, durum yönetimi',                  icon:'fa-users',        color:'bg-purple-100 text-purple-600'},
-  {key:'adm_tours',     platform:'admin',       label:'Tur Yönetimi',        desc:'Tüm tur onayları ve yönetimi',                       icon:'fa-ship',         color:'bg-purple-100 text-purple-600'},
-  {key:'adm_reservations',platform:'admin',     label:'Rezervasyon Yönetimi',desc:'Tüm rezervasyonlar ve ödeme durumları',              icon:'fa-calendar-check',color:'bg-purple-100 text-purple-600'},
-  {key:'adm_page_mgr',  platform:'admin',       label:'Sayfa Yönetimi',      desc:'Platform genelinde sayfa görünürlük kontrolü',        icon:'fa-layer-group',  color:'bg-purple-100 text-purple-600'},
-  {key:'adm_cms',       platform:'admin',       label:'İçerik Editörü',      desc:'Web ve app içerik, renk ve görsel yönetimi',         icon:'fa-edit',         color:'bg-purple-100 text-purple-600'},
-  {key:'adm_finance',   platform:'admin',       label:'Finans',              desc:'Gelir, ödeme ve komisyon takibi',                    icon:'fa-wallet',       color:'bg-purple-100 text-purple-600'},
-  {key:'adm_marine',    platform:'admin',       label:'Deniz Verileri',      desc:'Deniz hava durumu ve araçlar yönetimi',              icon:'fa-water',        color:'bg-purple-100 text-purple-600'},
-  {key:'adm_modules',   platform:'admin',       label:'Modül Yönetimi',      desc:'Deniz araçları modülü izin ve erişim ayarları',      icon:'fa-puzzle-piece', color:'bg-purple-100 text-purple-600'},
+  {key:'adm_dashboard',  platform:'admin',        hash:'dashboard',     label:'Dashboard',           desc:'Platform genel istatistikleri ve grafikler',                    icon:'fa-chart-pie',     color:'bg-purple-100 text-purple-600',   navSel:'[data-nav="dashboard"]'},
+  {key:'adm_captains',   platform:'admin',        hash:'captains',      label:'Kaptan Yönetimi',     desc:'Kaptan onayları, belge doğrulama, profil yönetimi',              icon:'fa-anchor',        color:'bg-purple-100 text-purple-600',   navSel:'[data-nav="captains"]'},
+  {key:'adm_users',      platform:'admin',        hash:'users',         label:'Kullanıcı Yönetimi',  desc:'Kullanıcı listesi, durum yönetimi',                             icon:'fa-users',         color:'bg-purple-100 text-purple-600',   navSel:'[data-nav="users"]'},
+  {key:'adm_tours',      platform:'admin',        hash:'tours-bookings',label:'Tur Yönetimi',        desc:'Tüm tur onayları ve yönetimi',                                  icon:'fa-ship',          color:'bg-purple-100 text-purple-600',   navSel:'[data-nav="tours-bookings"]'},
+  {key:'adm_reservations',platform:'admin',       hash:'reservations',  label:'Rezervasyon Yönetimi',desc:'Tüm rezervasyonlar ve ödeme durumları',                         icon:'fa-calendar-check',color:'bg-purple-100 text-purple-600',   navSel:'[data-nav="reservations"]'},
+  {key:'adm_finance',    platform:'admin',        hash:'finance',       label:'Finans',              desc:'Gelir, ödeme ve komisyon takibi',                               icon:'fa-wallet',        color:'bg-purple-100 text-purple-600',   navSel:'[data-nav="finance"]'},
+  {key:'adm_marine',     platform:'admin',        hash:'marine',        label:'Deniz Verileri',      desc:'Deniz hava durumu ve araçlar yönetimi',                         icon:'fa-water',         color:'bg-purple-100 text-purple-600',   navSel:'[data-nav="marine"]'},
+  {key:'adm_modules',    platform:'admin',        hash:'modules',       label:'Modül Yönetimi',      desc:'Deniz araçları modülü izin ve erişim ayarları',                 icon:'fa-puzzle-piece',  color:'bg-purple-100 text-purple-600',   navSel:'[data-nav="modules"]'},
 ];
 
 const PM_PLATFORM_META={
-  all:        {label:'Tümü',           icon:'fa-layer-group',  color:'bg-gray-100 text-gray-700',       accentBg:'bg-gray-800'},
-  web:        {label:'Web Sitesi',     icon:'fa-globe',        color:'bg-emerald-100 text-emerald-600', accentBg:'bg-emerald-600'},
-  customer_app:{label:'Müşteri App',   icon:'fa-mobile-alt',   color:'bg-blue-100 text-blue-600',       accentBg:'bg-blue-600'},
-  captain_app:{label:'Kaptan App',     icon:'fa-anchor',       color:'bg-sky-100 text-sky-600',         accentBg:'bg-sky-600'},
-  admin:      {label:'Admin Panel',    icon:'fa-shield-alt',   color:'bg-purple-100 text-purple-600',   accentBg:'bg-purple-600'},
+  all:           {label:'Tümü',         icon:'fa-layer-group',  color:'bg-gray-100 text-gray-700',       accentBg:'bg-gray-800'},
+  web:           {label:'Web Sitesi',   icon:'fa-globe',        color:'bg-emerald-100 text-emerald-600', accentBg:'bg-emerald-600', file:'customer-site.html'},
+  customer_app:  {label:'Müşteri App',  icon:'fa-mobile-alt',   color:'bg-blue-100 text-blue-600',       accentBg:'bg-blue-600',    file:'customer-app.html'},
+  captain_app:   {label:'Kaptan App',   icon:'fa-anchor',       color:'bg-sky-100 text-sky-600',         accentBg:'bg-sky-600',     file:'captain-app.html'},
+  captain_panel: {label:'Kaptan Panel', icon:'fa-ship',         color:'bg-orange-100 text-orange-600',   accentBg:'bg-orange-600',  file:'captain-panel.html'},
+  admin:         {label:'Admin Panel',  icon:'fa-shield-alt',   color:'bg-purple-100 text-purple-600',   accentBg:'bg-purple-600',  file:'admin-panel.html'},
 };
 
 let pmCurrentPlatform='all';
@@ -4291,19 +4293,22 @@ function renderPageManager(){
     groups[p.platform].push(p);
   });
 
-  const platformOrder=['web','customer_app','captain_app','admin'];
+  const platformOrder=['web','customer_app','captain_app','captain_panel','admin'];
   let html='';
   platformOrder.forEach(pf=>{
     if(!groups[pf]) return;
     const meta=PM_PLATFORM_META[pf];
+    const hiddenCount=groups[pf].filter(p=>!pmIsVisible(p.key)).length;
     html+=`<div class="mb-6">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
           <div class="w-7 h-7 ${meta.accentBg} rounded-lg flex items-center justify-center"><i class="fas ${meta.icon} text-white text-xs"></i></div>
           <h3 class="font-semibold text-sm">${meta.label}</h3>
           <span class="text-xs text-gray-400">(${groups[pf].length} sayfa)</span>
+          ${hiddenCount>0?`<span class="text-[10px] bg-danger text-white px-2 py-0.5 rounded-full font-semibold">${hiddenCount} gizli</span>`:''}
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
+          ${meta.file?`<a href="${meta.file}" target="_blank" class="text-xs text-primary border border-primary/30 px-2 py-1 rounded-lg hover:bg-primary/5 transition flex items-center gap-1"><i class="fas fa-external-link-alt text-[10px]"></i>Aç</a>`:''}
           <button onclick="pmTogglePlatform('${pf}',true)" class="text-xs text-success border border-success/30 px-2 py-1 rounded-lg hover:bg-success/5 transition"><i class="fas fa-eye mr-1"></i>Tümünü Göster</button>
           <button onclick="pmTogglePlatform('${pf}',false)" class="text-xs text-gray-500 border px-2 py-1 rounded-lg hover:bg-gray-50 transition"><i class="fas fa-eye-slash mr-1"></i>Tümünü Gizle</button>
         </div>

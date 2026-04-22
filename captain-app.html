@@ -1387,11 +1387,36 @@ function getMyBookings(){
   return S.get('db_bookings',[]).filter(b=>myIds.has(b.tourId));
 }
 
+/* ── PAGE VISIBILITY (admin panel page_settings) ── */
+const KAPP_PAGE_MAP=[
+  {key:'kapp_dashboard',hash:'dashboard',  nav:'[data-nav="dashboard"]'},
+  {key:'kapp_tours',    hash:'my-tours',   nav:'[data-nav="my-tours"]'},
+  {key:'kapp_bookings', hash:'bookings',   nav:'[data-nav="bookings"]'},
+  {key:'kapp_tools',    hash:'tools',      nav:'[data-nav="tools"]'},
+  {key:'kapp_profile',  hash:'profile',    nav:'[data-nav="profile"]'},
+  {key:'kapp_add_tour', hash:'create-tour',nav:'[data-nav="create-tour"]'},
+];
+function applyPageVisibility(){
+  try{
+    const ps=JSON.parse(localStorage.getItem('page_settings')||'{}');
+    KAPP_PAGE_MAP.forEach(e=>{
+      const v=ps[e.key]!==false;
+      document.querySelectorAll(e.nav).forEach(el=>el.style.display=v?'':'none');
+    });
+    const cur=window.location.hash.replace('#','')||'dashboard';
+    const hidden=KAPP_PAGE_MAP.find(e=>e.hash===cur&&ps[e.key]===false);
+    if(hidden){window.location.hash='#dashboard';}
+  }catch(ex){}
+}
+
 /* ── ROUTER ── */
 function navigateTo(p){window.location.hash='#'+p}
 
 function handleRoute(){
+  applyPageVisibility();
   let h=window.location.hash.replace('#','')||'dashboard';
+  // gizli sayfaya hash ile giriş engeli
+  try{const ps=JSON.parse(localStorage.getItem('page_settings')||'{}');const e=KAPP_PAGE_MAP.find(x=>x.hash===h);if(e&&ps[e.key]===false)h='dashboard';}catch(ex){}
   allPages.forEach(p=>{
     const el=document.getElementById('page-'+p);
     if(el){el.classList.remove('active');if(p===h)el.classList.add('active','fade-in');}

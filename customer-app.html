@@ -952,10 +952,36 @@ function doLogout(){
   switchAuthTab('login');
 }
 
+/* ── PAGE VISIBILITY (admin panel page_settings) ── */
+const CAPP_PAGE_MAP=[
+  {key:'capp_home',     hash:'home',     nav:'[data-nav="home"]'},
+  {key:'capp_search',   hash:'search',   nav:'[data-nav="search"]'},
+  {key:'capp_favorites',hash:'favorites',nav:'[data-nav="favorites"]'},
+  {key:'capp_bookings', hash:'my-tours', nav:'[data-nav="my-tours"]'},
+  {key:'capp_messages', hash:'messages', nav:'[data-nav="messages"]'},
+  {key:'capp_profile',  hash:'profile',  nav:'[data-nav="profile"]'},
+  {key:'capp_tools',    hash:'tools',    nav:'[data-nav="tools"]'},
+];
+function applyPageVisibility(){
+  try{
+    const ps=JSON.parse(localStorage.getItem('page_settings')||'{}');
+    CAPP_PAGE_MAP.forEach(function(e){
+      const v=ps[e.key]!==false;
+      document.querySelectorAll(e.nav).forEach(function(el){el.style.display=v?'':'none';});
+    });
+    const cur=window.location.hash.replace('#','')||'home';
+    const hidden=CAPP_PAGE_MAP.find(function(e){return e.hash===cur&&ps[e.key]===false;});
+    if(hidden){window.location.hash='#home';}
+  }catch(ex){}
+}
+
 /* ── ROUTER ── */
 function navigateTo(p){window.location.hash='#'+p;}
 function handleRoute(){
-  const h=window.location.hash.replace('#','')||'home';
+  applyPageVisibility();
+  let h=window.location.hash.replace('#','')||'home';
+  // gizli sayfaya hash ile doğrudan giriş engeli
+  try{const ps=JSON.parse(localStorage.getItem('page_settings')||'{}');const e=CAPP_PAGE_MAP.find(function(x){return x.hash===h;});if(e&&ps[e.key]===false)h='home';}catch(ex){}
   if(h==='auth'){return;}
   if(!isLoggedIn()){
     document.getElementById('page-auth').classList.add('active');
