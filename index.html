@@ -307,7 +307,7 @@ function setGroup(group,enable){
 /* ═══════════════════════════════════════
    NAVİGASYON
 ═══════════════════════════════════════ */
-function open(key,file){
+function openMod(key,file){
   if(!isOn(key)){
     const mod=ALL.find(m=>m.key===key);
     toast(`"${mod?.label||key}" şu an kapalı — toggle ile açın`,'locked');return;
@@ -331,7 +331,7 @@ function renderPanels(){
     const on=isOn(m.key);
     if(m.gradient){
       return`<div class="panel-card${on?'':' disabled'}" style="border-color:${on?'#bae6fd':'#fecaca'}">
-        <div class="card-body card-gradient" onclick="open('${m.key}','${m.file}')">
+        <div class="card-body card-gradient" onclick="openMod('${m.key}','${m.file}')">
           <div style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
             <i class="fas ${m.icon}" style="color:#fff;font-size:20px"></i>
           </div>
@@ -354,7 +354,7 @@ function renderPanels(){
       </div>`;
     }
     return`<div class="panel-card${on?'':' disabled'}" style="border-color:${on?'#e5e7eb':'#fecaca'}" >
-      <div class="card-body" onclick="open('${m.key}','${m.file}')">
+      <div class="card-body" onclick="openMod('${m.key}','${m.file}')">
         <div style="width:48px;height:48px;background:${m.iconBg};border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
           <i class="fas ${m.icon}" style="color:${m.iconColor};font-size:20px"></i>
         </div>
@@ -384,7 +384,7 @@ function renderMarines(){
   grid.innerHTML=MARINES.map(m=>{
     const on=isOn(m.key);
     return`<div class="marine-card${on?'':' disabled'}" style="border-color:${on?'#e5e7eb':'#fecaca'}">
-      <div class="marine-body" onclick="open('${m.key}','${m.file}')">
+      <div class="marine-body" onclick="openMod('${m.key}','${m.file}')">
         <div style="width:44px;height:44px;background:${m.iconBg};border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
           <i class="fas ${m.icon}" style="color:${m.iconColor};font-size:17px"></i>
         </div>
