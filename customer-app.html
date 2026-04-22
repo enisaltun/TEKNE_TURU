@@ -1093,7 +1093,7 @@ function getDbTours(){
     .filter(t=>t.durum==='aktif'||t.aktif===true)
     .map(t=>{
       const cat=DB_CAT[t.kategoriler?.[0]||'Tekne Gezisi']||'gezi';
-      return{id:t.id,name:t.ad||t.title||'Tur',loc:t.kalkis||t.konum||'Turkiye',price:t.price||t.fiyat||0,rating:t.puan||4.8,reviews:t.inceleme||0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||(t.dahil||'').split('\n').filter(Boolean)||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,heroImage:t.heroImage||null,_db:true};
+      return{id:t.id,name:t.ad||t.title||'Tur',loc:t.kalkis||t.konum||'Turkiye',price:t.price||t.fiyat||0,rating:t.puan||4.8,reviews:t.inceleme||0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,tarihler:t.tarihler||[],saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||(t.dahil||'').split('\n').filter(Boolean)||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,heroImage:t.heroImage||null,_db:true};
     });
 }
 
