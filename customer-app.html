@@ -764,27 +764,40 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 </div>
 
 <!-- KAPASİTE UYARI MODAL -->
-<div id="cap-warning-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center" onclick="closeCapWarning()">
-  <div onclick="event.stopPropagation()" style="background:#fff;border-radius:24px;padding:28px 24px;max-width:340px;width:90%;margin:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25)">
-    <div style="width:64px;height:64px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-      <i class="fas fa-exclamation-triangle" style="color:#ef4444;font-size:26px"></i>
+<div id="cap-warning-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:flex-end;justify-content:center;padding-bottom:env(safe-area-inset-bottom)" onclick="closeCapWarning()">
+  <div onclick="event.stopPropagation()" style="background:#fff;border-radius:24px 24px 0 0;padding:24px 20px 28px;max-width:430px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.2)">
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="width:56px;height:56px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <i class="fas fa-exclamation-triangle" style="color:#ef4444;font-size:22px"></i>
+      </div>
+      <div style="font-size:17px;font-weight:800;color:#111;margin-bottom:6px" id="cap-warn-title">Kapasite Asiliyor!</div>
+      <div style="font-size:13px;color:#6b7280;line-height:1.5" id="cap-warn-body">Bu tur icin yeterli yer bulunmuyor.</div>
     </div>
-    <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:8px" id="cap-warn-title">Kapasite Asiliyor!</div>
-    <div style="font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:20px" id="cap-warn-body">Bu tur icin yeterli yer bulunmuyor.</div>
-    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:14px;padding:14px;margin-bottom:20px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-bottom:6px">
+    <!-- Stats -->
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:14px;padding:12px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-bottom:5px">
         <span>Tekne kapasitesi</span><span style="font-weight:700;color:#0369a1" id="cap-warn-max">—</span>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-bottom:5px">
         <span>Mevcut rezervasyonlar</span><span style="font-weight:700;color:#f59e0b" id="cap-warn-current">—</span>
       </div>
-      <div style="height:1px;background:#fecaca;margin:8px 0"></div>
+      <div style="height:1px;background:#fecaca;margin:6px 0"></div>
       <div style="display:flex;justify-content:space-between;font-size:13px;color:#374151">
         <span style="font-weight:600">Kalan yer</span><span style="font-weight:800;color:#ef4444" id="cap-warn-left">—</span>
       </div>
     </div>
-    <div id="cap-warn-suggest" style="font-size:12px;color:#6b7280;margin-bottom:20px"></div>
-    <button onclick="closeCapWarning()" style="width:100%;background:#0369a1;color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">Tamam, Anliyorum</button>
+    <div id="cap-warn-suggest" style="font-size:12px;color:#6b7280;margin-bottom:12px"></div>
+    <!-- Alternatif Turlar -->
+    <div id="cap-warn-alts" style="display:none;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="height:1px;flex:1;background:#e5e7eb"></div>
+        <span style="font-size:11px;font-weight:700;color:#6b7280;white-space:nowrap" id="cap-warn-alts-title">Yakınındaki Turlar</span>
+        <div style="height:1px;flex:1;background:#e5e7eb"></div>
+      </div>
+      <div id="cap-warn-alts-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <button onclick="closeCapWarning()" style="width:100%;background:#0369a1;color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">Tamam, Anlıyorum</button>
   </div>
 </div>
 
@@ -1531,23 +1544,143 @@ function renderPayment(){
 }
 
 /* ── CONFIRM BOOKING ── */
+
+/* Türkiye kıyı şehirleri koordinat tablosu */
+const CITY_COORDS={
+  'Bodrum':{lat:37.03,lng:27.43},'Antalya':{lat:36.89,lng:30.70},'Marmaris':{lat:36.85,lng:28.27},
+  'Fethiye':{lat:36.62,lng:29.11},'Alanya':{lat:36.54,lng:31.99},'Izmir':{lat:38.42,lng:27.13},
+  'İzmir':{lat:38.42,lng:27.13},'Çeşme':{lat:38.32,lng:26.30},'Cesme':{lat:38.32,lng:26.30},
+  'Göcek':{lat:36.75,lng:29.12},'Gocek':{lat:36.75,lng:29.12},'Didim':{lat:37.37,lng:27.27},
+  'Kuşadası':{lat:37.86,lng:27.26},'Kusadasi':{lat:37.86,lng:27.26},
+  'Istanbul':{lat:41.01,lng:28.95},'İstanbul':{lat:41.01,lng:28.95},
+  'Muğla':{lat:37.21,lng:28.37},'Mugla':{lat:37.21,lng:28.37},
+  'Datça':{lat:36.73,lng:27.69},'Datca':{lat:36.73,lng:27.69},
+  'Kaş':{lat:36.20,lng:29.64},'Kas':{lat:36.20,lng:29.64},
+  'Akyaka':{lat:37.05,lng:28.33},'Bozburun':{lat:36.70,lng:28.06},
+  'Çanakkale':{lat:40.15,lng:26.40},'Canakkale':{lat:40.15,lng:26.40},
+  'Erdek':{lat:40.40,lng:27.80},'Ayvalık':{lat:39.31,lng:26.70},
+};
+
+function haversineKm(lat1,lng1,lat2,lng2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function cityCoords(locStr){
+  if(!locStr)return null;
+  for(const [city,c] of Object.entries(CITY_COORDS)){
+    if(locStr.toLowerCase().includes(city.toLowerCase()))return c;
+  }
+  return null;
+}
+
+function isTourFull(t){
+  const rez=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
+  return rez>=(t.kapasite||8);
+}
+
+function buildAltTours(refTour, userLat, userLng){
+  const all=S.get('db_tours',[]).filter(t=>
+    String(t.id)!==String(refTour?.id) &&
+    (t.durum==='aktif'||t.durum==='yayinda') &&
+    !isTourFull(t)
+  );
+  const refLoc=refTour?(refTour.loc||refTour.kalkis||''):' ';
+  const refKats=new Set((refTour?.kategoriler||refTour?.cats||[]).map(k=>k.toLowerCase()));
+
+  return all.map(t=>{
+    const tLoc=t.loc||t.kalkis||'';
+    const tKats=(t.kategoriler||t.cats||[]).map(k=>k.toLowerCase());
+    let score=999999,distLabel='',sameCity=false;
+    const tCoords=cityCoords(tLoc);
+    if(userLat!=null&&tCoords){
+      const d=haversineKm(userLat,userLng,tCoords.lat,tCoords.lng);
+      score=d;
+      distLabel=d<5?'Yakınında':d<50?Math.round(d)+' km':(Math.round(d/10)*10)+' km';
+    } else if(refLoc&&tLoc){
+      const refC=cityCoords(refLoc),tC=cityCoords(tLoc);
+      if(refC&&tC){const d=haversineKm(refC.lat,refC.lng,tC.lat,tC.lng);score=d;distLabel=Math.round(d)+' km';}
+      else if(tLoc.toLowerCase()===refLoc.toLowerCase()){score=0;distLabel='Aynı konum';}
+    }
+    sameCity=tLoc&&refLoc&&tLoc.split(' ')[0].toLowerCase()===refLoc.split(' ')[0].toLowerCase();
+    const catMatch=tKats.some(k=>refKats.has(k));
+    if(sameCity) score-=500;
+    if(catMatch) score-=100;
+    return{tour:t,score,distLabel,sameCity,catMatch};
+  }).sort((a,b)=>a.score-b.score).slice(0,3);
+}
+
+function renderAltTours(alts){
+  const wrap=document.getElementById('cap-warn-alts');
+  const list=document.getElementById('cap-warn-alts-list');
+  const title=document.getElementById('cap-warn-alts-title');
+  if(!wrap||!list)return;
+  if(!alts.length){wrap.style.display='none';return;}
+  title.textContent=alts[0].distLabel?'Yakınındaki Uygun Turlar':'Benzer Uygun Turlar';
+  list.innerHTML=alts.map(({tour:t,distLabel,sameCity,catMatch})=>{
+    const badge=sameCity?'<span style="background:#dbeafe;color:#1d4ed8;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px">Aynı Konum</span>':
+      catMatch?'<span style="background:#d1fae5;color:#065f46;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px">Benzer Kategori</span>':'';
+    const distEl=distLabel?`<span style="font-size:11px;color:#9ca3af"><i class="fas fa-map-marker-alt" style="font-size:9px"></i> ${distLabel}</span>`:'';
+    return`<div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;background:#f9fafb">
+      <div style="width:42px;height:42px;background:linear-gradient(135deg,#0369a1,#0ea5e9);border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+        <i class="fas fa-ship" style="color:#fff;font-size:14px"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name||t.title||t.ad||'Tur'}</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap">
+          ${distEl}
+          ${badge}
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:13px;font-weight:800;color:#0369a1">${(t.price||t.fiyat||0).toLocaleString('tr-TR')} TL</div>
+        <button onclick="closeCapWarning();selectTourFromModal('${t.id}')" style="margin-top:4px;background:#0369a1;color:#fff;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">Seç</button>
+      </div>
+    </div>`;
+  }).join('');
+  wrap.style.display='block';
+}
+
 function showCapWarning(kapasite,rezerveKisi,kalanKisi,istenen){
   const overlay=document.getElementById('cap-warning-overlay');
-  document.getElementById('cap-warn-max').textContent=kapasite+' kisi';
-  document.getElementById('cap-warn-current').textContent=rezerveKisi+' kisi';
-  document.getElementById('cap-warn-left').textContent=kalanKisi===0?'Dolu!':kalanKisi+' kisi';
+  document.getElementById('cap-warn-max').textContent=kapasite+' kişi';
+  document.getElementById('cap-warn-current').textContent=rezerveKisi+' kişi';
+  document.getElementById('cap-warn-left').textContent=kalanKisi===0?'Dolu!':kalanKisi+' kişi';
+  const altsWrap=document.getElementById('cap-warn-alts');
+  if(altsWrap)altsWrap.style.display='none';
   if(kalanKisi===0){
     document.getElementById('cap-warn-title').textContent='Bu Tur Dolu!';
-    document.getElementById('cap-warn-body').textContent='Maalesef bu tur icin tum yerler dolu. Farkli bir tarih veya tur secmeyi deneyin.';
+    document.getElementById('cap-warn-body').textContent='Maalesef bu tur için tüm yerler dolu. Aşağıdan uygun alternatif tur seçebilirsiniz.';
     document.getElementById('cap-warn-suggest').textContent='';
+    /* Konum tabanlı alternatifleri yükle */
+    const refTour=selTour;
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(
+        pos=>{const alts=buildAltTours(refTour,pos.coords.latitude,pos.coords.longitude);renderAltTours(alts);},
+        ()=>{const alts=buildAltTours(refTour,null,null);renderAltTours(alts);},
+        {timeout:3000,maximumAge:60000}
+      );
+    } else {
+      const alts=buildAltTours(refTour,null,null);renderAltTours(alts);
+    }
   }else{
-    document.getElementById('cap-warn-title').textContent='Kapasite Asiliyor!';
-    document.getElementById('cap-warn-body').textContent=`${istenen} kisilik rezervasyon yapamazsiniz. Bu turda yalnizca ${kalanKisi} yer kalmistir.`;
-    document.getElementById('cap-warn-suggest').textContent=`Ipucu: Kisi sayisini en fazla ${kalanKisi} olarak secebilirsiniz.`;
+    document.getElementById('cap-warn-title').textContent='Kapasite Aşılıyor!';
+    document.getElementById('cap-warn-body').textContent=`${istenen} kişilik rezervasyon yapamazsınız. Bu turda yalnızca ${kalanKisi} yer kalmıştır.`;
+    document.getElementById('cap-warn-suggest').textContent=`İpucu: Kişi sayısını en fazla ${kalanKisi} olarak seçebilirsiniz.`;
   }
   overlay.style.display='flex';
 }
 function closeCapWarning(){document.getElementById('cap-warning-overlay').style.display='none';}
+
+function selectTourFromModal(tourId){
+  const t=S.get('db_tours',[]).find(x=>String(x.id)===String(tourId));
+  if(!t)return;
+  selTour=t;
+  selDate=null;selTime=null;guestVal=1;
+  renderTourDetail(t);
+  navigateTo('tour-detail');
+}
 
 function doBooking(){
   const t=selTour;

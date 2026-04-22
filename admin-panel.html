@@ -59,6 +59,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <a href="#captains" data-nav="captains"><i class="fas fa-anchor"></i> Kaptan Yonetimi</a>
   <a href="#users" data-nav="users"><i class="fas fa-users"></i> Kullanici Yonetimi</a>
   <a href="#tours-bookings" data-nav="tours-bookings"><i class="fas fa-ship"></i> Tur Yonetimi</a>
+  <a href="#mucbir" data-nav="mucbir"><i class="fas fa-exclamation-triangle"></i> Mücbir Sebepler <span id="mucbir-badge" style="display:none;background:#ef4444;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
   <a href="#reservations" data-nav="reservations"><i class="fas fa-calendar-check"></i> Rezervasyon Yonetimi <span id="res-badge" style="display:none;background:#f59e0b;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
 
   <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Yonetim</div>
@@ -217,6 +218,139 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
       </div>
     </div>
   </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE: MÜCBIR SEBEPLER                   -->
+  <!-- ======================================= -->
+  <section id="page-mucbir" class="page">
+
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-bold">Mücbir Sebepler Yönetimi</h1>
+        <p class="text-sm text-gray-500 mt-1">İptal, saat/tarih revizyonu ve kapasite sorunlarını yönetin. Etkilenen müşterilere alternatif tekne önerin.</p>
+      </div>
+      <button onclick="openCreateDisruptionModal()" class="bg-danger text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600 transition flex items-center gap-2">
+        <i class="fas fa-exclamation-triangle"></i> Yeni Mücbir Sebep Oluştur
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="stat-card"><div class="stat-icon bg-red-100 text-danger"><i class="fas fa-times-circle"></i></div><div><div class="text-2xl font-bold" id="mc-stat-active">0</div><div class="text-xs text-gray-500">Aktif Olay</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-amber-100 text-accent"><i class="fas fa-users"></i></div><div><div class="text-2xl font-bold" id="mc-stat-affected">0</div><div class="text-xs text-gray-500">Etkilenen Müşteri</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-clock"></i></div><div><div class="text-2xl font-bold" id="mc-stat-pending">0</div><div class="text-xs text-gray-500">Onay Bekleyen</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-green-100 text-success"><i class="fas fa-check-circle"></i></div><div><div class="text-2xl font-bold" id="mc-stat-resolved">0</div><div class="text-xs text-gray-500">Çözüldü</div></div></div>
+    </div>
+
+    <!-- Filtre -->
+    <div class="card mb-4 !p-3">
+      <div class="flex flex-wrap gap-2 items-center">
+        <div class="flex gap-1">
+          <button onclick="mcSetFilter('all')" class="mc-filter-btn tab-btn active px-3 py-1.5 rounded-lg text-xs font-semibold" data-filter="all">Tümü</button>
+          <button onclick="mcSetFilter('active')" class="mc-filter-btn tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold" data-filter="active"><i class="fas fa-circle text-danger text-[8px] mr-1"></i>Aktif</button>
+          <button onclick="mcSetFilter('pending_approval')" class="mc-filter-btn tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold" data-filter="pending_approval"><i class="fas fa-clock text-amber-500 text-[10px] mr-1"></i>Onay Bekleyen</button>
+          <button onclick="mcSetFilter('resolved')" class="mc-filter-btn tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold" data-filter="resolved"><i class="fas fa-check text-success text-[10px] mr-1"></i>Çözüldü</button>
+        </div>
+        <span class="ml-auto text-xs text-gray-400" id="mc-result-count"></span>
+      </div>
+    </div>
+
+    <!-- Liste -->
+    <div id="mc-list">
+      <div class="card text-center py-16 text-gray-400">
+        <i class="fas fa-check-circle text-4xl mb-3 block text-gray-200"></i>
+        <p class="font-medium">Aktif mücbir sebep olayı yok</p>
+        <p class="text-xs mt-1">Bir tur iptal veya revize olduğunda burada görünür.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- MÜCBIR SEBEP OLUŞTUR MODALI -->
+  <div id="create-disruption-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeCreateDisruptionModal()">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+      <div class="bg-danger p-5 text-white">
+        <div class="flex items-center justify-between">
+          <div><div class="font-bold text-lg flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> Mücbir Sebep Oluştur</div><div class="text-red-100 text-xs mt-0.5">Etkilenen rezervasyonlar otomatik tespit edilecek</div></div>
+          <button onclick="closeCreateDisruptionModal()" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"><i class="fas fa-times text-sm"></i></button>
+        </div>
+      </div>
+      <div class="p-5 space-y-4">
+        <div>
+          <label class="text-xs font-semibold text-gray-600 block mb-1">Etkilenen Tur *</label>
+          <select id="cd-tour" onchange="cdTourSelected()" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-danger/30">
+            <option value="">— Tur Seçin —</option>
+          </select>
+          <div class="mt-1 text-xs text-gray-400" id="cd-tour-info"></div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-600 block mb-1">Olay Türü *</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center gap-2 border rounded-xl p-3 cursor-pointer has-[:checked]:border-danger has-[:checked]:bg-red-50 transition">
+              <input type="radio" name="cd-type" value="iptal" class="accent-red-500"> <span class="text-sm font-medium">🚫 İptal</span>
+            </label>
+            <label class="flex items-center gap-2 border rounded-xl p-3 cursor-pointer has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50 transition">
+              <input type="radio" name="cd-type" value="saat_revize" class="accent-amber-500"> <span class="text-sm font-medium">🕐 Saat Değişikliği</span>
+            </label>
+            <label class="flex items-center gap-2 border rounded-xl p-3 cursor-pointer has-[:checked]:border-blue-400 has-[:checked]:bg-blue-50 transition">
+              <input type="radio" name="cd-type" value="tarih_revize" class="accent-blue-500"> <span class="text-sm font-medium">📅 Tarih Değişikliği</span>
+            </label>
+            <label class="flex items-center gap-2 border rounded-xl p-3 cursor-pointer has-[:checked]:border-orange-400 has-[:checked]:bg-orange-50 transition">
+              <input type="radio" name="cd-type" value="kapasite" class="accent-orange-500"> <span class="text-sm font-medium">👥 Kapasite Sorunu</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-600 block mb-1">Müşterilere Gösterilecek Sebep *</label>
+          <input type="text" id="cd-reason" placeholder="örn: Olumsuz hava koşulları nedeniyle tur iptal edildi" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-danger/30">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-600 block mb-1">Dahili Not (müşteriye gösterilmez)</label>
+          <textarea id="cd-notes" rows="2" placeholder="İç notlar..." class="w-full border rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-danger/30"></textarea>
+        </div>
+        <div id="cd-affected-preview" style="display:none" class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+          <div class="flex items-center gap-2 text-amber-700 font-semibold text-xs mb-2"><i class="fas fa-users"></i> Etkilenen Rezervasyonlar</div>
+          <div id="cd-affected-list" class="space-y-1 text-xs text-amber-800"></div>
+        </div>
+        <div id="cd-err" style="display:none" class="bg-red-50 text-danger text-xs px-3 py-2 rounded-lg flex items-center gap-2"><i class="fas fa-exclamation-circle"></i><span id="cd-err-msg"></span></div>
+      </div>
+      <div class="border-t p-4 flex gap-3 justify-end bg-gray-50">
+        <button onclick="closeCreateDisruptionModal()" class="border px-4 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100">İptal</button>
+        <button onclick="saveDisruption()" class="bg-danger text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition"><i class="fas fa-exclamation-triangle mr-1"></i> Olayı Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALTERNATİF TUR ATAMA MODALI -->
+  <div id="reassign-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeReassignModal()">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div class="bg-gradient-to-r from-primary to-sky-500 p-5 text-white flex-shrink-0">
+        <div class="flex items-center justify-between">
+          <div><div class="font-bold text-lg flex items-center gap-2"><i class="fas fa-random"></i> Alternatif Tekne Ata</div><div class="text-blue-100 text-xs mt-0.5" id="rm-disruption-name">—</div></div>
+          <button onclick="closeReassignModal()" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"><i class="fas fa-times text-sm"></i></button>
+        </div>
+      </div>
+      <div class="overflow-y-auto flex-1 p-5">
+        <!-- Etkilenen müşteriler -->
+        <div class="mb-5">
+          <h3 class="font-semibold text-sm mb-3 flex items-center gap-2"><i class="fas fa-users text-danger"></i> Etkilenen Müşteriler <span class="text-xs text-gray-400 font-normal" id="rm-affected-count"></span></h3>
+          <div id="rm-customers-list" class="space-y-2"></div>
+        </div>
+        <!-- Alternatif turlar -->
+        <div>
+          <h3 class="font-semibold text-sm mb-3 flex items-center gap-2"><i class="fas fa-ship text-primary"></i> Alternatif Tur Seç</h3>
+          <div id="rm-alt-tours" class="space-y-2"></div>
+        </div>
+      </div>
+      <div class="border-t p-4 flex gap-3 justify-between items-center bg-gray-50 flex-shrink-0">
+        <div class="text-xs text-gray-500"><i class="fas fa-info-circle mr-1 text-primary"></i>Teklif gönderilen müşterilere bildirim gelecek, kabul/ret kararı müşteriye aittir.</div>
+        <div class="flex gap-2">
+          <button onclick="closeReassignModal()" class="border px-4 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100">İptal</button>
+          <button onclick="sendReassignOffers()" class="bg-primary text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-primaryDark transition"><i class="fas fa-paper-plane mr-1"></i> Teklif Gönder</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ======================================= -->
   <!-- PAGE: REZERVASYON YONETIMI             -->
@@ -1782,6 +1916,49 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         <div class="text-center py-6 text-gray-400 text-xs">Aktif duyuru yok</div>
       </div>
     </div>
+
+    <!-- TEHLİKELİ BÖLGE — SİSTEM SIFIRLAMA -->
+    <div class="card mt-6 border-2 border-danger/40 bg-red-50/30">
+      <h2 class="font-semibold text-sm mb-1 flex items-center gap-2 text-danger"><i class="fas fa-skull-crossbones"></i> Tehlikeli Bölge — Sistem Sıfırlama</h2>
+      <p class="text-xs text-gray-500 mb-5">localStorage'daki <strong>tüm verileri</strong> siler: turlar, rezervasyonlar, kullanıcılar, kaptanlar, siparişler, ayarlar. Bu işlem <strong class="text-danger">geri alınamaz.</strong></p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+        <div>
+          <p class="text-xs font-semibold text-gray-500 mb-2">Silinecek anahtarlar:</p>
+          <div class="flex flex-wrap gap-1">
+            <span class="badge bg-red-100 text-danger text-[10px]">db_tours</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">db_bookings</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">db_captains</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">cu_users</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">db_orders</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">db_sellers</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">db_disruptions</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">db_reassignments</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">db_payments</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">auth_user</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">page_settings</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">global_settings</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">cms_content_*</span>
+            <span class="badge bg-red-100 text-danger text-[10px]">seller_products_*</span>
+          </div>
+        </div>
+        <div class="border rounded-xl p-4 bg-white">
+          <p class="text-xs font-semibold text-gray-600 mb-3">Sıfırlamayla birlikte demo kaptan ekle (isteğe bağlı):</p>
+          <div class="space-y-2">
+            <input type="text" id="reset-captain-name" placeholder="Kaptan Adı Soyadı" value="Ahmet Yilmaz" class="w-full border rounded-lg px-3 py-2 text-xs">
+            <input type="email" id="reset-captain-email" placeholder="kaptan@demo.com" value="kaptan@demo.com" class="w-full border rounded-lg px-3 py-2 text-xs">
+            <input type="text" id="reset-captain-boat" placeholder="Tekne Adı" value="Mavi Rüzgar" class="w-full border rounded-lg px-3 py-2 text-xs">
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="systemReset(false)" class="flex-1 border-2 border-danger text-danger py-2.5 rounded-xl text-sm font-bold hover:bg-red-50 transition flex items-center justify-center gap-2">
+          <i class="fas fa-trash"></i> Sadece Temizle
+        </button>
+        <button onclick="systemReset(true)" class="flex-1 bg-danger text-white py-2.5 rounded-xl text-sm font-bold hover:bg-red-600 transition flex items-center justify-center gap-2">
+          <i class="fas fa-sync"></i> Sıfırla + Demo Kaptan Oluştur
+        </button>
+      </div>
+    </div>
   </section>
 
 <!-- ===== TOAST ===== -->
@@ -1792,8 +1969,8 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
-const pages=['dashboard','captains','users','tours-bookings','reservations','page-manager','cms-web','cms-app','finance','marine','modules','captain-add','platform-control'];
-const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi'};
+const pages=['dashboard','captains','users','tours-bookings','reservations','page-manager','cms-web','cms-app','finance','marine','modules','captain-add','platform-control','mucbir'];
+const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi','mucbir':'Mucbir Sebepler Yonetimi'};
 
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
 
@@ -1814,9 +1991,10 @@ function handleRoute(){
   if(h==='marine')              renderMarineData();
   if(h==='modules')             renderMarineModules();
   if(h==='platform-control')    renderPlatformControl();
+  if(h==='mucbir')              renderMucbir();
 }
 window.addEventListener('hashchange',handleRoute);
-window.addEventListener('load',()=>{handleRoute();pmUpdateBadge();initShopToggle();pcUpdateMaintenanceBadge();});
+window.addEventListener('load',()=>{handleRoute();pmUpdateBadge();initShopToggle();pcUpdateMaintenanceBadge();mcUpdateBadge();});
 
 /* ── MAĞAZA AÇMA / KAPAMA ── */
 function isShopOpen(){
@@ -4680,6 +4858,270 @@ function showToast(msg,type='success'){
 }
 
 document.getElementById('delete-modal').addEventListener('click',function(e){if(e.target===this)closeDeleteModal();});
+
+/* ══════════════════════════════════════════════════
+   MÜCBIR SEBEPLER
+══════════════════════════════════════════════════ */
+let mcFilter='all';
+let currentDisruptionId=null;
+
+function renderMucbir(){
+  const disruptions=lsGet('db_disruptions',[]);
+  const reassignments=lsGet('db_reassignments',[]);
+  const active=disruptions.filter(d=>d.status==='active').length;
+  const affected=disruptions.reduce((s,d)=>s+(d.affectedBookings||[]).length,0);
+  const pending=reassignments.filter(r=>r.status==='pending').length;
+  const resolved=disruptions.filter(d=>d.status==='resolved').length;
+  const s=id=>document.getElementById(id);
+  if(s('mc-stat-active'))s('mc-stat-active').textContent=active;
+  if(s('mc-stat-affected'))s('mc-stat-affected').textContent=affected;
+  if(s('mc-stat-pending'))s('mc-stat-pending').textContent=pending;
+  if(s('mc-stat-resolved'))s('mc-stat-resolved').textContent=resolved;
+  let filtered=disruptions;
+  if(mcFilter==='active')filtered=disruptions.filter(d=>d.status==='active');
+  else if(mcFilter==='pending_approval')filtered=disruptions.filter(d=>{
+    const ids=(d.affectedBookings||[]).map(b=>b.bookingId);
+    return reassignments.some(r=>ids.includes(r.bookingId)&&r.status==='pending');
+  });
+  else if(mcFilter==='resolved')filtered=disruptions.filter(d=>d.status==='resolved');
+  if(s('mc-result-count'))s('mc-result-count').textContent=filtered.length+' olay';
+  const list=s('mc-list');
+  if(!list)return;
+  if(!filtered.length){
+    list.innerHTML='<div class="card text-center py-16 text-gray-400"><i class="fas fa-check-circle text-4xl mb-3 block text-gray-200"></i><p class="font-medium">Kayıtlı mücbir sebep olayı yok</p><p class="text-xs mt-1">Yeni olay oluşturmak için "Yeni Mücbir Sebep Oluştur" butonunu kullanın.</p></div>';
+    return;
+  }
+  list.innerHTML=filtered.map(d=>renderDisruptionCard(d,reassignments)).join('');
+  mcUpdateBadge();
+}
+
+function renderDisruptionCard(d,reassignments){
+  const typeLabels={iptal:'İptal',saat_revize:'Saat Değişikliği',tarih_revize:'Tarih Değişikliği',kapasite:'Kapasite Sorunu'};
+  const typeBorder={iptal:'border-l-danger',saat_revize:'border-l-amber-400',tarih_revize:'border-l-primary',kapasite:'border-l-orange-400'};
+  const typeBadge={iptal:'bg-red-100 text-danger border-red-200',saat_revize:'bg-amber-100 text-amber-700 border-amber-200',tarih_revize:'bg-blue-100 text-primary border-blue-200',kapasite:'bg-orange-100 text-orange-700 border-orange-200'};
+  const affected=d.affectedBookings||[];
+  const affIds=affected.map(b=>b.bookingId);
+  const pendingOffers=reassignments.filter(r=>affIds.includes(r.bookingId)&&r.status==='pending').length;
+  const acceptedOffers=reassignments.filter(r=>affIds.includes(r.bookingId)&&r.status==='accepted').length;
+  const rows=affected.map(b=>{
+    const r=reassignments.find(x=>x.bookingId===b.bookingId);
+    const badge=r?(r.status==='pending'?'<span class="badge bg-amber-100 text-amber-700 text-[10px]">Teklif Gönderildi</span>':r.status==='accepted'?'<span class="badge bg-green-100 text-success text-[10px]">Kabul Etti</span>':'<span class="badge bg-red-100 text-danger text-[10px]">Reddetti</span>'):'<span class="badge bg-gray-100 text-gray-500 text-[10px]">Teklif Yok</span>';
+    return`<div class="flex items-center justify-between px-3 py-2 border-b last:border-0 text-xs"><div class="flex items-center gap-2"><div class="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center font-bold text-[10px]">${(b.customerName||'?')[0].toUpperCase()}</div><div><div class="font-medium">${b.customerName||'Bilinmiyor'}</div><div class="text-gray-400">Rezervasyon: ${b.bookingId}</div></div></div>${badge}</div>`;
+  }).join('');
+  return`<div class="card mb-3 border-l-4 ${typeBorder[d.type]||'border-l-gray-300'}">
+  <div class="flex items-start justify-between mb-3">
+    <div><div class="font-bold text-sm">${d.tourTitle}</div><div class="text-xs text-gray-400 mt-0.5">${d.captainName} · ${new Date(d.createdAt).toLocaleDateString('tr-TR')}</div></div>
+    <div class="flex items-center gap-2 flex-wrap justify-end">
+      <span class="badge border text-[11px] ${typeBadge[d.type]||'bg-gray-100 text-gray-600 border-gray-200'}">${typeLabels[d.type]||d.type}</span>
+      <span class="badge text-[11px] ${d.status==='active'?'bg-red-100 text-danger':'bg-green-100 text-success'}">${d.status==='active'?'Aktif':'Çözüldü'}</span>
+    </div>
+  </div>
+  <div class="text-xs text-gray-600 mb-3 bg-gray-50 px-3 py-2 rounded-lg"><i class="fas fa-quote-left text-gray-300 mr-1 text-[10px]"></i>${d.reason}</div>
+  <div class="flex items-center gap-4 text-xs mb-3 flex-wrap">
+    <span class="text-gray-500"><i class="fas fa-users mr-1 text-danger"></i>${affected.length} etkilenen müşteri</span>
+    ${pendingOffers?`<span class="text-amber-600 font-medium"><i class="fas fa-clock mr-1"></i>${pendingOffers} onay bekliyor</span>`:''}
+    ${acceptedOffers?`<span class="text-success font-medium"><i class="fas fa-check mr-1"></i>${acceptedOffers} kabul etti</span>`:''}
+  </div>
+  ${affected.length?`<div class="mb-3 border rounded-xl overflow-hidden bg-gray-50/50">${rows}</div>`:''}
+  <div class="flex gap-2 flex-wrap">
+    ${d.status==='active'?`<button onclick="openReassignModal('${d.id}')" class="flex-1 bg-primary text-white py-2 rounded-xl text-xs font-bold hover:bg-primaryDark transition min-w-[120px]"><i class="fas fa-random mr-1"></i>Alternatif Tur Ata</button>`:''}
+    ${d.status==='active'?`<button onclick="mcResolve('${d.id}')" class="border border-success text-success px-3 py-2 rounded-xl text-xs font-semibold hover:bg-green-50 transition"><i class="fas fa-check mr-1"></i>Çözüldü</button>`:''}
+    <button onclick="mcDelete('${d.id}')" class="border border-danger/30 text-danger px-3 py-2 rounded-xl text-xs font-semibold hover:bg-red-50 transition"><i class="fas fa-trash"></i></button>
+  </div>
+</div>`;
+}
+
+function mcSetFilter(f){
+  mcFilter=f;
+  document.querySelectorAll('.mc-filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f));
+  renderMucbir();
+}
+
+function openCreateDisruptionModal(){
+  const tours=lsGet('db_tours',[]).filter(t=>t.durum==='aktif'||t.durum==='yayinda');
+  const sel=document.getElementById('cd-tour');
+  if(sel)sel.innerHTML='<option value="">— Tur Seçin —</option>'+tours.map(t=>`<option value="${t.id}">${t.ad||t.title||'Tur'} — ${t.captainName||t.captainEmail||''}</option>`).join('');
+  const prev=document.getElementById('cd-affected-preview');
+  if(prev)prev.style.display='none';
+  const err=document.getElementById('cd-err');
+  if(err)err.style.display='none';
+  const r=document.getElementById('cd-reason');if(r)r.value='';
+  const n=document.getElementById('cd-notes');if(n)n.value='';
+  const ti=document.getElementById('cd-tour-info');if(ti)ti.textContent='';
+  document.querySelectorAll('input[name="cd-type"]').forEach(r=>r.checked=false);
+  const m=document.getElementById('create-disruption-modal');if(m)m.style.display='flex';
+}
+
+function closeCreateDisruptionModal(){
+  const m=document.getElementById('create-disruption-modal');if(m)m.style.display='none';
+}
+
+function cdTourSelected(){
+  const tourId=document.getElementById('cd-tour')?.value;
+  if(!tourId){const p=document.getElementById('cd-affected-preview');if(p)p.style.display='none';return;}
+  const bookings=lsGet('db_bookings',[]).filter(b=>String(b.tourId)===String(tourId)&&['bekliyor','onaylandi','confirmed','pending'].includes(b.durum||b.status||''));
+  const tour=lsGet('db_tours',[]).find(t=>String(t.id)===String(tourId));
+  const ti=document.getElementById('cd-tour-info');
+  if(ti)ti.textContent=tour?`${tour.captainName||tour.captainEmail||''} · ${tour.tarih||tour.date||''} · ${tour.saat||tour.time||''}`:'';
+  const preview=document.getElementById('cd-affected-preview');
+  const list=document.getElementById('cd-affected-list');
+  if(!bookings.length){if(preview)preview.style.display='none';return;}
+  if(preview)preview.style.display='block';
+  if(list)list.innerHTML=bookings.map(b=>`<div class="flex justify-between"><span>${b.customerName||b.musteri||b.name||'Bilinmiyor'}</span><span class="text-amber-600">${b.kisiSayisi||b.guests||b.kisi||1} kişi</span></div>`).join('');
+}
+
+function saveDisruption(){
+  const tourId=document.getElementById('cd-tour')?.value;
+  const type=document.querySelector('input[name="cd-type"]:checked')?.value;
+  const reason=(document.getElementById('cd-reason')?.value||'').trim();
+  const notes=(document.getElementById('cd-notes')?.value||'').trim();
+  const showErr=msg=>{const e=document.getElementById('cd-err');const m=document.getElementById('cd-err-msg');if(e)e.style.display='flex';if(m)m.textContent=msg;};
+  if(!tourId){showErr('Lütfen etkilenen turu seçin.');return;}
+  if(!type){showErr('Lütfen olay türünü seçin.');return;}
+  if(!reason){showErr('Müşterilere gösterilecek sebep zorunludur.');return;}
+  const err=document.getElementById('cd-err');if(err)err.style.display='none';
+  const tour=lsGet('db_tours',[]).find(t=>String(t.id)===String(tourId));
+  const bookings=lsGet('db_bookings',[]).filter(b=>String(b.tourId)===String(tourId)&&['bekliyor','onaylandi','confirmed','pending'].includes(b.durum||b.status||''));
+  const disruption={
+    id:'dis_'+Date.now(),
+    tourId,
+    tourTitle:tour?(tour.ad||tour.title||'Bilinmiyor'):'Bilinmiyor',
+    captainName:tour?(tour.captainName||tour.captainEmail||''):'',
+    type,reason,notes,
+    status:'active',
+    createdAt:new Date().toISOString(),
+    affectedBookings:bookings.map(b=>({
+      bookingId:b.id,
+      customerName:b.customerName||b.musteri||b.name||'Bilinmiyor',
+      customerId:b.customerId||b.userId||null,
+      guests:b.kisiSayisi||b.guests||b.kisi||1,
+    })),
+  };
+  const disruptions=lsGet('db_disruptions',[]);
+  disruptions.unshift(disruption);
+  localStorage.setItem('db_disruptions',JSON.stringify(disruptions));
+  closeCreateDisruptionModal();
+  renderMucbir();
+  showToast(`Mücbir sebep kaydedildi — ${bookings.length} müşteri etkilendi`,'info');
+}
+
+function openReassignModal(disruptionId){
+  const d=lsGet('db_disruptions',[]).find(x=>x.id===disruptionId);
+  if(!d)return;
+  currentDisruptionId=disruptionId;
+  const typeLabels={iptal:'İptal',saat_revize:'Saat Değişikliği',tarih_revize:'Tarih Değişikliği',kapasite:'Kapasite Sorunu'};
+  const rn=document.getElementById('rm-disruption-name');
+  if(rn)rn.textContent=d.tourTitle+' — '+(typeLabels[d.type]||d.type);
+  const affected=d.affectedBookings||[];
+  const ac=document.getElementById('rm-affected-count');
+  if(ac)ac.textContent=affected.length+' müşteri';
+  const reassignments=lsGet('db_reassignments',[]);
+  const cl=document.getElementById('rm-customers-list');
+  if(cl)cl.innerHTML=affected.map(b=>{
+    const r=reassignments.find(x=>x.bookingId===b.bookingId);
+    const badge=r?(r.status==='pending'?'<span class="badge bg-amber-100 text-amber-700 text-[10px]">Teklif Gönderildi</span>':r.status==='accepted'?'<span class="badge bg-green-100 text-success text-[10px]">Kabul Etti</span>':'<span class="badge bg-red-100 text-danger text-[10px]">Reddetti</span>'):'';
+    return`<div class="flex items-center justify-between p-3 border rounded-xl text-sm mb-2"><div class="flex items-center gap-2"><div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xs">${(b.customerName||'?')[0].toUpperCase()}</div><div><div class="font-medium text-sm">${b.customerName||'Bilinmiyor'}</div><div class="text-xs text-gray-400">${b.guests} kişi</div></div></div>${badge}</div>`;
+  }).join('')||'<div class="text-gray-400 text-sm text-center py-3">Etkilenen müşteri yok</div>';
+  const tours=lsGet('db_tours',[]).filter(t=>String(t.id)!==String(d.tourId)&&(t.durum==='aktif'||t.durum==='yayinda'));
+  const al=document.getElementById('rm-alt-tours');
+  if(al)al.innerHTML=tours.length?tours.map(t=>`
+    <label class="flex items-center gap-3 border rounded-xl p-3 cursor-pointer hover:border-primary/50 transition has-[:checked]:border-primary has-[:checked]:bg-blue-50 mb-2">
+      <input type="radio" name="rm-tour" value="${t.id}" class="accent-blue-500 flex-shrink-0">
+      <div class="flex-1 min-w-0"><div class="font-medium text-sm truncate">${t.ad||t.title||'Tur'}</div><div class="text-xs text-gray-400">${t.captainName||t.captainEmail||''} · ${t.tarih||t.date||''} · ${t.saat||t.time||''}</div></div>
+      <div class="text-right flex-shrink-0"><div class="font-bold text-primary text-sm">${t.fiyat||t.price||0} TL</div><div class="text-xs text-gray-400">kişi başı</div></div>
+    </label>`).join(''):'<div class="text-gray-400 text-sm text-center py-8 border rounded-xl">Şu an aktif alternatif tur yok</div>';
+  const modal=document.getElementById('reassign-modal');if(modal)modal.style.display='flex';
+}
+
+function closeReassignModal(){
+  const m=document.getElementById('reassign-modal');if(m)m.style.display='none';
+  currentDisruptionId=null;
+}
+
+function sendReassignOffers(){
+  const altTourId=document.querySelector('input[name="rm-tour"]:checked')?.value;
+  if(!altTourId){showToast('Lütfen alternatif bir tur seçin','info');return;}
+  const d=lsGet('db_disruptions',[]).find(x=>x.id===currentDisruptionId);
+  if(!d){showToast('Olay bulunamadı','danger');return;}
+  const altTour=lsGet('db_tours',[]).find(t=>String(t.id)===String(altTourId));
+  const affected=d.affectedBookings||[];
+  const reassignments=lsGet('db_reassignments',[]);
+  let sent=0;
+  affected.forEach(b=>{
+    if(reassignments.some(r=>r.bookingId===b.bookingId&&r.disruptionId===d.id))return;
+    reassignments.push({
+      id:'rea_'+Date.now()+'_'+b.bookingId,
+      disruptionId:d.id,
+      bookingId:b.bookingId,
+      customerId:b.customerId,
+      customerName:b.customerName,
+      originalTourId:d.tourId,
+      originalTourTitle:d.tourTitle,
+      reason:d.reason,
+      altTourId,
+      altTourTitle:altTour?(altTour.ad||altTour.title||'Bilinmiyor'):'Bilinmiyor',
+      altTourDate:altTour?(altTour.tarih||altTour.date||''):'',
+      altTourTime:altTour?(altTour.saat||altTour.time||''):'',
+      altTourPrice:altTour?(altTour.fiyat||altTour.price||0):0,
+      status:'pending',
+      sentAt:new Date().toISOString(),
+    });
+    sent++;
+  });
+  localStorage.setItem('db_reassignments',JSON.stringify(reassignments));
+  closeReassignModal();
+  renderMucbir();
+  showToast(sent+' müşteriye alternatif tur teklifi gönderildi','success');
+}
+
+function mcResolve(id){
+  if(!confirm('Bu olayı çözüldü olarak işaretlemek istiyor musunuz?'))return;
+  const disruptions=lsGet('db_disruptions',[]);
+  const d=disruptions.find(x=>x.id===id);
+  if(d){d.status='resolved';d.resolvedAt=new Date().toISOString();}
+  localStorage.setItem('db_disruptions',JSON.stringify(disruptions));
+  renderMucbir();
+  showToast('Olay çözüldü olarak işaretlendi','success');
+}
+
+function mcDelete(id){
+  if(!confirm('Bu mücbir sebep kaydı silinecek. Emin misiniz?'))return;
+  localStorage.setItem('db_disruptions',JSON.stringify(lsGet('db_disruptions',[]).filter(x=>x.id!==id)));
+  renderMucbir();
+  showToast('Olay silindi','info');
+}
+
+function mcUpdateBadge(){
+  const count=lsGet('db_disruptions',[]).filter(d=>d.status==='active').length;
+  const badge=document.getElementById('mucbir-badge');
+  if(badge){badge.style.display=count>0?'inline':'none';badge.textContent=count;}
+}
+
+/* ══════════════════════════════════════════════════
+   SİSTEM SIFIRLAMA
+══════════════════════════════════════════════════ */
+function systemReset(seedCaptain){
+  const msg=seedCaptain
+    ?'TÜM VERİLER SİLİNECEK ve demo kaptan oluşturulacak!\n\nBu işlem geri alınamaz. Devam etmek istiyor musunuz?'
+    :'TÜM VERİLER SİLİNECEK!\n\nTurlar, rezervasyonlar, kullanıcılar, kaptanlar, siparişler ve tüm ayarlar sıfırlanacak.\nBu işlem geri alınamaz. Devam etmek istiyor musunuz?';
+  if(!confirm(msg))return;
+  const fixed=['db_tours','db_bookings','db_captains','db_payments','db_orders','db_sellers','db_disruptions','db_reassignments','cu_users','auth_user','cu_session','seller_session','cp_active_id','active_captain_id','page_settings','global_settings','module_settings'];
+  fixed.forEach(k=>localStorage.removeItem(k));
+  Object.keys(localStorage).filter(k=>k.startsWith('cms_content_')||k.startsWith('seller_products_')).forEach(k=>localStorage.removeItem(k));
+  if(seedCaptain){
+    const fullName=(document.getElementById('reset-captain-name')?.value||'Demo Kaptan').trim();
+    const email=(document.getElementById('reset-captain-email')?.value||'kaptan@demo.com').trim();
+    const boat=(document.getElementById('reset-captain-boat')?.value||'Demo Tekne').trim();
+    const parts=fullName.split(' ');
+    const ad=parts[0];
+    const soyad=parts.slice(1).join(' ')||'';
+    const captain={id:1,ad,soyad,email,sifre:'demo1234',telefon:'0500 000 0000',tekne:boat,bolge:'Bodrum',durum:'aktif',puan:5,yorumSayisi:0,plan:'free',createdAt:new Date().toISOString()};
+    localStorage.setItem('db_captains',JSON.stringify([captain]));
+    localStorage.setItem('cp_active_id',1);
+  }
+  showToast('Sistem sıfırlandı'+(seedCaptain?' — demo kaptan oluşturuldu':''),'success');
+  setTimeout(()=>location.reload(),1800);
+}
 </script>
 </body>
 </html>

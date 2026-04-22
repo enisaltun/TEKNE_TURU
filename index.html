@@ -6,222 +6,154 @@
 <title>DenizBul.tr — Turkiye'nin Tekne Turu Marketplace'i</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',accent:'#f59e0b'}}}}</script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',primaryDark:'#075985',accent:'#f59e0b',success:'#10b981',danger:'#ef4444'}}}}</script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-*{font-family:'Inter',sans-serif}
-.card-hover{transition:all .2s}
-.card-hover:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(3,105,161,.15)}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+*{font-family:'Inter',sans-serif;box-sizing:border-box}
+
+.panel-card{
+  background:#fff;border-radius:20px;border:2px solid #e5e7eb;
+  overflow:hidden;transition:box-shadow .2s,transform .2s,border-color .2s;
+  display:flex;flex-direction:column;
+}
+.panel-card:not(.disabled):hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 40px rgba(3,105,161,.15);
+  border-color:#bae6fd;
+}
+.panel-card.disabled{opacity:.5;filter:grayscale(.7)}
+.panel-card.disabled .card-body{cursor:not-allowed}
+
+.card-body{cursor:pointer;padding:24px;flex:1}
+.card-gradient{background:linear-gradient(135deg,#0369a1,#0ea5e9);color:#fff}
+.card-gradient .card-body{color:#fff}
+
+/* Toggle row */
+.toggle-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;border-top:1.5px solid #e5e7eb;
+  background:#f8fafc;cursor:pointer;user-select:none;
+  transition:background .15s;
+}
+.toggle-row:hover{background:#f1f5f9}
+.panel-card.disabled .toggle-row{background:#fff7f7;border-color:#fecaca}
+
+.sw{
+  width:52px;height:28px;border-radius:14px;background:#d1d5db;
+  position:relative;transition:.25s;flex-shrink:0;
+}
+.sw::after{
+  content:'';position:absolute;left:3px;top:3px;
+  width:22px;height:22px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 4px rgba(0,0,0,.25);transition:.25s;
+}
+.sw.on{background:#10b981}
+.sw.on::after{left:27px}
+
+.disabled-banner{
+  display:none;position:absolute;top:12px;right:12px;
+  background:#ef4444;color:#fff;font-size:10px;font-weight:800;
+  padding:3px 10px;border-radius:20px;letter-spacing:.5px;
+}
+.panel-card.disabled .disabled-banner{display:block}
+
+/* Marine cards */
+.marine-card{
+  background:#fff;border-radius:16px;border:2px solid #e5e7eb;
+  overflow:hidden;transition:all .2s;
+}
+.marine-card:not(.disabled):hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.1);border-color:#bae6fd}
+.marine-card.disabled{opacity:.45;filter:grayscale(.85)}
+
+.marine-body{padding:16px;text-align:center;cursor:pointer}
+.marine-card.disabled .marine-body{cursor:not-allowed}
+
+.marine-toggle-row{
+  display:flex;align-items:center;justify-between;
+  padding:8px 14px;border-top:1.5px solid #e5e7eb;background:#f8fafc;
+  cursor:pointer;user-select:none;
+}
+.marine-toggle-row:hover{background:#f1f5f9}
+
+/* Section header */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sec-title{font-size:15px;font-weight:800;color:#111;display:flex;align-items:center;gap:10px}
+.bulk-btn{font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;border:1.5px solid;cursor:pointer;transition:.15s}
+
+/* Toast */
+#hub-toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:#1e293b;color:#fff;padding:11px 22px;border-radius:14px;
+  font-size:13px;font-weight:600;opacity:0;transition:all .22s;
+  pointer-events:none;white-space:nowrap;z-index:999;
+  display:flex;align-items:center;gap:8px;
+}
+#hub-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
-<body class="bg-gradient-to-br from-sky-50 via-white to-blue-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen">
 
 <!-- Hero -->
-<div class="max-w-5xl mx-auto px-6 pt-16 pb-12 text-center">
-  <div class="flex items-center justify-center gap-3 mb-6">
-    <div class="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
+<div style="background:linear-gradient(135deg,#0369a1 0%,#0ea5e9 60%,#38bdf8 100%)" class="pb-10 pt-12 px-6 text-center text-white">
+  <div class="flex items-center justify-center gap-3 mb-5">
+    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
       <i class="fas fa-ship text-white text-2xl"></i>
     </div>
     <div class="text-left">
-      <div class="text-3xl font-extrabold text-primary leading-none">DenizBul<span class="text-accent">.tr</span></div>
-      <div class="text-xs text-gray-500 font-medium tracking-wide">TURKIYE'NIN TEKNE TURU MARKETPLACE'I</div>
+      <div class="text-3xl font-black leading-none">DenizBul<span style="color:#f59e0b">.tr</span></div>
+      <div class="text-xs text-white/70 font-medium tracking-widest">TÜRKİYE'NİN TEKNE TURU MARKETPLACEİ</div>
     </div>
   </div>
-  <h1 class="text-4xl font-extrabold text-gray-900 mb-4 leading-tight">
-    Harika bir tekne turu<br><span class="text-primary">sadece birkaç tık uzakta</span>
-  </h1>
-  <p class="text-gray-500 text-lg max-w-xl mx-auto mb-3">
-    Balik avi, gezi, ozel etkinlik ve daha fazlasi. Turkiye'nin en iyi kaptanlariyla bulusun.
-  </p>
-  <div class="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium px-4 py-2 rounded-full mb-10">
-    <i class="fas fa-flask"></i> UI Prototype — Tum paneller localStorage ile bagli calisir
-  </div>
-
-  <!-- Panel Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-left">
-
-    <!-- Auth -->
-    <a href="auth.html" class="card-hover bg-gradient-to-br from-primary to-sky-600 rounded-2xl p-6 shadow-md block text-white">
-      <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
-        <i class="fas fa-user-circle text-white text-xl"></i>
-      </div>
-      <div class="font-bold text-lg mb-1">Kullanıcı Girişi</div>
-      <div class="text-white/80 text-sm mb-4">Kayıt ol, giriş yap, misafir olarak devam et.</div>
-      <div class="space-y-1.5">
-        <div class="flex items-center gap-2 text-xs text-white/70"><i class="fas fa-check w-4"></i>Kayıt & giriş formu</div>
-        <div class="flex items-center gap-2 text-xs text-white/70"><i class="fas fa-check w-4"></i>localStorage entegrasyonu</div>
-        <div class="flex items-center gap-2 text-xs text-white/70"><i class="fas fa-check w-4"></i>Şifre güç göstergesi</div>
-      </div>
-      <div class="mt-5 flex items-center gap-2 text-white font-semibold text-sm">
-        Aç <i class="fas fa-arrow-right text-xs"></i>
-      </div>
-    </a>
-
-    <!-- Musteri App -->
-    <a href="customer-app.html" class="card-hover bg-white rounded-2xl p-6 shadow-md border border-gray-100 block">
-      <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
-        <i class="fas fa-mobile-alt text-primary text-xl"></i>
-      </div>
-      <div class="font-bold text-gray-900 text-lg mb-1">Musteri App</div>
-      <div class="text-gray-500 text-sm mb-4">Tur kesfet, rezervasyon yap, kaptan ile mesajlas.</div>
-      <div class="space-y-1.5">
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-primary w-4"></i>Tur arama & filtreleme</div>
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-primary w-4"></i>Dinamik rezervasyon akisi</div>
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-primary w-4"></i>Mesajlasma & bildirimler</div>
-      </div>
-      <div class="mt-5 flex items-center gap-2 text-primary font-semibold text-sm">
-        Aci <i class="fas fa-arrow-right text-xs"></i>
-      </div>
-    </a>
-
-    <!-- Kaptan App -->
-    <a href="captain-app.html" class="card-hover bg-white rounded-2xl p-6 shadow-md border border-gray-100 block">
-      <div class="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center mb-4">
-        <i class="fas fa-anchor text-sky-600 text-xl"></i>
-      </div>
-      <div class="font-bold text-gray-900 text-lg mb-1">Kaptan Paneli</div>
-      <div class="text-gray-500 text-sm mb-4">Tur olustur, rezervasyonlari yonet, kazancini takip et.</div>
-      <div class="space-y-1.5">
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-sky-600 w-4"></i>5 adimli tur olusturma wizard</div>
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-sky-600 w-4"></i>Rezervasyon kabul / red</div>
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-sky-600 w-4"></i>Musteri mesajlasma</div>
-      </div>
-      <div class="mt-5 flex items-center gap-2 text-sky-600 font-semibold text-sm">
-        Aci <i class="fas fa-arrow-right text-xs"></i>
-      </div>
-    </a>
-
-    <!-- Admin Panel -->
-    <a href="admin-panel.html" class="card-hover bg-white rounded-2xl p-6 shadow-md border border-gray-100 block">
-      <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-        <i class="fas fa-chart-pie text-purple-600 text-xl"></i>
-      </div>
-      <div class="font-bold text-gray-900 text-lg mb-1">Admin Panel</div>
-      <div class="text-gray-500 text-sm mb-4">Tum platformu yonet: kaptanlar, turlar, finans, hareketler.</div>
-      <div class="space-y-1.5">
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-purple-600 w-4"></i>Kaptan onaylama akisi</div>
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-purple-600 w-4"></i>Satis hareketi yonetimi</div>
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-purple-600 w-4"></i>Komisyon & finans takibi</div>
-      </div>
-      <div class="mt-5 flex items-center gap-2 text-purple-600 font-semibold text-sm">
-        Aci <i class="fas fa-arrow-right text-xs"></i>
-      </div>
-    </a>
-
-    <!-- Musteri Web Sitesi -->
-    <a href="customer-site.html" class="card-hover bg-white rounded-2xl p-6 shadow-md border border-gray-100 block">
-      <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
-        <i class="fas fa-globe text-emerald-600 text-xl"></i>
-      </div>
-      <div class="font-bold text-gray-900 text-lg mb-1">Web Sitesi</div>
-      <div class="text-gray-500 text-sm mb-4">Musteri odakli tanitim & kesfet sayfasi (masaustu + mobil).</div>
-      <div class="space-y-1.5">
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-emerald-600 w-4"></i>Responsive tasarim</div>
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-emerald-600 w-4"></i>Tur listesi & detay</div>
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-emerald-600 w-4"></i>Kaptan profilleri</div>
-      </div>
-      <div class="mt-5 flex items-center gap-2 text-emerald-600 font-semibold text-sm">
-        Aci <i class="fas fa-arrow-right text-xs"></i>
-      </div>
-    </a>
-    <!-- Seed Data -->
-    <a href="seed-data.html" class="card-hover bg-white rounded-2xl p-6 shadow-md border border-gray-100 block">
-      <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
-        <i class="fas fa-database text-orange-600 text-xl"></i>
-      </div>
-      <div class="font-bold text-gray-900 text-lg mb-1">Seed Data</div>
-      <div class="text-gray-500 text-sm mb-4">30 kaptan, 45 tur, 250 musteri ve ~400 rezervasyon uret.</div>
-      <div class="space-y-1.5">
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-orange-600 w-4"></i>Gercekci test verisi</div>
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-orange-600 w-4"></i>Tum paneller icin</div>
-        <div class="flex items-center gap-2 text-xs text-gray-400"><i class="fas fa-check text-orange-600 w-4"></i>localStorage'a aninda yazar</div>
-      </div>
-      <div class="mt-5 flex items-center gap-2 text-orange-600 font-semibold text-sm">
-        Aci <i class="fas fa-arrow-right text-xs"></i>
-      </div>
-    </a>
-
+  <h1 class="text-3xl font-black mb-2">Harika bir tekne turu<br><span style="color:#fde68a">sadece birkaç tık uzakta</span></h1>
+  <p class="text-white/80 text-sm max-w-md mx-auto mb-4">Balık avı, gezi, özel etkinlik ve daha fazlası. Türkiye'nin en iyi kaptanlarıyla buluşun.</p>
+  <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/30 text-white text-xs font-medium px-4 py-2 rounded-full">
+    <i class="fas fa-flask"></i> UI Prototype — Tüm paneller localStorage ile bağlı çalışır
   </div>
 </div>
 
-<!-- Marine Science Modules -->
-<div class="max-w-5xl mx-auto px-6 pb-8">
-  <div class="flex items-center gap-3 mb-4">
-    <div class="w-8 h-8 bg-cyan-100 rounded-xl flex items-center justify-center"><i class="fas fa-water text-cyan-600 text-sm"></i></div>
-    <div>
-      <div class="font-bold text-gray-900">Deniz Bilimleri Modülleri</div>
-      <div class="text-xs text-gray-500">Gerçek zamanlı simüle edilmiş deniz verileri — kaptanlar ve balıkçılar için</div>
+<!-- Content -->
+<div class="max-w-5xl mx-auto px-5 py-10">
+
+  <!-- ANA PANELLER -->
+  <div class="sec-header">
+    <div class="sec-title">
+      <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center"><i class="fas fa-th-large text-primary text-sm"></i></div>
+      Ana Paneller
+      <span class="text-xs font-normal text-gray-400" id="panel-summary"></span>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="setGroup('panel',true)" class="bulk-btn border-success text-success hover:bg-success hover:text-white"><i class="fas fa-check mr-1"></i>Tümünü Aç</button>
+      <button onclick="setGroup('panel',false)" class="bulk-btn border-danger text-danger hover:bg-danger hover:text-white"><i class="fas fa-times mr-1"></i>Tümünü Kapat</button>
     </div>
   </div>
-  <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-    <a href="marine-gelgit.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
-      <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-water text-blue-600"></i></div>
-      <div class="font-bold text-gray-900 text-sm mb-1">Gelgit</div>
-      <div class="text-gray-500 text-xs">Med-cezir verileri, liman tablosu</div>
-      <div class="mt-3 text-blue-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
-    </a>
-    <a href="marine-ruzgar.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
-      <div class="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-wind text-sky-600"></i></div>
-      <div class="font-bold text-gray-900 text-sm mb-1">Rüzgar</div>
-      <div class="text-gray-500 text-xs">Beaufort, hız, yön, istasyon</div>
-      <div class="mt-3 text-sky-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
-    </a>
-    <a href="marine-hava.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
-      <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-cloud-sun text-amber-500"></i></div>
-      <div class="font-bold text-gray-900 text-sm mb-1">Hava Durumu</div>
-      <div class="text-gray-500 text-xs">5 günlük, deniz sıcaklığı</div>
-      <div class="mt-3 text-amber-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
-    </a>
-    <a href="marine-derinlik.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
-      <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-map text-indigo-600"></i></div>
-      <div class="font-bold text-gray-900 text-sm mb-1">Derinlik</div>
-      <div class="text-gray-500 text-xs">Batimetri, seyir ölçekleri</div>
-      <div class="mt-3 text-indigo-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
-    </a>
-    <a href="marine-ay.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
-      <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-moon text-slate-600"></i></div>
-      <div class="font-bold text-gray-900 text-sm mb-1">Ay Takvimi</div>
-      <div class="text-gray-500 text-xs">Ay evreleri, balık avı etkisi</div>
-      <div class="mt-3 text-slate-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
-    </a>
-    <a href="marine-gunes.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
-      <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-sun text-orange-500"></i></div>
-      <div class="font-bold text-gray-900 text-sm mb-1">Güneş</div>
-      <div class="text-gray-500 text-xs">Doğuş/batış, altın saat</div>
-      <div class="mt-3 text-orange-500 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
-    </a>
-    <a href="marine-solunar.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
-      <div class="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-fish text-teal-600"></i></div>
-      <div class="font-bold text-gray-900 text-sm mb-1">Solunar</div>
-      <div class="text-gray-500 text-xs">Balık aktivitesi, major/minor</div>
-      <div class="mt-3 text-teal-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
-    </a>
-    <a href="marine-sicaklik.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
-      <div class="w-10 h-10 bg-cyan-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-thermometer-half text-cyan-600"></i></div>
-      <div class="font-bold text-gray-900 text-sm mb-1">Su Sıcaklığı</div>
-      <div class="text-gray-500 text-xs">Yüzey, derinlik, mevsimsel</div>
-      <div class="mt-3 text-cyan-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
-    </a>
-    <a href="marine-ay-konum.html" class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100 block text-center">
-      <div class="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center mb-3 mx-auto"><i class="fas fa-satellite text-violet-600"></i></div>
-      <div class="font-bold text-gray-900 text-sm mb-1">Ay Konumu</div>
-      <div class="text-gray-500 text-xs">Canlı faz, yükseklik, mesafe</div>
-      <div class="mt-3 text-violet-600 font-semibold text-xs flex items-center justify-center gap-1">Aç <i class="fas fa-arrow-right text-[10px]"></i></div>
-    </a>
-  </div>
-</div>
 
-<!-- Data Flow -->
-<div class="max-w-5xl mx-auto px-6 pb-16">
-  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
-    <h2 class="font-bold text-gray-900 text-lg mb-6 text-center">Paneller Arasi Veri Akisi</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10" id="panel-grid"></div>
+
+  <!-- DENİZ MODÜLLERİ -->
+  <div class="sec-header">
+    <div class="sec-title">
+      <div class="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center"><i class="fas fa-water text-cyan-600 text-sm"></i></div>
+      Deniz Bilimleri Modülleri
+      <span class="text-xs font-normal text-gray-400" id="marine-summary"></span>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="setGroup('marine',true)" class="bulk-btn border-success text-success hover:bg-success hover:text-white"><i class="fas fa-check mr-1"></i>Aç</button>
+      <button onclick="setGroup('marine',false)" class="bulk-btn border-danger text-danger hover:bg-danger hover:text-white"><i class="fas fa-times mr-1"></i>Kapat</button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-10" id="marine-grid"></div>
+
+  <!-- VERİ AKIŞI -->
+  <div class="bg-white rounded-2xl border border-gray-200 p-8">
+    <h2 class="font-bold text-gray-900 text-base mb-6 text-center">Paneller Arası Veri Akışı</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
       <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
         <div class="font-semibold text-purple-700 mb-2"><i class="fas fa-chart-pie mr-1"></i>Admin Panel</div>
         <div class="text-xs text-gray-600 space-y-1">
           <div><span class="font-mono bg-purple-100 px-1 rounded">db_captains</span> yazar</div>
           <div><span class="font-mono bg-purple-100 px-1 rounded">db_tours</span> okur</div>
-          <div><span class="font-mono bg-purple-100 px-1 rounded">db_bookings</span> okur / durum gunceller</div>
+          <div><span class="font-mono bg-purple-100 px-1 rounded">db_bookings</span> okur / durum günceller</div>
         </div>
       </div>
       <div class="bg-sky-50 rounded-xl p-4 border border-sky-100">
@@ -230,42 +162,273 @@
           <div><span class="font-mono bg-sky-100 px-1 rounded">db_captains</span> okur (kimlik)</div>
           <div><span class="font-mono bg-sky-100 px-1 rounded">db_tours</span> yazar / okur</div>
           <div><span class="font-mono bg-sky-100 px-1 rounded">db_bookings</span> okur / onaylar</div>
-          <div><span class="font-mono bg-sky-100 px-1 rounded">db_messages</span> yazar / okur</div>
         </div>
       </div>
       <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-        <div class="font-semibold text-blue-700 mb-2"><i class="fas fa-mobile-alt mr-1"></i>Musteri App</div>
+        <div class="font-semibold text-blue-700 mb-2"><i class="fas fa-mobile-alt mr-1"></i>Müşteri App</div>
         <div class="text-xs text-gray-600 space-y-1">
           <div><span class="font-mono bg-blue-100 px-1 rounded">db_tours</span> okur</div>
           <div><span class="font-mono bg-blue-100 px-1 rounded">db_bookings</span> yazar</div>
-          <div><span class="font-mono bg-blue-100 px-1 rounded">db_messages</span> yazar / okur</div>
-          <div><span class="font-mono bg-blue-100 px-1 rounded">cu_*</span> kisisel veri</div>
+          <div><span class="font-mono bg-blue-100 px-1 rounded">cu_*</span> kişisel veri</div>
         </div>
       </div>
     </div>
-    <p class="text-center text-xs text-gray-400 mt-5">
-      <i class="fas fa-info-circle mr-1"></i>
-      Tum paneller ayni tarayici sekmesinde acildiginda localStorage uzerinden gercek zamanli senkronize calisir.
-    </p>
   </div>
 </div>
 
 <!-- Footer -->
-<div class="border-t border-gray-100 bg-white">
-  <div class="max-w-5xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3">
+<div class="border-t border-gray-200 bg-white">
+  <div class="max-w-5xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
     <div class="flex items-center gap-2">
       <div class="w-7 h-7 bg-primary rounded-lg flex items-center justify-center"><i class="fas fa-ship text-white text-xs"></i></div>
       <span class="font-bold text-primary text-sm">DenizBul<span class="text-accent">.tr</span></span>
       <span class="text-gray-400 text-xs">UI Prototype v1.0.0</span>
     </div>
-    <div class="flex gap-4 text-xs text-gray-400">
-      <a href="customer-app.html" class="hover:text-primary">Musteri</a>
-      <a href="captain-app.html" class="hover:text-sky-600">Kaptan</a>
-      <a href="admin-panel.html" class="hover:text-purple-600">Admin</a>
-      <a href="customer-site.html" class="hover:text-gray-600">Web Sitesi</a>
+    <div class="flex gap-5 text-xs text-gray-400">
+      <a href="customer-app.html" class="hover:text-primary transition">Müşteri</a>
+      <a href="captain-app.html" class="hover:text-sky-600 transition">Kaptan</a>
+      <a href="admin-panel.html" class="hover:text-purple-600 transition">Admin</a>
+      <a href="customer-site.html" class="hover:text-gray-600 transition">Web Sitesi</a>
     </div>
   </div>
 </div>
 
+<!-- Toast -->
+<div id="hub-toast"><i id="hub-toast-icon" class="fas fa-info-circle"></i><span id="hub-toast-msg"></span></div>
+
+<script>
+/* ═══════════════════════════════════════
+   MODÜL TANIM
+═══════════════════════════════════════ */
+const PANELS=[
+  {
+    key:'auth', file:'auth.html', group:'panel', maintKey:null,
+    label:'Kullanıcı Girişi', icon:'fa-user-circle',
+    gradient:true,
+    desc:'Kayıt ol, giriş yap, misafir olarak devam et.',
+    features:['Kayıt & giriş formu','localStorage entegrasyonu','Şifre güç göstergesi'],
+    accentColor:'#38bdf8',
+  },
+  {
+    key:'customer_app', file:'customer-app.html', group:'panel', maintKey:'customer_app',
+    label:'Müşteri App', icon:'fa-mobile-alt',
+    iconBg:'#dbeafe', iconColor:'#0369a1',
+    desc:'Tur keşfet, rezervasyon yap, kaptan ile mesajlaş.',
+    features:['Tur arama & filtreleme','Dinamik rezervasyon akışı','Mesajlaşma & bildirimler'],
+    accentColor:'#0369a1', maintMsg:'Müşteri uygulaması geçici olarak devre dışı.',
+  },
+  {
+    key:'captain_app', file:'captain-app.html', group:'panel', maintKey:'captain_app',
+    label:'Kaptan Uygulaması', icon:'fa-anchor',
+    iconBg:'#e0f2fe', iconColor:'#0284c7',
+    desc:'Tur oluştur, rezervasyonları yönet, kazancını takip et.',
+    features:['5 adımlı tur oluşturma wizard','Rezervasyon kabul / red','Müşteri mesajlaşma'],
+    accentColor:'#0284c7', maintMsg:'Kaptan uygulaması geçici olarak devre dışı.',
+  },
+  {
+    key:'admin_panel', file:'admin-panel.html', group:'panel', maintKey:null,
+    label:'Admin Panel', icon:'fa-chart-pie',
+    iconBg:'#f3e8ff', iconColor:'#7c3aed',
+    desc:'Tüm platformu yönet: kaptanlar, turlar, finans.',
+    features:['Kaptan onaylama akışı','Satış hareketi yönetimi','Komisyon & finans takibi'],
+    accentColor:'#7c3aed',
+  },
+  {
+    key:'customer_site', file:'customer-site.html', group:'panel', maintKey:'customer_site',
+    label:'Web Sitesi', icon:'fa-globe',
+    iconBg:'#d1fae5', iconColor:'#059669',
+    desc:'Müşteri odaklı tanıtım & keşfet sayfası.',
+    features:['Responsive tasarım','Tur listesi & detay','Kaptan profilleri'],
+    accentColor:'#059669', maintMsg:'Web sitesi geçici olarak devre dışı.',
+  },
+  {
+    key:'seed_data', file:'seed-data.html', group:'panel', maintKey:null,
+    label:'Seed Data', icon:'fa-database',
+    iconBg:'#ffedd5', iconColor:'#ea580c',
+    desc:'30 kaptan, 45 tur, 250 müşteri ve ~400 rezervasyon üret.',
+    features:['Gerçekçi test verisi','Tüm paneller için','localStorage\'a anında yazar'],
+    accentColor:'#ea580c',
+  },
+];
+
+const MARINES=[
+  {key:'marine_gelgit',   file:'marine-gelgit.html',   label:'Gelgit',       icon:'fa-water',            iconBg:'#dbeafe', iconColor:'#1d4ed8', desc:'Med-cezir verileri'},
+  {key:'marine_ruzgar',   file:'marine-ruzgar.html',   label:'Rüzgar',       icon:'fa-wind',             iconBg:'#e0f2fe', iconColor:'#0284c7', desc:'Beaufort, hız, yön'},
+  {key:'marine_hava',     file:'marine-hava.html',     label:'Hava Durumu',  icon:'fa-cloud-sun',        iconBg:'#fef3c7', iconColor:'#d97706', desc:'5 günlük tahmin'},
+  {key:'marine_derinlik', file:'marine-derinlik.html', label:'Derinlik',     icon:'fa-map',              iconBg:'#ede9fe', iconColor:'#6d28d9', desc:'Batimetri, seyir'},
+  {key:'marine_ay',       file:'marine-ay.html',       label:'Ay Takvimi',   icon:'fa-moon',             iconBg:'#f1f5f9', iconColor:'#475569', desc:'Ay evreleri, balık avı'},
+  {key:'marine_gunes',    file:'marine-gunes.html',    label:'Güneş',        icon:'fa-sun',              iconBg:'#ffedd5', iconColor:'#ea580c', desc:'Doğuş/batış, altın saat'},
+  {key:'marine_solunar',  file:'marine-solunar.html',  label:'Solunar',      icon:'fa-fish',             iconBg:'#ccfbf1', iconColor:'#0d9488', desc:'Balık aktivitesi'},
+  {key:'marine_sicaklik', file:'marine-sicaklik.html', label:'Su Sıcaklığı', icon:'fa-thermometer-half', iconBg:'#cffafe', iconColor:'#0891b2', desc:'Yüzey & mevsimsel'},
+  {key:'marine_ay_konum', file:'marine-ay-konum.html', label:'Ay Konumu',    icon:'fa-satellite',        iconBg:'#f5f3ff', iconColor:'#7c3aed', desc:'Canlı faz & yükseklik'},
+];
+
+const ALL=[...PANELS,...MARINES];
+
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+function getStates(){try{return JSON.parse(localStorage.getItem('idx_modules')||'{}')}catch{return{}}}
+function saveStates(s){localStorage.setItem('idx_modules',JSON.stringify(s))}
+function isOn(key){return getStates()[key]!==false}
+
+function syncMaint(mod,enabled){
+  if(!mod.maintKey)return;
+  try{
+    const gs=JSON.parse(localStorage.getItem('global_settings')||'{}');
+    if(!enabled){gs[mod.maintKey+'_maintenance']=true;gs[mod.maintKey+'_maintenance_msg']=mod.maintMsg||'Bu modül devre dışı.';}
+    else{delete gs[mod.maintKey+'_maintenance'];delete gs[mod.maintKey+'_maintenance_msg'];}
+    localStorage.setItem('global_settings',JSON.stringify(gs));
+  }catch(e){}
+}
+
+/* ═══════════════════════════════════════
+   TOGGLE
+═══════════════════════════════════════ */
+function toggle(key){
+  const s=getStates();
+  const nowOn=s[key]===false; // was off → turn on
+  if(nowOn)delete s[key];else s[key]=false;
+  saveStates(s);
+  const mod=ALL.find(m=>m.key===key);
+  if(mod)syncMaint(mod,nowOn);
+  render();
+  toast(nowOn?`"${mod?.label}" açıldı ✓`:`"${mod?.label}" kapatıldı — erişim engellendi`,nowOn?'success':'danger');
+}
+
+function setGroup(group,enable){
+  const s=getStates();
+  const mods=group==='panel'?PANELS:MARINES;
+  mods.forEach(m=>{if(enable)delete s[m.key];else s[m.key]=false;syncMaint(m,enable);});
+  saveStates(s);render();
+  toast(enable?'Tümü açıldı':'Tümü kapatıldı',enable?'success':'danger');
+}
+
+/* ═══════════════════════════════════════
+   NAVİGASYON
+═══════════════════════════════════════ */
+function open(key,file){
+  if(!isOn(key)){
+    const mod=ALL.find(m=>m.key===key);
+    toast(`"${mod?.label||key}" şu an kapalı — toggle ile açın`,'locked');return;
+  }
+  window.location.href=file;
+}
+
+/* ═══════════════════════════════════════
+   RENDER PANELS
+═══════════════════════════════════════ */
+function render(){
+  renderPanels();
+  renderMarines();
+  renderSummaries();
+}
+
+function renderPanels(){
+  const grid=document.getElementById('panel-grid');
+  if(!grid)return;
+  grid.innerHTML=PANELS.map(m=>{
+    const on=isOn(m.key);
+    if(m.gradient){
+      return`<div class="panel-card${on?'':' disabled'}" style="border-color:${on?'#bae6fd':'#fecaca'}">
+        <div class="card-body card-gradient" onclick="open('${m.key}','${m.file}')">
+          <div style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+            <i class="fas ${m.icon}" style="color:#fff;font-size:20px"></i>
+          </div>
+          <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:4px">${m.label}</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.8);margin-bottom:16px;line-height:1.5">${m.desc}</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
+            ${m.features.map(f=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.75)"><i class="fas fa-check" style="font-size:10px;color:rgba(255,255,255,.9)"></i>${f}</div>`).join('')}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#fff">
+            ${on?`Aç <i class="fas fa-arrow-right" style="font-size:11px"></i>`:`<i class="fas fa-lock" style="font-size:11px"></i> Devre Dışı`}
+          </div>
+        </div>
+        <div class="toggle-row" onclick="toggle('${m.key}')">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="sw${on?' on':''}"></div>
+            <span style="font-size:12px;font-weight:700;color:${on?'#10b981':'#ef4444'}">${on?'MODÜL AÇIK':'MODÜL KAPALI'}</span>
+          </div>
+          <span style="font-size:11px;color:#94a3b8">${on?'Kapatmak için tıkla':'Açmak için tıkla'}</span>
+        </div>
+      </div>`;
+    }
+    return`<div class="panel-card${on?'':' disabled'}" style="border-color:${on?'#e5e7eb':'#fecaca'}" >
+      <div class="card-body" onclick="open('${m.key}','${m.file}')">
+        <div style="width:48px;height:48px;background:${m.iconBg};border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+          <i class="fas ${m.icon}" style="color:${m.iconColor};font-size:20px"></i>
+        </div>
+        <div style="font-size:17px;font-weight:800;color:#111;margin-bottom:4px">${m.label}</div>
+        <div style="font-size:13px;color:#6b7280;margin-bottom:16px;line-height:1.5">${m.desc}</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
+          ${m.features.map(f=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#9ca3af"><i class="fas fa-check" style="font-size:10px;color:${m.iconColor}"></i>${f}</div>`).join('')}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:${m.accentColor}">
+          ${on?`Aç <i class="fas fa-arrow-right" style="font-size:11px"></i>`:`<i class="fas fa-lock" style="font-size:11px"></i> Devre Dışı`}
+        </div>
+      </div>
+      <div class="toggle-row" onclick="toggle('${m.key}')">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="sw${on?' on':''}"></div>
+          <span style="font-size:12px;font-weight:700;color:${on?'#10b981':'#ef4444'}">${on?'MODÜL AÇIK':'MODÜL KAPALI'}</span>
+        </div>
+        <span style="font-size:11px;color:#94a3b8">${on?'Kapatmak için tıkla':'Açmak için tıkla'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMarines(){
+  const grid=document.getElementById('marine-grid');
+  if(!grid)return;
+  grid.innerHTML=MARINES.map(m=>{
+    const on=isOn(m.key);
+    return`<div class="marine-card${on?'':' disabled'}" style="border-color:${on?'#e5e7eb':'#fecaca'}">
+      <div class="marine-body" onclick="open('${m.key}','${m.file}')">
+        <div style="width:44px;height:44px;background:${m.iconBg};border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
+          <i class="fas ${m.icon}" style="color:${m.iconColor};font-size:17px"></i>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:#111;margin-bottom:3px">${m.label}</div>
+        <div style="font-size:11px;color:#9ca3af;line-height:1.4">${m.desc}</div>
+        <div style="margin-top:10px;font-size:11px;font-weight:700;color:${m.iconColor}">
+          ${on?`Aç <i class="fas fa-arrow-right" style="font-size:9px"></i>`:`<i class="fas fa-lock" style="font-size:10px;color:#ef4444"></i>`}
+        </div>
+      </div>
+      <div class="marine-toggle-row" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1.5px solid #e5e7eb;background:#f8fafc;cursor:pointer" onclick="toggle('${m.key}')">
+        <div class="sw${on?' on':''}" style="width:36px;height:20px;border-radius:10px"></div>
+        <span style="font-size:10px;font-weight:700;color:${on?'#10b981':'#ef4444'}">${on?'AÇIK':'KAPALI'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSummaries(){
+  const pa=PANELS.filter(m=>isOn(m.key)).length;
+  const ps=document.getElementById('panel-summary');
+  if(ps)ps.textContent=`(${pa}/${PANELS.length} aktif)`;
+  const ma=MARINES.filter(m=>isOn(m.key)).length;
+  const ms=document.getElementById('marine-summary');
+  if(ms)ms.textContent=`(${ma}/${MARINES.length} aktif)`;
+}
+
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+let _tt=null;
+function toast(msg,type='info'){
+  const t=document.getElementById('hub-toast');
+  const ic=document.getElementById('hub-toast-icon');
+  const m=document.getElementById('hub-toast-msg');
+  if(!t)return;
+  m.textContent=msg;
+  ic.className='fas '+(type==='success'?'fa-check-circle" style="color:#10b981':type==='danger'?'fa-times-circle" style="color:#ef4444':type==='locked'?'fa-lock" style="color:#f59e0b':'fa-info-circle" style="color:#60a5fa')+'"';
+  t.classList.add('show');
+  clearTimeout(_tt);
+  _tt=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* ═══ INIT ═══ */
+render();
+</script>
 </body>
 </html>
