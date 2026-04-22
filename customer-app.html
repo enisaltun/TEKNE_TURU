@@ -1758,6 +1758,11 @@ function renderMyTours(tab){
     const cat=tourMap[b.tourId]?.cat||'gezi';
     const m=CM[cat]||CM.gezi;
     const badge=b.durum==='onaylandi'?'<span class="badge bg-green-100 text-success">Onaylandi</span>':b.durum==='tamamlandi'?'<span class="badge bg-gray-100 text-gray-600">Bitti</span>':b.durum==='iptal'||b.durum==='reddedildi'?'<span class="badge bg-red-100 text-danger">Iptal</span>':'<span class="badge bg-amber-100 text-amber-700">Bekliyor</span>';
+    const redNeden=b.durum==='reddedildi'&&b.redNedeni
+      ?`<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:8px 10px;margin-top:8px;display:flex;gap:6px;align-items:flex-start">
+          <i class="fas fa-exclamation-circle" style="color:#ef4444;font-size:11px;margin-top:1px;flex-shrink:0"></i>
+          <div style="font-size:11px;color:#b91c1c;line-height:1.5"><span style="font-weight:700">Kaptan açıklaması: </span>${b.redNedeni}</div>
+        </div>`:'';
     return`<div class="card p-4 card-hover" onclick="openBookingDetail('${b.id}')">
       <div class="flex items-center gap-3 mb-2">
         <div class="w-12 h-12 bg-gradient-to-br ${m.grad} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas ${m.icon} text-white"></i></div>
@@ -1769,7 +1774,8 @@ function renderMyTours(tab){
         <span><i class="fas fa-clock mr-0.5"></i>${b.saat||'—'}</span>
         <span><i class="fas fa-users mr-0.5"></i>${b.guests} kisi</span>
       </div>
-      <div class="flex items-center justify-between">
+      ${redNeden}
+      <div class="flex items-center justify-between mt-2">
         <span class="font-bold text-primary">${(b.amount||0).toLocaleString('tr-TR')} TL</span>
         <div class="flex gap-2">
           <button class="bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-[11px] font-medium" onclick="event.stopPropagation();jumpToChat('${b.id}')"><i class="fas fa-comment mr-0.5"></i>Mesaj</button>
