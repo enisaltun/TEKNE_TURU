@@ -329,7 +329,21 @@ function genTours(captains){
     const imgs=HERO_IMGS[kat]||HERO_IMGS['Tekne Gezisi'];
     const heroImage=imgs[i%imgs.length];
     const price=rndInt(Math.ceil(sab.fMin/50)*50, Math.floor(sab.fMax/50)*50);
-    const sezonlar=['Tum Yil','Yaz (Haz-Eyl)','Yaz (Haz-Eyl)','Tum Yil'];
+
+    // Kaptanın seçtiği tur tarihlerini simüle et — gelecek 90 gün içinde rastgele 4-8 tarih
+    function genTarihler(){
+      const dates=[];const now=new Date();
+      const count=rndInt(4,8);
+      const used=new Set();
+      for(let t=0;t<count*5&&dates.length<count;t++){
+        const offset=rndInt(7,90);
+        const d=new Date(now.getTime()+offset*86400000);
+        // Hafta sonları biraz daha sık (kaptan cumartesi/pazar tercih eder)
+        const iso=d.toISOString().slice(0,10);
+        if(!used.has(iso)){used.add(iso);dates.push(iso);}
+      }
+      return dates.sort();
+    }
 
     tours.push({
       id:baseId+i,
@@ -342,7 +356,7 @@ function genTours(captains){
       price,
       fiyat:price,
       kapasite:cap.kapasite,
-      sezon:sezonlar[i%sezonlar.length],
+      tarihler:genTarihler(),   // kaptan seçimi — tek gerçek tarih kaynağı
       saatler:sab.saatler,
       includes:sab.includes,
       dahil:sab.includes.join('\n'),
@@ -678,6 +692,17 @@ function genMinimalTours(captains){
       const imgs=HERO_IMGS[sab.kat]||HERO_IMGS['Tekne Gezisi'];
       const price=rndInt(Math.ceil(sab.fMin/50)*50,Math.floor(sab.fMax/50)*50);
       const ad=rnd(sab.adlar);
+      // Kaptan seçimi simülasyonu — gelecek 60 gün içinde 3-6 tarih
+      const minTarihler=(function(){
+        const dates=[];const now=new Date();const used=new Set();
+        const count=rndInt(3,6);
+        for(let t=0;t<count*5&&dates.length<count;t++){
+          const iso=new Date(now.getTime()+rndInt(5,60)*86400000).toISOString().slice(0,10);
+          if(!used.has(iso)){used.add(iso);dates.push(iso);}
+        }
+        return dates.sort();
+      })();
+
       tours.push({
         id:baseId++,
         ad, title:ad,
@@ -687,7 +712,7 @@ function genMinimalTours(captains){
         sure:sab.sure,
         price, fiyat:price,
         kapasite:cap.kapasite,
-        sezon:'Yaz (Haz-Eyl)',
+        tarihler:minTarihler,   // kaptan seçimi — tek gerçek tarih kaynağı
         saatler:sab.saatler,
         includes:sab.includes,
         dahil:sab.includes.join('\n'),

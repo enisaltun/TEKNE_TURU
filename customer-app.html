@@ -1688,6 +1688,8 @@ function selectTourFromModal(tourId){
 function doBooking(){
   const t=selTour;
   if(!t){showToast('Lutfen bir tur secin','danger');return;}
+  if(!Array.isArray(t.tarihler)||!t.tarihler.length){showToast('Bu tur icin kaptan henuz tarih belirlemedi','danger');return;}
+  if(!selDate){showToast('Lutfen bir tarih secin','danger');return;}
   const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
   const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);
   if(kalanKisi<=0){showCapWarning(t.kapasite,rezerveKisi,0,0);return;}

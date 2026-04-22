@@ -2301,7 +2301,20 @@ function handleRoute(){
   if(h==='mucbir')              renderMucbir();
 }
 window.addEventListener('hashchange',handleRoute);
-window.addEventListener('load',()=>{handleRoute();pmUpdateBadge();initShopToggle();pcUpdateMaintenanceBadge();mcUpdateBadge();});
+window.addEventListener('load',()=>{
+  purgeDatelessTours();   // tarihsiz turları ilk yüklemede temizle
+  handleRoute();pmUpdateBadge();initShopToggle();pcUpdateMaintenanceBadge();mcUpdateBadge();
+});
+
+/* ── TARİHSİZ TUR TEMİZLEYİCİ ── */
+function purgeDatelessTours(){
+  const tours=lsGet('db_tours',[]);
+  const valid=tours.filter(t=>Array.isArray(t.tarihler)&&t.tarihler.length>0);
+  if(valid.length===tours.length) return; // temizlenecek bir şey yok
+  const removed=tours.length-valid.length;
+  localStorage.setItem('db_tours',JSON.stringify(valid));
+  console.warn(`[DenizBul] ${removed} tarihsiz tur silindi.`);
+}
 
 /* ── MAĞAZA AÇMA / KAPAMA ── */
 function isShopOpen(){
