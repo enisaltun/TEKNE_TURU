@@ -2469,26 +2469,38 @@ function openTourDetailModal(id){
 
   /* ── TUR ZAMAN BİLGİSİ ── */
   (function(){
-    // 1. Tur tarihini bul: "Tek Seferlik: YYYY-MM-DD" sezon → o tarih, yoksa rezervasyonlardan ilk yaklaşan
-    let tourDate=null;
-    if(t.sezon&&t.sezon.startsWith('Tek Seferlik:')){
-      const raw=t.sezon.replace('Tek Seferlik:','').trim(); // "YYYY-MM-DD" or "DD.MM.YYYY"
-      tourDate=new Date(raw.includes('-')?raw:raw.split('.').reverse().join('-'));
-    }
-    if(!tourDate&&bookings.length){
-      const sorted=[...bookings].filter(b=>b.tarih).sort((a,bb)=>
-        a.tarih.split('.').reverse().join('').localeCompare(bb.tarih.split('.').reverse().join(''))
-      );
-      if(sorted.length){const p=sorted[0].tarih.split('.');tourDate=new Date(`${p[2]}-${p[1]}-${p[0]}`);}
+    const today=new Date();today.setHours(0,0,0,0);
+
+    // 1. Tur tarihleri — SADECE t.tarihler'den gelir (kaptan tarafından seçilen)
+    const tarihler=(t.tarihler||[]).map(iso=>new Date(iso)).sort((a,b)=>a-b);
+    const futureDates=tarihler.filter(d=>d>=today);
+    const pastDates=tarihler.filter(d=>d<today);
+
+    // Gösterilecek "tur tarihi": en yakın gelecek tarih, yoksa en son geçmiş tarih
+    const displayDate=futureDates.length?futureDates[0]:(pastDates.length?pastDates[pastDates.length-1]:null);
+
+    // Tüm tarihlerin özetini oluştur
+    let tourDateText;
+    if(!tarihler.length){
+      tourDateText='Kaptan tarih girmemiş';
+    } else if(tarihler.length===1){
+      tourDateText=tarihler[0].toLocaleDateString('tr-TR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+    } else {
+      const nextTxt=futureDates.length
+        ?futureDates[0].toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'})
+        :pastDates[pastDates.length-1].toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'});
+      tourDateText=`${nextTxt} (toplam ${tarihler.length} tarih: ${futureDates.length} gelecek, ${pastDates.length} geçti)`;
     }
 
-    const today=new Date();today.setHours(0,0,0,0);
-    const daysLeft=tourDate?Math.ceil((tourDate-today)/86400000):null;
-    const happened=daysLeft!==null&&daysLeft<0;
+    const daysLeft=displayDate?Math.ceil((displayDate-today)/86400000):null;
+    const allHappened=tarihler.length>0&&futureDates.length===0; // tüm tarihler geçti
     const isToday=daysLeft===0;
 
-    // 2. Son rezervasyon: en son oluşturulan rezervasyon (createdAt bazlı)
-    const lastBkg=[...bookings].filter(b=>b.createdAt).sort((a,bb)=>new Date(bb.createdAt)-new Date(a.createdAt))[0];
+    // 2. Son rezervasyon = en geç tur tarihi olan rezervasyon (b.tarih'e göre, createdAt değil)
+    const bkgWithDate=[...bookings].filter(b=>b.tarih);
+    const lastBkgByTourDate=bkgWithDate.sort((a,bb)=>
+      bb.tarih.split('.').reverse().join('').localeCompare(a.tarih.split('.').reverse().join(''))
+    )[0];
 
     // 3. Render
     const tourDateEl=document.getElementById('tdm-tour-date');
@@ -2497,34 +2509,36 @@ function openTourDetailModal(id){
     const statusLineEl=document.getElementById('tdm-tour-status-line');
     const happenedBadge=document.getElementById('tdm-happened-badge');
 
-    if(tourDateEl){
-      tourDateEl.textContent=tourDate?tourDate.toLocaleDateString('tr-TR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}):'Sezon bazlı (tek tarih yok)';
-    }
+    if(tourDateEl) tourDateEl.textContent=tourDateText;
+
     if(lastBkgEl){
-      lastBkgEl.textContent=lastBkg
-        ?new Date(lastBkg.createdAt).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' — '+( lastBkg.customerName||'Müşteri')
+      lastBkgEl.textContent=lastBkgByTourDate
+        ?lastBkgByTourDate.tarih+(lastBkgByTourDate.saat?' '+lastBkgByTourDate.saat:'')+' — '+(lastBkgByTourDate.customerName||'Müşteri')
         :'Henüz rezervasyon yok';
     }
+
     if(daysLeftEl){
-      if(daysLeft===null){daysLeftEl.textContent='Hesaplanamadı';daysLeftEl.style.color='#94a3b8';}
-      else if(happened){daysLeftEl.textContent=Math.abs(daysLeft)+' gün önce gerçekleşti';daysLeftEl.style.color='#6b7280';}
+      if(daysLeft===null){daysLeftEl.textContent='Tarih girilmemiş';daysLeftEl.style.color='#94a3b8';}
+      else if(allHappened){daysLeftEl.textContent='Tüm tarihler geçti';daysLeftEl.style.color='#6b7280';}
       else if(isToday){daysLeftEl.textContent='BUGÜN!';daysLeftEl.style.color='#ef4444';daysLeftEl.style.fontWeight='900';}
       else if(daysLeft<=3){daysLeftEl.textContent=daysLeft+' gün kaldı ⚡';daysLeftEl.style.color='#ef4444';}
       else if(daysLeft<=7){daysLeftEl.textContent=daysLeft+' gün kaldı';daysLeftEl.style.color='#f59e0b';}
       else{daysLeftEl.textContent=daysLeft+' gün kaldı';daysLeftEl.style.color='#10b981';}
     }
+
     if(statusLineEl){
-      if(daysLeft===null){statusLineEl.textContent='Tarih belirsiz';statusLineEl.style.color='#94a3b8';}
-      else if(happened){
+      if(!tarihler.length){statusLineEl.textContent='Kaptan henüz tarih eklememiş';statusLineEl.style.color='#94a3b8';}
+      else if(allHappened){
         const rezTam=bookings.filter(b=>b.durum==='tamamlandi').length;
         statusLineEl.textContent=`Tamamlandı — ${rezTam} rezervasyon gerçekleşti`;
         statusLineEl.style.color='#6b7280';
       }else if(isToday){statusLineEl.textContent='Tur bugün gerçekleşiyor';statusLineEl.style.color='#ef4444';}
-      else{statusLineEl.textContent='Henüz gerçekleşmedi';statusLineEl.style.color='#0369a1';}
+      else{statusLineEl.textContent=`Henüz gerçekleşmedi (${futureDates.length} tarih kaldı)`;statusLineEl.style.color='#0369a1';}
     }
+
     if(happenedBadge){
       if(isToday){happenedBadge.textContent='BUGÜN';happenedBadge.style.cssText='display:inline-block;background:#ef4444;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px';}
-      else if(happened){happenedBadge.textContent='GERÇEKLEŞTİ';happenedBadge.style.cssText='display:inline-block;background:#f3f4f6;color:#6b7280;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px';}
+      else if(allHappened){happenedBadge.textContent='GERÇEKLEŞTİ';happenedBadge.style.cssText='display:inline-block;background:#f3f4f6;color:#6b7280;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px';}
       else if(daysLeft!==null&&daysLeft<=3){happenedBadge.textContent='YAKLAŞIYOR';happenedBadge.style.cssText='display:inline-block;background:#fff7ed;color:#c2410c;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px';}
       else{happenedBadge.style.display='none';}
     }

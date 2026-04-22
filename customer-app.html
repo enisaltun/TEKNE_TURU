@@ -1404,49 +1404,52 @@ function renderBooking(){
   const genelKalan=Math.max(0,(t.kapasite||8)-genelRezKisi);
   document.getElementById('booking-tour-meta').textContent=`${t.loc} • ${t.dur} • Max ${t.kapasite} kisi`;
 
-  // Date strip — 14 gün (aktif/pasif ayrımı ile)
+  // Date strip — yalnızca kaptanın belirlediği tarihler (t.tarihler)
   const DAYS=['Paz','Pzt','Sal','Car','Per','Cum','Cmt'];
   const MONTHS=['Oca','Sub','Mar','Nis','May','Haz','Tem','Agu','Eyl','Eki','Kas','Ara'];
-  const today=new Date();
+  const today=new Date();today.setHours(0,0,0,0);
   let dHtml='';
   let firstAvailable=null;
+  const allBookings=S.get('db_bookings',[]);
 
-  for(let i=1;i<=14;i++){
-    const d=new Date(today);d.setDate(today.getDate()+i);
-    const str=d.toLocaleDateString('tr-TR');
-    const durum=gunAktifMi(d,t);
-    const isActive=durum==='aktif';
-    const isSel=selDate===str;
+  const rawDates=t.tarihler&&t.tarihler.length?t.tarihler:[];
+  // Gelecekteki tarihleri sırala (geçmiştekileri gösterme)
+  const upcomingISO=rawDates
+    .filter(iso=>new Date(iso)>=today)
+    .sort();
 
-    if(isActive&&!firstAvailable)firstAvailable=str;
-
-    if(durum==='sezon-disi'){
-      dHtml+=`<div class="date-btn" style="opacity:0.3;cursor:not-allowed;pointer-events:none">
-        <div class="text-[10px] text-gray-400">${DAYS[d.getDay()]}</div>
-        <div class="font-bold text-gray-300">${d.getDate()}</div>
-        <div class="text-[10px] text-gray-300">${MONTHS[d.getMonth()]}</div>
-        <div style="font-size:8px;color:#d1d5db;margin-top:2px">Sezon Dışı</div>
-      </div>`;
-    } else if(durum==='dolu'){
-      dHtml+=`<div class="date-btn" style="opacity:0.45;cursor:not-allowed;pointer-events:none;background:#fef2f2;border-color:#fecaca">
-        <div class="text-[10px] text-red-300">${DAYS[d.getDay()]}</div>
-        <div class="font-bold text-red-300">${d.getDate()}</div>
-        <div class="text-[10px] text-red-200">${MONTHS[d.getMonth()]}</div>
-        <div style="font-size:8px;color:#f87171;margin-top:2px;font-weight:600">Dolu</div>
-      </div>`;
-    } else {
-      dHtml+=`<div class="date-btn${isSel?' sel':''}" onclick="pickDate('${str}',this)">
-        <div class="text-[10px] text-gray-500">${DAYS[d.getDay()]}</div>
-        <div class="font-bold${isSel?' text-primary':''}">${d.getDate()}</div>
-        <div class="text-[10px] text-gray-500">${MONTHS[d.getMonth()]}</div>
-      </div>`;
-    }
+  if(!upcomingISO.length){
+    dHtml=`<div style="padding:12px 0;color:#94a3b8;font-size:12px;white-space:nowrap">Bu tur için uygun tarih bulunmuyor</div>`;
+  } else {
+    upcomingISO.forEach(iso=>{
+      const d=new Date(iso);
+      const str=d.toLocaleDateString('tr-TR');
+      const isSel=selDate===str;
+      // Kapasite kontrolü
+      const gunRez=allBookings.filter(b=>b.tourId===t.id&&b.tarih===str&&b.durum!=='iptal'&&b.durum!=='reddedildi');
+      const gunKisi=gunRez.reduce((s,b)=>s+(b.guests||1),0);
+      const dolu=gunKisi>=(t.kapasite||8);
+      if(!dolu&&!firstAvailable)firstAvailable=str;
+      if(dolu){
+        dHtml+=`<div class="date-btn" style="opacity:0.5;cursor:not-allowed;pointer-events:none;background:#fef2f2;border-color:#fecaca">
+          <div class="text-[10px] text-red-300">${DAYS[d.getDay()]}</div>
+          <div class="font-bold text-red-300">${d.getDate()}</div>
+          <div class="text-[10px] text-red-200">${MONTHS[d.getMonth()]}</div>
+          <div style="font-size:8px;color:#f87171;margin-top:2px;font-weight:600">Dolu</div>
+        </div>`;
+      } else {
+        dHtml+=`<div class="date-btn${isSel?' sel':''}" onclick="pickDate('${str}',this)">
+          <div class="text-[10px] text-gray-500">${DAYS[d.getDay()]}</div>
+          <div class="font-bold${isSel?' text-primary':''}">${d.getDate()}</div>
+          <div class="text-[10px] text-gray-500">${MONTHS[d.getMonth()]}</div>
+        </div>`;
+      }
+    });
   }
 
-  // Seçili tarih aktif değilse ilk aktif günü seç
-  if(!selDate||gunAktifMi(new Date(selDate.split('.').reverse().join('-')),t)!=='aktif'){
-    selDate=firstAvailable||null;
-  }
+  // Seçili tarih geçersizse ilk müsait tarihi seç
+  const selIsValid=selDate&&upcomingISO.some(iso=>new Date(iso).toLocaleDateString('tr-TR')===selDate);
+  if(!selIsValid) selDate=firstAvailable||null;
 
   document.getElementById('date-strip').innerHTML=dHtml;
   // sel class'ı doğru hücreye uygula
