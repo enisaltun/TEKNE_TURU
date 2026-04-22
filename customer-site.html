@@ -1478,8 +1478,33 @@ function handleRoute() {
   });
   window.scrollTo(0,0);
 }
+// ── GLOBAL SETTINGS (admin panel kontrolü) ──
+function checkGlobalSettings(platformKey){
+  try{
+    const gs=JSON.parse(localStorage.getItem('global_settings')||'{}');
+    if(gs[platformKey+'_maintenance']){
+      const msg=gs[platformKey+'_maintenance_msg']||'Platform bakım çalışması yapılmaktadır. Lütfen daha sonra tekrar deneyin.';
+      document.body.innerHTML=`<div style="position:fixed;inset:0;background:#0f172a;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9999;padding:24px;text-align:center"><i class="fas fa-tools" style="color:#f59e0b;font-size:52px"></i><div style="color:#fff;font-size:22px;font-weight:800">Bakım Modu</div><div style="color:#94a3b8;font-size:14px;max-width:320px;line-height:1.6">${msg}</div><div style="color:#475569;font-size:12px;margin-top:8px">DenizBul.tr</div></div>`;
+      return true;
+    }
+    const banner=gs[platformKey+'_banner'];
+    if(banner){
+      const type=gs[platformKey+'_banner_type']||'info';
+      const bg={info:'#0369a1',warning:'#d97706',success:'#10b981',danger:'#ef4444'}[type]||'#0369a1';
+      const icon={info:'fa-info-circle',warning:'fa-exclamation-triangle',success:'fa-check-circle',danger:'fa-exclamation-circle'}[type]||'fa-info-circle';
+      const strip=document.createElement('div');
+      strip.id='global-banner-strip';
+      strip.style.cssText=`position:fixed;top:0;left:0;right:0;z-index:9999;background:${bg};color:#fff;padding:9px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,.2)`;
+      strip.innerHTML=`<i class="fas ${icon}" style="flex-shrink:0"></i><span style="flex:1;text-align:center">${banner}</span><button onclick="this.parentElement.remove();document.body.style.paddingTop=''" style="background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;padding:3px 10px;border-radius:6px;font-size:11px;flex-shrink:0">✕</button>`;
+      document.body.insertBefore(strip,document.body.firstChild);
+      document.body.style.paddingTop='38px';
+    }
+  }catch(e){}
+  return false;
+}
 window.addEventListener('hashchange', handleRoute);
 window.addEventListener('load', function(){
+  if(checkGlobalSettings('customer_site'))return;
   const users=lsGet('cu_users',[]);
   if(!users.find(function(u){return u.email==='ayse@test.com';})){
     users.push({name:'Ayse Demir',email:'ayse@test.com',phone:'0532 999 0101',password:'test123'});

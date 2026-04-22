@@ -73,6 +73,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   </div>
 
   <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Platform</div>
+  <a href="#platform-control" data-nav="platform-control"><i class="fas fa-sliders-h"></i> Platform Kontrol <span id="maintenance-badge" style="display:none;font-size:9px;background:#ef4444;color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px">Bakım</span></a>
   <a href="#finance" data-nav="finance"><i class="fas fa-wallet"></i> Finans</a>
   <a href="#marine" data-nav="marine"><i class="fas fa-water"></i> Deniz Verileri</a>
   <a href="#modules" data-nav="modules"><i class="fas fa-puzzle-piece"></i> Modul Yonetimi</a>
@@ -1698,6 +1699,90 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
     <div id="cms-app-editor"></div>
   </section>
 
+  <!-- ======================================= -->
+  <!-- PAGE: PLATFORM KONTROL MERKEZİ          -->
+  <!-- ======================================= -->
+  <section id="page-platform-control" class="page">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-bold">Platform Kontrol Merkezi</h1>
+        <p class="text-sm text-gray-500 mt-1">Tüm platformları tek ekrandan yönetin — bakım modu, duyurular ve global ayarlar.</p>
+      </div>
+    </div>
+
+    <!-- GLOBAL SETTINGS CARD -->
+    <div class="card mb-6">
+      <h2 class="font-semibold text-sm mb-4 flex items-center gap-2"><i class="fas fa-globe text-primary"></i> Global Platform Ayarları</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Yeni kayıt -->
+        <div class="border rounded-xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2"><div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-plus text-success text-sm"></i></div><span class="text-sm font-semibold">Yeni Kayıt</span></div>
+            <div class="toggle on" id="gs-toggle-registration" onclick="gsToggle('allow_registration',this)"></div>
+          </div>
+          <p class="text-xs text-gray-400">Kapatınca hiçbir platformda yeni hesap açılamaz.</p>
+        </div>
+        <!-- Otomatik Onay -->
+        <div class="border rounded-xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2"><div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-check-double text-primary text-sm"></i></div><span class="text-sm font-semibold">Otomatik Onay</span></div>
+            <div class="toggle" id="gs-toggle-autoapprove" onclick="gsToggle('auto_approve_bookings',this)"></div>
+          </div>
+          <p class="text-xs text-gray-400">Rezervasyonlar kaptan onayı olmadan anında onaylanır.</p>
+        </div>
+        <!-- Komisyon -->
+        <div class="border rounded-xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2"><div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center"><i class="fas fa-percentage text-accent text-sm"></i></div><span class="text-sm font-semibold">Komisyon Oranı</span></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="number" id="gs-commission" min="1" max="50" step="0.1" class="border rounded-lg px-2 py-1.5 text-sm w-20 text-center font-bold" value="10">
+            <span class="text-sm text-gray-500">%</span>
+            <button onclick="gsCommissionSave()" class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold">Kaydet</button>
+          </div>
+        </div>
+        <!-- Tüm platformları kapat -->
+        <div class="border border-danger/30 rounded-xl p-4 bg-red-50/50">
+          <div class="flex items-center gap-2 mb-2"><div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center"><i class="fas fa-power-off text-danger text-sm"></i></div><span class="text-sm font-semibold text-danger">Toplu Bakım</span></div>
+          <p class="text-xs text-gray-500 mb-3">Tüm platformları aynı anda bakıma alır / geri açar.</p>
+          <div class="flex gap-2">
+            <button onclick="pcAllMaintenance(true)" class="flex-1 bg-danger text-white py-1.5 rounded-lg text-xs font-bold">Tümünü Kapat</button>
+            <button onclick="pcAllMaintenance(false)" class="flex-1 border border-success text-success py-1.5 rounded-lg text-xs font-bold">Tümünü Aç</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GLOBAL DUYURU -->
+    <div class="card mb-6">
+      <h2 class="font-semibold text-sm mb-4 flex items-center gap-2"><i class="fas fa-bullhorn text-accent"></i> Tüm Platformlara Duyuru Gönder</h2>
+      <div class="flex flex-col md:flex-row gap-3">
+        <input type="text" id="gs-global-banner" placeholder="Duyuru metni girin (örn: Site bakım yapılacaktır)" class="flex-1 border rounded-xl px-4 py-2.5 text-sm">
+        <select id="gs-global-banner-type" class="border rounded-xl px-3 py-2.5 text-sm w-32">
+          <option value="info">Bilgi</option>
+          <option value="warning">Uyarı</option>
+          <option value="success">Başarı</option>
+          <option value="danger">Tehlike</option>
+        </select>
+        <button onclick="pcSendGlobalBanner()" class="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-amber-500 transition whitespace-nowrap"><i class="fas fa-paper-plane mr-1"></i> Hepsine Gönder</button>
+        <button onclick="pcClearAllBanners()" class="border px-4 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50 whitespace-nowrap"><i class="fas fa-times mr-1"></i> Hepsini Temizle</button>
+      </div>
+    </div>
+
+    <!-- PLATFORM CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="platform-cards-grid">
+      <!-- Rendered by JS -->
+    </div>
+
+    <!-- AKTİF DUYURULAR -->
+    <div class="card mt-6">
+      <h2 class="font-semibold text-sm mb-4 flex items-center gap-2"><i class="fas fa-bell text-primary"></i> Aktif Duyurular</h2>
+      <div id="active-banners-list">
+        <div class="text-center py-6 text-gray-400 text-xs">Aktif duyuru yok</div>
+      </div>
+    </div>
+  </section>
+
 <!-- ===== TOAST ===== -->
 <div id="toast" class="fixed top-5 right-5 z-50 bg-gray-900 text-white text-sm px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 transition-all duration-300 opacity-0 -translate-y-2 pointer-events-none">
   <i id="toast-icon" class="fas fa-check-circle text-success"></i>
@@ -1706,8 +1791,8 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
-const pages=['dashboard','captains','users','tours-bookings','reservations','page-manager','cms-web','cms-app','finance','marine','modules','captain-add'];
-const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle'};
+const pages=['dashboard','captains','users','tours-bookings','reservations','page-manager','cms-web','cms-app','finance','marine','modules','captain-add','platform-control'];
+const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi'};
 
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
 
@@ -1727,9 +1812,10 @@ function handleRoute(){
   if(h==='finance')             renderFinance();
   if(h==='marine')              renderMarineData();
   if(h==='modules')             renderMarineModules();
+  if(h==='platform-control')    renderPlatformControl();
 }
 window.addEventListener('hashchange',handleRoute);
-window.addEventListener('load',()=>{handleRoute();pmUpdateBadge();initShopToggle();});
+window.addEventListener('load',()=>{handleRoute();pmUpdateBadge();initShopToggle();pcUpdateMaintenanceBadge();});
 
 /* ── MAĞAZA AÇMA / KAPAMA ── */
 function isShopOpen(){
@@ -4364,6 +4450,218 @@ function renderCmsApp(){
       if(code)code.textContent=inp.value;
     });
   });
+}
+
+/* ══════════════════════════════════════════════════
+   PLATFORM KONTROL MERKEZİ
+══════════════════════════════════════════════════ */
+const PC_PLATFORMS = [
+  {key:'customer_site',  label:'Web Sitesi',      file:'customer-site.html',  icon:'fa-globe',      color:'blue',   desc:'Müşteri rezervasyon sitesi'},
+  {key:'customer_app',   label:'Müşteri Uyg.',    file:'customer-app.html',   icon:'fa-mobile-alt', color:'cyan',   desc:'Müşteri mobil uygulaması'},
+  {key:'captain_app',    label:'Kaptan Uyg.',     file:'captain-app.html',    icon:'fa-anchor',     color:'indigo', desc:'Kaptan mobil uygulaması'},
+  {key:'captain_panel',  label:'Kaptan Panel',    file:'captain-panel.html',  icon:'fa-ship',       color:'teal',   desc:'Kaptan yönetim paneli'},
+  {key:'magaza_panel',   label:'Mağaza Paneli',   file:'magaza-panel.html',   icon:'fa-store',      color:'amber',  desc:'Satıcı mağaza paneli'},
+];
+
+function getGlobalSettings(){return lsGet('global_settings',{});}
+function saveGlobalSettings(gs){localStorage.setItem('global_settings',JSON.stringify(gs));}
+
+function renderPlatformControl(){
+  const gs=getGlobalSettings();
+
+  // Sync global settings toggles
+  const regToggle=document.getElementById('gs-toggle-registration');
+  const aaToggle=document.getElementById('gs-toggle-autoapprove');
+  if(regToggle)regToggle.classList.toggle('on',gs.allow_registration!==false);
+  if(aaToggle)aaToggle.classList.toggle('on',!!gs.auto_approve_bookings);
+  const commInput=document.getElementById('gs-commission');
+  if(commInput)commInput.value=gs.commission_rate||10;
+
+  // Platform cards
+  const grid=document.getElementById('platform-cards-grid');
+  if(grid){
+    grid.innerHTML=PC_PLATFORMS.map(p=>{
+      const isMaintenance=!!gs[p.key+'_maintenance'];
+      const banner=gs[p.key+'_banner']||'';
+      const bannerType=gs[p.key+'_banner_type']||'info';
+      const typeColors={info:'bg-blue-100 text-primary',warning:'bg-amber-100 text-amber-700',success:'bg-green-100 text-success',danger:'bg-red-100 text-danger'};
+      const typeLabels={info:'Bilgi',warning:'Uyarı',success:'Başarı',danger:'Tehlike'};
+      return `
+      <div class="card border-t-4 border-${p.color}-400">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-${p.color}-100 rounded-xl flex items-center justify-center">
+              <i class="fas ${p.icon} text-${p.color}-600"></i>
+            </div>
+            <div>
+              <div class="font-bold text-sm">${p.label}</div>
+              <div class="text-xs text-gray-400">${p.desc}</div>
+            </div>
+          </div>
+          <a href="${p.file}" target="_blank" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 hover:bg-primary hover:text-white transition" title="Platformu aç">
+            <i class="fas fa-external-link-alt text-xs"></i>
+          </a>
+        </div>
+
+        <!-- Status + Maintenance Toggle -->
+        <div class="flex items-center justify-between mb-4 p-3 rounded-xl ${isMaintenance?'bg-red-50':'bg-green-50'}">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full ${isMaintenance?'bg-danger':'bg-success'}"></div>
+            <span class="text-sm font-semibold ${isMaintenance?'text-danger':'text-success'}">${isMaintenance?'Bakım Modunda':'Canlı'}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500">Bakım</span>
+            <div class="toggle ${isMaintenance?'on':''}" onclick="pcToggleMaintenance('${p.key}',this)"></div>
+          </div>
+        </div>
+
+        <!-- Bakım Mesajı -->
+        <div class="mb-4 ${isMaintenance?'':'opacity-50'}">
+          <label class="text-[11px] font-semibold text-gray-500 block mb-1">Bakım Mesajı</label>
+          <input type="text" id="pc-maint-msg-${p.key}" value="${gs[p.key+'_maintenance_msg']||''}" placeholder="Bakım çalışması sürüyor..." class="w-full border rounded-lg px-3 py-2 text-xs" ${isMaintenance?'':'disabled'}>
+          <button onclick="pcSaveMaintenanceMsg('${p.key}')" class="mt-1 text-xs text-primary hover:underline ${isMaintenance?'':'hidden'}">Mesajı kaydet</button>
+        </div>
+
+        <!-- Banner -->
+        <div>
+          <label class="text-[11px] font-semibold text-gray-500 block mb-2">Duyuru Bandı</label>
+          <textarea id="pc-banner-${p.key}" rows="2" placeholder="Platform duyurusu girin..." class="w-full border rounded-lg px-3 py-2 text-xs resize-none">${banner}</textarea>
+          <div class="flex gap-2 mt-2 items-center">
+            <select id="pc-banner-type-${p.key}" class="border rounded-lg px-2 py-1.5 text-xs flex-1">
+              ${['info','warning','success','danger'].map(t=>`<option value="${t}" ${bannerType===t?'selected':''}>${typeLabels[t]}</option>`).join('')}
+            </select>
+            <button onclick="pcSaveBanner('${p.key}')" class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold">Gönder</button>
+            <button onclick="pcClearBanner('${p.key}')" class="border px-3 py-1.5 rounded-lg text-xs text-gray-500">Temizle</button>
+          </div>
+          ${banner?`<div class="mt-2 text-[11px] px-2 py-1 rounded-md ${typeColors[bannerType]||typeColors.info}"><i class="fas fa-circle text-[8px] mr-1"></i>Aktif duyuru var</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Active banners list
+  renderActiveBannersList();
+  pcUpdateMaintenanceBadge();
+}
+
+function renderActiveBannersList(){
+  const gs=getGlobalSettings();
+  const el=document.getElementById('active-banners-list');
+  if(!el)return;
+  const typeLabels={info:'Bilgi',warning:'Uyarı',success:'Başarı',danger:'Tehlike'};
+  const typeBg={info:'bg-blue-50 border-blue-200 text-primary',warning:'bg-amber-50 border-amber-200 text-amber-700',success:'bg-green-50 border-green-200 text-success',danger:'bg-red-50 border-red-200 text-danger'};
+  const active=PC_PLATFORMS.filter(p=>gs[p.key+'_banner']||gs[p.key+'_maintenance']);
+  if(!active.length){el.innerHTML='<div class="text-center py-6 text-gray-400 text-xs">Aktif duyuru yok</div>';return;}
+  el.innerHTML=active.map(p=>{
+    const maintenance=gs[p.key+'_maintenance'];
+    const banner=gs[p.key+'_banner'];
+    const btype=gs[p.key+'_banner_type']||'info';
+    let items=[];
+    if(maintenance)items.push(`<span class="badge bg-red-100 text-danger">🔧 Bakım Modu</span>`);
+    if(banner)items.push(`<span class="badge ${typeBg[btype]||typeBg.info}">${typeLabels[btype]}: "${banner}"</span>`);
+    return `<div class="flex items-center gap-3 py-2 border-b last:border-0">
+      <div class="w-7 h-7 bg-${p.color}-100 rounded-lg flex items-center justify-center"><i class="fas ${p.icon} text-${p.color}-600 text-xs"></i></div>
+      <div class="font-medium text-xs w-28 flex-shrink-0">${p.label}</div>
+      <div class="flex flex-wrap gap-2">${items.join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function pcToggleMaintenance(platformKey, toggleEl){
+  const gs=getGlobalSettings();
+  const now=!gs[platformKey+'_maintenance'];
+  gs[platformKey+'_maintenance']=now;
+  if(!now) delete gs[platformKey+'_maintenance_msg'];
+  saveGlobalSettings(gs);
+  toggleEl.classList.toggle('on',now);
+  renderPlatformControl();
+  showToast(now?'Bakım modu açıldı — kullanıcılar erişemez':'Platform canlıya alındı',now?'info':'success');
+}
+
+function pcSaveMaintenanceMsg(platformKey){
+  const gs=getGlobalSettings();
+  const inp=document.getElementById('pc-maint-msg-'+platformKey);
+  if(inp){gs[platformKey+'_maintenance_msg']=inp.value.trim();}
+  saveGlobalSettings(gs);
+  showToast('Bakım mesajı kaydedildi','success');
+}
+
+function pcSaveBanner(platformKey){
+  const gs=getGlobalSettings();
+  const textEl=document.getElementById('pc-banner-'+platformKey);
+  const typeEl=document.getElementById('pc-banner-type-'+platformKey);
+  const text=(textEl?.value||'').trim();
+  if(!text){showToast('Duyuru metni boş olamaz','info');return;}
+  gs[platformKey+'_banner']=text;
+  gs[platformKey+'_banner_type']=typeEl?.value||'info';
+  saveGlobalSettings(gs);
+  renderPlatformControl();
+  showToast('Duyuru gönderildi','success');
+}
+
+function pcClearBanner(platformKey){
+  const gs=getGlobalSettings();
+  delete gs[platformKey+'_banner'];
+  delete gs[platformKey+'_banner_type'];
+  saveGlobalSettings(gs);
+  renderPlatformControl();
+  showToast('Duyuru temizlendi','info');
+}
+
+function pcSendGlobalBanner(){
+  const text=(document.getElementById('gs-global-banner')?.value||'').trim();
+  const type=document.getElementById('gs-global-banner-type')?.value||'info';
+  if(!text){showToast('Duyuru metni girin','info');return;}
+  const gs=getGlobalSettings();
+  PC_PLATFORMS.forEach(p=>{gs[p.key+'_banner']=text;gs[p.key+'_banner_type']=type;});
+  saveGlobalSettings(gs);
+  document.getElementById('gs-global-banner').value='';
+  renderPlatformControl();
+  showToast('Duyuru tüm platformlara gönderildi','success');
+}
+
+function pcClearAllBanners(){
+  const gs=getGlobalSettings();
+  PC_PLATFORMS.forEach(p=>{delete gs[p.key+'_banner'];delete gs[p.key+'_banner_type'];});
+  saveGlobalSettings(gs);
+  renderPlatformControl();
+  showToast('Tüm duyurular temizlendi','info');
+}
+
+function pcAllMaintenance(enable){
+  if(enable&&!confirm('Tüm platformlar bakıma alınacak. Kullanıcılar erişemeyecek. Onaylıyor musunuz?'))return;
+  const gs=getGlobalSettings();
+  PC_PLATFORMS.forEach(p=>{
+    if(enable)gs[p.key+'_maintenance']=true;
+    else{delete gs[p.key+'_maintenance'];delete gs[p.key+'_maintenance_msg'];}
+  });
+  saveGlobalSettings(gs);
+  renderPlatformControl();
+  showToast(enable?'Tüm platformlar bakıma alındı':'Tüm platformlar canlıya alındı',enable?'info':'success');
+}
+
+function gsToggle(key, toggleEl){
+  const gs=getGlobalSettings();
+  const cur=key==='allow_registration'?(gs[key]!==false):!!gs[key];
+  gs[key]=!cur;
+  saveGlobalSettings(gs);
+  toggleEl.classList.toggle('on',!cur);
+  showToast(!cur?key+' aktifleştirildi':key+' devre dışı','info');
+}
+
+function gsCommissionSave(){
+  const val=parseFloat(document.getElementById('gs-commission')?.value)||10;
+  const gs=getGlobalSettings();
+  gs.commission_rate=val;
+  saveGlobalSettings(gs);
+  showToast('Komisyon oranı %'+val+' olarak kaydedildi','success');
+}
+
+function pcUpdateMaintenanceBadge(){
+  const gs=getGlobalSettings();
+  const count=PC_PLATFORMS.filter(p=>gs[p.key+'_maintenance']).length;
+  const badge=document.getElementById('maintenance-badge');
+  if(badge){badge.style.display=count>0?'inline':'none';badge.textContent=count+' Bakım';}
 }
 
 function showToast(msg,type='success'){
