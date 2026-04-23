@@ -1151,7 +1151,8 @@ function _gunlerToIso(gunler){
   });
   return result.sort();
 }
-// tarihler[] geçmiş tarihlerle doluysa gunler[] fallback'ini dene
+// tarihler[] geçmiş tarihlerle doluysa gunler[] fallback'ini dene;
+// ikisi de yoksa/geçmişse → sonraki 8 haftasonu göster (eski seed verisi uyumluluğu)
 function _activeDates(t){
   const today=new Date();today.setHours(0,0,0,0);
   if(t.tarihler?.length){
@@ -1159,7 +1160,8 @@ function _activeDates(t){
     if(fut.length)return fut.sort();
   }
   if(t.gunler?.length)return _gunlerToIso(t.gunler);
-  return[];
+  // Acil fallback: tarihler/gunler yoksa sonraki 8 Cumartesi+Pazar üret
+  return _gunlerToIso(['Cmt','Paz']);
 }
 
 function getDbTours(){
