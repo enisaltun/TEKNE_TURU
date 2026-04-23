@@ -2594,10 +2594,15 @@ window.addEventListener('load',()=>{
 });
 
 /* ── TARİHSİZ TUR TEMİZLEYİCİ ── */
+// captain-panel.html turları gunler[] (haftalık), captain-app.html tarihler[] (ISO) kullanır.
+// Her iki format da geçerli — ikisi de boş olan turlar silinir.
 function purgeDatelessTours(){
   const tours=lsGet('db_tours',[]);
-  const valid=tours.filter(t=>Array.isArray(t.tarihler)&&t.tarihler.length>0);
-  if(valid.length===tours.length) return; // temizlenecek bir şey yok
+  const valid=tours.filter(t=>
+    (Array.isArray(t.tarihler)&&t.tarihler.length>0)||
+    (Array.isArray(t.gunler)&&t.gunler.length>0)
+  );
+  if(valid.length===tours.length) return;
   const removed=tours.length-valid.length;
   localStorage.setItem('db_tours',JSON.stringify(valid));
   console.warn(`[DenizBul] ${removed} tarihsiz tur silindi.`);
@@ -3236,14 +3241,14 @@ function tdmQuickReject(bid){
 function quickApproveTour(id){
   const tours=lsGet('db_tours',[]);
   const t=tours.find(x=>x.id===id);
-  if(t){t.durum='aktif';localStorage.setItem('db_tours',JSON.stringify(tours));renderToursBookings();renderDashboard();showToast((t.title||t.ad||'Tur')+' onaylandi ve rezervasyona acildi','success');}
+  if(t){t.durum='aktif';t.aktif=true;t.status='aktif';localStorage.setItem('db_tours',JSON.stringify(tours));renderToursBookings();renderDashboard();showToast((t.title||t.ad||'Tur')+' onaylandi ve rezervasyona acildi','success');}
 }
 function quickRejectTour(id){
   const tours=lsGet('db_tours',[]);
   const t=tours.find(x=>x.id===id);
   if(!t)return;
   const newDurum=t.durum==='aktif'?'pasif':'aktif';
-  t.durum=newDurum;
+  t.durum=newDurum;t.status=newDurum;t.aktif=newDurum==='aktif';
   localStorage.setItem('db_tours',JSON.stringify(tours));
   renderToursBookings();
   showToast((t.title||t.ad||'Tur')+' '+(newDurum==='pasif'?'pasife alindi':'aktif edildi'),'info');

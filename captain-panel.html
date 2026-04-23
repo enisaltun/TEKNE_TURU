@@ -209,6 +209,28 @@
       border-color: #0369a1
     }
 
+    .balik-card {
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 8px 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .15s;
+      background: #fff;
+      position: relative;
+    }
+    .balik-card.selected { border-color: #0369a1; background: #e0f2fe; }
+    .balik-card img { width: 100%; height: 52px; object-fit: contain; margin-bottom: 4px; display: block; }
+    .balik-card span { font-size: 11px; font-weight: 600; color: #475569; display: block; }
+    .balik-card.selected span { color: #0369a1; }
+    .balik-check {
+      position: absolute; top: 4px; right: 4px;
+      width: 16px; height: 16px;
+      background: #0369a1; border-radius: 50%;
+      display: none; align-items: center; justify-content: center;
+    }
+    .balik-card.selected .balik-check { display: flex; }
+
     .stepper-btn {
       width: 36px;
       height: 36px;
@@ -658,6 +680,16 @@
           <label class="flex items-center gap-3 card cursor-pointer"><input type="checkbox"
               class="accent-primary w-4 h-4 include-cb" value="Muzik sistemi"><span class="text-sm">Muzik
               sistemi</span></label>
+        </div>
+
+        <!-- Hedef Balıklar — yalnızca Balık Avı kategorisinde görünür -->
+        <div id="hedef-balik-section" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #f1f5f9">
+          <div class="flex items-center gap-2 mb-1">
+            <i class="fas fa-fish text-blue-500 text-sm"></i>
+            <span class="text-sm font-semibold">Hedef Baliklar</span>
+          </div>
+          <p class="text-xs text-gray-400 mb-3">Bu turda avlanabilecek balik turlerini secin</p>
+          <div class="grid grid-cols-3 gap-2" id="balik-grid"></div>
         </div>
       </div>
 
@@ -1268,7 +1300,17 @@
       // Sync to db_tours for admin & customer panels
       const p = getProfile();
       const dbTours = S.get(K.DB_TOURS, []).filter(t => t.captainEmail !== (p?.email));
-      const enriched = arr.filter(t => t.status === 'aktif').map(t => ({ ...t, captainEmail: p?.email, captainName: p ? `${p.ad} ${p.soyad}` : 'Kaptan', captainPhone: p?.telefon }));
+      const enriched = arr.filter(t => t.status === 'aktif').map(t => ({
+        ...t,
+        // Normalize: diğer paneller durum/aktif/ad alanını okur
+        durum: 'aktif',
+        aktif: true,
+        ad: t.title,           // admin/customer t.ad okur
+        kategoriler: t.kategoriler || ['Balik Avi'],
+        captainEmail: p?.email,
+        captainName: p ? `${p.ad} ${p.soyad}` : 'Kaptan',
+        captainPhone: p?.telefon,
+      }));
       S.set(K.DB_TOURS, [...enriched, ...dbTours]);
     }
 
@@ -1357,7 +1399,10 @@
     }
 
     /* ---- Geri Sayım Yardımcıları ---- */
-    const DAY_MAP = { 'Pazartesi':1,'Sali':2,'Carsamba':3,'Persembe':4,'Cuma':5,'Cumartesi':6,'Pazar':0 };
+    const DAY_MAP = {
+      'Pzt':1,'Sal':2,'Car':3,'Per':4,'Cum':5,'Cmt':6,'Paz':0,
+      'Pazartesi':1,'Sali':2,'Carsamba':3,'Persembe':4,'Cuma':5,'Cumartesi':6,'Pazar':0
+    };
 
     function nextTourDate(t) {
       const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -1453,6 +1498,8 @@
       document.querySelectorAll('.day-pill').forEach(p => p.classList.add('selected'));
       document.querySelectorAll('.time-pill').forEach(p => p.classList.remove('selected'));
       document.querySelectorAll('.include-cb').forEach(cb => { cb.checked = cb.value === 'Can yelekleri' || cb.value === 'Cay / Kahve'; });
+      document.querySelectorAll('.balik-card').forEach(c => c.classList.remove('selected'));
+      const hbs = document.getElementById('hedef-balik-section'); if (hbs) hbs.style.display = 'none';
       ['w-title', 'w-desc', 'w-price'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
       const loc = document.getElementById('w-loc'); if (loc) loc.value = '';
       capacity = 8;
@@ -1485,6 +1532,7 @@
       document.getElementById('wizard-' + newStep).style.display = 'block';
       currentStep = newStep;
       updateWizardUI();
+      if (currentStep === 4) { renderBalikGrid(); updateHedefBalikVisibility(); }
       if (currentStep === 5) buildPreview();
     }
 
@@ -1513,7 +1561,10 @@
       document.getElementById('preview-meta').innerHTML = `<i class="fas fa-map-marker-alt text-primary mr-0.5"></i>${kalkis} &bull; ${sure} &bull; Max ${capacity} kisi`;
       document.getElementById('preview-price').textContent = price ? price + ' TL' : '—';
       document.getElementById('preview-cats').innerHTML = cats.map(c => `<span class="badge bg-blue-100 text-blue-700 mr-1">${c}</span>`).join('');
-      document.getElementById('preview-includes').innerHTML = includes.map(i => `<span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full"><i class="fas fa-check text-success mr-0.5"></i>${i}</span>`).join('');
+      const fishSel = [...document.querySelectorAll('.balik-card.selected')].map(c => c.dataset.ad);
+      document.getElementById('preview-includes').innerHTML =
+        includes.map(i => `<span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full"><i class="fas fa-check text-success mr-0.5"></i>${i}</span>`).join('') +
+        fishSel.map(f => `<span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium"><i class="fas fa-fish mr-0.5 text-[8px]"></i>${f}</span>`).join('');
     }
 
     function publishTour() {
@@ -1530,6 +1581,7 @@
         gunler: [...document.querySelectorAll('.day-pill.selected')].map(p => p.dataset.val),
         saatler: [...document.querySelectorAll('.time-pill.selected')].map(p => p.dataset.val),
         includes: [...document.querySelectorAll('.include-cb:checked')].map(c => c.value),
+        hedefBaliklar: [...document.querySelectorAll('.balik-card.selected')].map(c => c.dataset.id),
         status: 'aktif',
         createdAt: new Date().toISOString()
       };
@@ -1541,7 +1593,41 @@
       setTimeout(() => navigateTo('my-tours'), 1200);
     }
 
-    function toggleCat(el) { el.classList.toggle('selected'); }
+    const BALIK_LIST = [
+      { id:'palamut',  ad:'Palamut',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/a_detailed_scientific_illustration_of_a_palamut_bonito_fish_following_the_exact/screen.png' },
+      { id:'lufer',    ad:'Lufer',    img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/a_detailed_scientific_illustration_of_a_single_l_fer_bluefish_pomatomus/screen.png' },
+      { id:'kalamar',  ad:'Kalamar',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/a_high_quality_scientific_vector_illustration_of_a_kalamar_european_squid/screen.png' },
+      { id:'barbun',   ad:'Barbun',   img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_barbun_red_mullet_fish_following_the/screen.png' },
+      { id:'levrek',   ad:'Levrek',   img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_large_european_bass_levrek_dicentrarchus/screen.png' },
+      { id:'mirmir',   ad:'Mirmir',   img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_m_rm_r_sand_steenbras_lithognathus/screen.png' },
+      { id:'mercan',   ad:'Mercan',   img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_mercan_common_seabream_fish._style_clean/screen.png' },
+      { id:'mezgit',   ad:'Mezgit',   img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_mezgit_whiting_merlangius_merlangus/screen.png' },
+      { id:'istavrit', ad:'Istavrit', img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_an_i_stavrit_horse_mackerel_fish_following/screen.png' },
+    ];
+
+    function renderBalikGrid() {
+      const grid = document.getElementById('balik-grid');
+      if (!grid) return;
+      // Mevcut seçimleri koru
+      const prevSel = new Set([...document.querySelectorAll('.balik-card.selected')].map(c => c.dataset.id));
+      grid.innerHTML = BALIK_LIST.map(b => `
+        <div class="balik-card${prevSel.has(b.id) ? ' selected' : ''}" onclick="toggleBalik(this)" data-id="${b.id}" data-ad="${b.ad}">
+          <img src="${b.img}" alt="${b.ad}" onerror="this.style.display='none'">
+          <span>${b.ad}</span>
+          <div class="balik-check"><i class="fas fa-check text-white" style="font-size:8px"></i></div>
+        </div>
+      `).join('');
+    }
+
+    function toggleBalik(el) { el.classList.toggle('selected'); }
+
+    function updateHedefBalikVisibility() {
+      const isFishing = [...document.querySelectorAll('.cat-pill.selected')].some(p => p.dataset.val === 'Balik Avi');
+      const sec = document.getElementById('hedef-balik-section');
+      if (sec) sec.style.display = isFishing ? '' : 'none';
+    }
+
+    function toggleCat(el) { el.classList.toggle('selected'); updateHedefBalikVisibility(); }
     function selectDuration(el) { el.parentElement.querySelectorAll('.dur-pill').forEach(p => p.classList.remove('selected')); el.classList.add('selected'); }
     function changeCapacity(d) { capacity = Math.max(1, Math.min(30, capacity + d)); document.getElementById('capacity-val').textContent = capacity; calcPerPerson(); }
     function calcPerPerson() { const p = document.getElementById('w-price').value; document.getElementById('per-person-calc').textContent = p ? `${capacity} kisi icin kisi basi: ${Math.round(p / capacity)} TL` : ''; }
@@ -1979,6 +2065,21 @@
           ${(t.includes || []).length ? `<div>
             <div style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:6px">Dahil Olanlar</div>
             <div class="grid grid-cols-2 gap-y-1.5 gap-x-2">${includesHtml}</div>
+          </div>` : ''}
+
+          <!-- Hedef Balıklar -->
+          ${(t.hedefBaliklar && t.hedefBaliklar.length) ? `<div>
+            <div style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:8px"><i class="fas fa-fish" style="margin-right:4px"></i>Hedef Baliklar</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+              ${t.hedefBaliklar.map(id => {
+                const b = BALIK_LIST.find(x => x.id === id);
+                if (!b) return '';
+                return `<div style="border:1.5px solid ${color}40;border-radius:10px;padding:6px 4px;text-align:center;background:${color}08">
+                  <img src="${b.img}" style="width:100%;height:44px;object-fit:contain;display:block;margin-bottom:3px" onerror="this.style.display='none'">
+                  <span style="font-size:11px;font-weight:700;color:${color}">${b.ad}</span>
+                </div>`;
+              }).join('')}
+            </div>
           </div>` : ''}
 
           <!-- Oluşturma tarihi -->

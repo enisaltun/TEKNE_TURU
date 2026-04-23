@@ -295,6 +295,10 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
     </div>
     <h2 class="font-bold text-sm mb-2">Dahil Olanlar</h2>
     <div class="grid grid-cols-2 gap-2 mb-4" id="detail-includes"></div>
+    <div id="detail-fish-section" style="display:none;margin-bottom:16px">
+      <h2 class="font-bold text-sm mb-2"><i class="fas fa-fish text-blue-500 mr-1 text-xs"></i>Hedef Baliklar</h2>
+      <div class="grid grid-cols-3 gap-2" id="detail-fish"></div>
+    </div>
     <h2 class="font-bold text-sm mb-2">Aciklama</h2>
     <p class="text-xs text-gray-600 leading-relaxed mb-4" id="detail-desc">—</p>
     <h2 class="font-bold text-sm mb-2">Guzergah</h2>
@@ -1078,22 +1082,76 @@ window.addEventListener('load',function(){
 function updateClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});setTimeout(updateClock,30000);}
 
 /* ── TOUR DATA ── */
+const TOUR_IMG_MAP={
+  balik:    'https://images.unsplash.com/photo-1463639240977-60e040efa9be?w=800&h=500&fit=crop&q=80',
+  gezi:     'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=500&fit=crop&q=80',
+  gunbatimi:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=500&fit=crop&q=80',
+  yuzme:    'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=500&fit=crop&q=80',
+  ozel:     'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800&h=500&fit=crop&q=80',
+  kurumsal: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=500&fit=crop&q=80',
+};
+
 const SAMPLE=[
-  {id:1,name:'Balik Avi Turu',loc:'Kemer',price:1800,rating:4.9,reviews:124,dur:'6 saat',cat:'balik',kapasite:8,saatler:['06:00','07:00'],includes:['Ekipman & Olta','Yem','Can yelegi','Cay/Kahve'],desc:'Antalya Kemer aciklaylarinda profesyonel balik avi. Trolling ve jigging teknikleri.'},
-  {id:2,name:'12 Adalar Gezi',loc:'Fethiye',price:600,rating:4.8,reviews:89,dur:'8 saat',cat:'gezi',kapasite:12,saatler:['09:00','10:00'],includes:['Ogle yemegi','Snorkel ekipmani','Muzik'],desc:'Fethiye koylarinda 12 ada turu. Yuzme ve snorkel molalari.'},
-  {id:3,name:'Gun Batimi Ozel Turu',loc:'Bodrum',price:4500,rating:5.0,reviews:34,dur:'3 saat',cat:'ozel',kapasite:6,saatler:['18:00','19:00'],includes:['Dekorasyon','Pasta','Sampanya','Fotografci'],desc:'Bodrum manzarasinda romantik gun batimi.'},
-  {id:4,name:'Kekova Yuzme Turu',loc:'Kas',price:450,rating:4.7,reviews:67,dur:'5 saat',cat:'yuzme',kapasite:10,saatler:['10:00','11:00'],includes:['Snorkel ekipmani','Sandvic','Can yelegi'],desc:'Kekova sularinda batik sehir ve berrak deniz.'},
-  {id:5,name:'Kurumsal Team Building',loc:'Istanbul',price:8000,rating:4.8,reviews:22,dur:'4 saat',cat:'kurumsal',kapasite:20,saatler:['09:00','14:00'],includes:['Catering','Sunum ekipmani','Wifi'],desc:'Kurumsal etkinlikler icin ozel tekne.'},
-  {id:6,name:'Alanya Trolling',loc:'Alanya',price:2200,rating:4.6,reviews:55,dur:'8 saat',cat:'balik',kapasite:6,saatler:['05:30','06:00'],includes:['Profesyonel ekipman','Yem','Cay'],desc:'Alanya aciklaylarinda derin su trolling.'},
-  {id:7,name:'Romantik Gun Batimi',loc:'Bodrum',price:1200,rating:4.9,reviews:156,dur:'2 saat',cat:'gunbatimi',kapasite:4,saatler:['18:30','19:00'],includes:['Sampanya','Cicekler','Muzik'],desc:'Bodrum gunbatiminde romantic tekne turu.'},
+  {id:1,name:'Balik Avi Turu',loc:'Kemer',price:1800,rating:4.9,reviews:124,dur:'6 saat',cat:'balik',kapasite:8,saatler:['06:00','07:00'],includes:['Ekipman & Olta','Yem','Can yelegi','Cay/Kahve'],desc:'Antalya Kemer aciklaylarinda profesyonel balik avi. Trolling ve jigging teknikleri.',
+   gunler:['Cmt','Paz','Pzt'],heroImage:'https://images.unsplash.com/photo-1463639240977-60e040efa9be?w=800&h=500&fit=crop&q=80'},
+  {id:2,name:'12 Adalar Gezi',loc:'Fethiye',price:600,rating:4.8,reviews:89,dur:'8 saat',cat:'gezi',kapasite:12,saatler:['09:00','10:00'],includes:['Ogle yemegi','Snorkel ekipmani','Muzik'],desc:'Fethiye koylarinda 12 ada turu. Yuzme ve snorkel molalari.',
+   gunler:['Pzt','Sal','Car','Per','Cum','Cmt','Paz'],heroImage:'https://images.unsplash.com/photo-1568702846914-96b305d2ead1?w=800&h=500&fit=crop&q=80'},
+  {id:3,name:'Gun Batimi Ozel Turu',loc:'Bodrum',price:4500,rating:5.0,reviews:34,dur:'3 saat',cat:'ozel',kapasite:6,saatler:['18:00','19:00'],includes:['Dekorasyon','Pasta','Sampanya','Fotografci'],desc:'Bodrum manzarasinda romantik gun batimi.',
+   gunler:['Cmt','Paz'],heroImage:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&h=500&fit=crop&q=80'},
+  {id:4,name:'Kekova Yuzme Turu',loc:'Kas',price:450,rating:4.7,reviews:67,dur:'5 saat',cat:'yuzme',kapasite:10,saatler:['10:00','11:00'],includes:['Snorkel ekipmani','Sandvic','Can yelegi'],desc:'Kekova sularinda batik sehir ve berrak deniz.',
+   gunler:['Pzt','Car','Cum','Cmt','Paz'],heroImage:'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=500&fit=crop&q=80'},
+  {id:5,name:'Kurumsal Team Building',loc:'Istanbul',price:8000,rating:4.8,reviews:22,dur:'4 saat',cat:'kurumsal',kapasite:20,saatler:['09:00','14:00'],includes:['Catering','Sunum ekipmani','Wifi'],desc:'Kurumsal etkinlikler icin ozel tekne.',
+   gunler:['Pzt','Sal','Car','Per','Cum'],heroImage:'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=500&fit=crop&q=80'},
+  {id:6,name:'Alanya Trolling',loc:'Alanya',price:2200,rating:4.6,reviews:55,dur:'8 saat',cat:'balik',kapasite:6,saatler:['05:30','06:00'],includes:['Profesyonel ekipman','Yem','Cay'],desc:'Alanya aciklaylarinda derin su trolling.',
+   gunler:['Cmt','Paz'],heroImage:'https://images.unsplash.com/photo-1498745277870-da59c82cda08?w=800&h=500&fit=crop&q=80'},
+  {id:7,name:'Romantik Gun Batimi',loc:'Bodrum',price:1200,rating:4.9,reviews:156,dur:'2 saat',cat:'gunbatimi',kapasite:4,saatler:['18:30','19:00'],includes:['Sampanya','Cicekler','Muzik'],desc:'Bodrum gunbatiminde romantic tekne turu.',
+   gunler:['Pzt','Sal','Car','Per','Cum','Cmt','Paz'],heroImage:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=500&fit=crop&q=80'},
 ];
+
+const BALIK_LIST=[
+  {id:'palamut', ad:'Palamut', img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/a_detailed_scientific_illustration_of_a_palamut_bonito_fish_following_the_exact/screen.png'},
+  {id:'lufer',   ad:'Lufer',   img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/a_detailed_scientific_illustration_of_a_single_l_fer_bluefish_pomatomus/screen.png'},
+  {id:'kalamar', ad:'Kalamar', img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/a_high_quality_scientific_vector_illustration_of_a_kalamar_european_squid/screen.png'},
+  {id:'barbun',  ad:'Barbun',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_barbun_red_mullet_fish_following_the/screen.png'},
+  {id:'levrek',  ad:'Levrek',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_large_european_bass_levrek_dicentrarchus/screen.png'},
+  {id:'mirmir',  ad:'Mirmir',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_m_rm_r_sand_steenbras_lithognathus/screen.png'},
+  {id:'mercan',  ad:'Mercan',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_mercan_common_seabream_fish._style_clean/screen.png'},
+  {id:'mezgit',  ad:'Mezgit',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_mezgit_whiting_merlangius_merlangus/screen.png'},
+  {id:'istavrit',ad:'Istavrit',img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_an_i_stavrit_horse_mackerel_fish_following/screen.png'},
+];
+
+// captain-panel.html turları haftalık günler (gunler[]) kullanır; captain-app.html ISO tarihler (tarihler[]) kullanır.
+// Bu map, her iki formatı da müşteri tarafı için tek bir tarihler[] dizisine normalize eder.
+// captain-panel kısa format (Pzt,Sal…) + captain-app tam format (Pazartesi,Sali…) her ikisini destekler
+const _GUN_MAP={
+  'Pzt':1,'Sal':2,'Car':3,'Per':4,'Cum':5,'Cmt':6,'Paz':0,
+  'Pazartesi':1,'Sali':2,'Carsamba':3,'Persembe':4,'Cuma':5,'Cumartesi':6,'Pazar':0
+};
+function _gunlerToIso(gunler){
+  if(!gunler||!gunler.length)return[];
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayDay=today.getDay();
+  const result=[];
+  gunler.forEach(g=>{
+    const d=_GUN_MAP[g];
+    if(d===undefined)return;
+    let diff=(d-todayDay+7)%7||7; // en az 1 gün ilerisi
+    for(let i=0;i<8;i++){         // sonraki 8 hafta
+      const next=new Date(today);
+      next.setDate(today.getDate()+diff+i*7);
+      result.push(next.toISOString().slice(0,10));
+    }
+  });
+  return result.sort();
+}
 
 function getDbTours(){
   return S.get('db_tours',[])
     .filter(t=>t.durum==='aktif'||t.aktif===true)
     .map(t=>{
       const cat=DB_CAT[t.kategoriler?.[0]||'Tekne Gezisi']||'gezi';
-      return{id:t.id,name:t.ad||t.title||'Tur',loc:t.kalkis||t.konum||'Turkiye',price:t.price||t.fiyat||0,rating:t.puan||4.8,reviews:t.inceleme||0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,tarihler:t.tarihler||[],saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||(t.dahil||'').split('\n').filter(Boolean)||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,heroImage:t.heroImage||null,_db:true};
+      const tarihler=t.tarihler?.length?t.tarihler:_gunlerToIso(t.gunler);
+      return{id:t.id,name:t.ad||t.title||'Tur',loc:t.kalkis||t.konum||'Turkiye',price:t.price||t.fiyat||0,rating:t.puan||4.8,reviews:t.inceleme||0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,tarihler,gunler:t.gunler||[],saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||(t.dahil||'').split('\n').filter(Boolean)||[],hedefBaliklar:t.hedefBaliklar||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,heroImage:t.heroImage||null,_db:true};
     });
 }
 
@@ -1215,8 +1273,11 @@ function renderHome(){
 
   document.getElementById('nearby-tours').innerHTML=tours.slice(0,5).map(t=>{
     const m=CM[t.cat]||CM.gezi;
+    const _h1=t.heroImage||TOUR_IMG_MAP[t.cat]||'';
     return`<div class="min-w-[200px] card overflow-hidden flex-shrink-0 card-hover" onclick="go(${t.id},'detail')">
-      <div class="h-28 bg-gradient-to-br ${m.grad} relative">
+      <div class="h-28 bg-gradient-to-br ${m.grad} relative overflow-hidden">
+        ${_h1?`<img src="${_h1}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'">`:''}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
         <span class="absolute top-2 left-2 badge bg-white/90 text-${m.color}-700"><i class="fas ${m.icon} mr-0.5"></i>${m.label}</span>
         <button class="absolute top-2 right-2 w-7 h-7 bg-white/80 rounded-full flex items-center justify-center" onclick="event.stopPropagation();toggleFav(${t.id},this)"><i class="${favs.includes(t.id)?'fas text-danger':'far text-gray-500'} fa-heart text-xs"></i></button>
       </div>
@@ -1233,8 +1294,11 @@ function renderHome(){
 
   document.getElementById('popular-tours-app').innerHTML=tours.slice(0,5).map(t=>{
     const m=CM[t.cat]||CM.gezi;
+    const _h2=t.heroImage||TOUR_IMG_MAP[t.cat]||'';
     return`<div class="card overflow-hidden flex flex-row card-hover" onclick="go(${t.id},'detail')">
-      <div class="w-28 h-24 bg-gradient-to-br ${m.grad} flex-shrink-0 relative">
+      <div class="w-28 h-24 bg-gradient-to-br ${m.grad} flex-shrink-0 relative overflow-hidden">
+        ${_h2?`<img src="${_h2}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'">`:''}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
         <span class="absolute top-1.5 left-1.5 text-[8px] bg-white/90 text-${m.color}-700 px-1.5 py-0.5 rounded-full font-bold"><i class="fas ${m.icon}"></i></span>
       </div>
       <div class="p-3 flex-1">
@@ -1288,8 +1352,11 @@ function applyFilters(){
   el.innerHTML=list.map(t=>{
     const m=CM[t.cat]||CM.gezi;
     const isFav=favs.includes(t.id);
+    const _h3=t.heroImage||TOUR_IMG_MAP[t.cat]||'';
     return`<div class="card overflow-hidden card-hover" onclick="go(${t.id},'detail')">
-      <div class="h-40 bg-gradient-to-br ${m.grad} relative">
+      <div class="h-40 bg-gradient-to-br ${m.grad} relative overflow-hidden">
+        ${_h3?`<img src="${_h3}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'">`:''}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
         <span class="absolute top-2 left-2 badge bg-white/90 text-${m.color}-700"><i class="fas ${m.icon} mr-0.5"></i>${m.label}</span>
         <button class="absolute top-2 right-2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center" onclick="event.stopPropagation();toggleFav(${t.id},this)"><i class="${isFav?'fas text-danger':'far text-gray-500'} fa-heart"></i></button>
         ${t.cat==='balik'||t.cat==='gezi'?'<span class="absolute bottom-2 left-2 text-[9px] bg-green-500 text-white px-2 py-0.5 rounded-full font-medium"><i class="fas fa-bolt mr-0.5"></i>Aninda</span>':''}
@@ -1319,7 +1386,12 @@ function go(id,page){
 function renderDetail(){
   const t=selTour;if(!t)return;
   const m=CM[t.cat]||CM.gezi;
-  document.getElementById('detail-hero').className=`h-64 bg-gradient-to-br ${m.grad} relative`;
+  const _heroUrl=t.heroImage||TOUR_IMG_MAP[t.cat]||'';
+  const heroEl=document.getElementById('detail-hero');
+  heroEl.className=`h-64 bg-gradient-to-br ${m.grad} relative overflow-hidden`;
+  if(_heroUrl){
+    heroEl.innerHTML=`<img src="${_heroUrl}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'"><div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>`;
+  }
   document.getElementById('detail-badges').innerHTML=`<span class="badge bg-${m.color}-100 text-${m.color}-700"><i class="fas ${m.icon} mr-0.5"></i>${m.label}</span>${t.cat==='balik'||t.cat==='gezi'?'<span class="badge bg-green-100 text-green-700"><i class="fas fa-bolt mr-0.5"></i>Aninda Onay</span>':'<span class="badge bg-amber-100 text-amber-700">Kaptan Onayi</span>'}`;
   document.getElementById('detail-title').textContent=t.name;
   document.getElementById('detail-meta').innerHTML=`<span><i class="fas fa-map-marker-alt text-primary"></i> ${t.loc}</span><span><i class="fas fa-clock text-primary"></i> ${t.dur}</span><span><i class="fas fa-users text-primary"></i> Max ${t.kapasite}</span><span class="text-amber-500 font-semibold"><i class="fas fa-star"></i> ${t.rating} (${t.reviews})</span>`;
@@ -1329,6 +1401,22 @@ function renderDetail(){
   document.getElementById('detail-cap-sub').textContent=t._db?`${t.loc} kalkisli • Dogrulandi`:'Deneyimli Kaptan';
   const inc=t.includes?.length?t.includes:['Can yelegi','Rehberlik'];
   document.getElementById('detail-includes').innerHTML=inc.map(i=>`<div class="flex items-center gap-2 text-xs"><i class="fas fa-check text-success text-[10px]"></i>${i}</div>`).join('');
+  // Hedef balıklar (yalnızca balık turlarında ve veri varsa)
+  const fishSec=document.getElementById('detail-fish-section');
+  const fishGrid=document.getElementById('detail-fish');
+  if(t.hedefBaliklar&&t.hedefBaliklar.length&&fishSec&&fishGrid){
+    fishGrid.innerHTML=t.hedefBaliklar.map(id=>{
+      const b=BALIK_LIST.find(x=>x.id===id);
+      if(!b)return'';
+      return`<div style="border:1.5px solid #bae6fd;border-radius:10px;padding:7px 5px;text-align:center;background:#f0f9ff">
+        <img src="${b.img}" style="width:100%;height:48px;object-fit:contain;display:block;margin-bottom:3px" onerror="this.style.display='none'">
+        <span style="font-size:11px;font-weight:700;color:#0369a1">${b.ad}</span>
+      </div>`;
+    }).join('');
+    fishSec.style.display='';
+  } else if(fishSec){
+    fishSec.style.display='none';
+  }
   document.getElementById('detail-desc').textContent=t.desc||`${t.name} - ${t.loc} kalkisli ${t.dur} sureli tur.`;
   document.getElementById('detail-price').textContent=t.price.toLocaleString('tr-TR');
   // fav btn
@@ -1412,7 +1500,7 @@ function renderBooking(){
   let firstAvailable=null;
   const allBookings=S.get('db_bookings',[]);
 
-  const rawDates=t.tarihler&&t.tarihler.length?t.tarihler:[];
+  const rawDates=t.tarihler?.length?t.tarihler:_gunlerToIso(t.gunler||[]);
   // Gelecekteki tarihleri sırala (geçmiştekileri gösterme)
   const upcomingISO=rawDates
     .filter(iso=>new Date(iso)>=today)
@@ -1688,7 +1776,7 @@ function selectTourFromModal(tourId){
 function doBooking(){
   const t=selTour;
   if(!t){showToast('Lutfen bir tur secin','danger');return;}
-  if(!Array.isArray(t.tarihler)||!t.tarihler.length){showToast('Bu tur icin kaptan henuz tarih belirlemedi','danger');return;}
+  if((!Array.isArray(t.tarihler)||!t.tarihler.length)&&(!Array.isArray(t.gunler)||!t.gunler.length)){showToast('Bu tur icin kaptan henuz tarih belirlemedi','danger');return;}
   if(!selDate){showToast('Lutfen bir tarih secin','danger');return;}
   const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
   const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);

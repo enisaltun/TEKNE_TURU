@@ -37,6 +37,15 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
 .shop-cat-btn:hover:not(.active){background:#e2e8f0}
 .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .badge-cat{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+.fish-pill{flex-shrink:0;display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:10px 14px;border-radius:16px;border:2px solid #e2e8f0;background:#fff;transition:all .2s;min-width:84px;gap:5px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.fish-pill:hover{border-color:#7dd3fc;box-shadow:0 4px 12px rgba(3,105,161,.12);transform:translateY(-2px)}
+.fish-pill.sel{border-color:#0369a1;background:#e0f2fe;box-shadow:0 4px 12px rgba(3,105,161,.2)}
+.fish-pill img{width:60px;height:50px;object-fit:contain;display:block}
+.fish-pill span{font-size:11px;font-weight:700;color:#475569;white-space:nowrap}
+.fish-pill.sel span{color:#0369a1}
+.fish-pill-all .fish-icon-wrap{width:60px;height:50px;display:flex;align-items:center;justify-content:center}
+.scrollbar-hide::-webkit-scrollbar{display:none}
+.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}
 </style>
 </head>
 <body>
@@ -140,37 +149,70 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
   <div class="max-w-6xl mx-auto px-4 mt-12">
     <h2 class="text-xl font-bold mb-6">Kategoriler</h2>
     <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
-      <a href="#search" onclick="setFilter('balik')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
-        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-fish text-primary text-xl"></i></div>
-        <span class="text-xs font-medium text-gray-700">Balik Avi</span>
+      <a href="#search" onclick="setFilter('balik')" class="rounded-xl overflow-hidden text-center card-hover shadow-sm relative h-28 group">
+        <img src="https://images.unsplash.com/photo-1463639240977-60e040efa9be?w=400&h=224&fit=crop&q=80" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-blue-600/30"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+          <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm"><i class="fas fa-fish text-white text-lg"></i></div>
+          <span class="text-xs font-bold text-white drop-shadow">Balik Avi</span>
+        </div>
       </a>
-      <a href="#search" onclick="setFilter('gezi')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
-        <div class="w-12 h-12 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-compass text-cyan-600 text-xl"></i></div>
-        <span class="text-xs font-medium text-gray-700">Tekne Gezisi</span>
+      <a href="#search" onclick="setFilter('gezi')" class="rounded-xl overflow-hidden text-center card-hover shadow-sm relative h-28 group">
+        <img src="https://images.unsplash.com/photo-1569168172928-e38f1eb2f8e4?w=400&h=224&fit=crop&q=80" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-cyan-900/80 to-cyan-600/30"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+          <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm"><i class="fas fa-compass text-white text-lg"></i></div>
+          <span class="text-xs font-bold text-white drop-shadow">Tekne Gezisi</span>
+        </div>
       </a>
-      <a href="#search" onclick="setFilter('yuzme')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
-        <div class="w-12 h-12 bg-sky-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-swimmer text-sky-600 text-xl"></i></div>
-        <span class="text-xs font-medium text-gray-700">Yuzme</span>
+      <a href="#search" onclick="setFilter('yuzme')" class="rounded-xl overflow-hidden text-center card-hover shadow-sm relative h-28 group">
+        <img src="https://images.unsplash.com/photo-1530053969600-caed2596d242?w=400&h=224&fit=crop&q=80" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-sky-900/80 to-sky-500/30"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+          <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm"><i class="fas fa-swimmer text-white text-lg"></i></div>
+          <span class="text-xs font-bold text-white drop-shadow">Yuzme</span>
+        </div>
       </a>
-      <a href="#search" onclick="setFilter('ozel')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
-        <div class="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-heart text-pink-500 text-xl"></i></div>
-        <span class="text-xs font-medium text-gray-700">Ozel Etkinlik</span>
+      <a href="#search" onclick="setFilter('ozel')" class="rounded-xl overflow-hidden text-center card-hover shadow-sm relative h-28 group">
+        <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&h=224&fit=crop&q=80" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-pink-900/80 to-pink-500/30"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+          <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm"><i class="fas fa-heart text-white text-lg"></i></div>
+          <span class="text-xs font-bold text-white drop-shadow">Ozel Etkinlik</span>
+        </div>
       </a>
-      <a href="#search" onclick="setFilter('kurumsal')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
-        <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-briefcase text-indigo-600 text-xl"></i></div>
-        <span class="text-xs font-medium text-gray-700">Kurumsal</span>
+      <a href="#search" onclick="setFilter('kurumsal')" class="rounded-xl overflow-hidden text-center card-hover shadow-sm relative h-28 group">
+        <img src="https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=224&fit=crop&q=80" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-indigo-900/80 to-indigo-500/30"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+          <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm"><i class="fas fa-briefcase text-white text-lg"></i></div>
+          <span class="text-xs font-bold text-white drop-shadow">Kurumsal</span>
+        </div>
       </a>
-      <a href="#search" onclick="setFilter('gunbatimi')" class="bg-white rounded-xl p-4 text-center card-hover shadow-sm">
-        <div class="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-sun text-orange-500 text-xl"></i></div>
-        <span class="text-xs font-medium text-gray-700">Gun Batimi</span>
+      <a href="#search" onclick="setFilter('gunbatimi')" class="rounded-xl overflow-hidden text-center card-hover shadow-sm relative h-28 group">
+        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=224&fit=crop&q=80" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-orange-900/80 to-amber-500/30"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+          <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm"><i class="fas fa-sun text-white text-lg"></i></div>
+          <span class="text-xs font-bold text-white drop-shadow">Gun Batimi</span>
+        </div>
       </a>
     </div>
+  </div>
+
+  <!-- Hedef Balık Filtresi -->
+  <div class="max-w-6xl mx-auto px-4 mt-10">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Hedef Balik</h2>
+      <span class="text-xs text-gray-400 hidden md:block">Avlamak istedigin baliga gore tur bul</span>
+    </div>
+    <div class="flex gap-3 overflow-x-auto pb-3 scrollbar-hide" id="fish-filter-strip"></div>
   </div>
 
   <!-- Popular Tours -->
   <div class="max-w-6xl mx-auto px-4 mt-12">
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-xl font-bold">Populer Turlar</h2>
+      <h2 class="text-xl font-bold" id="popular-tours-heading">Populer Turlar</h2>
       <a href="#search" class="text-primary text-sm font-medium hover:underline">Tumunu Gor <i class="fas fa-arrow-right ml-1"></i></a>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5" id="popular-tours"></div>
@@ -1540,7 +1582,7 @@ const CAT_META={
 };
 
 function getDbTours(){
-  return lsGet('db_tours',[]).filter(t=>t.durum==='aktif').map(t=>{
+  return lsGet('db_tours',[]).filter(t=>t.durum==='aktif'||t.status==='aktif'||t.aktif===true).map(t=>{
     const cat=t.kategoriler?.[0]||t.kategori||'Tekne Gezisi';
     const meta=CAT_META[cat]||CAT_META['Tekne Gezisi'];
     const includes=t.includes?.length?t.includes:(t.dahil||'').split('\n').filter(Boolean);
@@ -1557,6 +1599,7 @@ function getDbTours(){
       kapasite:t.kapasite||8,
       saatler:t.saatler||['09:00'],
       includes,
+      hedefBaliklar:t.hedefBaliklar||[],
       aciklama:t.aciklama||'',
       sezon:t.sezon||'',
       heroImage:t.heroImage||null,
@@ -1574,17 +1617,36 @@ function getAllTours(){
 
 let selectedTour=null;
 
+// Kategori başına varsayılan fotoğraflar — seed-data.html ile tutarlı
+const TOUR_IMG_MAP={
+  balik:    'https://images.unsplash.com/photo-1463639240977-60e040efa9be?w=800&h=500&fit=crop&q=80',
+  gezi:     'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=500&fit=crop&q=80',
+  gunbatimi:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=500&fit=crop&q=80',
+  yuzme:    'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=500&fit=crop&q=80',
+  ozel:     'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800&h=500&fit=crop&q=80',
+  kurumsal: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=500&fit=crop&q=80',
+};
+
 // ===== MOCK DATA =====
 const sampleTours = [
-  {id:1,name:'Kaptan Mehmet ile Balik Avi Turu',location:'Antalya, Kemer',price:1800,rating:4.9,reviews:124,duration:'6 saat',cat:'balik',catColor:'blue',icon:'fa-fish',img:'from-blue-400 to-blue-600'},
-  {id:2,name:'Fethiye 12 Adalar Gezi Turu',location:'Fethiye',price:600,rating:4.8,reviews:89,duration:'8 saat',cat:'gezi',catColor:'cyan',icon:'fa-compass',img:'from-cyan-400 to-teal-500'},
-  {id:3,name:'Gun Batimi Nisan Teklifi',location:'Bodrum',price:4500,rating:5.0,reviews:34,duration:'3 saat',cat:'ozel',catColor:'pink',icon:'fa-heart',img:'from-pink-400 to-rose-500'},
-  {id:4,name:'Kekova Yuzme & Snokel Turu',location:'Kas',price:450,rating:4.7,reviews:67,duration:'5 saat',cat:'yuzme',catColor:'sky',icon:'fa-swimmer',img:'from-sky-400 to-sky-600'},
-  {id:5,name:'Kurumsal Team Building Turu',location:'Istanbul',price:8000,rating:4.8,reviews:22,duration:'4 saat',cat:'kurumsal',catColor:'indigo',icon:'fa-briefcase',img:'from-indigo-400 to-indigo-600'},
-  {id:6,name:'Alanya Derin Su Trolling',location:'Alanya',price:2200,rating:4.6,reviews:55,duration:'8 saat',cat:'balik',catColor:'blue',icon:'fa-fish',img:'from-blue-500 to-blue-700'},
-  {id:7,name:'Gun Batimi Romantik Gezi',location:'Bodrum',price:1200,rating:4.9,reviews:156,duration:'2 saat',cat:'gunbatimi',catColor:'orange',icon:'fa-sun',img:'from-orange-400 to-amber-500'},
-  {id:8,name:'Antalya Ogle Yemekli Tur',location:'Antalya',price:350,rating:4.5,reviews:203,duration:'6 saat',cat:'gezi',catColor:'cyan',icon:'fa-compass',img:'from-teal-400 to-teal-600'},
-  {id:9,name:'Evlilik Yildonu Kutlamasi',location:'Fethiye',price:5500,rating:5.0,reviews:18,duration:'4 saat',cat:'ozel',catColor:'pink',icon:'fa-heart',img:'from-rose-400 to-pink-600'},
+  {id:1,name:'Kaptan Mehmet ile Balik Avi Turu',location:'Antalya, Kemer',price:1800,rating:4.9,reviews:124,duration:'6 saat',cat:'balik',catColor:'blue',icon:'fa-fish',img:'from-blue-400 to-blue-600',
+   heroImage:'https://images.unsplash.com/photo-1463639240977-60e040efa9be?w=800&h=500&fit=crop&q=80'},
+  {id:2,name:'Fethiye 12 Adalar Gezi Turu',location:'Fethiye',price:600,rating:4.8,reviews:89,duration:'8 saat',cat:'gezi',catColor:'cyan',icon:'fa-compass',img:'from-cyan-400 to-teal-500',
+   heroImage:'https://images.unsplash.com/photo-1568702846914-96b305d2ead1?w=800&h=500&fit=crop&q=80'},
+  {id:3,name:'Gun Batimi Nisan Teklifi',location:'Bodrum',price:4500,rating:5.0,reviews:34,duration:'3 saat',cat:'ozel',catColor:'pink',icon:'fa-heart',img:'from-pink-400 to-rose-500',
+   heroImage:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&h=500&fit=crop&q=80'},
+  {id:4,name:'Kekova Yuzme & Snokel Turu',location:'Kas',price:450,rating:4.7,reviews:67,duration:'5 saat',cat:'yuzme',catColor:'sky',icon:'fa-swimmer',img:'from-sky-400 to-sky-600',
+   heroImage:'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=500&fit=crop&q=80'},
+  {id:5,name:'Kurumsal Team Building Turu',location:'Istanbul',price:8000,rating:4.8,reviews:22,duration:'4 saat',cat:'kurumsal',catColor:'indigo',icon:'fa-briefcase',img:'from-indigo-400 to-indigo-600',
+   heroImage:'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=500&fit=crop&q=80'},
+  {id:6,name:'Alanya Derin Su Trolling',location:'Alanya',price:2200,rating:4.6,reviews:55,duration:'8 saat',cat:'balik',catColor:'blue',icon:'fa-fish',img:'from-blue-500 to-blue-700',
+   heroImage:'https://images.unsplash.com/photo-1498745277870-da59c82cda08?w=800&h=500&fit=crop&q=80'},
+  {id:7,name:'Gun Batimi Romantik Gezi',location:'Bodrum',price:1200,rating:4.9,reviews:156,duration:'2 saat',cat:'gunbatimi',catColor:'orange',icon:'fa-sun',img:'from-orange-400 to-amber-500',
+   heroImage:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=500&fit=crop&q=80'},
+  {id:8,name:'Antalya Ogle Yemekli Tur',location:'Antalya',price:350,rating:4.5,reviews:203,duration:'6 saat',cat:'gezi',catColor:'cyan',icon:'fa-compass',img:'from-teal-400 to-teal-600',
+   heroImage:'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800&h=500&fit=crop&q=80'},
+  {id:9,name:'Evlilik Yildonu Kutlamasi',location:'Fethiye',price:5500,rating:5.0,reviews:18,duration:'4 saat',cat:'ozel',catColor:'pink',icon:'fa-heart',img:'from-rose-400 to-pink-600',
+   heroImage:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=500&fit=crop&q=80'},
 ];
 
 // ===== SHOP DATA =====
@@ -1626,8 +1688,52 @@ const reviews = [
   {name:'Zeynep K.',rating:4,text:'Tur guzeldi ama biraz erken basliyor. Kahvalti olsa daha iyi olurdu.',date:'1 ay once'},
 ];
 
+// ===== BALIK FİLTRE =====
+const BALIK_LIST=[
+  {id:'palamut', ad:'Palamut', img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/a_detailed_scientific_illustration_of_a_palamut_bonito_fish_following_the_exact/screen.png'},
+  {id:'lufer',   ad:'Lufer',   img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/a_detailed_scientific_illustration_of_a_single_l_fer_bluefish_pomatomus/screen.png'},
+  {id:'kalamar', ad:'Kalamar', img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/a_high_quality_scientific_vector_illustration_of_a_kalamar_european_squid/screen.png'},
+  {id:'barbun',  ad:'Barbun',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_barbun_red_mullet_fish_following_the/screen.png'},
+  {id:'levrek',  ad:'Levrek',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_large_european_bass_levrek_dicentrarchus/screen.png'},
+  {id:'mirmir',  ad:'Mirmir',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_m_rm_r_sand_steenbras_lithognathus/screen.png'},
+  {id:'mercan',  ad:'Mercan',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_mercan_common_seabream_fish._style_clean/screen.png'},
+  {id:'mezgit',  ad:'Mezgit',  img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_a_mezgit_whiting_merlangius_merlangus/screen.png'},
+  {id:'istavrit',ad:'Istavrit',img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/detailed_scientific_illustration_of_an_i_stavrit_horse_mackerel_fish_following/screen.png'},
+];
+
+let selFish = null;
+
+function renderFishFilter() {
+  const strip = document.getElementById('fish-filter-strip');
+  if (!strip) return;
+  const allBtn = `<div class="fish-pill fish-pill-all${!selFish?' sel':''}" onclick="filterByFish(null)">
+    <div class="fish-icon-wrap"><i class="fas fa-border-all text-primary" style="font-size:28px"></i></div>
+    <span>Tumü</span>
+  </div>`;
+  const fishBtns = BALIK_LIST.map(b=>`<div class="fish-pill${selFish===b.id?' sel':''}" onclick="filterByFish('${b.id}')">
+    <img src="${b.img}" alt="${b.ad}" onerror="this.outerHTML='<i class=\\'fas fa-fish text-blue-400\\' style=\\'font-size:32px;width:60px;height:50px;display:flex;align-items:center;justify-content:center\\'></i>'">
+    <span>${b.ad}</span>
+  </div>`).join('');
+  strip.innerHTML = allBtn + fishBtns;
+}
+
+function filterByFish(id) {
+  selFish = id;
+  renderFishFilter();
+  renderPopularTours();
+  const h = document.getElementById('popular-tours-heading');
+  if (!h) return;
+  if (id) {
+    const b = BALIK_LIST.find(x=>x.id===id);
+    h.innerHTML = `<i class="fas fa-fish text-blue-500 mr-2 text-base"></i>${b.ad} Avi Turlari`;
+  } else {
+    h.textContent = 'Populer Turlar';
+  }
+}
+
 // ===== RENDER =====
 function renderAll() {
+  renderFishFilter();
   renderPopularTours();
   renderSearchResults();
   renderShop();
@@ -1719,12 +1825,14 @@ function tourCard(t, isSearch) {
   tourMap[t.id]=t;
   const layout = isSearch ? 'flex flex-col md:flex-row gap-4' : '';
   const imgClass = isSearch ? 'w-full md:w-48 h-40 md:h-auto' : 'h-44';
+  const _hero = t.heroImage || TOUR_IMG_MAP[t.cat] || '';
   return `<a href="#detail" onclick="selectTourById(${t.id})" class="bg-white rounded-xl shadow-sm overflow-hidden card-hover block">
     <div class="${layout}">
-      <div class="${imgClass} bg-gradient-to-br ${t.img} relative">
-        <div class="absolute top-3 left-3"><span class="badge-cat bg-${t.catColor}-100 text-${t.catColor}-700"><i class="fas ${t.icon} mr-1"></i>${t.cat}</span></div>
+      <div class="${imgClass} bg-gradient-to-br ${t.img} relative overflow-hidden">
+        ${_hero?`<img src="${_hero}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" alt="${t.name}" onerror="this.style.display='none'">`:''}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
+        <div class="absolute top-3 left-3"><span class="badge-cat bg-white/90 text-${t.catColor}-700 backdrop-blur-sm"><i class="fas ${t.icon} mr-1"></i>${t.cat}</span></div>
         <div class="absolute top-3 right-3"><button class="w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white"><i class="far fa-heart text-gray-500"></i></button></div>
-        ${!isSearch?'':''}
       </div>
       <div class="p-4 flex-1">
         <div class="flex items-center gap-1 text-xs text-gray-500 mb-1"><i class="fas fa-map-marker-alt text-primary"></i> ${t.location}</div>
@@ -1744,7 +1852,19 @@ function tourCard(t, isSearch) {
 }
 
 function renderPopularTours() {
-  document.getElementById('popular-tours').innerHTML = getAllTours().slice(0,6).map(t => tourCard(t,false)).join('');
+  let tours = getAllTours();
+  if (selFish) {
+    // Önce o balığı hedef alan turlar
+    const withFish = tours.filter(t => t.hedefBaliklar && t.hedefBaliklar.includes(selFish));
+    // Eşleşen yoksa tüm balık tutma turlarını göster
+    tours = withFish.length > 0 ? withFish : tours.filter(t => t.cat === 'balik');
+  }
+  const el = document.getElementById('popular-tours');
+  if (!tours.length) {
+    el.innerHTML = `<div class="col-span-3 text-center py-16 text-gray-400"><i class="fas fa-fish text-4xl mb-3 block opacity-30"></i><p>Bu balik icin henuz tur yok</p><button onclick="filterByFish(null)" class="mt-4 text-primary text-sm font-medium hover:underline">Tum turları gor</button></div>`;
+    return;
+  }
+  el.innerHTML = tours.slice(0,6).map(t => tourCard(t,false)).join('');
 }
 
 function renderSearchResults() {

@@ -26,29 +26,41 @@
   </div>
 
   <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-    <h2 class="font-bold text-gray-900 mb-4">Üretilecek Test Verisi</h2>
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-      <div class="bg-sky-50 rounded-xl p-4 text-center border border-sky-100">
-        <div class="text-3xl font-extrabold text-primary">30</div>
-        <div class="text-xs text-gray-500 mt-1 font-medium">Kaptan</div>
-      </div>
-      <div class="bg-amber-50 rounded-xl p-4 text-center border border-amber-100">
-        <div class="text-3xl font-extrabold text-accent">45</div>
-        <div class="text-xs text-gray-500 mt-1 font-medium">Tur</div>
-      </div>
-      <div class="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100">
-        <div class="text-3xl font-extrabold text-emerald-600">250</div>
-        <div class="text-xs text-gray-500 mt-1 font-medium">Üye</div>
-      </div>
-      <div class="bg-purple-50 rounded-xl p-4 text-center border border-purple-100">
-        <div class="text-3xl font-extrabold text-purple-600" id="bkg-count">~400</div>
-        <div class="text-xs text-gray-500 mt-1 font-medium">Rezervasyon</div>
-      </div>
+    <h2 class="font-bold text-gray-900 mb-1">Simülasyon Parametreleri</h2>
+    <p class="text-xs text-gray-400 mb-4">Değerleri düzenleyerek farklı büyüklükte simülasyonlar oluşturabilirsiniz.</p>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <label class="bg-sky-50 rounded-xl p-4 text-center border border-sky-100 block cursor-text">
+        <input id="inp-kaptan" type="number" min="1" max="30" value="30"
+          class="text-3xl font-extrabold text-primary bg-transparent w-full text-center outline-none border-b-2 border-primary/20 focus:border-primary/60 transition-colors">
+        <div class="text-xs text-gray-500 mt-2 font-medium">Kaptan <span class="font-normal text-gray-300">maks.30</span></div>
+      </label>
+      <label class="bg-amber-50 rounded-xl p-4 text-center border border-amber-100 block cursor-text">
+        <input id="inp-tur" type="number" min="1" max="200" value="45"
+          class="text-3xl font-extrabold text-amber-500 bg-transparent w-full text-center outline-none border-b-2 border-amber-200 focus:border-amber-400 transition-colors">
+        <div class="text-xs text-gray-500 mt-2 font-medium">Tur</div>
+      </label>
+      <label class="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100 block cursor-text">
+        <input id="inp-uye" type="number" min="1" max="1000" value="250"
+          class="text-3xl font-extrabold text-emerald-600 bg-transparent w-full text-center outline-none border-b-2 border-emerald-200 focus:border-emerald-500 transition-colors">
+        <div class="text-xs text-gray-500 mt-2 font-medium">Üye</div>
+      </label>
+      <label class="bg-purple-50 rounded-xl p-4 text-center border border-purple-100 block cursor-text">
+        <input id="inp-rez" type="number" min="0" max="5000" value="400"
+          class="text-3xl font-extrabold text-purple-600 bg-transparent w-full text-center outline-none border-b-2 border-purple-200 focus:border-purple-500 transition-colors">
+        <div class="text-xs text-gray-500 mt-2 font-medium">Rezervasyon</div>
+      </label>
+      <label class="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100 block cursor-text">
+        <input id="inp-satis" type="number" min="0" max="99999999" value="750000" step="50000"
+          class="text-2xl font-extrabold text-indigo-600 bg-transparent w-full text-center outline-none border-b-2 border-indigo-200 focus:border-indigo-500 transition-colors">
+        <div class="text-xs text-gray-500 mt-2 font-medium">Hedef Ciro (TL)</div>
+      </label>
       <div class="bg-rose-50 rounded-xl p-4 text-center border border-rose-100">
-        <div class="text-3xl font-extrabold text-rose-600" id="pay-count">~250</div>
-        <div class="text-xs text-gray-500 mt-1 font-medium">Ödeme Kaydı</div>
+        <div class="text-3xl font-extrabold text-rose-600" id="pay-count">—</div>
+        <div class="text-xs text-gray-500 mt-2 font-medium">Ödeme Kaydı</div>
+        <div class="text-[10px] text-gray-400">otomatik hesaplanır</div>
       </div>
     </div>
+    <span id="bkg-count" class="hidden"></span>
   </div>
 
   <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex gap-3 items-start">
@@ -59,15 +71,21 @@
   </div>
 
   <!-- Preset Buttons -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-    <button id="seedBtn" onclick="generateSeedData()" class="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-primary/25 hover:bg-primary/90 transition">
-      <i class="fas fa-magic mr-2"></i>Tam Veri Seti Üret
-      <div class="text-xs font-normal opacity-80 mt-0.5">30 kaptan · 45 tur · 250 üye · ~400 rezervasyon</div>
+  <div class="grid grid-cols-1 gap-3 mb-4">
+    <button id="scenarioBtn" onclick="generateScenarioData()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-600/25 hover:bg-indigo-700 transition">
+      <i class="fas fa-film mr-2"></i>Senaryolu Gerçekçi Veri Üret
+      <div class="text-xs font-normal opacity-80 mt-0.5">14 kaptan · 24 tur · 30 müşteri · 80 rezervasyon · mesajlar · tam senaryo</div>
     </button>
-    <button id="minimalBtn" onclick="generateMinimalSeedData()" class="w-full bg-teal-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-teal-600/25 hover:bg-teal-700 transition">
-      <i class="fas fa-seedling mr-2"></i>Minimal Başlangıç Seti Üret
-      <div class="text-xs font-normal opacity-80 mt-0.5">20 kaptan · 3–9 tur/kaptan · 0 satış · 100 üye</div>
-    </button>
+    <div class="grid grid-cols-2 gap-3">
+      <button id="seedBtn" onclick="generateSeedData()" class="w-full bg-primary text-white py-3 rounded-2xl font-bold text-sm shadow-lg shadow-primary/25 hover:bg-primary/90 transition">
+        <i class="fas fa-magic mr-1"></i>Tam Rastgele Set
+        <div class="text-[10px] font-normal opacity-80 mt-0.5">Parametrelere göre tam veri seti</div>
+      </button>
+      <button id="minimalBtn" onclick="generateMinimalSeedData()" class="w-full bg-teal-600 text-white py-3 rounded-2xl font-bold text-sm shadow-lg shadow-teal-600/25 hover:bg-teal-700 transition">
+        <i class="fas fa-seedling mr-1"></i>Minimal Set
+        <div class="text-[10px] font-normal opacity-80 mt-0.5">20 kaptan · 0 satış</div>
+      </button>
+    </div>
   </div>
 
   <!-- Reset Button -->
@@ -275,9 +293,9 @@ const HERO_IMGS={
 // ================================================================
 // ÜRETİCİ FONKSİYONLAR
 // ================================================================
-function genCaptains(){
-  setProgress(10,'30 kaptan üretiliyor...');
-  return KAPTAN_LISTESI.map((k,i)=>{
+function genCaptains(n=30){
+  setProgress(10,n+' kaptan üretiliyor...');
+  return KAPTAN_LISTESI.slice(0,Math.min(n,KAPTAN_LISTESI.length)).map((k,i)=>{
     const bolgeInfo=BOLGELER[k.bolgeIdx];
     const email=`${k.ad.toLowerCase()}.${k.soyad.toLowerCase()}@kaptan.com`;
     const tekneTuru=TEKNE_TURLERI[i%TEKNE_TURLERI.length];
@@ -309,15 +327,17 @@ function genCaptains(){
   });
 }
 
-function genTours(captains){
-  setProgress(30,'45 tur programı üretiliyor...');
+function genTours(captains,n=45,ciroHedef=0){
+  setProgress(30,n+' tur programı üretiliyor...');
   const activeCaps=captains.filter(c=>c.durum==='aktif');
   const tours=[];
   let baseId=1710000000000;
   let sablon_idx=0;
+  // priceScale: ciroHedef / (n tur * 2000 TL ortalama rezervasyon değeri)
+  const priceScale=ciroHedef>0?Math.max(0.3,Math.min(8,ciroHedef/(Math.max(1,n)*2000))):1;
 
   // Her aktif kaptana 1-3 tur
-  for(let i=0;i<45;i++){
+  for(let i=0;i<n;i++){
     const cap=activeCaps[i%activeCaps.length];
     const bolgeInfo=BOLGELER.find(b=>b.bolge===cap.bolge)||BOLGELER[0];
     const sab=TUR_SABLONLARI[sablon_idx%TUR_SABLONLARI.length];
@@ -328,7 +348,7 @@ function genTours(captains){
     const ad=adlar[Math.floor(i/TUR_SABLONLARI.length)%adlar.length]||adlar[0];
     const imgs=HERO_IMGS[kat]||HERO_IMGS['Tekne Gezisi'];
     const heroImage=imgs[i%imgs.length];
-    const price=rndInt(Math.ceil(sab.fMin/50)*50, Math.floor(sab.fMax/50)*50);
+    const price=rndInt(Math.max(50,Math.ceil(sab.fMin*priceScale/50)*50), Math.max(100,Math.floor(sab.fMax*priceScale/50)*50));
 
     // Kaptanın seçtiği tur tarihlerini simüle et — gelecek 90 gün içinde rastgele 4-8 tarih
     function genTarihler(){
@@ -378,19 +398,19 @@ function genTours(captains){
 const SEHIRLER=['Istanbul','Ankara','Izmir','Antalya','Bursa','Adana','Gaziantep','Konya','Mersin','Eskisehir','Kayseri','Diyarbakir','Samsun','Denizli','Trabzon'];
 const MAHALLELER=['Camlica','Uskudar','Kadikoy','Besiktas','Sisli','Beyoglu','Fatih','Atasehir','Maltepe','Umraniye','Kartal','Pendik'];
 
-function genCustomers(){
-  setProgress(55,'250 web üyesi üretiliyor...');
+function genCustomers(n=250){
+  setProgress(55,n+' web üyesi üretiliyor...');
   const customers=[];
   const usedEmails=new Set();
 
   const KAYIT_KANALLARI=['web','web','web','web','mobil_app','web','web','sosyal_medya'];
   const KAYIT_SOSYAL=['Google','Facebook','Apple','—','—','—'];
 
-  for(let i=0;i<250;i++){
+  for(let i=0;i<n;i++){
     const isFemale=i%3===0;
     const ad=isFemale?rnd(KADIN):rnd(ERKEK);
     const soyad=SOYAD[i%SOYAD.length];
-    let email=`${ad.toLowerCase()}.${soyad.toLowerCase()}${i<50?'':rndInt(1,99)}@${rnd(PROVIDERS)}`;
+    let email=`${ad.toLowerCase()}.${soyad.toLowerCase()}${i<Math.ceil(n/5)?'':rndInt(1,99)}@${rnd(PROVIDERS)}`;
     if(usedEmails.has(email)) email=`${ad.toLowerCase()}${i}@${rnd(PROVIDERS)}`;
     usedEmails.add(email);
 
@@ -444,7 +464,7 @@ function pickOdemeYontemi(){
 
 function genPayRef(){ return 'PAY-'+rndInt(100000,999999)+'-'+String.fromCharCode(65+rndInt(0,25))+String.fromCharCode(65+rndInt(0,25)); }
 
-function genBookings(tours,customers){
+function genBookings(tours,customers,rezHedef=400){
   setProgress(75,'Rezervasyonlar ve ödeme kayıtları üretiliyor...');
   const bookings=[];
   const now=new Date();
@@ -472,9 +492,10 @@ function genBookings(tours,customers){
     return 'bekliyor';
   }
 
+  const hedefPerTur=Math.max(1,Math.round(rezHedef/Math.max(1,tours.length)));
   tours.forEach(tour=>{
     const maxKap=tour.kapasite||8;
-    const hedef=rndInt(7,14);
+    const hedef=Math.max(1,Math.round(hedefPerTur*rndFl(0.6,1.4)));
 
     for(let i=0;i<hedef;i++){
       let durum=pickDurum();
@@ -594,10 +615,15 @@ function generateSeedData(){
   setTimeout(()=>{
     try{
       setProgress(5,'Başlatılıyor...');
-      const captains=genCaptains();
-      const tours=genTours(captains);
-      const customers=genCustomers();
-      const bookings=genBookings(tours,customers); // customers'ı mutate eder (toplamHarcama)
+      const kaptanN=Math.min(30,Math.max(1,parseInt(document.getElementById('inp-kaptan')?.value)||30));
+      const turN=Math.max(1,parseInt(document.getElementById('inp-tur')?.value)||45);
+      const uyeN=Math.max(1,parseInt(document.getElementById('inp-uye')?.value)||250);
+      const rezN=Math.max(0,parseInt(document.getElementById('inp-rez')?.value)||400);
+      const ciroN=Math.max(0,parseInt(document.getElementById('inp-satis')?.value)||750000);
+      const captains=genCaptains(kaptanN);
+      const tours=genTours(captains,turN,ciroN);
+      const customers=genCustomers(uyeN);
+      const bookings=genBookings(tours,customers,rezN); // customers'ı mutate eder (toplamHarcama)
       const payments=genPayments(bookings);
 
       setProgress(92,'localStorage\'a kaydediliyor...');
@@ -844,20 +870,369 @@ function generateMinimalSeedData(){
 }
 
 // ================================================================
+// SENARYOLU GERÇEKÇİ VERİ — 14 kaptan · 24 tur · 30 müşteri · 80 rezervasyon
+// ================================================================
+function generateScenarioData(){
+  const btn=document.getElementById('scenarioBtn');
+  btn.disabled=true;
+  btn.innerHTML='<i class="fas fa-spinner fa-spin mr-2"></i>Senaryo üretiliyor...';
+  document.getElementById('progress-card').classList.remove('hidden');
+  document.getElementById('results').classList.add('hidden');
+
+  setTimeout(()=>{
+    try{
+      setProgress(10,'14 kaptan hazırlanıyor...');
+      // KAPTAN_LISTESI'nden ilk 12 aktif + 2 bekliyor (idx 26=Taner, 28=Orkun)
+      const CAP_IDX=[0,1,2,3,4,5,6,7,8,9,10,11,26,28];
+      const scenCaps=CAP_IDX.map((ki,i)=>{
+        const k=KAPTAN_LISTESI[ki];
+        const bolgeInfo=BOLGELER[k.bolgeIdx];
+        const email=`${k.ad.toLowerCase()}.${k.soyad.toLowerCase()}@kaptan.com`;
+        const uzunluk=UZUNLUKLAR[i%UZUNLUKLAR.length];
+        const kapasite=Math.max(6,Math.round(uzunluk*0.8));
+        const tarihMs=Date.now()-(180+i*12)*24*3600000;
+        return{
+          id:i+1, ad:k.ad, soyad:k.soyad, email,
+          telefon:'0530'+String(1000000+i*314159).slice(0,7),
+          bolge:bolgeInfo.bolge, durum:k.durum,
+          puan:k.durum==='aktif'?k.puan:0,
+          turSayisi:k.durum==='aktif'?10+i*7:0,
+          katilimTarihi:new Date(tarihMs).toISOString(),
+          tarih:new Date(tarihMs).toLocaleDateString('tr-TR'),
+          bio:`${k.ad} ${k.soyad}, ${bolgeInfo.bolge} bölgesinde ${k.yil} yıllık deneyimli lisanslı kaptandır.`,
+          tekne:TEKNE_ADLARI[i], tekneTuru:TEKNE_TURLERI[i%TEKNE_TURLERI.length],
+          uzunluk, tekneYil:2008+(i%14),
+          lisans:'KEGM-TR-'+String(20001+i).padStart(5,'0'),
+          lisansTarih:new Date(Date.now()-(400+i*30)*24*3600000).toLocaleDateString('tr-TR'),
+          kapasite, kategoriler:k.kat,
+          adminNot:k.durum==='bekliyor'?'Belgeler inceleniyor, onay bekleniyor.':''
+        };
+      });
+
+      setProgress(28,'24 tur üretiliyor...');
+      const activeCaps=scenCaps.filter(c=>c.durum==='aktif'); // 12 aktif
+      // Her aktif kaptana 2 tur: [captainIdx, sablonIdx, günler(offset)]
+      const TDEFS=[
+        [0,0,[7,14,21,28,35,42]],[0,2,[3,10,17,24,31,38]],
+        [1,6,[5,12,19,26]],      [1,3,[4,11,18,25,32]],
+        [2,5,[6,13,20,27,34]],   [2,6,[8,15,22,29,36]],
+        [3,7,[9,16,23,30]],      [3,4,[7,14,21,28]],
+        [4,0,[5,12,19,26,33]],   [4,8,[3,10,17,24,31]],
+        [5,2,[6,13,20,27]],      [5,9,[8,15,22,29,36]],
+        [6,3,[4,11,18,25,32]],   [6,6,[7,14,21,28]],
+        [7,0,[5,12,19,26]],      [7,11,[9,16,23,30]],
+        [8,5,[6,13,20,27,34]],   [8,9,[8,15,22,29]],
+        [9,10,[4,11,18,25]],     [9,2,[7,14,21,28]],
+        [10,1,[5,12,19,26,33]],  [10,4,[3,10,17,24]],
+        [11,7,[6,13,20,27]],     [11,8,[8,15,22,29,36]],
+      ];
+      const scenTours=[];let tId=20001;
+      TDEFS.forEach(([ci,si,days],ti)=>{
+        const cap=activeCaps[ci];
+        const sab=TUR_SABLONLARI[si];
+        const bolgeInfo=BOLGELER.find(b=>b.bolge===cap.bolge)||BOLGELER[0];
+        const imgs=HERO_IMGS[sab.kat]||HERO_IMGS['Tekne Gezisi'];
+        const price=Math.round((sab.fMin+sab.fMax)/2/50)*50;
+        const now=new Date();
+        const tarihler=days.map(d=>new Date(now.getTime()+d*86400000).toISOString().slice(0,10));
+        scenTours.push({
+          id:tId++, ad:sab.adlar[ti%sab.adlar.length], title:sab.adlar[ti%sab.adlar.length],
+          aciklama:sab.aciklama, kategoriler:[sab.kat], kategori:sab.kat,
+          sure:sab.sure, price, fiyat:price, kapasite:cap.kapasite,
+          tarihler, saatler:sab.saatler, includes:sab.includes,
+          dahil:sab.includes.join('\n'), haric:'Ulaşım\nKişisel harcamalar\nEkstra içecek',
+          kalkis:rnd(bolgeInfo.kalkislar), konum:cap.bolge,
+          captainEmail:cap.email, captainName:cap.ad+' '+cap.soyad,
+          durum:'aktif', createdAt:new Date(Date.now()-(60+ti*5)*24*3600000).toISOString(),
+          heroImage:imgs[ti%imgs.length], puan:cap.puan||4.5, inceleme:5+ti*3,
+        });
+      });
+
+      setProgress(45,'30 müşteri hazırlanıyor...');
+      const CDEFS=[
+        ['Zeynep','Arslan','zeynep.arslan@gmail.com','Istanbul'],
+        ['Emre','Demir','emre.demir@gmail.com','Ankara'],
+        ['Seda','Kaya','seda.kaya@hotmail.com','Izmir'],
+        ['Mert','Yilmaz','mert.yilmaz@gmail.com','Istanbul'],
+        ['Irem','Celik','irem.celik@yahoo.com','Bursa'],
+        ['Kaan','Sahin','kaan.sahin@gmail.com','Antalya'],
+        ['Ceren','Dogan','ceren.dogan@gmail.com','Istanbul'],
+        ['Burak','Arslan','burak.arslan@hotmail.com','Izmir'],
+        ['Elif','Yildiz','elif.yildiz@gmail.com','Ankara'],
+        ['Ozan','Polat','ozan.polat@gmail.com','Istanbul'],
+        ['Bahar','Kurt','bahar.kurt@gmail.com','Mersin'],
+        ['Serhan','Acar','serhan.acar@yahoo.com','Istanbul'],
+        ['Nazli','Guler','nazli.guler@gmail.com','Izmir'],
+        ['Firat','Kaplan','firat.kaplan@gmail.com','Ankara'],
+        ['Tugce','Yildirim','tugce.yildirim@hotmail.com','Istanbul'],
+        ['Onur','Bulut','onur.bulut@gmail.com','Antalya'],
+        ['Dila','Simsek','dila.simsek@gmail.com','Istanbul'],
+        ['Alp','Korkmaz','alp.korkmaz@gmail.com','Izmir'],
+        ['Hazal','Erdogan','hazal.erdogan@gmail.com','Ankara'],
+        ['Utku','Demirci','utku.demirci@gmail.com','Istanbul'],
+        ['Sibel','Ozturk','sibel.ozturk@hotmail.com','Bursa'],
+        ['Koray','Cetin','koray.cetin@gmail.com','Istanbul'],
+        ['Esra','Aslan','esra.aslan@yahoo.com','Izmir'],
+        ['Berk','Gunes','berk.gunes@gmail.com','Ankara'],
+        ['Leyla','Cakir','leyla.cakir@gmail.com','Istanbul'],
+        ['Arda','Ozdemir','arda.ozdemir@gmail.com','Antalya'],
+        ['Cemre','Toprak','cemre.toprak@gmail.com','Istanbul'],
+        ['Yusuf','Basaran','yusuf.basaran@hotmail.com','Izmir'],
+        ['Ilayda','Duman','ilayda.duman@gmail.com','Ankara'],
+        ['Umut','Koc','umut.koc@gmail.com','Istanbul'],
+      ];
+      const scenCusts=CDEFS.map((c,i)=>({
+        id:i+1, name:c[0]+' '+c[1], email:c[2],
+        phone:'0530'+String(1000000+i*271828).slice(0,7),
+        sehir:c[3], adres:'Merkez Mah. No:'+(i+1)+', '+c[3],
+        kayitKanali:i%5===0?'mobil_app':i%7===0?'sosyal_medya':'web',
+        sosyalGiris:i%7===0?'Google':'—',
+        emailOnaylandi:true, bildirimIzni:i%3!==0,
+        toplamHarcama:0, turSayisi:0,
+        createdAt:new Date(Date.now()-(10+i*20)*24*3600000).toISOString(),
+        sonGiris:new Date(Date.now()-i*2*24*3600000).toISOString(),
+      }));
+
+      setProgress(62,'80 rezervasyon senaryosu işleniyor...');
+      const now2=new Date();
+      function fmtD(dOff){const d=new Date(now2);d.setDate(d.getDate()+dOff);return d.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'});}
+      function mkBk(id,ti,ci,guests,durum,dOff,note=''){
+        const t=scenTours[ti%scenTours.length];
+        const c=scenCusts[ci%scenCusts.length];
+        const odemeYapildi=durum==='tamamlandi'||durum==='onaylandi';
+        const hizmet=Math.round(t.price*0.1);
+        const amount=(t.price+hizmet)*guests;
+        const komisyon=Math.round(amount*0.025);
+        const kaptanNet=Math.round(amount*0.9-komisyon);
+        const createdAt=new Date(now2.getTime()-Math.abs(dOff)*24*3600000-2*3600000).toISOString();
+        const payRef=odemeYapildi?genPayRef():null;
+        const payTime=odemeYapildi?new Date(new Date(createdAt).getTime()+5*60000).toISOString():null;
+        const yontem=odemeYapildi?pickOdemeYontemi():null;
+        const kartTuru=(yontem==='Kredi Karti'||yontem==='Banka Karti')?rnd(KART_TURLERI):null;
+        const kartSon4=kartTuru?String(1000+(ci*317)%9000):null;
+        const banka=yontem==='Banka Havalesi'?rnd(BANKALAR):null;
+        return{
+          id:'BK'+id, tourId:t.id, tourTitle:t.title,
+          captainEmail:t.captainEmail, captainName:t.captainName,
+          customerName:c.name, customerEmail:c.email, customerPhone:c.phone,
+          guests, durum, amount, turFiyat:t.price, hizmetBedeli:hizmet, komisyon, kaptanNet,
+          tarih:fmtD(dOff), saat:t.saatler[0]||'09:00', note,
+          loc:t.kalkis||t.konum||'',
+          odemeYapildi, odemeYontemi:yontem, odemeRef:payRef, odemeZamani:payTime,
+          kartTuru, kartSon4, banka,
+          binisYapildi:durum==='tamamlandi'&&Math.random()>0.05,
+          binisZamani:durum==='tamamlandi'?new Date(now2.getTime()+dOff*24*3600000+9*3600000).toISOString():null,
+          createdAt, kayitKanali:ci%4===0?'mobil_app':'web',
+        };
+      }
+      const scenBks=[
+        // 35 tamamlandi
+        mkBk(1001,0,0,2,'tamamlandi',-45,'Harika deneyimdi'),
+        mkBk(1002,1,1,3,'tamamlandi',-40,''),
+        mkBk(1003,2,2,4,'tamamlandi',-38,'Cocuklu aileyiz'),
+        mkBk(1004,3,3,2,'tamamlandi',-35,''),
+        mkBk(1005,4,4,2,'tamamlandi',-32,''),
+        mkBk(1006,5,5,6,'tamamlandi',-30,'Grup rezervasyonu'),
+        mkBk(1007,6,6,2,'tamamlandi',-28,'Balayimiz'),
+        mkBk(1008,7,7,3,'tamamlandi',-25,''),
+        mkBk(1009,8,8,2,'tamamlandi',-22,''),
+        mkBk(1010,9,9,4,'tamamlandi',-20,''),
+        mkBk(1011,10,10,2,'tamamlandi',-18,''),
+        mkBk(1012,11,11,8,'tamamlandi',-17,'Kurumsal toplanti'),
+        mkBk(1013,0,12,2,'tamamlandi',-16,''),
+        mkBk(1014,2,13,2,'tamamlandi',-15,''),
+        mkBk(1015,4,14,3,'tamamlandi',-14,''),
+        mkBk(1016,1,15,2,'tamamlandi',-13,''),
+        mkBk(1017,6,16,2,'tamamlandi',-12,''),
+        mkBk(1018,3,17,4,'tamamlandi',-11,''),
+        mkBk(1019,5,18,2,'tamamlandi',-10,''),
+        mkBk(1020,8,19,2,'tamamlandi',-9,''),
+        mkBk(1021,0,20,3,'tamamlandi',-8,''),
+        mkBk(1022,7,21,2,'tamamlandi',-7,''),
+        mkBk(1023,9,22,6,'tamamlandi',-6,'Sirket aktivitesi'),
+        mkBk(1024,10,23,2,'tamamlandi',-5,''),
+        mkBk(1025,1,24,4,'tamamlandi',-4,''),
+        mkBk(1026,11,25,3,'tamamlandi',-60,''),
+        mkBk(1027,13,26,2,'tamamlandi',-55,''),
+        mkBk(1028,12,27,2,'tamamlandi',-50,''),
+        mkBk(1029,15,28,4,'tamamlandi',-48,''),
+        mkBk(1030,14,29,2,'tamamlandi',-44,''),
+        mkBk(1031,16,0,2,'tamamlandi',-42,''),
+        mkBk(1032,17,1,3,'tamamlandi',-39,''),
+        mkBk(1033,18,2,8,'tamamlandi',-37,'VIP kurumsal'),
+        mkBk(1034,19,3,2,'tamamlandi',-34,''),
+        mkBk(1035,20,4,3,'tamamlandi',-31,''),
+        // 20 onaylandi
+        mkBk(1036,0,5,2,'onaylandi',7,''),
+        mkBk(1037,1,6,4,'onaylandi',10,''),
+        mkBk(1038,2,7,2,'onaylandi',12,''),
+        mkBk(1039,3,8,3,'onaylandi',14,''),
+        mkBk(1040,4,9,2,'onaylandi',18,''),
+        mkBk(1041,5,10,2,'onaylandi',21,''),
+        mkBk(1042,6,11,6,'onaylandi',25,'Romantik gece'),
+        mkBk(1043,7,12,3,'onaylandi',28,''),
+        mkBk(1044,8,13,2,'onaylandi',30,''),
+        mkBk(1045,9,14,4,'onaylandi',35,''),
+        mkBk(1046,10,15,2,'onaylandi',8,''),
+        mkBk(1047,11,16,10,'onaylandi',15,'Buyuk kurumsal grup'),
+        mkBk(1048,12,17,2,'onaylandi',20,''),
+        mkBk(1049,13,18,3,'onaylandi',22,''),
+        mkBk(1050,14,19,2,'onaylandi',28,''),
+        mkBk(1051,15,20,2,'onaylandi',32,''),
+        mkBk(1052,16,21,4,'onaylandi',14,''),
+        mkBk(1053,17,22,2,'onaylandi',18,''),
+        mkBk(1054,0,23,3,'onaylandi',45,''),
+        mkBk(1055,3,24,2,'onaylandi',50,''),
+        // 15 bekliyor
+        mkBk(1056,21,0,2,'bekliyor',8,''),
+        mkBk(1057,22,1,4,'bekliyor',12,'Dalis ilk kez'),
+        mkBk(1058,23,2,2,'bekliyor',15,''),
+        mkBk(1059,4,3,3,'bekliyor',20,''),
+        mkBk(1060,8,4,2,'bekliyor',25,''),
+        mkBk(1061,9,5,6,'bekliyor',30,'Sirket takim'),
+        mkBk(1062,12,6,2,'bekliyor',10,''),
+        mkBk(1063,15,7,3,'bekliyor',14,''),
+        mkBk(1064,19,8,2,'bekliyor',18,''),
+        mkBk(1065,20,9,4,'bekliyor',22,''),
+        mkBk(1066,1,10,2,'bekliyor',28,''),
+        mkBk(1067,5,11,2,'bekliyor',35,'Dogum gunu surprizi'),
+        mkBk(1068,7,12,3,'bekliyor',12,''),
+        mkBk(1069,11,13,4,'bekliyor',16,''),
+        mkBk(1070,16,14,2,'bekliyor',40,''),
+        // 10 iptal/reddedildi
+        mkBk(1071,2,15,2,'iptal',-20,'Olumsuz hava kosullari'),
+        mkBk(1072,6,16,4,'iptal',-15,''),
+        mkBk(1073,0,17,2,'reddedildi',-10,'Kapasite dolu'),
+        mkBk(1074,3,18,3,'iptal',-8,'Musteri vazgecti'),
+        mkBk(1075,9,19,2,'iptal',-25,''),
+        mkBk(1076,12,20,6,'reddedildi',-5,'Tarih uygun degil'),
+        mkBk(1077,14,21,2,'iptal',-30,''),
+        mkBk(1078,18,22,3,'iptal',-18,''),
+        mkBk(1079,21,23,2,'reddedildi',-12,'Tekne bakimda'),
+        mkBk(1080,23,24,4,'iptal',-7,''),
+      ];
+
+      // Müşteri istatistiklerini hesapla
+      const custStats2={};
+      scenCusts.forEach(c=>{custStats2[c.id]={harcama:0,turSayisi:0};});
+      scenBks.forEach(b=>{
+        if(b.odemeYapildi){
+          const idx=scenCusts.findIndex(c=>c.email===b.customerEmail);
+          if(idx>=0){custStats2[scenCusts[idx].id].harcama+=b.amount;custStats2[scenCusts[idx].id].turSayisi++;}
+        }
+      });
+      scenCusts.forEach(c=>{const s=custStats2[c.id];if(s){c.toplamHarcama=s.harcama;c.turSayisi=s.turSayisi;}});
+
+      const scenPays=genPayments(scenBks);
+
+      setProgress(80,'Mesajlar hazırlanıyor...');
+      const cap1=scenCaps[0]; // Mehmet Yilmaz
+      const now3=Date.now();
+      function ms(dAgo,hAgo=0){return new Date(now3-dAgo*86400000-hAgo*3600000).toISOString();}
+      const scenMsgs=[
+        {id:'msg-001',kaptanEmail:cap1.email,musteriEmail:'zeynep.arslan@gmail.com',mesaj:'Merhaba, balayi turu icin rezervasyon yaptik. Cift icin ozel bir atmosfer icin ne yapabilirsiniz?',gonderen:'musteri',zaman:ms(20,3)},
+        {id:'msg-002',kaptanEmail:cap1.email,musteriEmail:'zeynep.arslan@gmail.com',mesaj:'Merhaba Zeynep Hanim! Tebrikler! Teknede ozel dekor ve sampanya hazırlayacagiz. Fotografci da ayarlayabiliriz.',gonderen:'kaptan',zaman:ms(20,1)},
+        {id:'msg-003',kaptanEmail:cap1.email,musteriEmail:'zeynep.arslan@gmail.com',mesaj:'Mukemmel! Fotografci icin ekstra ucret var mi?',gonderen:'musteri',zaman:ms(19,5)},
+        {id:'msg-004',kaptanEmail:cap1.email,musteriEmail:'zeynep.arslan@gmail.com',mesaj:'500 TL ek ucret, ama cok kaliteli kareler cikartiyor. Kesinlikle oneririm!',gonderen:'kaptan',zaman:ms(19,3)},
+        {id:'msg-005',kaptanEmail:scenCaps[3].email,musteriEmail:'emre.demir@gmail.com',mesaj:'Tuplu dalis turu icin sertifika sart mi?',gonderen:'musteri',zaman:ms(5,2)},
+        {id:'msg-006',kaptanEmail:scenCaps[3].email,musteriEmail:'emre.demir@gmail.com',mesaj:'Hayir, yeni baslayanlar icin 1 saat brifing veriyoruz. Sertifika gerekmez.',gonderen:'kaptan',zaman:ms(5,1)},
+        {id:'msg-007',kaptanEmail:scenCaps[3].email,musteriEmail:'emre.demir@gmail.com',mesaj:'Harika! O zaman 2 kisilik rezervasyon yapabiliriz.',gonderen:'musteri',zaman:ms(4,8)},
+        {id:'msg-008',kaptanEmail:scenCaps[1].email,musteriEmail:'seda.kaya@hotmail.com',mesaj:'Merhaba, rezervasyonumuzu iptal etmemiz gerekiyor. Cocugumuz hasta.',gonderen:'musteri',zaman:ms(15)},
+        {id:'msg-009',kaptanEmail:scenCaps[1].email,musteriEmail:'seda.kaya@hotmail.com',mesaj:'Gecmis olsun. Iptal isleminizi yapıyoruz, iade 3-5 is gununde hesabinizda.',gonderen:'kaptan',zaman:ms(14,20)},
+        {id:'msg-010',kaptanEmail:scenCaps[9].email,musteriEmail:'koray.cetin@gmail.com',mesaj:'10 kisilik kurumsal etkinlik planlıyoruz. Catering ve projektor ekipman var mi?',gonderen:'musteri',zaman:ms(8,4)},
+        {id:'msg-011',kaptanEmail:scenCaps[9].email,musteriEmail:'koray.cetin@gmail.com',mesaj:'Evet! Catering partner firmamiz var. Projektor icin limanlarda setup yapabiliriz.',gonderen:'kaptan',zaman:ms(8,2)},
+        {id:'msg-012',kaptanEmail:scenCaps[9].email,musteriEmail:'koray.cetin@gmail.com',mesaj:'Teklif alabilir miyiz?',gonderen:'musteri',zaman:ms(7,6)},
+        {id:'msg-013',kaptanEmail:scenCaps[9].email,musteriEmail:'koray.cetin@gmail.com',mesaj:'10 kisi icin tam paket: 12.500 TL. Catering, teknik ekipman ve fotografci dahil.',gonderen:'kaptan',zaman:ms(7,4)},
+        {id:'msg-014',kaptanEmail:scenCaps[2].email,musteriEmail:'mert.yilmaz@gmail.com',mesaj:'Yarin gunbatimi turu var ama firtina uyarisi var. Ne yapıyoruz?',gonderen:'musteri',zaman:ms(10,2)},
+        {id:'msg-015',kaptanEmail:scenCaps[2].email,musteriEmail:'mert.yilmaz@gmail.com',mesaj:'Maalesef seyir tehlikeli olacak, turu ertelememiz gerekiyor. Yeni tarih onerilebilir.',gonderen:'kaptan',zaman:ms(10,1)},
+        {id:'msg-016',kaptanEmail:scenCaps[2].email,musteriEmail:'mert.yilmaz@gmail.com',mesaj:'Anladik, 2 hafta sonrası olur mu?',gonderen:'musteri',zaman:ms(9,5)},
+        {id:'msg-017',kaptanEmail:scenCaps[2].email,musteriEmail:'mert.yilmaz@gmail.com',mesaj:'Kesinlikle! Takvimi guncelledim, yeni tarihte gorusuruz.',gonderen:'kaptan',zaman:ms(9,3)},
+        {id:'msg-018',kaptanEmail:cap1.email,musteriEmail:'dila.simsek@gmail.com',mesaj:'Arkadasimin dogum gununu teknede kutlamak istiyoruz. 6 kisi olacagiz.',gonderen:'musteri',zaman:ms(3,1)},
+        {id:'msg-019',kaptanEmail:cap1.email,musteriEmail:'dila.simsek@gmail.com',mesaj:'Ne guzel! Pasta, balon ve muzik sistemi hazirlayabilirim. Tema belirlediniz mi?',gonderen:'kaptan',zaman:ms(3,-1)},
+        {id:'msg-020',kaptanEmail:scenCaps[4].email,musteriEmail:'berk.gunes@gmail.com',mesaj:'Sabah erken turda ne tur balik tutulur bu mevsimde?',gonderen:'musteri',zaman:ms(2,3)},
+        {id:'msg-021',kaptanEmail:scenCaps[4].email,musteriEmail:'berk.gunes@gmail.com',mesaj:'Su siralarda istavrit, lufer ve cipura cok iyi tutuluyor. Trolling ile palamut da var.',gonderen:'kaptan',zaman:ms(2,1)},
+        {id:'msg-022',kaptanEmail:scenCaps[4].email,musteriEmail:'berk.gunes@gmail.com',mesaj:'Muhtesel! Rezervasyonu onayliyorum.',gonderen:'musteri',zaman:ms(1,5)},
+        {id:'msg-023',kaptanEmail:scenCaps[5].email,musteriEmail:'hazal.erdogan@gmail.com',mesaj:'Ilk kez tekne turuna cikiyoruz, deniz tutmasi icin ne onerilir?',gonderen:'musteri',zaman:ms(1,2)},
+        {id:'msg-024',kaptanEmail:scenCaps[5].email,musteriEmail:'hazal.erdogan@gmail.com',mesaj:'Gingerli cay, bileklik ve ilacli bant iyi gelir. Ben de yavash bir rota izlerim. Merak etmeyin!',gonderen:'kaptan',zaman:ms(1,1)},
+      ];
+
+      setProgress(92,'localStorage\'a kaydediliyor...');
+      const cp_profile={
+        id:cap1.id, ad:cap1.ad, soyad:cap1.soyad, email:cap1.email,
+        telefon:cap1.telefon, bolge:cap1.bolge, puan:cap1.puan,
+        tekne:cap1.tekne, tekneTuru:cap1.tekneTuru, uzunluk:cap1.uzunluk,
+        kapasite:cap1.kapasite, kategoriler:cap1.kategoriler,
+        lisans:cap1.lisans, bio:cap1.bio, durum:cap1.durum,
+      };
+      const cp_msgs=scenMsgs.filter(m=>m.kaptanEmail===cap1.email);
+
+      localStorage.clear();
+      localStorage.setItem('db_captains',JSON.stringify(scenCaps));
+      localStorage.setItem('db_tours',JSON.stringify(scenTours));
+      localStorage.setItem('cu_users',JSON.stringify(scenCusts));
+      localStorage.setItem('db_bookings',JSON.stringify(scenBks));
+      localStorage.setItem('db_payments',JSON.stringify(scenPays));
+      localStorage.setItem('db_messages',JSON.stringify(scenMsgs));
+      localStorage.setItem('cp_messages',JSON.stringify(cp_msgs));
+      localStorage.setItem('cp_profile',JSON.stringify(cp_profile));
+      localStorage.setItem('active_captain_id','1');
+
+      setProgress(100,'Tamamlandı!');
+
+      const toplamCiro=scenPays.reduce((s,p)=>s+p.tutar,0);
+      const toplamKomisyon=scenPays.reduce((s,p)=>s+p.komisyon,0);
+      const bStats={
+        tamamlandi:scenBks.filter(b=>b.durum==='tamamlandi').length,
+        onaylandi:scenBks.filter(b=>b.durum==='onaylandi').length,
+        bekliyor:scenBks.filter(b=>b.durum==='bekliyor').length,
+        iptal:scenBks.filter(b=>b.durum==='iptal'||b.durum==='reddedildi').length,
+      };
+      document.getElementById('bkg-count').textContent=scenBks.length;
+      document.getElementById('pay-count').textContent=scenPays.length;
+      document.getElementById('result-summary').textContent=`${scenCaps.length} kaptan · ${scenTours.length} tur · ${scenCusts.length} müşteri · ${scenBks.length} rezervasyon · ${scenPays.length} ödeme`;
+      document.getElementById('first-customer-email').textContent=scenCusts[0]?.email||'—';
+      document.getElementById('result-stats').innerHTML=`
+        <div class="bg-gray-50 rounded-lg p-3"><div class="font-bold text-gray-700">${bStats.tamamlandi}</div><div class="text-xs text-gray-500">Tamamlanan rez.</div></div>
+        <div class="bg-green-50 rounded-lg p-3"><div class="font-bold text-green-700">${bStats.onaylandi}</div><div class="text-xs text-gray-500">Onaylı rez.</div></div>
+        <div class="bg-amber-50 rounded-lg p-3"><div class="font-bold text-amber-700">${bStats.bekliyor}</div><div class="text-xs text-gray-500">Bekleyen rez.</div></div>
+        <div class="bg-red-50 rounded-lg p-3"><div class="font-bold text-red-700">${bStats.iptal}</div><div class="text-xs text-gray-500">İptal / Red</div></div>
+        <div class="bg-blue-50 rounded-lg p-3 col-span-2"><div class="font-bold text-blue-700">${toplamCiro.toLocaleString('tr-TR')} TL</div><div class="text-xs text-gray-500">Toplam ciro</div></div>
+        <div class="bg-purple-50 rounded-lg p-3 col-span-2"><div class="font-bold text-purple-700">${toplamKomisyon.toLocaleString('tr-TR')} TL</div><div class="text-xs text-gray-500">Platform komisyonu (%2.5)</div></div>
+      `;
+      const topMusteri=[...scenCusts].filter(c=>c.toplamHarcama>0).sort((a,b)=>b.toplamHarcama-a.toplamHarcama).slice(0,5);
+      if(topMusteri.length){
+        document.getElementById('top-customers-card').style.display='';
+        document.getElementById('top-customers-list').innerHTML=topMusteri.map((c,i)=>`
+          <div class="flex justify-between items-center text-xs py-1 border-b border-emerald-100 last:border-0">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 bg-emerald-200 rounded-full flex items-center justify-center font-bold text-emerald-800">${i+1}</span>
+              <div><div class="font-medium text-gray-800">${c.name}</div><div class="text-gray-400">${c.email}</div></div>
+            </div>
+            <div class="text-right">
+              <div class="font-bold text-emerald-700">${c.toplamHarcama.toLocaleString('tr-TR')} TL</div>
+              <div class="text-gray-400">${c.turSayisi} rezervasyon</div>
+            </div>
+          </div>`).join('');
+      }
+      document.getElementById('results').classList.remove('hidden');
+      btn.innerHTML='<i class="fas fa-check mr-2"></i>Senaryo Tamamlandı!';
+      btn.className=btn.className.replace('bg-indigo-600','bg-green-600').replace('hover:bg-indigo-700','hover:bg-green-700').replace('shadow-indigo-600/25','shadow-green-600/25');
+    }catch(e){
+      console.error(e);
+      btn.disabled=false;
+      btn.innerHTML='<i class="fas fa-film mr-2"></i>Senaryolu Gerçekçi Veri Üret';
+      document.getElementById('progress-text').textContent='Hata: '+e.message;
+    }
+  },80);
+}
+
+// ================================================================
 // SİSTEM SIFIRLAMA
 // ================================================================
 function resetAllData(){
   if(!confirm('Tüm veriler silinecek ve sistem sıfırlanacak. Bu işlem geri alınamaz. Devam edilsin mi?')) return;
-  const KEYS=['db_captains','db_tours','db_bookings','cu_users','db_payments','db_reviews',
-               'active_captain_id','currentUser','current_user','auth_user','cart','favorites'];
-  KEYS.forEach(k=>localStorage.removeItem(k));
-  // catch-all for any other app keys
-  const toRemove=[];
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
-    if(k&&(k.startsWith('db_')||k.startsWith('cu_')||k.startsWith('captain_')||k.startsWith('bk_'))) toRemove.push(k);
-  }
-  toRemove.forEach(k=>localStorage.removeItem(k));
+  // localStorage.clear() ile tüm key'leri (db_, cu_, cp_, captain_, bk_...) tek seferde sil
+  localStorage.clear();
 
   document.getElementById('progress-card').classList.remove('hidden');
   document.getElementById('results').classList.add('hidden');
@@ -867,16 +1242,19 @@ function resetAllData(){
   document.getElementById('result-stats').innerHTML=`
     <div class="col-span-4 bg-red-50 rounded-lg p-4 text-center">
       <div class="text-red-600 font-bold text-lg mb-1"><i class="fas fa-check-circle mr-2"></i>Sistem Sıfırlandı</div>
-      <div class="text-sm text-gray-500">localStorage temizlendi. Platformda hiç veri kalmadı.</div>
+      <div class="text-sm text-gray-500">localStorage tamamen temizlendi. Diğer panel sekmelerini de yenileyin.</div>
     </div>
   `;
   document.getElementById('top-customers-card').style.display='none';
   document.getElementById('first-customer-email').textContent='—';
+  document.getElementById('pay-count').textContent='—';
   document.getElementById('results').classList.remove('hidden');
   document.getElementById('seedBtn').disabled=false;
-  document.getElementById('seedBtn').innerHTML='<i class="fas fa-magic mr-2"></i>Tam Veri Seti Üret<div class="text-xs font-normal opacity-80 mt-0.5">30 kaptan · 45 tur · 250 üye · ~400 rezervasyon</div>';
+  document.getElementById('seedBtn').innerHTML='<i class="fas fa-magic mr-1"></i>Tam Rastgele Set<div class="text-[10px] font-normal opacity-80 mt-0.5">Parametrelere göre tam veri seti</div>';
   document.getElementById('minimalBtn').disabled=false;
-  document.getElementById('minimalBtn').innerHTML='<i class="fas fa-seedling mr-2"></i>Minimal Başlangıç Seti Üret<div class="text-xs font-normal opacity-80 mt-0.5">20 kaptan · 3–9 tur/kaptan · 0 satış · 100 üye</div>';
+  document.getElementById('minimalBtn').innerHTML='<i class="fas fa-seedling mr-1"></i>Minimal Set<div class="text-[10px] font-normal opacity-80 mt-0.5">20 kaptan · 0 satış</div>';
+  document.getElementById('scenarioBtn').disabled=false;
+  document.getElementById('scenarioBtn').innerHTML='<i class="fas fa-film mr-2"></i>Senaryolu Gerçekçi Veri Üret<div class="text-xs font-normal opacity-80 mt-0.5">14 kaptan · 24 tur · 30 müşteri · 80 rezervasyon · mesajlar · tam senaryo</div>';
 }
 </script>
 </body>
