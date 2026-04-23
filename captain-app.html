@@ -1680,12 +1680,14 @@ function renderPreview(){
     metaEl.innerHTML=`<i class="fas fa-map-marker-alt text-primary mr-0.5"></i> ${loc} &bull; ${dur} &bull; Max ${capacity} kisi`;
   }
 
-  // Fiyat
+  // Fiyat — kişi başı ana fiyat, toplam tekne ikincil bilgi
   const priceDisp=document.getElementById('prev-price');
   if(priceDisp){
     const p=+(priceEl?.value||0);
+    const cap=Math.max(1,capacity);
+    const perPerson=Math.round(p/cap);
     priceDisp.innerHTML=p
-      ? `${p.toLocaleString('tr-TR')} TL <span class="text-xs text-gray-400 font-normal">/ tekne &nbsp;·&nbsp; kisi basi ~${Math.round(p/capacity).toLocaleString('tr-TR')} TL</span>`
+      ? `${perPerson.toLocaleString('tr-TR')} TL <span class="text-xs text-gray-400 font-normal">/ kisi &nbsp;·&nbsp; tekne toplami ${p.toLocaleString('tr-TR')} TL</span>`
       : '<span class="text-gray-400 text-base">Fiyat girilmedi</span>';
   }
 
