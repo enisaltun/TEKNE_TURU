@@ -380,7 +380,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
     </div>
     <div class="card p-4 mb-4">
       <div class="space-y-2 text-sm">
-        <div class="flex justify-between"><span class="text-gray-500">Tur ucreti</span><span id="b-fee">—</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Tur ücreti <span id="b-fee-detail" class="text-xs text-gray-400"></span></span><span id="b-fee">—</span></div>
         <div class="flex justify-between"><span class="text-gray-500">Hizmet bedeli (%10)</span><span id="b-svc">—</span></div>
         <hr>
         <div class="flex justify-between font-bold text-base"><span>Toplam</span><span class="text-primary" id="b-total">—</span></div>
@@ -1151,14 +1151,25 @@ function _gunlerToIso(gunler){
   });
   return result.sort();
 }
+// tarihler[] geçmiş tarihlerle doluysa gunler[] fallback'ini dene
+function _activeDates(t){
+  const today=new Date();today.setHours(0,0,0,0);
+  if(t.tarihler?.length){
+    const fut=t.tarihler.filter(iso=>new Date(iso)>=today);
+    if(fut.length)return fut.sort();
+  }
+  if(t.gunler?.length)return _gunlerToIso(t.gunler);
+  return[];
+}
 
 function getDbTours(){
   return S.get('db_tours',[])
     .filter(t=>t.durum==='aktif'||t.aktif===true)
     .map(t=>{
       const cat=DB_CAT[t.kategoriler?.[0]||'Tekne Gezisi']||'gezi';
-      const tarihler=t.tarihler?.length?t.tarihler:_gunlerToIso(t.gunler);
-      return{id:t.id,name:t.ad||t.title||'Tur',loc:t.kalkis||t.konum||'Turkiye',price:t.price||t.fiyat||0,rating:t.puan||4.8,reviews:t.inceleme||0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,tarihler,gunler:t.gunler||[],saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||(t.dahil||'').split('\n').filter(Boolean)||[],hedefBaliklar:t.hedefBaliklar||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,heroImage:t.heroImage||null,_db:true};
+      const tarihler=_activeDates(t);
+      const boatPrice=t.price||t.fiyat||0;const kap=t.kapasite||8;
+      return{id:t.id,name:t.ad||t.title||'Tur',loc:t.kalkis||t.konum||'Turkiye',price:boatPrice,perPerson:Math.round(boatPrice/kap),rating:t.puan||4.8,reviews:t.inceleme||0,dur:t.sure||'—',cat,kapasite:kap,tarihler,gunler:t.gunler||[],saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||(t.dahil||'').split('\n').filter(Boolean)||[],hedefBaliklar:t.hedefBaliklar||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,heroImage:t.heroImage||null,_db:true};
     });
 }
 
@@ -1292,7 +1303,7 @@ function renderHome(){
         <div class="font-semibold text-xs mb-0.5">${t.name}</div>
         <div class="text-[10px] text-gray-500 mb-1"><i class="fas fa-map-marker-alt text-primary"></i> ${t.loc} &bull; ${t.dur}</div>
         <div class="flex items-center justify-between">
-          <span class="font-bold text-primary text-sm">${t.price.toLocaleString('tr-TR')} TL</span>
+          <span class="font-bold text-primary text-sm">${(t.perPerson||t.price).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/kişi</span></span>
           <span class="text-[10px] text-amber-500"><i class="fas fa-star"></i> ${t.rating}</span>
         </div>
       </div>
@@ -1312,7 +1323,7 @@ function renderHome(){
         <div class="font-semibold text-sm mb-0.5">${t.name}${t._db?'<span class="ml-1 text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Yeni</span>':''}</div>
         <div class="text-[10px] text-gray-500 mb-1"><i class="fas fa-map-marker-alt text-primary"></i> ${t.loc} &bull; ${t.dur}</div>
         <div class="flex items-center justify-between">
-          <span class="font-bold text-primary">${t.price.toLocaleString('tr-TR')} TL</span>
+          <span class="font-bold text-primary">${(t.perPerson||t.price).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/kişi</span></span>
           <span class="text-[10px] text-amber-500"><i class="fas fa-star"></i> ${t.rating}</span>
         </div>
       </div>
@@ -1348,7 +1359,7 @@ function applyFilters(){
   const list=allTours().filter(t=>{
     const mCat=!catFilter||t.cat===catFilter;
     const mQ=!q||t.name.toLowerCase().includes(q)||t.loc.toLowerCase().includes(q)||(t.captainName||'').toLowerCase().includes(q);
-    const mP=t.price>=minP&&t.price<=maxP;
+    const mP=(t.perPerson||t.price)>=minP&&(t.perPerson||t.price)<=maxP;
     return mCat&&mQ&&mP;
   });
   const el=document.getElementById('search-results-app');
@@ -1372,7 +1383,7 @@ function applyFilters(){
         <div class="font-semibold text-sm mb-0.5">${t.name}${t._db?'<span class="ml-1 text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Kaptan Listesi</span>':''}</div>
         <div class="text-[10px] text-gray-500 mb-1.5"><i class="fas fa-map-marker-alt text-primary"></i> ${t.loc} &bull; <i class="fas fa-clock"></i> ${t.dur} &bull; Max ${t.kapasite} kisi</div>
         <div class="flex items-center justify-between">
-          <div><span class="text-lg font-bold text-primary">${t.price.toLocaleString('tr-TR')}</span><span class="text-xs text-gray-400"> TL/tekne</span></div>
+          <div><span class="text-lg font-bold text-primary">${(t.perPerson||t.price).toLocaleString('tr-TR')}</span><span class="text-xs text-gray-400"> TL/kişi</span></div>
           <span class="text-xs text-amber-500 font-medium"><i class="fas fa-star"></i> ${t.rating}</span>
         </div>
         ${t.captainName?`<div class="text-[10px] text-gray-400 mt-1"><i class="fas fa-user-tie text-primary mr-0.5"></i>${t.captainName}</div>`:''}
@@ -1425,7 +1436,7 @@ function renderDetail(){
     fishSec.style.display='none';
   }
   document.getElementById('detail-desc').textContent=t.desc||`${t.name} - ${t.loc} kalkisli ${t.dur} sureli tur.`;
-  document.getElementById('detail-price').textContent=t.price.toLocaleString('tr-TR');
+  document.getElementById('detail-price').textContent=(t.perPerson||t.price).toLocaleString('tr-TR');
   // fav btn
   const favs=S.get('cu_favs',[]);
   const fav=favs.includes(t.id);
@@ -1503,11 +1514,8 @@ function renderBooking(){
   let firstAvailable=null;
   const allBookings=S.get('db_bookings',[]);
 
-  const rawDates=t.tarihler?.length?t.tarihler:_gunlerToIso(t.gunler||[]);
-  // Gelecekteki tarihleri sırala (geçmiştekileri gösterme)
-  const upcomingISO=rawDates
-    .filter(iso=>new Date(iso)>=today)
-    .sort();
+  // _activeDates: tarihler[] geçmişse gunler[] fallback'ini dener
+  const upcomingISO=_activeDates(t);
 
   if(!upcomingISO.length){
     dHtml=`<div style="padding:12px 0;color:#94a3b8;font-size:12px;white-space:nowrap">Bu tur için uygun tarih bulunmuyor</div>`;
@@ -1616,13 +1624,18 @@ function adjGuest(d){
   document.getElementById('guest-count-val').textContent=guestVal;
   updPrice();
 }
+function calcBookingPrice(t,guests){
+  const perPerson=Math.round((t.price||0)/(t.kapasite||8));
+  const fee=perPerson*Math.max(1,guests||guestVal);
+  const svc=Math.round(fee*.1);
+  return{perPerson,fee,svc,total:fee+svc};
+}
 function updPrice(){
   const t=selTour;if(!t)return;
-  const fee=t.price,svc=Math.round(fee*.1),total=fee+svc;
+  const {perPerson,fee,svc,total}=calcBookingPrice(t,guestVal);
   const s=n=>n.toLocaleString('tr-TR')+' TL';
-  const b=id=>{const e=document.getElementById(id);if(e)e.textContent=id==='b-fee'?s(fee):id==='b-svc'?s(svc):s(total);};
-  ['b-fee','b-svc','b-total'].forEach(b);
   const bEl=document.getElementById('b-fee');if(bEl)bEl.textContent=s(fee);
+  const dEl=document.getElementById('b-fee-detail');if(dEl)dEl.textContent=`(${perPerson.toLocaleString('tr-TR')} TL × ${guestVal} kişi)`;
   const sEl=document.getElementById('b-svc');if(sEl)sEl.textContent=s(svc);
   const tEl=document.getElementById('b-total');if(tEl)tEl.textContent=s(total);
 }
@@ -1630,7 +1643,7 @@ function updPrice(){
 /* ── PAYMENT ── */
 function renderPayment(){
   const t=selTour;if(!t)return;
-  const total=t.price+Math.round(t.price*.1);
+  const {total}=calcBookingPrice(t,guestVal);
   document.getElementById('pay-tour-line').textContent=`${t.name} — ${selDate||''}`;
   document.getElementById('pay-detail-line').textContent=`${guestVal} misafir • ${t.dur} • ${selTime||''}`;
   document.getElementById('pay-total').textContent=total.toLocaleString('tr-TR')+' TL';
@@ -1670,9 +1683,7 @@ function cityCoords(locStr){
 }
 
 function isTourFull(t){
-  const today=new Date();today.setHours(0,0,0,0);
-  const rawDates=t.tarihler?.length?t.tarihler:_gunlerToIso(t.gunler||[]);
-  const upcoming=rawDates.filter(iso=>new Date(iso)>=today);
+  const upcoming=_activeDates(t);
   if(!upcoming.length)return false;
   const bookings=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi');
   const kap=t.kapasite||8;
@@ -1737,7 +1748,7 @@ function renderAltTours(alts){
         </div>
       </div>
       <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:13px;font-weight:800;color:#0369a1">${(t.price||t.fiyat||0).toLocaleString('tr-TR')} TL</div>
+        <div style="font-size:13px;font-weight:800;color:#0369a1">${(t.perPerson||Math.round((t.price||t.fiyat||0)/(t.kapasite||8))).toLocaleString('tr-TR')} TL<span style="font-size:9px;font-weight:400;color:#9ca3af">/kişi</span></div>
         <button onclick="closeCapWarning();selectTourFromModal('${t.id}')" style="margin-top:4px;background:#0369a1;color:#fff;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">Seç</button>
       </div>
     </div>`;
@@ -1788,13 +1799,13 @@ function selectTourFromModal(tourId){
 function doBooking(){
   const t=selTour;
   if(!t){showToast('Lutfen bir tur secin','danger');return;}
-  if((!Array.isArray(t.tarihler)||!t.tarihler.length)&&(!Array.isArray(t.gunler)||!t.gunler.length)){showToast('Bu tur icin kaptan henuz tarih belirlemedi','danger');return;}
+  if(!_activeDates(t).length){showToast('Bu tur icin kaptan henuz tarih belirlemedi','danger');return;}
   if(!selDate){showToast('Lutfen bir tarih secin','danger');return;}
   const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.tarih===selDate&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
   const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);
   if(kalanKisi<=0){showCapWarning(t.kapasite,rezerveKisi,0,0);return;}
   if(guestVal>kalanKisi){showCapWarning(t.kapasite,rezerveKisi,kalanKisi,guestVal);return;}
-  const total=t.price+Math.round(t.price*.1);
+  const {fee,svc,total}=calcBookingPrice(t,guestVal);
   const profile=S.get('cu_profile',{name:'Misafir'});
   const b={
     id:'BK'+Date.now(),tourId:t.id,tourTitle:t.name,
