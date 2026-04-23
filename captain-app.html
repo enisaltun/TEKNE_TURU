@@ -557,27 +557,19 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
       </div>
     </div>
 
-    <!-- Step 5: Preview -->
+    <!-- Step 5: Preview — dinamik olarak renderPreview() ile doldurulur -->
     <div class="wizard-step fade-in" id="wizard-5" style="display:none">
       <h2 class="font-semibold mb-4">Onizleme</h2>
       <div class="card mb-4">
         <div class="h-40 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl mb-3 flex items-center justify-center">
           <i class="fas fa-camera text-white/40 text-4xl"></i>
         </div>
-        <div class="flex gap-1 mb-2">
-          <span class="badge bg-blue-100 text-blue-700"><i class="fas fa-fish mr-0.5"></i>Balik Avi</span>
-          <span class="badge bg-green-100 text-green-700"><i class="fas fa-bolt mr-0.5"></i>Aninda Onay</span>
-        </div>
-        <h3 class="font-bold mb-1">Kemer Aciklari Balik Avi Turu</h3>
-        <div class="text-xs text-gray-500 mb-2"><i class="fas fa-map-marker-alt text-primary mr-0.5"></i> Kemer Marina &bull; 6 saat &bull; Max 8 kisi</div>
-        <div class="text-xl font-bold text-primary">1,800 TL <span class="text-xs text-gray-400 font-normal">/ tekne</span></div>
-        <div class="flex flex-wrap gap-1 mt-3">
-          <span class="text-[10px] bg-gray-100 px-2 py-1 rounded-full"><i class="fas fa-check text-success mr-0.5"></i>Ekipman</span>
-          <span class="text-[10px] bg-gray-100 px-2 py-1 rounded-full"><i class="fas fa-check text-success mr-0.5"></i>Yem</span>
-          <span class="text-[10px] bg-gray-100 px-2 py-1 rounded-full"><i class="fas fa-check text-success mr-0.5"></i>Can yelegi</span>
-          <span class="text-[10px] bg-gray-100 px-2 py-1 rounded-full"><i class="fas fa-check text-success mr-0.5"></i>Cay/Kahve</span>
-          <span class="text-[10px] bg-gray-100 px-2 py-1 rounded-full"><i class="fas fa-check text-success mr-0.5"></i>Fotografci</span>
-        </div>
+        <div class="flex flex-wrap gap-1 mb-2" id="prev-cats"></div>
+        <h3 class="font-bold mb-1" id="prev-title">—</h3>
+        <div class="text-xs text-gray-500 mb-2" id="prev-meta"></div>
+        <div class="text-xl font-bold text-primary" id="prev-price"></div>
+        <div class="text-xs text-gray-400 mt-1" id="prev-dates"></div>
+        <div class="flex flex-wrap gap-1 mt-3" id="prev-includes"></div>
       </div>
       <button onclick="publishTour()" class="w-full bg-success text-white py-4 rounded-2xl font-bold text-base shadow-lg"><i class="fas fa-rocket mr-2"></i>Turu Yayinla</button>
     </div>
@@ -1651,6 +1643,58 @@ function wizardStep(dir){
   document.getElementById('wizard-'+n).style.display='block';
   currentStep=n;updateWizardUI();
   if(n===3)initWizardCal();
+  if(n===5)renderPreview();
+}
+function renderPreview(){
+  const cats=[...document.querySelectorAll('.cat-pill.selected')].map(el=>el.textContent.trim());
+  const nameEl=document.querySelector('#wizard-2 input[type=text]');
+  const durEl=document.querySelector('#wizard-2 .pill.selected');
+  const kalkisEl=document.querySelector('#wizard-2 select');
+  const priceEl=document.getElementById('tour-price-input');
+  const includes=[...document.querySelectorAll('#wizard-4 input:checked')]
+    .map(el=>el.parentElement.querySelector('span')?.textContent.trim()).filter(Boolean);
+
+  // Kategoriler
+  const catsEl=document.getElementById('prev-cats');
+  if(catsEl) catsEl.innerHTML=cats.length
+    ? cats.map(c=>`<span class="badge bg-blue-100 text-blue-700">${c}</span>`).join('')
+    : '<span class="badge bg-blue-100 text-blue-700">Tekne Gezisi</span>';
+
+  // Tur adı
+  const titleEl=document.getElementById('prev-title');
+  if(titleEl) titleEl.textContent=nameEl?.value.trim()||'Tur Adi Girilmedi';
+
+  // Konum · Süre · Kapasite
+  const metaEl=document.getElementById('prev-meta');
+  if(metaEl){
+    const loc=kalkisEl?.value||'—';
+    const dur=durEl?.textContent.trim()||'—';
+    metaEl.innerHTML=`<i class="fas fa-map-marker-alt text-primary mr-0.5"></i> ${loc} &bull; ${dur} &bull; Max ${capacity} kisi`;
+  }
+
+  // Fiyat
+  const priceDisp=document.getElementById('prev-price');
+  if(priceDisp){
+    const p=+(priceEl?.value||0);
+    priceDisp.innerHTML=p
+      ? `${p.toLocaleString('tr-TR')} TL <span class="text-xs text-gray-400 font-normal">/ tekne &nbsp;·&nbsp; kisi basi ~${Math.round(p/capacity).toLocaleString('tr-TR')} TL</span>`
+      : '<span class="text-gray-400 text-base">Fiyat girilmedi</span>';
+  }
+
+  // Seçilen tarihler
+  const datesEl=document.getElementById('prev-dates');
+  if(datesEl){
+    const sorted=[...wizardDates].sort();
+    datesEl.textContent=sorted.length
+      ? sorted.length+' tarih secildi: '+sorted.slice(0,3).join(', ')+(sorted.length>3?'...':'')
+      : 'Tarih secilmedi';
+  }
+
+  // Dahil hizmetler
+  const inclEl=document.getElementById('prev-includes');
+  if(inclEl) inclEl.innerHTML=includes.length
+    ? includes.map(i=>`<span class="text-[10px] bg-gray-100 px-2 py-1 rounded-full"><i class="fas fa-check text-success mr-0.5"></i>${i}</span>`).join('')
+    : '<span class="text-xs text-gray-400">Dahil hizmet secilmedi</span>';
 }
 function updateWizardUI(){
   for(let i=1;i<=5;i++){
@@ -1796,6 +1840,7 @@ function publishTour(){
     saatler:saatler.length?saatler:['09:00'],
     includes,
     kalkis:kalkisEl?.value||cap.bolge||'—',
+    konum:cap.bolge||'—',
     captainEmail:cap.email,
     captainName:cap.ad+' '+cap.soyad,
     durum:'bekliyor',
