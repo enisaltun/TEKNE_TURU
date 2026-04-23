@@ -308,6 +308,8 @@ function doLogin(e){
     // Store session
     const session={id:user.id,name:user.name,email:user.email,sehir:user.sehir||'',phone:user.phone||'',sonGiris:user.sonGiris,plan:user.plan||'free'};
     lsSet('auth_user',session);
+    localStorage.setItem('cu_session','active');
+    lsSet('cu_profile',{name:user.name,email:user.email,phone:user.phone||''});
     showSuccess('Hoş Geldiniz, '+user.name.split(' ')[0]+'!','Giriş başarılı. Yönlendiriliyorsunuz...');
   },600);
 }
@@ -368,6 +370,8 @@ function doRegister(e){
     lsSet('cu_users',users);
     const session={id:newUser.id,name:newUser.name,email:newUser.email,sehir:newUser.sehir,phone:newUser.phone,sonGiris:newUser.sonGiris,plan:'free'};
     lsSet('auth_user',session);
+    localStorage.setItem('cu_session','active');
+    lsSet('cu_profile',{name:newUser.name,email:newUser.email,phone:newUser.phone||''});
     setLoading('register-btn','register-btn-text','register-spin',false);
     showSuccess('Hesabınız Oluşturuldu!','Merhaba '+name.split(' ')[0]+', DenizBul\'a hoş geldiniz!');
   },700);
@@ -384,6 +388,8 @@ function showRegisterError(msg){
 function guestLogin(){
   const session={id:'guest_'+Date.now(),name:'Misafir',email:'',sehir:'',phone:'',sonGiris:new Date().toISOString(),isGuest:true};
   lsSet('auth_user',session);
+  localStorage.setItem('cu_session','active');
+  lsSet('cu_profile',{name:'Misafir',email:'',phone:''});
   window.location.href=redirectTo;
 }
 

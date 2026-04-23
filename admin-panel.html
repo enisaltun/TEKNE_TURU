@@ -4771,6 +4771,7 @@ let captainIdCounter=captains.length>0?Math.max(...captains.map(c=>c.id||0))+1:1
 let pendingDeleteId=null;
 
 function renderCaptains(){
+  captains=loadCaptains();
   const tbody=document.querySelector('#page-captains .table-container tbody');
   const countEl=document.getElementById('captain-count');
   if(!tbody)return;

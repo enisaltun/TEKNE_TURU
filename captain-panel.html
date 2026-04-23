@@ -1713,7 +1713,8 @@
           : b.durum === 'bekliyor' ? '<span class="badge bg-amber-100 text-amber-700 pulse">Onay Bekliyor</span>'
             : b.durum === 'iptal' ? '<span class="badge bg-red-100 text-red-700">Iptal</span>'
               : '<span class="badge bg-gray-100 text-gray-600">Tamamlandi</span>';
-        const net = b.price ? Math.round(b.price * 0.9) : 0;
+        const _bamt = b.amount || b.price || 0;
+        const net = _bamt ? Math.round(_bamt * 0.9) : 0;
         const actions = b.durum === 'bekliyor'
           ? `<div class="flex gap-2 mt-2"><button onclick="updateBooking(${b.id},'onaylandi')" class="flex-1 bg-success text-white py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-check mr-1"></i>Kabul Et</button><button onclick="updateBooking(${b.id},'iptal')" class="flex-1 bg-danger/10 text-danger py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-times mr-1"></i>Reddet</button><button onclick="openChatById(${b.id})" class="bg-primary/10 text-primary py-1.5 px-3 rounded-lg text-xs font-medium"><i class="fas fa-comment"></i></button></div>`
           : b.durum === 'onaylandi'
@@ -1721,11 +1722,11 @@
             : '';
         return `<div class="card mb-3 ${b.durum === 'bekliyor' ? 'border-l-4 border-accent' : ''}">
       <div class="flex justify-between items-start mb-1">
-        <div><div class="font-medium text-sm">${b.musteri || 'Musteri'}</div><div class="text-xs text-gray-500">${b.tourTitle || 'Tur'} &bull; ${dateStr} ${b.saat || ''}</div></div>
+        <div><div class="font-medium text-sm">${b.musteri || b.customerName || 'Musteri'}</div><div class="text-xs text-gray-500">${b.tourTitle || 'Tur'} &bull; ${dateStr} ${b.saat || ''}</div></div>
         ${statusBadge}
       </div>
       ${b.not ? `<div class="bg-gray-50 rounded-lg p-2 my-2 text-xs text-gray-600"><i class="fas fa-quote-left text-gray-300 mr-1"></i>${b.not}</div>` : ''}
-      <div class="flex items-center gap-3 text-xs text-gray-500"><span><i class="fas fa-users mr-0.5"></i>${b.kisi || 1} kisi</span>${net ? `<span><i class="fas fa-wallet mr-0.5"></i>${net} TL net</span>` : ''}
+      <div class="flex items-center gap-3 text-xs text-gray-500"><span><i class="fas fa-users mr-0.5"></i>${b.kisi || b.guests || 1} kisi</span>${net ? `<span><i class="fas fa-wallet mr-0.5"></i>${net} TL net</span>` : ''}
       </div>${actions}
     </div>`;
       }).join('');
@@ -1769,7 +1770,7 @@
 
       // Stats
       const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-      const weekEarn = bookings.filter(b => b.durum === 'tamamlandi' && new Date(b.createdAt || b.tarih) >= weekStart).reduce((s, b) => s + Math.round((b.price || 0) * 0.9), 0);
+      const weekEarn = bookings.filter(b => b.durum === 'tamamlandi' && new Date(b.createdAt || b.tarih) >= weekStart).reduce((s, b) => s + Math.round((b.amount || b.price || 0) * 0.9), 0);
       document.getElementById('stat-today-tours').textContent = todayB.length;
       document.getElementById('stat-week-earn').innerHTML = weekEarn ? weekEarn + '<span class="text-xs">TL</span>' : '0<span class="text-xs">TL</span>';
       document.getElementById('week-total').textContent = weekEarn + ' TL';
@@ -1790,7 +1791,7 @@
         if (badge) badge.style.display = 'none';
       } else {
         if (badge) { badge.style.display = 'inline-flex'; badge.textContent = pendingB.length; }
-        pendEl.innerHTML = pendingB.slice(0, 2).map(b => `<div class="card border-l-4 border-accent mb-2"><div class="flex justify-between items-start mb-1"><div><div class="font-medium text-sm">${b.musteri || 'Musteri'}</div><div class="text-xs text-gray-500">${b.tourTitle || 'Tur'} &bull; ${b.kisi || 1} kisi</div></div><span class="badge bg-amber-100 text-amber-700">Bekliyor</span></div>${b.price ? `<div class="text-sm font-bold text-primary mb-2">${Math.round(b.price * 0.9)} TL net</div>` : ''}<div class="flex gap-2"><button onclick="updateBooking(${b.id},'onaylandi')" class="flex-1 bg-success text-white py-2 rounded-lg text-xs font-medium">Kabul Et</button><button onclick="updateBooking(${b.id},'iptal')" class="flex-1 bg-danger/10 text-danger py-2 rounded-lg text-xs font-medium">Reddet</button></div></div>`).join('');
+        pendEl.innerHTML = pendingB.slice(0, 2).map(b => {const _a=b.amount||b.price||0;const _n=b.musteri||b.customerName||'Musteri';const _g=b.kisi||b.guests||1;return`<div class="card border-l-4 border-accent mb-2"><div class="flex justify-between items-start mb-1"><div><div class="font-medium text-sm">${_n}</div><div class="text-xs text-gray-500">${b.tourTitle || 'Tur'} &bull; ${_g} kisi</div></div><span class="badge bg-amber-100 text-amber-700">Bekliyor</span></div>${_a ? `<div class="text-sm font-bold text-primary mb-2">${Math.round(_a * 0.9)} TL net</div>` : ''}<div class="flex gap-2"><button onclick="updateBooking(${b.id},'onaylandi')" class="flex-1 bg-success text-white py-2 rounded-lg text-xs font-medium">Kabul Et</button><button onclick="updateBooking(${b.id},'iptal')" class="flex-1 bg-danger/10 text-danger py-2 rounded-lg text-xs font-medium">Reddet</button></div></div>`;}).join('');
       }
 
       // Notif dot
@@ -1843,7 +1844,7 @@
         document.getElementById('cal-detail-body').innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Bu gun rezervasyon yok</p>';
         return;
       }
-      document.getElementById('cal-detail-body').innerHTML = bookings.map(b => `<div class="flex items-center gap-3 bg-amber-50 rounded-lg p-3 mb-2"><div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-anchor text-blue-600 text-sm"></i></div><div class="flex-1"><div class="text-sm font-medium">${b.tourTitle || 'Tur'}</div><div class="text-xs text-gray-500">${b.saat || '—'} &bull; ${b.musteri || 'Musteri'} &bull; ${b.kisi || 1} kisi</div></div><span class="badge ${b.durum === 'onaylandi' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${b.durum}</span></div>`).join('');
+      document.getElementById('cal-detail-body').innerHTML = bookings.map(b => `<div class="flex items-center gap-3 bg-amber-50 rounded-lg p-3 mb-2"><div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-anchor text-blue-600 text-sm"></i></div><div class="flex-1"><div class="text-sm font-medium">${b.tourTitle || 'Tur'}</div><div class="text-xs text-gray-500">${b.saat || '—'} &bull; ${b.musteri || b.customerName || 'Musteri'} &bull; ${b.kisi || b.guests || 1} kisi</div></div><span class="badge ${b.durum === 'onaylandi' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${b.durum}</span></div>`).join('');
     }
 
     /* ---- Messages ---- */
@@ -1862,11 +1863,12 @@
         const msgs = allMsgs[b.id] || [];
         const last = msgs[msgs.length - 1];
         const unread = msgs.filter(m => !m.byCaptan && !m.read).length;
-        const initials = (b.musteri || 'M').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+        const _bname=b.musteri||b.customerName||'Musteri';
+        const initials = _bname.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)||'M';
         return `<div class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-gray-50" onclick="openChatById(${b.id})">
       <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0"><span class="font-bold text-primary text-sm">${initials}</span></div>
       <div class="flex-1 min-w-0">
-        <div class="flex justify-between"><span class="font-medium text-sm">${b.musteri || 'Musteri'}</span>${last ? `<span class="text-[10px] text-gray-400">${new Date(last.ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>` : ''}</div>
+        <div class="flex justify-between"><span class="font-medium text-sm">${_bname}</span>${last ? `<span class="text-[10px] text-gray-400">${new Date(last.ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>` : ''}</div>
         <div class="text-xs text-gray-500 truncate">${last ? last.text : 'Yeni rezervasyon — mesaj gonderebilirsiniz'}</div>
         <span class="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">${b.tourTitle || 'Tur'}</span>
       </div>
@@ -1886,9 +1888,10 @@
       const b = getBookings().find(x => x.id === bookingId);
       if (!b) return;
       currentChatId = bookingId;
-      const initials = (b.musteri || 'M').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+      const _cn=b.musteri||b.customerName||'Musteri';
+      const initials = _cn.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)||'M';
       document.getElementById('chat-avatar').textContent = initials;
-      document.getElementById('chat-name').textContent = b.musteri || 'Musteri';
+      document.getElementById('chat-name').textContent = _cn;
       document.getElementById('chat-tour').textContent = (b.tourTitle || 'Tur') + ' — ' + (b.tarih ? new Date(b.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : '—');
       document.getElementById('msg-list-view').style.display = 'none';
       document.getElementById('msg-chat-view').style.display = 'flex';
@@ -1950,7 +1953,7 @@
         filtered = all.filter(b => { const d = new Date(b.tarih || b.createdAt); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
         label = 'Bu ay';
       }
-      const gross = filtered.reduce((s, b) => s + (b.price || 0), 0);
+      const gross = filtered.reduce((s, b) => s + (b.amount || b.price || 0), 0);
       const commission = Math.round(gross * 0.1);
       const net = gross - commission;
       document.getElementById('earn-net').textContent = net + ' TL';
@@ -1961,7 +1964,7 @@
         el.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Henuz tamamlanan tur yok</p>';
         return;
       }
-      el.innerHTML = filtered.slice(0, 10).map(b => `<div class="flex items-center gap-3 mb-3"><div class="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center"><i class="fas fa-arrow-down text-success text-sm"></i></div><div class="flex-1"><div class="text-sm font-medium">${b.musteri || 'Musteri'} — ${b.tourTitle || 'Tur'}</div><div class="text-[10px] text-gray-400">${b.tarih ? new Date(b.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</div></div><span class="text-sm font-bold text-success">+${Math.round((b.price || 0) * 0.9)} TL</span></div>`).join('');
+      el.innerHTML = filtered.slice(0, 10).map(b => `<div class="flex items-center gap-3 mb-3"><div class="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center"><i class="fas fa-arrow-down text-success text-sm"></i></div><div class="flex-1"><div class="text-sm font-medium">${b.musteri || b.customerName || 'Musteri'} — ${b.tourTitle || 'Tur'}</div><div class="text-[10px] text-gray-400">${b.tarih ? new Date(b.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</div></div><span class="text-sm font-bold text-success">+${Math.round((b.amount || b.price || 0) * 0.9)} TL</span></div>`).join('');
     }
 
     function setEarningPeriod(btn, p) {

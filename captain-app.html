@@ -1408,7 +1408,7 @@ function getActiveCaptain(){
   const id=S.get('cp_active_id',null);
   const caps=S.get('db_captains',[]);
   if(id!=null){const c=caps.find(x=>x.id===id);if(c)return c;}
-  const active=caps.find(c=>c.durum==='aktif');
+  const active=caps.find(c=>c.durum==='aktif')||caps[0]||null;
   if(active){S.set('cp_active_id',active.id);return active;}
   return null;
 }

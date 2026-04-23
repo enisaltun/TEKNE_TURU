@@ -634,7 +634,7 @@ function generateSeedData(){
       const payments=genPayments(bookings);
 
       setProgress(92,'localStorage\'a kaydediliyor...');
-      localStorage.clear();
+      const _gs1=localStorage.getItem('global_settings');localStorage.clear();if(_gs1)localStorage.setItem('global_settings',_gs1);
       localStorage.setItem('db_captains',JSON.stringify(captains));
       localStorage.setItem('db_tours',JSON.stringify(tours));
       localStorage.setItem('cu_users',JSON.stringify(customers));
@@ -843,7 +843,7 @@ function generateMinimalSeedData(){
       const customers=genMinimalCustomers();
 
       setProgress(90,'localStorage\'a kaydediliyor...');
-      localStorage.clear();
+      const _gs2=localStorage.getItem('global_settings');localStorage.clear();if(_gs2)localStorage.setItem('global_settings',_gs2);
       localStorage.setItem('db_captains',JSON.stringify(captains));
       localStorage.setItem('db_tours',JSON.stringify(tours));
       localStorage.setItem('cu_users',JSON.stringify(customers));
@@ -1174,7 +1174,7 @@ function generateScenarioData(){
       };
       const cp_msgs=scenMsgs.filter(m=>m.kaptanEmail===cap1.email);
 
-      localStorage.clear();
+      const _gs3=localStorage.getItem('global_settings');localStorage.clear();if(_gs3)localStorage.setItem('global_settings',_gs3);
       localStorage.setItem('db_captains',JSON.stringify(scenCaps));
       localStorage.setItem('db_tours',JSON.stringify(scenTours));
       localStorage.setItem('cu_users',JSON.stringify(scenCusts));
@@ -1239,7 +1239,9 @@ function generateScenarioData(){
 // ================================================================
 function resetAllData(){
   if(!confirm('Tüm veriler silinecek ve sistem sıfırlanacak. Bu işlem geri alınamaz. Devam edilsin mi?')) return;
+  const _gs=localStorage.getItem('global_settings');
   localStorage.clear();
+  if(_gs)localStorage.setItem('global_settings',_gs);
 
   // Tüm input'ları sıfırla
   ['inp-kaptan','inp-tur','inp-uye','inp-rez','inp-satis'].forEach(id=>{
