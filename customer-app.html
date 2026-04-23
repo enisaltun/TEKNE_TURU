@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>DenizBul — Musteri App</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',primaryDark:'#075985',primaryLight:'#e0f2fe',accent:'#f59e0b',accentDark:'#d97706',surface:'#f8fafc',danger:'#ef4444',success:'#10b981',dark:'#0f172a'}}}}</script>
 <style>
@@ -1066,6 +1068,11 @@ function checkGlobalSettings(platformKey){
   }catch(e){}
   return false;
 }
+window.addEventListener('storage',function(e){
+  const h=window.location.hash.replace('#','')||'home';
+  if(e.key==='db_tours'){rebuildTourMap();if(h==='home'||h==='search')handleRoute();}
+  if(e.key==='db_bookings'){if(h==='my-tours')renderMyTours(curTab);pollBookingStatus();}
+});
 window.addEventListener('load',function(){
   if(checkGlobalSettings('customer_app'))return;
   const users=S.get('cu_users',[]);
@@ -1486,10 +1493,6 @@ function renderBooking(){
   iconEl.innerHTML=`<i class="fas ${m.icon} text-white/80 text-xl"></i>`;
   document.getElementById('booking-tour-name').textContent=t.name;
 
-  // Genel kapasite (tüm rezervasyonlar toplamı, tarihe bakılmaksızın)
-  const tumRezervasyonlar=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi');
-  const genelRezKisi=tumRezervasyonlar.reduce((s,b)=>s+(b.guests||1),0);
-  const genelKalan=Math.max(0,(t.kapasite||8)-genelRezKisi);
   document.getElementById('booking-tour-meta').textContent=`${t.loc} • ${t.dur} • Max ${t.kapasite} kisi`;
 
   // Date strip — yalnızca kaptanın belirlediği tarihler (t.tarihler)
@@ -1667,8 +1670,17 @@ function cityCoords(locStr){
 }
 
 function isTourFull(t){
-  const rez=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
-  return rez>=(t.kapasite||8);
+  const today=new Date();today.setHours(0,0,0,0);
+  const rawDates=t.tarihler?.length?t.tarihler:_gunlerToIso(t.gunler||[]);
+  const upcoming=rawDates.filter(iso=>new Date(iso)>=today);
+  if(!upcoming.length)return false;
+  const bookings=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi');
+  const kap=t.kapasite||8;
+  return upcoming.every(iso=>{
+    const str=new Date(iso).toLocaleDateString('tr-TR');
+    const gunKisi=bookings.filter(b=>b.tarih===str).reduce((s,b)=>s+(b.guests||1),0);
+    return gunKisi>=kap;
+  });
 }
 
 function buildAltTours(refTour, userLat, userLng){
@@ -1778,7 +1790,7 @@ function doBooking(){
   if(!t){showToast('Lutfen bir tur secin','danger');return;}
   if((!Array.isArray(t.tarihler)||!t.tarihler.length)&&(!Array.isArray(t.gunler)||!t.gunler.length)){showToast('Bu tur icin kaptan henuz tarih belirlemedi','danger');return;}
   if(!selDate){showToast('Lutfen bir tarih secin','danger');return;}
-  const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
+  const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.tarih===selDate&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
   const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);
   if(kalanKisi<=0){showCapWarning(t.kapasite,rezerveKisi,0,0);return;}
   if(guestVal>kalanKisi){showCapWarning(t.kapasite,rezerveKisi,kalanKisi,guestVal);return;}
