@@ -1840,6 +1840,7 @@ function publishTour(){
   const tour={
     id:Date.now(),
     title:nameEl?.value.trim()||'Yeni Tur',
+    ad:nameEl?.value.trim()||'Yeni Tur',
     aciklama:descEl?.value.trim()||'',
     kategoriler:cats.length?cats:['Tekne Gezisi'],
     sure:durEl?durEl.textContent.trim():'—',

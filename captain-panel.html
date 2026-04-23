@@ -1379,6 +1379,21 @@
         const solidColor = catSolidColors[cat] || '#2563eb';
         const icon = catIcons[cat] || 'fa-ship';
         const bookings = getBookings().filter(b => b.tourId === t.id).length;
+        const perPerson = t.kapasite > 0 ? Math.round((t.price||0) / t.kapasite) : (t.price||0);
+
+        // Başlangıç/bitiş saati hesapla
+        const startTime = t.saatler?.[0] || null;
+        let endTime = null;
+        if (startTime) {
+          const durMatch = (t.sure||'').match(/(\d+)\s*saat/i);
+          const durH = durMatch ? parseInt(durMatch[1]) : 0;
+          if (durH > 0) {
+            const [h, m] = startTime.split(':').map(Number);
+            const endH = (h + durH) % 24;
+            endTime = String(endH).padStart(2,'0') + ':' + String(m||0).padStart(2,'0');
+          }
+        }
+        const timeRange = startTime ? (endTime ? `${startTime} – ${endTime}` : startTime) : null;
 
         // En yakın tur tarihini hesapla
         const nextDate = nextTourDate(t);
@@ -1391,10 +1406,11 @@
           ? `<div style="border-top:1px solid #f1f5f9;margin-top:12px;padding-top:10px">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
                 <div>
-                  <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">
+                  <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">
                     <i class="fas fa-calendar-day" style="margin-right:3px;color:${solidColor}"></i>Sonraki Tur
                   </div>
-                  <div style="font-size:13px;font-weight:800;color:#1e293b">${dateLabel}</div>
+                  <div style="font-size:16px;font-weight:900;color:#0f172a;letter-spacing:-.01em">${dateLabel}</div>
+                  ${timeRange ? `<div style="font-size:12px;font-weight:700;color:${solidColor};margin-top:3px"><i class="fas fa-clock" style="margin-right:4px;font-size:10px"></i>${timeRange}</div>` : ''}
                 </div>
                 <div class="tour-countdown" data-ts="${nextTs}" style="display:flex;gap:5px;align-items:center;flex-shrink:0">
                   <div class="cd-box" data-unit="gun"  style="background:${solidColor}12;border-radius:8px;padding:5px 8px;text-align:center;min-width:40px">
@@ -1423,8 +1439,8 @@
       <div class="flex gap-3">
         <div class="w-16 h-16 bg-gradient-to-br ${grad} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas ${icon} text-white text-xl"></i></div>
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 flex-wrap"><span class="font-medium text-sm">${t.title}</span><span class="status-dot ${t.status === 'aktif' ? 'bg-success' : 'bg-gray-300'}"></span></div>
-          <div class="text-xs text-gray-500">${t.price} TL &bull; ${t.sure || '—'} &bull; ${t.kapasite} kisi</div>
+          <div class="flex items-center gap-2 flex-wrap"><span class="font-semibold text-sm">${t.title||t.ad}</span><span class="status-dot ${t.status === 'aktif' ? 'bg-success' : 'bg-gray-300'}"></span></div>
+          <div class="text-xs text-gray-500 mt-0.5">${perPerson.toLocaleString('tr-TR')} TL/kişi &bull; ${t.sure || '—'} &bull; ${t.kapasite} kişi</div>
           <div class="text-xs text-gray-400 mt-0.5">${bookings} rezervasyon &bull; ${t.kalkis || '—'}</div>
         </div>
       </div>
@@ -1631,6 +1647,8 @@
         includes: [...document.querySelectorAll('.include-cb:checked')].map(c => c.value),
         hedefBaliklar: [...document.querySelectorAll('.balik-card.selected')].map(c => c.dataset.id),
         status: 'aktif',
+        durum: 'aktif',
+        ad: document.getElementById('w-title').value.trim(),
         createdAt: new Date().toISOString()
       };
       const tours = getTours();

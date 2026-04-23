@@ -159,6 +159,9 @@
 
 </div>
 <script>
+// Her açılışta temiz başlangıç — mevcut veriyi sil
+localStorage.clear();
+
 // ================================================================
 // YARDIMCI FONKSİYONLAR
 // ================================================================
@@ -354,7 +357,9 @@ function genTours(captains,n=45,ciroHedef=0){
     const ad=adlar[Math.floor(i/TUR_SABLONLARI.length)%adlar.length]||adlar[0];
     const imgs=HERO_IMGS[kat]||HERO_IMGS['Tekne Gezisi'];
     const heroImage=imgs[i%imgs.length];
-    const price=rndInt(Math.max(50,Math.ceil(sab.fMin*priceScale/50)*50), Math.max(100,Math.floor(sab.fMax*priceScale/50)*50));
+    // fMin/fMax = kişi başı TL; tekne fiyatı = kişi başı × kapasite
+    const perP=rndInt(Math.max(50,Math.ceil(sab.fMin*priceScale/50)*50), Math.max(100,Math.floor(sab.fMax*priceScale/50)*50));
+    const price=perP*cap.kapasite;
 
     // Kaptanın seçtiği tur tarihlerini simüle et — gelecek 90 gün içinde rastgele 4-8 tarih
     function genTarihler(){
@@ -522,9 +527,10 @@ function genBookings(tours,customers,rezHedef=400){
       const tarih=fmtDate(daysOffset);
       const saat=rnd(tour.saatler||['09:00']);
       const customer=customers[rndInt(0,customers.length-1)];
-      const turFiyat=tour.price;
+      const perPerson=Math.round((tour.price||0)/Math.max(1,tour.kapasite||8));
+      const turFiyat=perPerson*guests;
       const hizmetBedeli=Math.round(turFiyat*0.1);
-      const amount=(turFiyat+hizmetBedeli)*guests;
+      const amount=turFiyat+hizmetBedeli;
       const createdAt=new Date(Date.now()-rndInt(1,180)*24*3600000).toISOString();
 
       // Ödeme bilgileri — sadece ödemesi yapılmış rezervasyonlar için
@@ -939,7 +945,8 @@ function generateScenarioData(){
         const sab=TUR_SABLONLARI[si];
         const bolgeInfo=BOLGELER.find(b=>b.bolge===cap.bolge)||BOLGELER[0];
         const imgs=HERO_IMGS[sab.kat]||HERO_IMGS['Tekne Gezisi'];
-        const price=Math.round((sab.fMin+sab.fMax)/2/50)*50;
+        const perPScen=Math.round((sab.fMin+sab.fMax)/2/50)*50;
+        const price=perPScen*cap.kapasite;
         const now=new Date();
         const tarihler=days.map(d=>new Date(now.getTime()+d*86400000).toISOString().slice(0,10));
         scenTours.push({
@@ -1008,8 +1015,10 @@ function generateScenarioData(){
         const t=scenTours[ti%scenTours.length];
         const c=scenCusts[ci%scenCusts.length];
         const odemeYapildi=durum==='tamamlandi'||durum==='onaylandi';
-        const hizmet=Math.round(t.price*0.1);
-        const amount=(t.price+hizmet)*guests;
+        const perP=Math.round((t.price||0)/Math.max(1,t.kapasite||8));
+        const turFiyatScen=perP*guests;
+        const hizmet=Math.round(turFiyatScen*0.1);
+        const amount=turFiyatScen+hizmet;
         const komisyon=Math.round(amount*0.025);
         const kaptanNet=Math.round(amount*0.9-komisyon);
         const createdAt=new Date(now2.getTime()-Math.abs(dOff)*24*3600000-2*3600000).toISOString();
@@ -1023,7 +1032,7 @@ function generateScenarioData(){
           id:'BK'+id, tourId:t.id, tourTitle:t.title,
           captainEmail:t.captainEmail, captainName:t.captainName,
           customerName:c.name, customerEmail:c.email, customerPhone:c.phone,
-          guests, durum, amount, turFiyat:t.price, hizmetBedeli:hizmet, komisyon, kaptanNet,
+          guests, durum, amount, turFiyat:turFiyatScen, hizmetBedeli:hizmet, komisyon, kaptanNet,
           tarih:fmtD(dOff), saat:t.saatler[0]||'09:00', note,
           loc:t.kalkis||t.konum||'',
           odemeYapildi, odemeYontemi:yontem, odemeRef:payRef, odemeZamani:payTime,

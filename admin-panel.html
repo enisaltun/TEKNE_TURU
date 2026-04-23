@@ -6359,7 +6359,7 @@ function mcSetFilter(f){
 }
 
 function openCreateDisruptionModal(){
-  const tours=lsGet('db_tours',[]).filter(t=>t.durum==='aktif'||t.durum==='yayinda');
+  const tours=lsGet('db_tours',[]).filter(t=>t.durum==='aktif'||t.durum==='yayinda'||t.status==='aktif');
   const sel=document.getElementById('cd-tour');
   if(sel)sel.innerHTML='<option value="">— Tur Seçin —</option>'+tours.map(t=>`<option value="${t.id}">${t.ad||t.title||'Tur'} — ${t.captainName||t.captainEmail||''}</option>`).join('');
   const prev=document.getElementById('cd-affected-preview');
@@ -6443,7 +6443,7 @@ function openReassignModal(disruptionId){
     const badge=r?(r.status==='pending'?'<span class="badge bg-amber-100 text-amber-700 text-[10px]">Teklif Gönderildi</span>':r.status==='accepted'?'<span class="badge bg-green-100 text-success text-[10px]">Kabul Etti</span>':'<span class="badge bg-red-100 text-danger text-[10px]">Reddetti</span>'):'';
     return`<div class="flex items-center justify-between p-3 border rounded-xl text-sm mb-2"><div class="flex items-center gap-2"><div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xs">${(b.customerName||'?')[0].toUpperCase()}</div><div><div class="font-medium text-sm">${b.customerName||'Bilinmiyor'}</div><div class="text-xs text-gray-400">${b.guests} kişi</div></div></div>${badge}</div>`;
   }).join('')||'<div class="text-gray-400 text-sm text-center py-3">Etkilenen müşteri yok</div>';
-  const tours=lsGet('db_tours',[]).filter(t=>String(t.id)!==String(d.tourId)&&(t.durum==='aktif'||t.durum==='yayinda'));
+  const tours=lsGet('db_tours',[]).filter(t=>String(t.id)!==String(d.tourId)&&(t.durum==='aktif'||t.durum==='yayinda'||t.status==='aktif'));
   const al=document.getElementById('rm-alt-tours');
   if(al)al.innerHTML=tours.length?tours.map(t=>`
     <label class="flex items-center gap-3 border rounded-xl p-3 cursor-pointer hover:border-primary/50 transition has-[:checked]:border-primary has-[:checked]:bg-blue-50 mb-2">

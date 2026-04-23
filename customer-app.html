@@ -386,7 +386,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
         <div class="flex justify-between font-bold text-base"><span>Toplam</span><span class="text-primary" id="b-total">—</span></div>
       </div>
     </div>
-    <button onclick="navigateTo('payment')" class="w-full bg-accent text-white py-3.5 rounded-xl font-bold text-base mb-4"><i class="fas fa-arrow-right mr-2"></i>Odemeye Gec</button>
+    <button id="booking-proceed-btn" onclick="navigateTo('payment')" class="w-full bg-accent text-white py-3.5 rounded-xl font-bold text-base mb-4"><i class="fas fa-arrow-right mr-2"></i>Odemeye Gec</button>
     <div class="text-center text-[10px] text-gray-400 mb-4"><i class="fas fa-shield-alt text-success mr-1"></i>Guvenli odeme &bull; 24 saat ucretsiz iptal</div>
   </div>
 </section>
@@ -1098,22 +1098,7 @@ const TOUR_IMG_MAP={
   kurumsal: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=500&fit=crop&q=80',
 };
 
-const SAMPLE=[
-  {id:1,name:'Balik Avi Turu',loc:'Kemer',price:1800,rating:4.9,reviews:124,dur:'6 saat',cat:'balik',kapasite:8,saatler:['06:00','07:00'],includes:['Ekipman & Olta','Yem','Can yelegi','Cay/Kahve'],desc:'Antalya Kemer aciklaylarinda profesyonel balik avi. Trolling ve jigging teknikleri.',
-   gunler:['Cmt','Paz','Pzt'],heroImage:'https://images.unsplash.com/photo-1463639240977-60e040efa9be?w=800&h=500&fit=crop&q=80'},
-  {id:2,name:'12 Adalar Gezi',loc:'Fethiye',price:600,rating:4.8,reviews:89,dur:'8 saat',cat:'gezi',kapasite:12,saatler:['09:00','10:00'],includes:['Ogle yemegi','Snorkel ekipmani','Muzik'],desc:'Fethiye koylarinda 12 ada turu. Yuzme ve snorkel molalari.',
-   gunler:['Pzt','Sal','Car','Per','Cum','Cmt','Paz'],heroImage:'https://images.unsplash.com/photo-1568702846914-96b305d2ead1?w=800&h=500&fit=crop&q=80'},
-  {id:3,name:'Gun Batimi Ozel Turu',loc:'Bodrum',price:4500,rating:5.0,reviews:34,dur:'3 saat',cat:'ozel',kapasite:6,saatler:['18:00','19:00'],includes:['Dekorasyon','Pasta','Sampanya','Fotografci'],desc:'Bodrum manzarasinda romantik gun batimi.',
-   gunler:['Cmt','Paz'],heroImage:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&h=500&fit=crop&q=80'},
-  {id:4,name:'Kekova Yuzme Turu',loc:'Kas',price:450,rating:4.7,reviews:67,dur:'5 saat',cat:'yuzme',kapasite:10,saatler:['10:00','11:00'],includes:['Snorkel ekipmani','Sandvic','Can yelegi'],desc:'Kekova sularinda batik sehir ve berrak deniz.',
-   gunler:['Pzt','Car','Cum','Cmt','Paz'],heroImage:'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=500&fit=crop&q=80'},
-  {id:5,name:'Kurumsal Team Building',loc:'Istanbul',price:8000,rating:4.8,reviews:22,dur:'4 saat',cat:'kurumsal',kapasite:20,saatler:['09:00','14:00'],includes:['Catering','Sunum ekipmani','Wifi'],desc:'Kurumsal etkinlikler icin ozel tekne.',
-   gunler:['Pzt','Sal','Car','Per','Cum'],heroImage:'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=500&fit=crop&q=80'},
-  {id:6,name:'Alanya Trolling',loc:'Alanya',price:2200,rating:4.6,reviews:55,dur:'8 saat',cat:'balik',kapasite:6,saatler:['05:30','06:00'],includes:['Profesyonel ekipman','Yem','Cay'],desc:'Alanya aciklaylarinda derin su trolling.',
-   gunler:['Cmt','Paz'],heroImage:'https://images.unsplash.com/photo-1498745277870-da59c82cda08?w=800&h=500&fit=crop&q=80'},
-  {id:7,name:'Romantik Gun Batimi',loc:'Bodrum',price:1200,rating:4.9,reviews:156,dur:'2 saat',cat:'gunbatimi',kapasite:4,saatler:['18:30','19:00'],includes:['Sampanya','Cicekler','Muzik'],desc:'Bodrum gunbatiminde romantic tekne turu.',
-   gunler:['Pzt','Sal','Car','Per','Cum','Cmt','Paz'],heroImage:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=500&fit=crop&q=80'},
-];
+const SAMPLE=[];
 
 const BALIK_LIST=[
   {id:'palamut', ad:'Palamut', img:'RESIMLER/BALIK%20RESIMLERI/stitch_boat_tour_image_generator/a_detailed_scientific_illustration_of_a_palamut_bonito_fish_following_the_exact/screen.png'},
@@ -1151,8 +1136,6 @@ function _gunlerToIso(gunler){
   });
   return result.sort();
 }
-// tarihler[] geçmiş tarihlerle doluysa gunler[] fallback'ini dene;
-// ikisi de yoksa/geçmişse → sonraki 8 haftasonu göster (eski seed verisi uyumluluğu)
 function _activeDates(t){
   const today=new Date();today.setHours(0,0,0,0);
   if(t.tarihler?.length){
@@ -1160,18 +1143,18 @@ function _activeDates(t){
     if(fut.length)return fut.sort();
   }
   if(t.gunler?.length)return _gunlerToIso(t.gunler);
-  // Acil fallback: tarihler/gunler yoksa sonraki 8 Cumartesi+Pazar üret
-  return _gunlerToIso(['Cmt','Paz']);
+  return [];
 }
 
 function getDbTours(){
   return S.get('db_tours',[])
-    .filter(t=>t.durum==='aktif'||t.aktif===true)
+    .filter(t=>t.durum==='aktif'||t.aktif===true||t.status==='aktif')
     .map(t=>{
       const cat=DB_CAT[t.kategoriler?.[0]||'Tekne Gezisi']||'gezi';
       const tarihler=_activeDates(t);
       const boatPrice=t.price||t.fiyat||0;const kap=t.kapasite||8;
-      return{id:t.id,name:t.ad||t.title||'Tur',loc:t.kalkis||t.konum||'Turkiye',price:boatPrice,perPerson:Math.round(boatPrice/kap),rating:t.puan||4.8,reviews:t.inceleme||0,dur:t.sure||'—',cat,kapasite:kap,tarihler,gunler:t.gunler||[],saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||(t.dahil||'').split('\n').filter(Boolean)||[],hedefBaliklar:t.hedefBaliklar||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,heroImage:t.heroImage||null,_db:true};
+      const perPerson=Math.round(boatPrice/kap);
+      return{id:t.id,name:t.ad||t.title||'Tur',loc:t.kalkis||t.konum||'Turkiye',price:boatPrice,perPerson,rating:t.puan||4.8,reviews:t.inceleme||0,dur:t.sure||'—',cat,kapasite:kap,tarihler,gunler:t.gunler||[],saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||(t.dahil||'').split('\n').filter(Boolean)||[],hedefBaliklar:t.hedefBaliklar||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,heroImage:t.heroImage||null,_db:true};
     });
 }
 
@@ -1291,6 +1274,12 @@ function renderHome(){
   document.getElementById('home-avatar').textContent=(p.name||'M')[0].toUpperCase();
   const favs=S.get('cu_favs',[]);
 
+  const emptyHtml=`<div class="flex flex-col items-center justify-center py-10 gap-3 text-center px-6"><i class="fas fa-ship text-gray-200 text-5xl"></i><p class="text-gray-400 text-sm font-medium">Henüz tur yok</p><p class="text-gray-300 text-xs">Seed data sayfasından veri üretin</p></div>`;
+  if(!tours.length){
+    document.getElementById('nearby-tours').innerHTML=emptyHtml;
+    document.getElementById('popular-tours-app').innerHTML=emptyHtml;
+    return;
+  }
   document.getElementById('nearby-tours').innerHTML=tours.slice(0,5).map(t=>{
     const m=CM[t.cat]||CM.gezi;
     const _h1=t.heroImage||TOUR_IMG_MAP[t.cat]||'';
@@ -1398,7 +1387,7 @@ function resetFilters(){document.getElementById('flt-min').value='';document.get
 
 function go(id,page){
   rebuildTourMap();
-  if(tourMap[id]){selTour=tourMap[id];selDate=null;selTime=null;}
+  if(tourMap[id]){selTour=tourMap[id];selDate=null;selTime=null;guestVal=2;}
   navigateTo(page);
 }
 
@@ -1584,6 +1573,20 @@ function renderBooking(){
   if(!selTime)selTime=slots[0];
   document.getElementById('time-strip').innerHTML=slots.map(s=>`<div class="time-btn${selTime===s?' sel':''}" onclick="pickTime('${s}',this)">${s}</div>`).join('');
 
+  // Tarih yoksa fiyat ve CTA'yı devre dışı bırak
+  const noDate=!upcomingISO.length;
+  const priceCard=document.querySelector('#page-booking .card.p-4');
+  if(priceCard)priceCard.style.opacity=noDate?'0.35':'1';
+  const proceedBtn=document.getElementById('booking-proceed-btn');
+  if(proceedBtn){
+    proceedBtn.disabled=noDate;
+    proceedBtn.style.opacity=noDate?'0.4':'1';
+    proceedBtn.style.pointerEvents=noDate?'none':'auto';
+    proceedBtn.innerHTML=noDate
+      ?'<i class="fas fa-calendar-times mr-2"></i>Uygun Tarih Yok'
+      :'<i class="fas fa-arrow-right mr-2"></i>Odemeye Gec';
+  }
+
   updPrice();
 }
 
@@ -1627,8 +1630,9 @@ function adjGuest(d){
   updPrice();
 }
 function calcBookingPrice(t,guests){
-  const perPerson=Math.round((t.price||0)/(t.kapasite||8));
-  const fee=perPerson*Math.max(1,guests||guestVal);
+  const perPerson=t.perPerson||Math.round((t.price||0)/(t.kapasite||8));
+  const g=Math.max(1,guests||guestVal);
+  const fee=perPerson*g;
   const svc=Math.round(fee*.1);
   return{perPerson,fee,svc,total:fee+svc};
 }
