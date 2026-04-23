@@ -1234,27 +1234,17 @@ function resetAllData(){
   // localStorage.clear() ile tüm key'leri (db_, cu_, cp_, captain_, bk_...) tek seferde sil
   localStorage.clear();
 
-  document.getElementById('progress-card').classList.remove('hidden');
-  document.getElementById('results').classList.add('hidden');
-  setProgress(100,'Sistem sıfırlandı — tüm veriler silindi.');
+  // Verify: hepsi silindi mi?
+  const remaining = localStorage.length;
+  const msg = remaining === 0
+    ? 'Tüm veriler silindi! Sayfa yenileniyor...'
+    : `Uyarı: ${remaining} key kaldı. Sayfa yenileniyor...`;
 
-  document.getElementById('result-summary').textContent='Tüm veriler temizlendi.';
-  document.getElementById('result-stats').innerHTML=`
-    <div class="col-span-4 bg-red-50 rounded-lg p-4 text-center">
-      <div class="text-red-600 font-bold text-lg mb-1"><i class="fas fa-check-circle mr-2"></i>Sistem Sıfırlandı</div>
-      <div class="text-sm text-gray-500">localStorage tamamen temizlendi. Diğer panel sekmelerini de yenileyin.</div>
-    </div>
-  `;
-  document.getElementById('top-customers-card').style.display='none';
-  document.getElementById('first-customer-email').textContent='—';
-  document.getElementById('pay-count').textContent='—';
-  document.getElementById('results').classList.remove('hidden');
-  document.getElementById('seedBtn').disabled=false;
-  document.getElementById('seedBtn').innerHTML='<i class="fas fa-magic mr-1"></i>Tam Rastgele Set<div class="text-[10px] font-normal opacity-80 mt-0.5">Parametrelere göre tam veri seti</div>';
-  document.getElementById('minimalBtn').disabled=false;
-  document.getElementById('minimalBtn').innerHTML='<i class="fas fa-seedling mr-1"></i>Minimal Set<div class="text-[10px] font-normal opacity-80 mt-0.5">20 kaptan · 0 satış</div>';
-  document.getElementById('scenarioBtn').disabled=false;
-  document.getElementById('scenarioBtn').innerHTML='<i class="fas fa-film mr-2"></i>Senaryolu Gerçekçi Veri Üret<div class="text-xs font-normal opacity-80 mt-0.5">14 kaptan · 24 tur · 30 müşteri · 80 rezervasyon · mesajlar · tam senaryo</div>';
+  document.getElementById('progress-card').classList.remove('hidden');
+  setProgress(100, msg);
+
+  // 1.5 saniye bekle, sonra sayfayı yenile — temiz başlangıç noktası
+  setTimeout(() => location.reload(), 1500);
 }
 </script>
 </body>
