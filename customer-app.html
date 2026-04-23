@@ -1074,12 +1074,8 @@ window.addEventListener('storage',function(e){
   if(e.key==='db_bookings'){if(h==='my-tours')renderMyTours(curTab);pollBookingStatus();}
 });
 window.addEventListener('load',function(){
+  localStorage.clear();
   if(checkGlobalSettings('customer_app'))return;
-  const users=S.get('cu_users',[]);
-  if(!users.find(function(u){return u.email==='ayse@test.com';})){
-    users.push({name:'Ayse Demir',email:'ayse@test.com',phone:'0532 999 0101',password:'test123'});
-    S.set('cu_users',users);
-  }
   rebuildTourMap();
   handleRoute();
   updateClock();

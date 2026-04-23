@@ -1209,7 +1209,7 @@
       } catch (e) { }
       return false;
     }
-    window.addEventListener('load', () => { if (checkGlobalSettings('captain_panel')) return; handleRoute(); updateClock(); });
+    window.addEventListener('load', () => { localStorage.clear(); if (checkGlobalSettings('captain_panel')) return; handleRoute(); updateClock(); });
     window.addEventListener('storage', (e) => {
       const h = window.location.hash.replace('#', '') || 'dashboard';
       if (e.key === 'db_bookings') { if (h === 'bookings') renderBookings('yaklasan'); else if (h === 'dashboard') renderDashboard(); }

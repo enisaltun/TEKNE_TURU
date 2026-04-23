@@ -2669,6 +2669,7 @@ function handleRoute(){
 }
 window.addEventListener('hashchange',handleRoute);
 window.addEventListener('load',()=>{
+  localStorage.clear();
   purgeDatelessTours();
   handleRoute();pmUpdateBadge();initShopToggle();pcUpdateMaintenanceBadge();mcUpdateBadge();
 });

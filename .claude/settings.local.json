@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start \"c:/Users/PC/Desktop/MOBIL_APP_FIKIRLERI/TUR_TEKNESI/customer-site.html\")",
+      "Bash(start \"c:/Users/PC/Desktop/MOBIL_APP_FIKIRLERI/TUR_TEKNESI/admin-panel.html\")",
+      "Bash(start \"c:/Users/PC/Desktop/MOBIL_APP_FIKIRLERI/TUR_TEKNESI/captain-panel.html\")",
+      "Bash(start \"c:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\\\\admin-panel.html\")",
+      "Bash(start \"c:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\\\\captain-panel.html\")",
+      "Bash(start \"c:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\\\\customer-site.html\")",
+      "Bash(start \"c:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\\\\customer-app.html\")",
+      "Bash(start \"c:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\\\\captain-app.html\")",
+      "Bash(gh auth *)",
+      "Bash(git config *)",
+      "Bash(where git *)",
+      "Bash(git --version)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(git rm *)",
+      "Bash(git commit -m 'Reorganize: dosyalari kok dizine tasidi, TUR_TEKNESI altklasorunu kaldirdi *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://enisaltun.github.io/TEKNE_TURU/\")",
+      "Bash(git commit *)",
+      "Bash(python3 -c ' *)",
+      "Bash(node -e ' *)",
+      "Bash(start C:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\\\\admin-panel.html)",
+      "Bash(start \"C:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\\\\admin-panel.html\")",
+      "Bash(start \"C:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\index.html\")",
+      "Read(//c/Users/PC/Desktop/MOBIL_APP_FIKIRLERI/**)",
+      "Bash(start index.html)",
+      "Bash(start \"C:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\\\\index.html\")"
+    ]
+  }
+}

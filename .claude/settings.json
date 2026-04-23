@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(read dir *)",
+      "Bash(git -C \"c:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\" status)",
+      "Bash(git -C \"c:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\" log --oneline -5)",
+      "Bash(git -C \"c:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\" remote -v)",
+      "Read(//c/Users/PC/.claude/projects/c--Users-PC-Desktop-MOBIL-APP-FIKIRLERI-TUR-TEKNESI/**)"
+    ]
+  }
+}
