@@ -659,16 +659,39 @@
             <div class="text-xs text-gray-500 mt-1" id="per-person-calc"></div>
           </div>
           <div>
-            <label class="text-xs font-medium text-gray-500 mb-2 block">Musait Gunler</label>
-            <div class="flex flex-wrap gap-2">
-              <div class="pill day-pill selected" onclick="toggleCat(this)" data-val="Pzt">Pzt</div>
-              <div class="pill day-pill selected" onclick="toggleCat(this)" data-val="Sal">Sal</div>
-              <div class="pill day-pill selected" onclick="toggleCat(this)" data-val="Car">Car</div>
-              <div class="pill day-pill selected" onclick="toggleCat(this)" data-val="Per">Per</div>
-              <div class="pill day-pill selected" onclick="toggleCat(this)" data-val="Cum">Cum</div>
-              <div class="pill day-pill selected" onclick="toggleCat(this)" data-val="Cmt">Cmt</div>
-              <div class="pill day-pill selected" onclick="toggleCat(this)" data-val="Paz">Paz</div>
+            <label class="text-xs font-medium text-gray-500 mb-2 block" style="display:flex;align-items:center;justify-content:space-between">
+              <span>Tur Tarihleri <span style="color:#ef4444">*</span></span>
+              <span id="panel-cal-count" style="font-size:10px;color:#0369a1;font-weight:700"></span>
+            </label>
+            <p class="text-[11px] text-gray-400 mb-3">Turun gerçekleşeceği günleri seçin. Birden fazla tarih seçebilirsiniz.</p>
+            <!-- Hızlı seçim -->
+            <div style="background:#f0f9ff;border-radius:10px;padding:8px 10px;margin-bottom:10px">
+              <div style="font-size:9px;font-weight:800;color:#0369a1;letter-spacing:.5px;margin-bottom:6px">HIZLI EKLE</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px">
+                <button type="button" onclick="panelAddNextWeekdays(6,4)" style="font-size:10px;font-weight:700;background:#0369a1;color:#fff;border:none;border-radius:16px;padding:4px 10px;cursor:pointer">4 Cumartesi</button>
+                <button type="button" onclick="panelAddNextWeekdays(0,4)" style="font-size:10px;font-weight:700;background:#0369a1;color:#fff;border:none;border-radius:16px;padding:4px 10px;cursor:pointer">4 Pazar</button>
+                <button type="button" onclick="panelAddNextWeekdays(5,4)" style="font-size:10px;font-weight:700;background:#0369a1;color:#fff;border:none;border-radius:16px;padding:4px 10px;cursor:pointer">4 Cuma</button>
+                <button type="button" onclick="panelAddNextWeekdays(6,8)" style="font-size:10px;font-weight:700;background:#075985;color:#fff;border:none;border-radius:16px;padding:4px 10px;cursor:pointer">8 Cumartesi</button>
+                <button type="button" onclick="panelClearDates()" style="font-size:10px;font-weight:700;background:#fff;color:#ef4444;border:1px solid #fca5a5;border-radius:16px;padding:4px 10px;cursor:pointer">Temizle</button>
+              </div>
             </div>
+            <!-- Ay navigasyonu -->
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:10px;padding:5px 10px;margin-bottom:8px">
+              <button type="button" onclick="panelCalPrev()" style="width:32px;height:32px;border:none;border-radius:8px;background:#e2e8f0;cursor:pointer;font-size:18px;color:#475569;line-height:1">‹</button>
+              <div id="panel-cal-label" style="font-weight:800;font-size:13px;color:#0f172a;text-align:center"></div>
+              <button type="button" onclick="panelCalNext()" style="width:32px;height:32px;border:none;border-radius:8px;background:#e2e8f0;cursor:pointer;font-size:18px;color:#475569;line-height:1">›</button>
+            </div>
+            <!-- Gün başlıkları -->
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-bottom:3px">
+              <div style="font-size:9px;font-weight:800;color:#94a3b8">Pt</div><div style="font-size:9px;font-weight:800;color:#94a3b8">Sa</div><div style="font-size:9px;font-weight:800;color:#94a3b8">Ça</div><div style="font-size:9px;font-weight:800;color:#94a3b8">Pe</div><div style="font-size:9px;font-weight:800;color:#94a3b8">Cu</div><div style="font-size:9px;font-weight:800;color:#64748b">Ct</div><div style="font-size:9px;font-weight:800;color:#64748b">Pz</div>
+            </div>
+            <div id="panel-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px"></div>
+            <!-- Seçili tarihler -->
+            <div id="panel-cal-selected-wrap" style="display:none;margin-top:10px;background:#eff6ff;border-radius:10px;padding:8px 10px">
+              <div style="font-size:9px;font-weight:800;color:#1d4ed8;margin-bottom:6px">SEÇİLİ TARİHLER</div>
+              <div id="panel-cal-selected-list" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+            </div>
+            <div id="panel-cal-empty-warn" style="display:none;margin-top:6px;padding:7px 10px;background:#fef2f2;border-radius:8px;font-size:11px;color:#dc2626;font-weight:600"><i class="fas fa-exclamation-circle" style="margin-right:4px"></i>En az 1 tarih seçmelisiniz</div>
           </div>
           <div>
             <label class="text-xs font-medium text-gray-500 mb-2 block">Kalkis Saatleri</label>
@@ -1703,7 +1726,7 @@
     function resetWizard() {
       document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
       document.querySelectorAll('.dur-pill').forEach(p => p.classList.remove('selected'));
-      document.querySelectorAll('.day-pill').forEach(p => p.classList.add('selected'));
+      panelWizardDates=[];panelCalY=new Date().getFullYear();panelCalM=new Date().getMonth();panelRenderCal();
       document.querySelectorAll('.time-pill').forEach(p => p.classList.remove('selected'));
       document.querySelectorAll('.include-cb').forEach(cb => { cb.checked = cb.value === 'Can yelekleri' || cb.value === 'Cay / Kahve'; });
       document.querySelectorAll('.balik-card').forEach(c => c.classList.remove('selected'));
@@ -1731,7 +1754,7 @@
         }
         if (currentStep === 3) {
           if (!document.getElementById('w-price').value) { showToast('Fiyat girin', 'danger'); return; }
-          if (!document.querySelectorAll('.day-pill.selected').length) { showToast('En az bir musait gun secin', 'danger'); return; }
+          if (!panelWizardDates.length) { document.getElementById('panel-cal-empty-warn').style.display='block'; showToast('En az bir tur tarihi secin', 'danger'); return; }
           if (!document.querySelectorAll('.time-pill.selected').length) { showToast('En az bir kalkis saati secin', 'danger'); return; }
         }
         if (currentStep === 5) return;
@@ -1742,6 +1765,7 @@
       document.getElementById('wizard-' + newStep).style.display = 'block';
       currentStep = newStep;
       updateWizardUI();
+      if (currentStep === 3) panelRenderCal();
       if (currentStep === 4) { renderBalikGrid(); updateHedefBalikVisibility(); }
       if (currentStep === 5) buildPreview();
     }
@@ -1779,17 +1803,73 @@
 
     let editingTourId = null;
 
+    /* ── PANEL TAKVİM ── */
+    let panelWizardDates=[], panelCalY=new Date().getFullYear(), panelCalM=new Date().getMonth();
+    function panelCalPrev(){panelCalM--;if(panelCalM<0){panelCalM=11;panelCalY--;}panelRenderCal();}
+    function panelCalNext(){panelCalM++;if(panelCalM>11){panelCalM=0;panelCalY++;}panelRenderCal();}
+    function panelRenderCal(){
+      const TR_MONTHS=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+      const lbl=document.getElementById('panel-cal-label');if(lbl)lbl.textContent=TR_MONTHS[panelCalM]+' '+panelCalY;
+      const grid=document.getElementById('panel-cal-grid');if(!grid)return;
+      const today=new Date();today.setHours(0,0,0,0);
+      const startOffset=(new Date(panelCalY,panelCalM,1).getDay()+6)%7;
+      const daysInMonth=new Date(panelCalY,panelCalM+1,0).getDate();
+      let html='';
+      for(let i=0;i<startOffset;i++)html+=`<div></div>`;
+      for(let d=1;d<=daysInMonth;d++){
+        const iso=`${panelCalY}-${String(panelCalM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const date=new Date(panelCalY,panelCalM,d);
+        const isPast=date<today;
+        const isSel=panelWizardDates.includes(iso);
+        const isWeekend=(date.getDay()===0||date.getDay()===6);
+        let bg,txt,border='none',fontW='500',cursor='pointer',extra='';
+        if(isPast){bg='#f1f5f9';txt='#d1d5db';cursor='default';}
+        else if(isSel){bg='#0369a1';txt='#fff';fontW='800';extra='box-shadow:0 2px 6px rgba(3,105,161,.3)';}
+        else if(isWeekend){bg='#fefce8';txt='#92400e';}
+        else{bg='#f8fafc';txt='#374151';}
+        html+=`<div onclick="${isPast?'':'panelToggleDate(\''+iso+'\')'}" style="min-height:38px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;font-weight:${fontW};background:${bg};color:${txt};border:${border};cursor:${cursor};${extra}">${d}</div>`;
+      }
+      grid.innerHTML=html;
+      const sorted=[...panelWizardDates].sort();
+      const count=document.getElementById('panel-cal-count');if(count)count.textContent=sorted.length?sorted.length+' tarih seçildi':'';
+      const wrap=document.getElementById('panel-cal-selected-wrap');if(wrap)wrap.style.display=sorted.length?'block':'none';
+      const list=document.getElementById('panel-cal-selected-list');
+      if(list)list.innerHTML=sorted.map(iso=>{
+        const [y,m,d]=iso.split('-');
+        const label=new Date(+y,+m-1,+d).toLocaleDateString('tr-TR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+        return`<span style="display:inline-flex;align-items:center;gap:4px;background:#fff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:20px;font-size:10px;font-weight:700;padding:3px 8px">${label}<span onclick="panelToggleDate('${iso}')" style="cursor:pointer;color:#93c5fd;font-size:14px;line-height:1">×</span></span>`;
+      }).join('');
+    }
+    function panelToggleDate(iso){
+      const idx=panelWizardDates.indexOf(iso);
+      if(idx>=0)panelWizardDates.splice(idx,1);else panelWizardDates.push(iso);
+      document.getElementById('panel-cal-empty-warn').style.display='none';
+      panelRenderCal();
+    }
+    function panelAddNextWeekdays(dow,count){
+      const today=new Date();today.setHours(0,0,0,0);
+      let added=0,cur=new Date(today);cur.setDate(cur.getDate()+1);
+      while(added<count){
+        if(cur.getDay()===dow){const iso=cur.toISOString().slice(0,10);if(!panelWizardDates.includes(iso)){panelWizardDates.push(iso);added++;}}
+        cur.setDate(cur.getDate()+1);
+        if(cur-today>400*86400000)break;
+      }
+      if(panelWizardDates.length){const fd=new Date([...panelWizardDates].sort()[0]);panelCalY=fd.getFullYear();panelCalM=fd.getMonth();}
+      document.getElementById('panel-cal-empty-warn').style.display='none';
+      panelRenderCal();
+    }
+    function panelClearDates(){panelWizardDates=[];panelRenderCal();}
+
     function publishTour() {
       const cats = [...document.querySelectorAll('.cat-pill.selected')].map(p => p.dataset.val || p.textContent.trim());
       const loc = document.getElementById('w-loc').value;
       const priceVal = +document.getElementById('w-price').value;
       const adVal = document.getElementById('w-title').value.trim();
-      const gunlerSel = [...document.querySelectorAll('.day-pill.selected')].map(p => p.dataset.val);
       const saatlerSel = [...document.querySelectorAll('.time-pill.selected')].map(p => p.dataset.val);
       if (!adVal) { showToast('Tur adi zorunlu', 'danger'); return; }
       if (!loc) { showToast('Kalkis noktasi secin', 'danger'); return; }
       if (!priceVal) { showToast('Fiyat girin', 'danger'); return; }
-      if (!gunlerSel.length) { showToast('En az bir musait gun secin', 'danger'); return; }
+      if (!panelWizardDates.length) { document.getElementById('panel-cal-empty-warn').style.display='block'; showToast('En az bir tur tarihi secin', 'danger'); return; }
       if (!saatlerSel.length) { showToast('En az bir kalkis saati secin', 'danger'); return; }
       const tours = getTours();
       const now = new Date().toISOString();
@@ -1804,9 +1884,9 @@
           t.kapasite = capacity;
           t.kalkis = loc; t.konum = loc; t.bolge = loc;
           t.fiyat = priceVal; t.price = priceVal;
-          t.gunler = gunlerSel;
+          t.gunler = [];
           t.saatler = saatlerSel;
-          t.tarihler = expandGunlerToTarihler(gunlerSel);
+          t.tarihler = [...panelWizardDates].sort();
           t.includes = [...document.querySelectorAll('.include-cb:checked')].map(c => c.value);
           t.hedefBaliklar = [...document.querySelectorAll('.balik-card.selected')].map(c => c.dataset.id);
           t.durum = 'bekliyor'; t.status = 'bekliyor'; t.aktif = false;
@@ -1836,8 +1916,8 @@
         bolge:  loc,
         price:  priceVal,
         fiyat:  priceVal,
-        tarihler: expandGunlerToTarihler(gunlerSel),
-        gunler: gunlerSel,
+        tarihler: [...panelWizardDates].sort(),
+        gunler: [],
         saatler: [...document.querySelectorAll('.time-pill.selected')].map(p => p.dataset.val),
         includes: [...document.querySelectorAll('.include-cb:checked')].map(c => c.value),
         hedefBaliklar: [...document.querySelectorAll('.balik-card.selected')].map(c => c.dataset.id),
@@ -1881,10 +1961,12 @@
       document.querySelectorAll('.dur-pill').forEach(p => {
         p.classList.toggle('selected', p.dataset.val === t.sure);
       });
-      // Days
-      document.querySelectorAll('.day-pill').forEach(p => {
-        p.classList.toggle('selected', (t.gunler || []).includes(p.dataset.val));
-      });
+      // Tarihler — mevcut tarihler varsa onları al, yoksa gunler'den genişlet
+      panelWizardDates = t.tarihler?.length ? [...t.tarihler] : expandGunlerToTarihler(t.gunler||[]);
+      // Geçmiş tarihleri temizle
+      const nowMs=Date.now(); panelWizardDates=panelWizardDates.filter(iso=>new Date(iso).getTime()>=nowMs-86400000);
+      if(panelWizardDates.length){const fd=new Date([...panelWizardDates].sort()[0]);panelCalY=fd.getFullYear();panelCalM=fd.getMonth();}
+      panelRenderCal();
       // Times
       document.querySelectorAll('.time-pill').forEach(p => {
         p.classList.toggle('selected', (t.saatler || []).includes(p.dataset.val));
