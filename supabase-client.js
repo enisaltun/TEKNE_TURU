@@ -18,9 +18,9 @@
 // ================================================================
 // YAPILANDIRMA — Supabase projenizden alın
 // ================================================================
-const SUPABASE_URL  = 'https://PROJE_ID.supabase.co';   // <-- değiştirin
-const SUPABASE_KEY  = 'ANON_PUBLIC_KEY';                  // <-- değiştirin
-const DB_MODE       = 'local';   // 'local' | 'remote'
+const SUPABASE_URL  = 'https://vkmvcedjjgtpldojzwue.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_vHp_1Yd6hRsf9tVepG_luQ_DO9ICf64';
+const DB_MODE       = 'remote';  // 'local' | 'remote'
 
 // ================================================================
 // CLIENT BAŞLATMA
