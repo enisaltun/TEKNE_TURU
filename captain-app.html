@@ -475,19 +475,45 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
             <span>Tur Tarihleri <span style="color:#ef4444">*</span></span>
             <span id="cal-count-label" style="font-size:10px;color:#0369a1;font-weight:700"></span>
           </label>
-          <p class="text-[11px] text-gray-400 mb-3">Turun gerçekleşeceği günleri takvimden seçin. Müşteriler yalnızca bu tarihleri görecektir.</p>
+          <p class="text-[11px] text-gray-400 mb-3">Turun gerçekleşeceği günleri takvimden seçin. Birden fazla tarih seçebilirsiniz.</p>
+
+          <!-- Hızlı seçim -->
+          <div style="background:#f0f9ff;border-radius:10px;padding:8px 10px;margin-bottom:10px">
+            <div style="font-size:9px;font-weight:800;color:#0369a1;letter-spacing:.5px;margin-bottom:6px">HIZLI EKLE</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px">
+              <button type="button" onclick="addNextWeekdays(6,4)" style="font-size:10px;font-weight:700;background:#0369a1;color:#fff;border:none;border-radius:16px;padding:4px 10px;cursor:pointer">4 Cumartesi</button>
+              <button type="button" onclick="addNextWeekdays(0,4)" style="font-size:10px;font-weight:700;background:#0369a1;color:#fff;border:none;border-radius:16px;padding:4px 10px;cursor:pointer">4 Pazar</button>
+              <button type="button" onclick="addNextWeekdays(5,4)" style="font-size:10px;font-weight:700;background:#0369a1;color:#fff;border:none;border-radius:16px;padding:4px 10px;cursor:pointer">4 Cuma</button>
+              <button type="button" onclick="addNextWeekdays(6,8)" style="font-size:10px;font-weight:700;background:#075985;color:#fff;border:none;border-radius:16px;padding:4px 10px;cursor:pointer">8 Cumartesi</button>
+              <button type="button" onclick="clearWizardDates()" style="font-size:10px;font-weight:700;background:#fff;color:#ef4444;border:1px solid #fca5a5;border-radius:16px;padding:4px 10px;cursor:pointer">Temizle</button>
+            </div>
+          </div>
+
           <!-- Takvim navigasyon -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;background:#f8fafc;border-radius:10px;padding:6px 10px">
-            <button type="button" onclick="calPrev()" style="width:28px;height:28px;border:none;border-radius:6px;background:#e2e8f0;cursor:pointer;font-size:14px;color:#475569">‹</button>
-            <span id="cal-month-label" style="font-weight:700;font-size:13px;color:#0f172a"></span>
-            <button type="button" onclick="calNext()" style="width:28px;height:28px;border:none;border-radius:6px;background:#e2e8f0;cursor:pointer;font-size:14px;color:#475569">›</button>
+            <button type="button" onclick="calPrev()" style="width:34px;height:34px;border:none;border-radius:8px;background:#e2e8f0;cursor:pointer;font-size:18px;color:#475569;line-height:1">‹</button>
+            <div style="text-align:center">
+              <div id="cal-month-label" style="font-weight:800;font-size:14px;color:#0f172a"></div>
+              <div style="font-size:10px;color:#94a3b8;margin-top:1px">takvimde seçim yapın</div>
+            </div>
+            <button type="button" onclick="calNext()" style="width:34px;height:34px;border:none;border-radius:8px;background:#e2e8f0;cursor:pointer;font-size:18px;color:#475569;line-height:1">›</button>
           </div>
+
+          <!-- Gün başlıkları -->
           <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;margin-bottom:4px">
-            <div style="font-size:9px;font-weight:700;color:#94a3b8;padding:2px 0">Pt</div><div style="font-size:9px;font-weight:700;color:#94a3b8;padding:2px 0">Sa</div><div style="font-size:9px;font-weight:700;color:#94a3b8;padding:2px 0">Ça</div><div style="font-size:9px;font-weight:700;color:#94a3b8;padding:2px 0">Pe</div><div style="font-size:9px;font-weight:700;color:#94a3b8;padding:2px 0">Cu</div><div style="font-size:9px;font-weight:700;color:#94a3b8;padding:2px 0">Ct</div><div style="font-size:9px;font-weight:700;color:#94a3b8;padding:2px 0">Pz</div>
+            <div style="font-size:9px;font-weight:800;color:#94a3b8;padding:3px 0">Pt</div>
+            <div style="font-size:9px;font-weight:800;color:#94a3b8;padding:3px 0">Sa</div>
+            <div style="font-size:9px;font-weight:800;color:#94a3b8;padding:3px 0">Ça</div>
+            <div style="font-size:9px;font-weight:800;color:#94a3b8;padding:3px 0">Pe</div>
+            <div style="font-size:9px;font-weight:800;color:#94a3b8;padding:3px 0">Cu</div>
+            <div style="font-size:9px;font-weight:800;color:#64748b;padding:3px 0">Ct</div>
+            <div style="font-size:9px;font-weight:800;color:#64748b;padding:3px 0">Pz</div>
           </div>
           <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px"></div>
+
           <!-- Seçili tarihler chip listesi -->
-          <div id="cal-selected-wrap" style="display:none;margin-top:10px">
+          <div id="cal-selected-wrap" style="display:none;margin-top:12px;background:#eff6ff;border-radius:10px;padding:8px 10px">
+            <div style="font-size:9px;font-weight:800;color:#1d4ed8;margin-bottom:6px">SEÇİLİ TARİHLER</div>
             <div id="cal-selected-list" style="display:flex;flex-wrap:wrap;gap:4px"></div>
           </div>
           <div id="cal-empty-warn" style="display:none;margin-top:6px;padding:7px 10px;background:#fef2f2;border-radius:8px;font-size:11px;color:#dc2626;font-weight:600"><i class="fas fa-exclamation-circle" style="margin-right:4px"></i>En az 1 tarih seçmelisiniz</div>
@@ -1774,7 +1800,7 @@ function wizardStep(dir){
   document.getElementById('wizard-'+currentStep).style.display='none';
   document.getElementById('wizard-'+n).style.display='block';
   currentStep=n;updateWizardUI();
-  if(n===3)initWizardCal();
+  if(n===3)renderWizardCal(); // initWizardCal yerine: tarihleri sıfırlamadan sadece render et
   if(n===5)renderPreview();
 }
 function renderPreview(){
@@ -1912,8 +1938,7 @@ function renderWizardCal(){
 
   const today=new Date();today.setHours(0,0,0,0);
   const firstDay=new Date(calY,calM,1);
-  // Pazartesi=0 offset (getDay: 0=Paz → offset=6)
-  const startOffset=(firstDay.getDay()+6)%7;
+  const startOffset=(firstDay.getDay()+6)%7; // Pazartesi=0
   const daysInMonth=new Date(calY,calM+1,0).getDate();
 
   let html='';
@@ -1924,29 +1949,33 @@ function renderWizardCal(){
     const isPast=date<today;
     const isSel=wizardDates.includes(iso);
     const isToday=date.getTime()===today.getTime();
-    let bg='#f8fafc',txt='#374151',border='none',fontW='500',cursor='pointer';
-    if(isPast){bg='#f1f5f9';txt='#cbd5e1';cursor='default';}
-    else if(isSel){bg='#0369a1';txt='#fff';border='none';fontW='800';}
-    else if(isToday){border='2px solid #0369a1';fontW='700';}
-    html+=`<div onclick="${isPast?'':'toggleWizardDate(\''+iso+'\')'}" style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:12px;font-weight:${fontW};background:${bg};color:${txt};border:${border};cursor:${cursor};transition:all .1s">${d}</div>`;
+    const dow=date.getDay(); // 0=Paz,6=Ct
+    const isWeekend=(dow===0||dow===6);
+    let bg,txt,border='none',fontW='500',cursor='pointer',radius='8px',extra='';
+    if(isPast){bg='#f1f5f9';txt='#d1d5db';cursor='default';}
+    else if(isSel){bg='#0369a1';txt='#fff';fontW='800';extra='box-shadow:0 2px 6px rgba(3,105,161,.35)';}
+    else if(isToday){bg='#e0f2fe';txt='#0369a1';border='2px solid #0369a1';fontW='800';}
+    else if(isWeekend){bg='#fefce8';txt='#92400e';}
+    else{bg='#f8fafc';txt='#374151';}
+    const hover=isPast?'':'onmouseenter="this.style.transform=\'scale(1.08)\'" onmouseleave="this.style.transform=\'scale(1)\'"';
+    html+=`<div onclick="${isPast?'':'toggleWizardDate(\''+iso+'\')'}" ${hover} style="min-height:38px;display:flex;align-items:center;justify-content:center;border-radius:${radius};font-size:13px;font-weight:${fontW};background:${bg};color:${txt};border:${border};cursor:${cursor};transition:all .12s;${extra}">${d}</div>`;
   }
   grid.innerHTML=html;
 
-  // Seçili tarihler listesi
   const wrap=document.getElementById('cal-selected-wrap');
   const list=document.getElementById('cal-selected-list');
   const countLbl=document.getElementById('cal-count-label');
   const sorted=[...wizardDates].sort();
-  if(countLbl)countLbl.textContent=sorted.length?sorted.length+' tarih seçildi':'';
+  if(countLbl)countLbl.textContent=sorted.length?`${sorted.length} tarih seçildi`:'';
   if(wrap)wrap.style.display=sorted.length?'block':'none';
   if(list){
     list.innerHTML=sorted.map(iso=>{
       const [y,m,d]=iso.split('-');
       const dateObj=new Date(+y,+m-1,+d);
-      const label=dateObj.toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'});
-      return`<span style="display:inline-flex;align-items:center;gap:4px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:20px;font-size:10px;font-weight:700;padding:3px 8px">
+      const label=dateObj.toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric',weekday:'short'});
+      return`<span style="display:inline-flex;align-items:center;gap:4px;background:#fff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:20px;font-size:10px;font-weight:700;padding:3px 8px">
         ${label}
-        <span onclick="toggleWizardDate('${iso}')" style="cursor:pointer;color:#93c5fd;font-size:12px;line-height:1">×</span>
+        <span onclick="toggleWizardDate('${iso}')" style="cursor:pointer;color:#93c5fd;font-size:14px;line-height:1;margin-left:2px">×</span>
       </span>`;
     }).join('');
   }
@@ -1957,6 +1986,35 @@ function toggleWizardDate(iso){
   if(idx>=0)wizardDates.splice(idx,1); else wizardDates.push(iso);
   const warn=document.getElementById('cal-empty-warn');
   if(warn)warn.style.display='none';
+  renderWizardCal();
+}
+
+function addNextWeekdays(targetDow,count){
+  // targetDow: 0=Pazar,1=Pt,...,5=Cuma,6=Ct
+  const today=new Date();today.setHours(0,0,0,0);
+  let added=0,cursor=new Date(today);
+  cursor.setDate(cursor.getDate()+1); // bugünden sonraki günden başla
+  while(added<count){
+    if(cursor.getDay()===targetDow){
+      const iso=cursor.toISOString().slice(0,10);
+      if(!wizardDates.includes(iso)){wizardDates.push(iso);added++;}
+    }
+    cursor.setDate(cursor.getDate()+1);
+    if(cursor-today>400*86400000)break; // güvenlik limiti
+  }
+  // takvimi en erken seçili tarih ayına götür
+  if(wizardDates.length){
+    const first=[...wizardDates].sort()[0];
+    const [y,m]=first.split('-');
+    calY=+y;calM=+m-1;
+  }
+  const warn=document.getElementById('cal-empty-warn');
+  if(warn)warn.style.display='none';
+  renderWizardCal();
+}
+
+function clearWizardDates(){
+  wizardDates=[];
   renderWizardCal();
 }
 
