@@ -766,13 +766,15 @@
           class="bg-primary text-white px-4 py-2 rounded-xl text-xs font-medium"><i class="fas fa-plus mr-1"></i> Yeni
           Tur</button>
       </div>
-      <div class="flex gap-2 mb-4">
-        <button class="tab-btn active px-3 py-1.5 rounded-full text-xs font-medium"
+      <div class="flex gap-2 mb-4 overflow-x-auto" style="-webkit-overflow-scrolling:touch">
+        <button class="tab-btn active px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap"
           onclick="filterTours(this,'aktif')">Aktif (<span id="tab-aktif-count">0</span>)</button>
-        <button class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium" onclick="filterTours(this,'pasif')">Pasif
+        <button class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap" onclick="filterTours(this,'bekliyor')">Bekliyor
+          (<span id="tab-bekliyor-count">0</span>)</button>
+        <button class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap" onclick="filterTours(this,'reddedildi')">Reddedildi
+          (<span id="tab-reddedildi-count">0</span>)</button>
+        <button class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap" onclick="filterTours(this,'pasif')">Pasif
           (<span id="tab-pasif-count">0</span>)</button>
-        <button class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium" onclick="filterTours(this,'taslak')">Taslak
-          (<span id="tab-taslak-count">0</span>)</button>
       </div>
       <div id="my-tours-list"></div>
     </div>
@@ -1209,11 +1211,18 @@
       } catch (e) { }
       return false;
     }
-    window.addEventListener('load', () => { localStorage.clear(); if (checkGlobalSettings('captain_panel')) return; handleRoute(); updateClock(); });
+    window.addEventListener('load', async () => { if (checkGlobalSettings('captain_panel')) return; await window._sbSync?.(); handleRoute(); updateClock(); });
     window.addEventListener('storage', (e) => {
       const h = window.location.hash.replace('#', '') || 'dashboard';
       if (e.key === 'db_bookings') { if (h === 'bookings') renderBookings('yaklasan'); else if (h === 'dashboard') renderDashboard(); }
-      if (e.key === 'db_tours')    { if (h === 'my-tours') renderMyTours(); }
+      if (e.key === 'db_tours')    { if (h === 'my-tours') renderMyTours(currentTourFilter); else if (h === 'dashboard') renderDashboard(); }
+      if (e.key === 'cp_notifications') {
+        const notifs = S.get(K.NOTIFS, []);
+        const nd = document.getElementById('notif-dot');
+        if (nd) { const unread = notifs.filter(n => !n.read).length; nd.style.display = unread ? 'inline-flex' : 'none'; nd.textContent = unread; }
+        if (h === 'notifications') renderNotifications();
+        if (h === 'my-tours') renderMyTours(currentTourFilter);
+      }
     });
 
     /* ---- Clock ---- */
@@ -1332,19 +1341,51 @@
     }
 
     /* ---- Tours ---- */
-    function getTours() { return S.get(K.TOURS, []) }
+    function getTours() {
+      // admin db_tours'u durum için tek kaynak kabul et; eşleşen ID'lerde durum/red sebebi geri yansıt
+      let local = S.get(K.TOURS, []);
+      // Migration: gunler var ama tarihler yoksa (eski kayıtlar) backfill et — hem cp_tours hem db_tours'a yaz
+      let migrated = false;
+      local = local.map(t => {
+        if ((!t.tarihler || !t.tarihler.length) && t.gunler && t.gunler.length) {
+          migrated = true;
+          return { ...t, tarihler: expandGunlerToTarihler(t.gunler) };
+        }
+        return t;
+      });
+      if (migrated) { saveTours(local); /* cp_tours + db_tours senkron */ }
+      const db = S.get(K.DB_TOURS, []);
+      if (!local.length || !db.length) return local;
+      const dbById = new Map(db.map(t => [String(t.id), t]));
+      let changed = false;
+      const merged = local.map(t => {
+        const d = dbById.get(String(t.id));
+        if (!d) return t;
+        const dDurum = d.durum || d.status;
+        if (!dDurum) return t;
+        const needs = (t.durum !== dDurum) || (t.status !== dDurum) || (t.aktif !== (dDurum === 'aktif')) || ((d.redSebep || null) !== (t.redSebep || null));
+        if (!needs) return t;
+        changed = true;
+        return { ...t, durum: dDurum, status: dDurum, aktif: dDurum === 'aktif', redSebep: d.redSebep || null };
+      });
+      if (changed) S.set(K.TOURS, merged);
+      return merged;
+    }
     function saveTours(arr) {
       S.set(K.TOURS, arr);
-      // Sync ALL tours to db_tours (admin sees bekliyor/taslak too, customers filtered by durum)
+      // Sync ALL tours to db_tours (admin sees bekliyor/reddedildi/pasif too, customers filtered by durum)
       const p = getProfile();
       const myEmail = p?.email || '__none__';
       const dbTours = S.get(K.DB_TOURS, []).filter(t => t.captainEmail !== myEmail);
-      const enriched = arr.map(t => ({
+      const enriched = arr.map(t => {
+        const d = t.durum || t.status || 'bekliyor';
+        return ({
         ...t,
-        durum:        t.status || 'aktif',
-        aktif:        t.status === 'aktif',
-        ad:           t.title,
-        fiyat:        t.price,
+        durum:        d,
+        status:       d,
+        aktif:        d === 'aktif',
+        ad:           t.ad || t.title,
+        fiyat:        t.fiyat ?? t.price,
         konum:        t.kalkis || t.konum || '',
         bolge:        t.kalkis || t.bolge || '',
         tarihler:     t.tarihler || [],
@@ -1352,19 +1393,31 @@
         captainEmail: myEmail,
         captainName:  p ? `${p.ad} ${p.soyad}`.trim() : 'Kaptan',
         captainPhone: p?.telefon || '',
-      }));
+      });
+      });
       S.set(K.DB_TOURS, [...enriched, ...dbTours]);
+    }
+
+    const DURUM_INFO = {
+      aktif:      { dot: 'bg-success',  label: 'Aktif',      badgeBg: '#dcfce7', badgeCol: '#16a34a' },
+      bekliyor:   { dot: 'bg-amber-400', label: 'Onay Bekliyor', badgeBg: '#fef3c7', badgeCol: '#d97706' },
+      reddedildi: { dot: 'bg-danger',   label: 'Reddedildi', badgeBg: '#fee2e2', badgeCol: '#dc2626' },
+      pasif:      { dot: 'bg-gray-300', label: 'Pasif',      badgeBg: '#f1f5f9', badgeCol: '#64748b' }
+    };
+    function getTourDurum(t) {
+      const d = t.durum || t.status || 'bekliyor';
+      return DURUM_INFO[d] ? d : 'bekliyor';
     }
 
     function renderMyTours(filter = 'aktif') {
       const tours = getTours();
-      const aktif = tours.filter(t => t.status === 'aktif');
-      const pasif = tours.filter(t => t.status === 'pasif');
-      const taslak = tours.filter(t => t.status === 'taslak');
-      document.getElementById('tab-aktif-count').textContent = aktif.length;
-      document.getElementById('tab-pasif-count').textContent = pasif.length;
-      document.getElementById('tab-taslak-count').textContent = taslak.length;
-      const list = filter === 'aktif' ? aktif : filter === 'pasif' ? pasif : taslak;
+      const byDurum = { aktif: [], bekliyor: [], reddedildi: [], pasif: [] };
+      tours.forEach(t => byDurum[getTourDurum(t)].push(t));
+      ['aktif', 'bekliyor', 'reddedildi', 'pasif'].forEach(k => {
+        const el = document.getElementById('tab-' + k + '-count');
+        if (el) el.textContent = byDurum[k].length;
+      });
+      const list = byDurum[filter] || [];
       const el = document.getElementById('my-tours-list');
       if (!list.length) {
         el.innerHTML = `<div class="text-center py-12"><i class="fas fa-ship text-gray-300 text-4xl mb-3"></i><p class="text-gray-400 text-sm">Henuz tur yok</p><button onclick="navigateTo('create-tour')" class="mt-3 bg-primary text-white px-5 py-2 rounded-xl text-sm font-medium">Tur Olustur</button></div>`;
@@ -1379,7 +1432,11 @@
         const solidColor = catSolidColors[cat] || '#2563eb';
         const icon = catIcons[cat] || 'fa-ship';
         const bookings = getBookings().filter(b => b.tourId === t.id).length;
-        const perPerson = t.kapasite > 0 ? Math.round((t.price||0) / t.kapasite) : (t.price||0);
+        const totalPrice = t.fiyat ?? t.price ?? 0;
+        const perPerson = t.kapasite > 0 ? Math.round(totalPrice / t.kapasite) : totalPrice;
+        const durum = getTourDurum(t);
+        const info = DURUM_INFO[durum];
+        const tTitle = t.ad || t.title || '(Başlıksız)';
 
         // Başlangıç/bitiş saati hesapla
         const startTime = t.saatler?.[0] || null;
@@ -1435,20 +1492,68 @@
               <span style="font-size:12px;color:#94a3b8">Gelecek tur tarihi girilmemiş</span>
             </div>`;
 
+        const redSebepHtml = durum === 'reddedildi' && t.redSebep
+          ? `<div style="margin-top:10px;padding:10px 12px;background:#fef2f2;border-left:3px solid #ef4444;border-radius:8px">
+              <div style="font-size:10px;font-weight:700;color:#991b1b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px"><i class="fas fa-exclamation-triangle mr-1"></i>Red Sebebi</div>
+              <div style="font-size:12px;color:#7f1d1d;line-height:1.4">${t.redSebep}</div>
+            </div>`
+          : '';
+        const bekliyorHtml = durum === 'bekliyor'
+          ? `<div style="margin-top:10px;padding:9px 12px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:8px;font-size:12px;color:#92400e"><i class="fas fa-hourglass-half mr-1"></i>Admin onayı bekleniyor. Onaylanınca otomatik yayınlanacak.</div>`
+          : '';
+
+        let actionButtons = '';
+        if (durum === 'aktif' || durum === 'pasif') {
+          actionButtons = `
+            <button onclick="openTourDetail(${t.id})" class="flex-1 bg-primary/10 text-primary py-1.5 rounded-lg text-xs font-semibold"><i class="fas fa-eye mr-1 text-[10px]"></i>Detay</button>
+            <button onclick="toggleTourStatus(${t.id})" class="flex-1 ${durum === 'aktif' ? 'bg-amber-50 text-amber-700' : 'bg-success/10 text-success'} py-1.5 rounded-lg text-xs font-medium">${durum === 'aktif' ? 'Pasife Al' : 'Aktif Et'}</button>
+            <button onclick="deleteTour(${t.id})" class="border border-danger/30 text-danger py-1.5 px-3 rounded-lg text-xs font-medium"><i class="fas fa-trash text-[10px]"></i></button>`;
+        } else if (durum === 'reddedildi') {
+          actionButtons = `
+            <button onclick="editTour(${t.id})" class="flex-1 bg-primary text-white py-1.5 rounded-lg text-xs font-semibold"><i class="fas fa-edit mr-1 text-[10px]"></i>Düzenle ve Tekrar Gönder</button>
+            <button onclick="deleteTour(${t.id})" class="border border-danger/30 text-danger py-1.5 px-3 rounded-lg text-xs font-medium"><i class="fas fa-trash text-[10px]"></i></button>`;
+        } else {
+          actionButtons = `
+            <button onclick="openTourDetail(${t.id})" class="flex-1 bg-primary/10 text-primary py-1.5 rounded-lg text-xs font-semibold"><i class="fas fa-eye mr-1 text-[10px]"></i>Detay</button>
+            <button onclick="deleteTour(${t.id})" class="border border-danger/30 text-danger py-1.5 px-3 rounded-lg text-xs font-medium"><i class="fas fa-trash text-[10px]"></i></button>`;
+        }
+
         return `<div class="card mb-3">
       <div class="flex gap-3">
         <div class="w-16 h-16 bg-gradient-to-br ${grad} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas ${icon} text-white text-xl"></i></div>
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 flex-wrap"><span class="font-semibold text-sm">${t.title||t.ad}</span><span class="status-dot ${t.status === 'aktif' ? 'bg-success' : 'bg-gray-300'}"></span></div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-sm">${tTitle}</span>
+            <span style="background:${info.badgeBg};color:${info.badgeCol};font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px">${info.label}</span>
+          </div>
           <div class="text-xs text-gray-500 mt-0.5">${perPerson.toLocaleString('tr-TR')} TL/kişi &bull; ${t.sure || '—'} &bull; ${t.kapasite} kişi</div>
           <div class="text-xs text-gray-400 mt-0.5">${bookings} rezervasyon &bull; ${t.kalkis || '—'}</div>
         </div>
       </div>
-      ${countdownHtml}
+      ${redSebepHtml}
+      ${bekliyorHtml}
+      ${(durum === 'aktif' || durum === 'pasif') ? countdownHtml : ''}
+      ${(durum === 'aktif') ? (()=>{
+        const bugun2=new Date();bugun2.setHours(0,0,0,0);
+        const futureISO=(t.tarihler||[]).filter(iso=>{const dd=new Date(iso);return !isNaN(dd)&&dd>=bugun2;}).sort();
+        if(!futureISO.length)return '';
+        const allBk=JSON.parse(localStorage.getItem('db_bookings')||'[]');
+        const kap=+(t.kapasite||8);
+        const chips=futureISO.slice(0,6).map(iso=>{
+          const trStr=new Date(iso).toLocaleDateString('tr-TR');
+          const seats=allBk.filter(b=>String(b.tourId)===String(t.id)&&b.tarih===trStr&&['bekliyor','onaylandi','tamamlandi'].includes((b.durum||'').toLowerCase())).reduce((s,b)=>s+(+b.guests||1),0);
+          const kalan=Math.max(0,kap-seats);
+          const full=seats>=kap;
+          const short=new Date(iso).toLocaleDateString('tr-TR',{day:'2-digit',month:'short'});
+          return full
+            ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 8px;border-radius:999px;background:#fee2e2;color:#991b1b;font-weight:700" title="${trStr} turla doludur"><i class="fas fa-ban"></i>${short} DOLU</span>`
+            : `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 8px;border-radius:999px;background:#ecfdf5;color:#047857">${short} ${kalan}/${kap}</span>`;
+        }).join(' ');
+        const extra=futureISO.length>6?`<span style="font-size:10px;color:#94a3b8">+${futureISO.length-6}</span>`:'';
+        return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;flex-wrap:wrap;gap:4px">${chips}${extra}</div>`;
+      })() : ''}
       <div class="flex gap-2 mt-3">
-        <button onclick="openTourDetail(${t.id})" class="flex-1 bg-primary/10 text-primary py-1.5 rounded-lg text-xs font-semibold"><i class="fas fa-eye mr-1 text-[10px]"></i>Detay</button>
-        <button onclick="toggleTourStatus(${t.id})" class="flex-1 ${t.status === 'aktif' ? 'bg-amber-50 text-amber-700' : 'bg-success/10 text-success'} py-1.5 rounded-lg text-xs font-medium">${t.status === 'aktif' ? 'Pasife Al' : 'Aktif Et'}</button>
-        <button onclick="deleteTour(${t.id})" class="border border-danger/30 text-danger py-1.5 px-3 rounded-lg text-xs font-medium"><i class="fas fa-trash text-[10px]"></i></button>
+        ${actionButtons}
       </div>
     </div>`;
       }).join('');
@@ -1461,6 +1566,25 @@
       'Pzt': 1, 'Sal': 2, 'Car': 3, 'Per': 4, 'Cum': 5, 'Cmt': 6, 'Paz': 0,
       'Pazartesi': 1, 'Sali': 2, 'Carsamba': 3, 'Persembe': 4, 'Cuma': 5, 'Cumartesi': 6, 'Pazar': 0
     };
+
+    // Haftalık gün seçimlerini gelecek N haftanın ISO tarihlerine açar (YYYY-MM-DD)
+    function expandGunlerToTarihler(gunler, weeks = 12) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const out = [];
+      (gunler || []).forEach(g => {
+        const d = DAY_MAP[g];
+        if (d === undefined) return;
+        let diff = (d - today.getDay() + 7) % 7;
+        if (diff === 0) diff = 7; // bugünse haftaya at
+        for (let w = 0; w < weeks; w++) {
+          const dt = new Date(today);
+          dt.setDate(today.getDate() + diff + w * 7);
+          const y = dt.getFullYear(), m = String(dt.getMonth()+1).padStart(2,'0'), day = String(dt.getDate()).padStart(2,'0');
+          out.push(`${y}-${m}-${day}`);
+        }
+      });
+      return [...new Set(out)].sort();
+    }
 
     function nextTourDate(t) {
       const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -1533,17 +1657,43 @@
       const tours = getTours();
       const t = tours.find(x => x.id === id);
       if (!t) return;
-      t.status = t.status === 'aktif' ? 'pasif' : 'aktif';
+      const cur = getTourDurum(t);
+      if (cur === 'bekliyor') { showToast('Bu tur admin onayı bekliyor, durum değiştirilemez', 'danger'); return; }
+      if (cur === 'reddedildi') { showToast('Reddedilen tur önce düzenlenip tekrar gönderilmeli', 'danger'); return; }
+      const yeni = cur === 'aktif' ? 'pasif' : 'aktif';
+      t.durum = yeni; t.status = yeni; t.aktif = (yeni === 'aktif');
+      t.updatedAt = new Date().toISOString();
       saveTours(tours);
       renderMyTours(currentTourFilter);
-      showToast(`"${t.title}" ${t.status === 'aktif' ? 'aktif edildi' : 'pasife alindi'}`);
+      showToast(`"${t.ad || t.title}" ${yeni === 'aktif' ? 'aktif edildi' : 'pasife alindi'}`);
     }
     function deleteTour(id) {
-      if (!confirm('Bu turu silmek istediginizden emin misiniz?')) return;
+      const allB = S.get(K.DB_BOOKINGS, []);
+      const aktif = allB.filter(b => String(b.tourId) === String(id) && ['bekliyor','onaylandi'].includes((b.durum||'').toLowerCase()));
+      const msg = aktif.length
+        ? `Bu turun ${aktif.length} aktif rezervasyonu var. Silinirse tümü iptal edilecek ve müşterilere bildirim gidecek. Devam edilsin mi?`
+        : 'Bu turu silmek istediginizden emin misiniz?';
+      if (!confirm(msg)) return;
+      // Cascade iptal + otomatik iade talebi
+      allB.forEach(b => {
+        if (String(b.tourId) === String(id) && ['bekliyor','onaylandi'].includes((b.durum||'').toLowerCase())) {
+          b.durum = 'iptal';
+          b.iptalNedeni = 'Tur kaptan tarafından silindi';
+          b.iptalKategori = 'kaptan';
+          b.iptalTarihi = new Date().toISOString();
+          if (b.odemeYapildi) {
+            b.refundStatus = 'pending';
+            b.refundTalebTarihi = new Date().toISOString();
+            b.iadeTutari = +b.price||0;
+            b.refundHistory = [...(b.refundHistory||[]), {from:null,to:'pending',ts:new Date().toISOString(),note:'Kaptan tur iptali — otomatik'}];
+          }
+        }
+      });
+      S.set(K.DB_BOOKINGS, allB);
       const tours = getTours().filter(t => t.id !== id);
       saveTours(tours);
       renderMyTours(currentTourFilter);
-      showToast('Tur silindi', 'info');
+      showToast(aktif.length ? `Tur silindi — ${aktif.length} rezervasyon iptal edildi, iade talepleri oluşturuldu` : 'Tur silindi', 'info');
     }
 
     /* ---- Wizard ---- */
@@ -1581,6 +1731,8 @@
         }
         if (currentStep === 3) {
           if (!document.getElementById('w-price').value) { showToast('Fiyat girin', 'danger'); return; }
+          if (!document.querySelectorAll('.day-pill.selected').length) { showToast('En az bir musait gun secin', 'danger'); return; }
+          if (!document.querySelectorAll('.time-pill.selected').length) { showToast('En az bir kalkis saati secin', 'danger'); return; }
         }
         if (currentStep === 5) return;
       }
@@ -1625,13 +1777,56 @@
         fishSel.map(f => `<span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium"><i class="fas fa-fish mr-0.5 text-[8px]"></i>${f}</span>`).join('');
     }
 
+    let editingTourId = null;
+
     function publishTour() {
       const cats = [...document.querySelectorAll('.cat-pill.selected')].map(p => p.dataset.val || p.textContent.trim());
       const loc = document.getElementById('w-loc').value;
       const priceVal = +document.getElementById('w-price').value;
+      const adVal = document.getElementById('w-title').value.trim();
+      const gunlerSel = [...document.querySelectorAll('.day-pill.selected')].map(p => p.dataset.val);
+      const saatlerSel = [...document.querySelectorAll('.time-pill.selected')].map(p => p.dataset.val);
+      if (!adVal) { showToast('Tur adi zorunlu', 'danger'); return; }
+      if (!loc) { showToast('Kalkis noktasi secin', 'danger'); return; }
+      if (!priceVal) { showToast('Fiyat girin', 'danger'); return; }
+      if (!gunlerSel.length) { showToast('En az bir musait gun secin', 'danger'); return; }
+      if (!saatlerSel.length) { showToast('En az bir kalkis saati secin', 'danger'); return; }
+      const tours = getTours();
+      const now = new Date().toISOString();
+
+      if (editingTourId != null) {
+        const t = tours.find(x => x.id === editingTourId);
+        if (t) {
+          t.ad = adVal; t.title = adVal;
+          t.kategoriler = cats;
+          t.aciklama = document.getElementById('w-desc').value.trim();
+          t.sure = document.querySelector('.dur-pill.selected')?.dataset.val;
+          t.kapasite = capacity;
+          t.kalkis = loc; t.konum = loc; t.bolge = loc;
+          t.fiyat = priceVal; t.price = priceVal;
+          t.gunler = gunlerSel;
+          t.saatler = saatlerSel;
+          t.tarihler = expandGunlerToTarihler(gunlerSel);
+          t.includes = [...document.querySelectorAll('.include-cb:checked')].map(c => c.value);
+          t.hedefBaliklar = [...document.querySelectorAll('.balik-card.selected')].map(c => c.dataset.id);
+          t.durum = 'bekliyor'; t.status = 'bekliyor'; t.aktif = false;
+          t.redSebep = null;
+          t.reddedilmeSayisi = (t.reddedilmeSayisi || 0);
+          t.updatedAt = now;
+          saveTours(tours);
+          addNotification('Tur guncellendi', `"${adVal}" tekrar admin onayina gonderildi.`, 'info');
+          showToast('Tur guncellendi, admin onayi bekleniyor');
+          editingTourId = null;
+          setTimeout(() => navigateTo('my-tours'), 1200);
+          return;
+        }
+        editingTourId = null;
+      }
+
       const tour = {
         id: Date.now(),
-        title: document.getElementById('w-title').value.trim(),
+        title: adVal,
+        ad: adVal,
         kategoriler: cats,
         aciklama: document.getElementById('w-desc').value.trim(),
         sure: document.querySelector('.dur-pill.selected')?.dataset.val,
@@ -1641,22 +1836,73 @@
         bolge:  loc,
         price:  priceVal,
         fiyat:  priceVal,
-        tarihler: [],
-        gunler: [...document.querySelectorAll('.day-pill.selected')].map(p => p.dataset.val),
+        tarihler: expandGunlerToTarihler(gunlerSel),
+        gunler: gunlerSel,
         saatler: [...document.querySelectorAll('.time-pill.selected')].map(p => p.dataset.val),
         includes: [...document.querySelectorAll('.include-cb:checked')].map(c => c.value),
         hedefBaliklar: [...document.querySelectorAll('.balik-card.selected')].map(c => c.dataset.id),
-        status: 'aktif',
-        durum: 'aktif',
-        ad: document.getElementById('w-title').value.trim(),
-        createdAt: new Date().toISOString()
+        status: 'bekliyor',
+        durum: 'bekliyor',
+        aktif: false,
+        redSebep: null,
+        reddedilmeSayisi: 0,
+        createdAt: now,
+        updatedAt: now
       };
-      const tours = getTours();
       tours.unshift(tour);
       saveTours(tours);
-      addNotification('Tur yayinlandi', `"${tour.title}" musteri uygulamasinda gorunuyor.`, 'success');
-      showToast('Tur basariyla yayinlandi!');
+      addNotification('Tur onaya gonderildi', `"${tour.ad}" admin incelemesinde.`, 'info');
+      showToast('Turunuz admin onayina gonderildi');
       setTimeout(() => navigateTo('my-tours'), 1200);
+    }
+
+    function editTour(id) {
+      const t = getTours().find(x => x.id === id);
+      if (!t) return;
+      editingTourId = id;
+      // Reset wizard to step 1
+      for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById('wizard-' + i);
+        if (el) el.style.display = i === 1 ? 'block' : 'none';
+      }
+      currentStep = 1;
+      // Fill fields
+      document.getElementById('w-title').value = t.ad || t.title || '';
+      document.getElementById('w-desc').value = t.aciklama || '';
+      document.getElementById('w-loc').value = t.kalkis || t.konum || '';
+      document.getElementById('w-price').value = t.fiyat || t.price || '';
+      capacity = t.kapasite || 8;
+      document.getElementById('capacity-val').textContent = capacity;
+      // Categories
+      document.querySelectorAll('.cat-pill').forEach(p => {
+        p.classList.toggle('selected', (t.kategoriler || []).includes(p.dataset.val));
+      });
+      // Duration
+      document.querySelectorAll('.dur-pill').forEach(p => {
+        p.classList.toggle('selected', p.dataset.val === t.sure);
+      });
+      // Days
+      document.querySelectorAll('.day-pill').forEach(p => {
+        p.classList.toggle('selected', (t.gunler || []).includes(p.dataset.val));
+      });
+      // Times
+      document.querySelectorAll('.time-pill').forEach(p => {
+        p.classList.toggle('selected', (t.saatler || []).includes(p.dataset.val));
+      });
+      // Includes
+      document.querySelectorAll('.include-cb').forEach(cb => {
+        cb.checked = (t.includes || []).includes(cb.value);
+      });
+      // Fish
+      renderBalikGrid();
+      document.querySelectorAll('.balik-card').forEach(c => {
+        c.classList.toggle('selected', (t.hedefBaliklar || []).includes(c.dataset.id));
+      });
+      updateHedefBalikVisibility();
+      calcPerPerson();
+      updateWizardUI();
+      navigateTo('create-tour');
+      showToast('Duzenleme modu: degisiklikler yeniden onaya gonderilecek', 'info');
     }
 
     const BALIK_LIST = [
@@ -1734,9 +1980,9 @@
         const _bamt = b.amount || b.price || 0;
         const net = _bamt ? Math.round(_bamt * 0.9) : 0;
         const actions = b.durum === 'bekliyor'
-          ? `<div class="flex gap-2 mt-2"><button onclick="updateBooking(${b.id},'onaylandi')" class="flex-1 bg-success text-white py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-check mr-1"></i>Kabul Et</button><button onclick="updateBooking(${b.id},'iptal')" class="flex-1 bg-danger/10 text-danger py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-times mr-1"></i>Reddet</button><button onclick="openChatById(${b.id})" class="bg-primary/10 text-primary py-1.5 px-3 rounded-lg text-xs font-medium"><i class="fas fa-comment"></i></button></div>`
+          ? `<div class="mt-2 flex items-center gap-2"><div class="flex-1 bg-amber-50 border-l-2 border-amber-400 rounded-md px-2 py-1.5 text-[11px] text-amber-800"><i class="fas fa-hourglass-half mr-1"></i>Admin onayı bekleniyor</div><button onclick="openChatById(${b.id})" class="bg-primary/10 text-primary py-1.5 px-3 rounded-lg text-xs font-medium"><i class="fas fa-comment"></i></button></div>`
           : b.durum === 'onaylandi'
-            ? `<div class="flex gap-2 mt-2"><button onclick="openChatById(${b.id})" class="flex-1 bg-primary/10 text-primary py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-comment mr-1"></i>Mesaj</button><button onclick="updateBooking(${b.id},'tamamlandi')" class="flex-1 bg-gray-100 text-gray-700 py-1.5 rounded-lg text-xs font-medium">Tamamlandi</button></div>`
+            ? `<div class="flex gap-2 mt-2"><button onclick="openChatById(${b.id})" class="flex-1 bg-primary/10 text-primary py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-comment mr-1"></i>Mesaj</button></div>`
             : '';
         return `<div class="card mb-3 ${b.durum === 'bekliyor' ? 'border-l-4 border-accent' : ''}">
       <div class="flex justify-between items-start mb-1">
@@ -1768,6 +2014,7 @@
       const db = S.get(K.DB_BOOKINGS, []);
       const dbB = db.find(x => x.id === id);
       if (dbB) { dbB.durum = durum; S.set(K.DB_BOOKINGS, db); }
+      try{if(DB_MODE==='remote')DB.rezervasyonlar.updateDurum(id,durum).catch(e=>console.warn('[SB]',e));}catch(e){}
       const msgs = { 'onaylandi': 'Rezervasyon kabul edildi! Musteri bilgilendirildi.', 'iptal': 'Rezervasyon reddedildi.', 'tamamlandi': 'Tur tamamlandi olarak isaretlendi.' };
       addNotification('Rezervasyon guncellendi', msgs[durum] || 'Durum guncellendi', durum === 'onaylandi' ? 'success' : 'info');
       showToast(msgs[durum] || 'Guncellendi');

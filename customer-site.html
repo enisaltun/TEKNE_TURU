@@ -1531,14 +1531,10 @@ window.addEventListener('hashchange', handleRoute);
 window.addEventListener('storage', function(e){
   if(e.key==='db_users'||e.key==='db_captains'||e.key==='cu_users'){updateNavAuth();}
 });
-window.addEventListener('load', function(){
+window.addEventListener('load', async function(){
   if(checkGlobalSettings('customer_site'))return;
-  const users=lsGet('cu_users',[]);
-  if(!users.find(function(u){return u.email==='ayse@test.com';})){
-    users.push({name:'Ayse Demir',email:'ayse@test.com',phone:'0532 999 0101',password:'test123'});
-    lsSet('cu_users',users);
-  }
-  U.migrateLegacy(); // Fix #1: demo seed sonrasi yeniden sync
+  await window._sbSync?.();
+  U.migrateLegacy();
   handleRoute();
   renderAll();
   updateNavAuth();
@@ -2414,10 +2410,10 @@ function confirmBooking(){
   const db=lsGet('db_bookings',[]);
   db.unshift(booking);
   lsSet('db_bookings',db);
-  // Kullanıcı-rezervasyon bağını mobil uygulama formatıyla tut
   const myBks=lsGet('cu_bookings',[]);
   myBks.unshift(booking.id);
   lsSet('cu_bookings',myBks);
+  try{if(DB_MODE==='remote')DB.rezervasyonlar.create({...booking,turFiyat:basePrice,tur_id:booking.tourId,kayitKanali:'web'}).catch(e=>console.warn('[SB]',e));}catch(e){}
   navigateTo('confirmation');
   showToast('Odeme basarili! Rezervasyon #'+booking.id);
 }
@@ -2437,6 +2433,7 @@ function _upsertCustomerSite(p){
     createdAt:new Date().toISOString(),kaynak:'booking-upsert'
   });
   lsSet('db_users',users);
+  try{if(DB_MODE==='remote')DB.kullanicilar.create({name:(p.ad||'')+(p.soyad?' '+p.soyad:''),email:p.email,phone:p.phone||'',kayitKanali:'web'}).catch(()=>{});}catch(e){}
 }
 
 function changeGuest(d) {

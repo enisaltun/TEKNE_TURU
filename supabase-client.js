@@ -43,14 +43,97 @@ function _err(ctx, e) {
   console.error(`[DB:${ctx}]`, e?.message || e);
   return null;
 }
-// Benzersiz rezervasyon ID'si
-function _bkId() { return 'BK' + Date.now(); }
+// Benzersiz ID üreticileri
+function _bkId()  { return 'BK' + Date.now(); }
 function _payId() { return 'PAY-' + Math.floor(Math.random()*900000+100000) + '-' + String.fromCharCode(65+Math.random()*26|0) + String.fromCharCode(65+Math.random()*26|0); }
+function _uuid()  {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+window._uuid = _uuid;
+
+// DB kaptanlar satırını localStorage uyumlu nesneye çevirir
+function _denormalizeKaptan(k) {
+  return {
+    ...k,
+    // camelCase alias'lar (eski HTML uyumluluğu)
+    ad_soyad:       (k.ad || '') + ' ' + (k.soyad || ''),
+    name:           (k.ad || '') + ' ' + (k.soyad || ''),
+    tekne:          k.tekne_adi,
+    tekneAdi:       k.tekne_adi,
+    tekneTuru:      k.tekne_turu,
+    tekneYil:       k.tekne_yil,
+    katilimTarihi:  k.katilim_tarihi,
+    createdAt:      k.created_at,
+    aktif:          k.durum === 'aktif',
+    status:         k.durum,
+  };
+}
+
+// DB kullanicilar satırını localStorage uyumlu nesneye çevirir
+function _denormalizeKullanici(u) {
+  return {
+    ...u,
+    name:           u.ad_soyad,
+    phone:          u.telefon,
+    city:           u.sehir,
+    emailOnaylandi: u.email_onaylandi,
+    bildirimIzni:   u.bildirim_izni,
+    toplamHarcama:  u.toplam_harcama,
+    turSayisi:      u.tur_sayisi,
+    sonGiris:       u.son_giris,
+    kayitKanali:    u.kayit_kanali,
+    createdAt:      u.created_at,
+  };
+}
+
+// DB rezervasyonlar satırını localStorage uyumlu nesneye çevirir
+function _denormalizeRez(r) {
+  return {
+    ...r,
+    // camelCase alias'lar
+    tourId:        r.tur_id,
+    tourTitle:     r.tur_adi,
+    captainEmail:  r.kaptan_email,
+    captainName:   r.kaptan_adi,
+    customerEmail: r.musteri_email,
+    customerName:  r.musteri_adi,
+    musteri:       r.musteri_adi,
+    customerPhone: r.musteri_telefon,
+    guests:        r.kisi_sayisi,
+    kisi:          r.kisi_sayisi,
+    amount:        r.toplam_tutar,
+    price:         r.toplam_tutar,
+    turFiyat:      r.tur_fiyati,
+    hizmetBedeli:  r.hizmet_bedeli,
+    kaptanNet:     r.kaptan_net,
+    tarih:         r.tur_tarihi,
+    saat:          r.tur_saati,
+    note:          r.musteri_notu,
+    redNedeni:     r.red_nedeni,
+    loc:           r.konum,
+    odemeYapildi:  r.odeme_yapildi,
+    odemeYontemi:  r.odeme_yontemi,
+    odemeRef:      r.odeme_ref,
+    odemeZamani:   r.odeme_zamani,
+    kartTuru:      r.kart_turu,
+    kartSon4:      r.kart_son4,
+    binisYapildi:  r.binis_yapildi,
+    binisZamani:   r.binis_zamani,
+    kayitKanali:   r.kayit_kanali,
+    createdAt:     r.created_at,
+  };
+}
 
 // localStorage tur nesnelerini DB formatına normalize eder
 function _normalizeTur(t) {
+  const idStr = String(t.id || '');
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idStr);
   return {
-    id:              t.id,
+    ...(isUuid ? { id: t.id } : {}),  // UUID değilse Supabase kendi atar
     kaptan_email:    t.captainEmail || t.kaptan_email,
     kaptan_adi:      t.captainName  || t.kaptan_adi,
     tur_adi:         t.title || t.ad || t.tur_adi,
@@ -112,7 +195,7 @@ window.DB = {
       if (DB_MODE === 'remote') {
         const { data, error } = await _sb.from('kaptanlar').select('*').order('created_at', { ascending: false });
         if (error) return _err('kaptanlar.list', error);
-        return data;
+        return data.map(_denormalizeKaptan);
       }
       return _ls('db_captains', []);
     },
@@ -122,7 +205,7 @@ window.DB = {
       if (DB_MODE === 'remote') {
         const { data, error } = await _sb.from('kaptanlar').select('*').eq('email', email).single();
         if (error) return _err('kaptanlar.getByEmail', error);
-        return data;
+        return _denormalizeKaptan(data);
       }
       return _ls('db_captains', []).find(c => c.email === email) || null;
     },
@@ -130,7 +213,10 @@ window.DB = {
     // Yeni kaptan oluştur — captain-panel: kayıt formu
     async create(data) {
       if (DB_MODE === 'remote') {
-        const { data: row, error } = await _sb.from('kaptanlar').insert(data).select().single();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(String(data.id || ''));
+        const { id: _dropId, ...rest } = data;
+        const payload = isUuid ? data : rest; // integer id'yi düşür, Supabase UUID atar
+        const { data: row, error } = await _sb.from('kaptanlar').insert(payload).select().single();
         if (error) return _err('kaptanlar.create', error);
         return row;
       }
@@ -291,7 +377,7 @@ window.DB = {
       if (DB_MODE === 'remote') {
         const { data, error } = await _sb.from('kullanicilar').select('*').order('created_at', { ascending: false });
         if (error) return _err('kullanicilar.list', error);
-        return data;
+        return data.map(_denormalizeKullanici);
       }
       return _ls('cu_users', []);
     },
@@ -301,7 +387,7 @@ window.DB = {
       if (DB_MODE === 'remote') {
         const { data, error } = await _sb.from('kullanicilar').select('*').eq('email', email).single();
         if (error) return null;
-        return data;
+        return _denormalizeKullanici(data);
       }
       return _ls('cu_users', []).find(u => u.email === email) || null;
     },
@@ -383,7 +469,7 @@ window.DB = {
         if (filters.tarih)  q = q.eq('tur_tarihi', filters.tarih);
         const { data, error } = await q.order('created_at', { ascending: false });
         if (error) return _err('rezervasyonlar.list', error);
-        return data;
+        return data.map(_denormalizeRez);
       }
       let list = _ls('db_bookings', []);
       if (filters.durum) list = list.filter(b => b.durum === filters.durum);
@@ -397,7 +483,7 @@ window.DB = {
           .select('*').eq('kaptan_email', email)
           .order('created_at', { ascending: false });
         if (error) return _err('rezervasyonlar.listByKaptan', error);
-        return data;
+        return data.map(_denormalizeRez);
       }
       return _ls('db_bookings', []).filter(b =>
         b.captainEmail === email || b.kaptan_email === email
@@ -411,7 +497,7 @@ window.DB = {
           .select('*').eq('musteri_email', email)
           .order('created_at', { ascending: false });
         if (error) return _err('rezervasyonlar.listByMusteri', error);
-        return data;
+        return data.map(_denormalizeRez);
       }
       return _ls('db_bookings', []).filter(b =>
         b.customerEmail === email || b.musteri_email === email
@@ -420,10 +506,11 @@ window.DB = {
 
     // Yeni rezervasyon — customer-app/site: satın al
     async create(data) {
-      const id = _bkId();
-      const hizmetBedeli = Math.round((data.turFiyat || data.fiyat || 0) * 0.10);
-      const amount = ((data.turFiyat || data.fiyat || 0) + hizmetBedeli) * (data.guests || data.kisiSayisi || 1);
-      const komisyon = Math.round(amount * 0.025);
+      const id = data.id || _bkId();
+      // HTML tarafı zaten hesaplayıp gönderiyorsa onu kullan
+      const hizmetBedeli = data.hizmetBedeli || data.hizmet_bedeli || Math.round((data.turFiyat || data.fiyat || 0) * 0.10);
+      const amount       = data.amount || data.toplam_tutar || ((data.turFiyat || data.fiyat || 0) + hizmetBedeli) * (data.guests || data.kisiSayisi || 1);
+      const komisyon     = data.komisyon || Math.round(amount * 0.025);
 
       if (DB_MODE === 'remote') {
         const { data: row, error } = await _sb.from('rezervasyonlar').insert({
@@ -807,6 +894,34 @@ window.DB = {
       };
     },
   },
+};
+
+// ================================================================
+// _sbSync — Supabase'den çek, localStorage'a yaz
+// Her HTML dosyasının load handler'ı başında çağrılır.
+// Mevcut render fonksiyonları localStorage'ı okumaya devam eder.
+// ================================================================
+window._sbSync = async function() {
+  if (DB_MODE !== 'remote' || !_sb) return;
+  try {
+    const [kaps, turs, rezs, kuls, odes, msgs] = await Promise.all([
+      _sb.from('kaptanlar').select('*').order('created_at', { ascending: false }),
+      _sb.from('turlar').select('*').order('created_at', { ascending: false }),
+      _sb.from('rezervasyonlar').select('*').order('created_at', { ascending: false }),
+      _sb.from('kullanicilar').select('*').order('created_at', { ascending: false }),
+      _sb.from('odemeler').select('*').order('created_at', { ascending: false }),
+      _sb.from('mesajlar').select('*').order('created_at', { ascending: true }),
+    ]);
+    if (!kaps.error && kaps.data.length) _lsSet('db_captains', kaps.data.map(_denormalizeKaptan));
+    if (!turs.error && turs.data.length) _lsSet('db_tours', turs.data.map(t => ({ ..._denormalizeTur(t), perPerson: Math.round((t.fiyat||0) / (t.kapasite||8)) })));
+    if (!rezs.error && rezs.data.length) _lsSet('db_bookings', rezs.data.map(_denormalizeRez));
+    if (!kuls.error && kuls.data.length) _lsSet('cu_users', kuls.data.map(_denormalizeKullanici));
+    if (!odes.error && odes.data.length) _lsSet('db_payments', odes.data);
+    if (!msgs.error && msgs.data.length) _lsSet('db_messages', msgs.data);
+    console.log('[SB] sync tamamlandi — kaptanlar:', kaps.data?.length, 'turlar:', turs.data?.length, 'rezervasyonlar:', rezs.data?.length);
+  } catch(e) {
+    console.warn('[SB] sync hatasi', e);
+  }
 };
 
 // ================================================================

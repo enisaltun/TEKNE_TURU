@@ -618,6 +618,49 @@ function genPayments(bookings){
 // ================================================================
 // ANA FONKSİYON
 // ================================================================
+// Birleşik kullanıcı modeli: cu_users + db_captains → db_users
+function buildUnifiedUsers(customers,captains){
+  const byEmail=new Map();
+  let nid=0;
+  (customers||[]).forEach(c=>{
+    const email=(c.email||'').toLowerCase(); if(!email) return;
+    const parts=(c.name||'').trim().split(/\s+/);
+    const ad=parts[0]||'Kullanici'; const soyad=parts.slice(1).join(' ')||'';
+    nid++;
+    byEmail.set(email,{
+      id:nid, ad, soyad, email, phone:c.phone||'', password:c.password||'test123',
+      avatarUrl:null, createdAt:c.createdAt||new Date().toISOString(),
+      roles:['customer'], captainProfile:null
+    });
+  });
+  (captains||[]).forEach(k=>{
+    const email=(k.email||'').toLowerCase(); if(!email) return;
+    const cp={
+      tekne:k.tekne, tekneTuru:k.tekneTuru, uzunluk:k.uzunluk,
+      bolge:k.bolge, kapasite:k.kapasite, kategoriler:k.kategoriler,
+      lisans:k.lisans, lisansTarih:k.lisansTarih, bio:k.bio,
+      turSayisi:k.turSayisi||0, puan:k.puan||0,
+      onayDurumu: k.durum==='aktif'?'aktif':(k.durum==='bekliyor'?'bekliyor':(k.durum==='reddedildi'?'reddedildi':'aktif')),
+      redSebep:k.redSebep||'',
+      captainIdLegacy:k.id||null
+    };
+    const existing=byEmail.get(email);
+    if(existing){
+      existing.roles=Array.from(new Set([...(existing.roles||['customer']),'captain']));
+      existing.captainProfile=cp;
+    }else{
+      nid++;
+      byEmail.set(email,{
+        id:nid, ad:k.ad||'Kaptan', soyad:k.soyad||'', email,
+        phone:k.telefon||'', password:'test123', avatarUrl:null,
+        createdAt:k.katilimTarihi||new Date().toISOString(),
+        roles:['customer','captain'], captainProfile:cp
+      });
+    }
+  });
+  return Array.from(byEmail.values());
+}
+
 function generateSeedData(){
   const btn=document.getElementById('seedBtn');
   btn.disabled=true;
@@ -644,6 +687,9 @@ function generateSeedData(){
       localStorage.setItem('db_captains',JSON.stringify(captains));
       localStorage.setItem('db_tours',JSON.stringify(tours));
       localStorage.setItem('cu_users',JSON.stringify(customers));
+      localStorage.setItem('db_users',JSON.stringify(buildUnifiedUsers(customers,captains)));
+      localStorage.setItem('db_users_migrated_v1','1');
+      localStorage.setItem('db_users_seeded_from_cu','1');
       localStorage.setItem('db_bookings',JSON.stringify(bookings));
       localStorage.setItem('db_payments',JSON.stringify(payments));
       localStorage.setItem('active_captain_id','1');
@@ -853,6 +899,9 @@ function generateMinimalSeedData(){
       localStorage.setItem('db_captains',JSON.stringify(captains));
       localStorage.setItem('db_tours',JSON.stringify(tours));
       localStorage.setItem('cu_users',JSON.stringify(customers));
+      localStorage.setItem('db_users',JSON.stringify(buildUnifiedUsers(customers,captains)));
+      localStorage.setItem('db_users_migrated_v1','1');
+      localStorage.setItem('db_users_seeded_from_cu','1');
       localStorage.setItem('db_bookings',JSON.stringify([]));
       localStorage.setItem('db_payments',JSON.stringify([]));
       localStorage.setItem('active_captain_id','1');
@@ -1187,6 +1236,9 @@ function generateScenarioData(){
       localStorage.setItem('db_captains',JSON.stringify(scenCaps));
       localStorage.setItem('db_tours',JSON.stringify(scenTours));
       localStorage.setItem('cu_users',JSON.stringify(scenCusts));
+      localStorage.setItem('db_users',JSON.stringify(buildUnifiedUsers(scenCusts,scenCaps)));
+      localStorage.setItem('db_users_migrated_v1','1');
+      localStorage.setItem('db_users_seeded_from_cu','1');
       localStorage.setItem('db_bookings',JSON.stringify(scenBks));
       localStorage.setItem('db_payments',JSON.stringify(scenPays));
       localStorage.setItem('db_messages',JSON.stringify(scenMsgs));

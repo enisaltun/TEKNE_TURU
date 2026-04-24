@@ -1246,8 +1246,9 @@ window.addEventListener('storage',function(e){
   // Fix #3: admin kaptan başvuruyu onaylayınca profildeki "Kaptan Paneli" butonu canli belirsin
   if(e.key==='db_users'||e.key==='db_captains'){if(h==='profile'&&typeof renderProfile==='function')renderProfile();}
 });
-window.addEventListener('load',function(){
+window.addEventListener('load',async function(){
   if(checkGlobalSettings('customer_app'))return;
+  await window._sbSync?.();
   rebuildTourMap();
   handleRoute();
   updateClock();
@@ -2032,6 +2033,7 @@ function doBooking(){
   };
   const db=S.get('db_bookings',[]);db.unshift(b);S.set('db_bookings',db);
   const my=S.get('cu_bookings',[]);my.unshift(b.id);S.set('cu_bookings',my);
+  try{if(DB_MODE==='remote')DB.rezervasyonlar.create({...b,turFiyat:t.perPerson||Math.round((t.price||t.fiyat||0)/(t.kapasite||8)),tur_id:t.id,kayitKanali:'mobil_app'}).catch(e=>console.warn('[SB]',e));}catch(e){}
   addNotif('Rezervasyon alindi',`${t.name} icin talebiniz kaptana iletildi.`,'info');
   renderConf(b);
   navigateTo('confirmation');
@@ -2053,6 +2055,7 @@ function _upsertCustomerToUsers(profile){
     createdAt:new Date().toISOString(),kaynak:'booking-upsert'
   });
   S.set('db_users',users);
+  try{if(DB_MODE==='remote')DB.kullanicilar.create({name:profile.name,email:profile.email,phone:profile.phone||'',kayitKanali:'mobil_app'}).catch(()=>{});}catch(e){}
 }
 
 function renderConf(b){

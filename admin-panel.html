@@ -77,6 +77,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
 
   <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Platform</div>
   <a href="#platform-control" data-nav="platform-control"><i class="fas fa-sliders-h"></i> Platform Kontrol <span id="maintenance-badge" style="display:none;font-size:9px;background:#ef4444;color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px">Bakım</span></a>
+  <a href="#system-health" data-nav="system-health"><i class="fas fa-stethoscope"></i> Sistem Sağlığı</a>
   <a href="#finance" data-nav="finance"><i class="fas fa-wallet"></i> Finans</a>
   <a href="#subscriptions" data-nav="subscriptions"><i class="fas fa-id-card"></i> Abonelik & Üyelik</a>
   <a href="#marine" data-nav="marine"><i class="fas fa-water"></i> Deniz Verileri</a>
@@ -216,6 +217,25 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
           <thead><tr><th>Kaptan</th><th>Tekne</th><th>Bolge</th><th>Basvuru</th><th>Durum</th><th>Islem</th></tr></thead>
           <tbody id="dash-pending-tbody">
             <tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Onay bekleyen basvuru yok</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pending Tours -->
+    <div class="card mt-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-semibold text-sm"><i class="fas fa-ship text-primary mr-1"></i>Onay Bekleyen Turlar</h3>
+        <div class="flex items-center gap-2">
+          <span class="badge bg-amber-100 text-amber-700" id="dash-pending-tours-badge">0 bekliyor</span>
+          <button onclick="navigateTo('tours')" class="text-xs text-primary font-medium hover:underline">Tur yönetimine git →</button>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Tur</th><th>Kaptan</th><th>Fiyat</th><th>Bolge</th><th>Gönderim</th><th>Islem</th></tr></thead>
+          <tbody id="dash-pending-tours-tbody">
+            <tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Onay bekleyen tur yok</td></tr>
           </tbody>
         </table>
       </div>
@@ -686,7 +706,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
             <option value="">Tüm Kategoriler</option><option>Balik Avi</option><option>Tekne Gezisi</option><option>Ozel Etkinlik</option><option>Kurumsal</option><option>Yuzme</option>
           </select>
           <select id="tour-filter-durum" onchange="renderToursBookings()" class="border rounded-lg px-3 py-2 text-sm">
-            <option value="">Tüm Durumlar</option><option value="aktif">Aktif</option><option value="bekliyor">Onay Bekliyor</option><option value="pasif">Pasif</option>
+            <option value="">Tüm Durumlar</option><option value="aktif">Aktif</option><option value="bekliyor">Onay Bekliyor</option><option value="reddedildi">Reddedildi</option><option value="pasif">Pasif</option>
           </select>
           <div class="ml-auto flex gap-2">
             <button onclick="expandAllCaptainGroups()" class="border px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-50 flex items-center gap-1"><i class="fas fa-expand-alt"></i>Tümünü Aç</button>
@@ -2005,6 +2025,23 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         </div>
       </div>
 
+      <!-- per-date doluluk -->
+      <div id="tdm-doluluk-section" style="display:none">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tarih Başına Doluluk</div>
+          <div class="text-[10px] text-gray-400" id="tdm-doluluk-summary">—</div>
+        </div>
+        <div class="rounded-xl border overflow-hidden">
+          <div class="grid grid-cols-12 bg-slate-50 text-[10px] font-bold uppercase tracking-wide text-slate-500 px-3 py-2">
+            <div class="col-span-5">Tarih</div>
+            <div class="col-span-3 text-center">Rez.</div>
+            <div class="col-span-2 text-center">Kalan</div>
+            <div class="col-span-2 text-right">Durum</div>
+          </div>
+          <div id="tdm-doluluk-rows" class="divide-y text-xs"></div>
+        </div>
+      </div>
+
       <!-- saatler -->
       <div id="tdm-saatler-section">
         <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Musait Saatler</div>
@@ -2247,6 +2284,47 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   </section>
 
   <!-- ======================================= -->
+  <!-- PAGE: SİSTEM SAĞLIĞI                   -->
+  <!-- ======================================= -->
+  <section id="page-system-health" class="page">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-2xl font-bold">Sistem Sağlığı</h1>
+        <p class="text-gray-500 text-sm">Veri bütünlüğü taraması — rezervasyon, tur, kullanıcı tutarlılığı.</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="shRunFix()" class="bg-success text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-wrench mr-1"></i>Güvenli Düzelt</button>
+        <button onclick="shRunFix(true)" class="bg-danger text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-biohazard mr-1"></i>Agresif Düzelt</button>
+        <button onclick="shScan()" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-search mr-1"></i>Yeniden Tara</button>
+      </div>
+    </div>
+    <div id="sh-summary" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"></div>
+    <div id="sh-categories" class="space-y-3"></div>
+    <div id="sh-last-fix" class="mt-6 p-4 rounded-xl bg-slate-50 border text-xs text-gray-500" style="display:none"></div>
+
+    <!-- Geliştirici / Simülasyon -->
+    <div class="mt-8 p-5 rounded-xl border-2 border-dashed border-purple-300 bg-purple-50">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-purple-900"><i class="fas fa-flask mr-2"></i>Geliştirici / Simülasyon</h2>
+          <p class="text-xs text-purple-700 mt-0.5">Sistemi sıfırla veya gerçekçi test verisi üret (sadece geliştirme için).</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button onclick="factoryReset()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-trash-can mr-1"></i>Fabrika Ayarına Dön</button>
+        <button onclick="runRealisticSimulation()" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-play mr-1"></i>Gerçekçi Simülasyon Çalıştır</button>
+      </div>
+      <div id="sim-progress" class="hidden mb-3">
+        <div class="text-xs text-purple-800 mb-1 font-medium" id="sim-progress-text">Başlatılıyor…</div>
+        <div class="w-full h-2 bg-purple-200 rounded-full overflow-hidden">
+          <div id="sim-progress-bar" class="h-full bg-purple-600 rounded-full transition-all" style="width:0%"></div>
+        </div>
+      </div>
+      <div id="sim-report" class="hidden p-4 bg-white rounded-xl border text-xs"></div>
+    </div>
+  </section>
+
+  <!-- ======================================= -->
   <!-- PAGE: SAYFA YÖNETİMİ (TEK EKRAN)       -->
   <!-- ======================================= -->
   <section id="page-page-manager" class="page">
@@ -2447,6 +2525,23 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         </button>
       </div>
     </div>
+
+    <!-- ULUSAL YAS TAKVİMİ (P2-b) -->
+    <div class="card p-5 mt-6">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900"><i class="fas fa-calendar-xmark text-red-500 mr-2"></i>Ulusal Yas Takvimi</h2>
+          <p class="text-xs text-gray-500 mt-0.5">Belirlediğiniz tarihlere denk gelen aktif turlar otomatik iptal edilir + müşterilere iade talebi açılır.</p>
+        </div>
+      </div>
+      <div class="flex gap-2 mb-4">
+        <input type="date" id="mourning-date-input" class="border rounded-lg px-3 py-2 text-sm">
+        <input type="text" id="mourning-reason-input" placeholder="Sebep (örn: Deprem, Şehit)" class="border rounded-lg px-3 py-2 text-sm flex-1">
+        <button onclick="addMourningDate()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-plus mr-1"></i>Ekle</button>
+        <button onclick="applyMourningCascade()" class="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium" title="Mevcut yas tarihlerine denk gelen aktif turları cascade iptal et"><i class="fas fa-bolt mr-1"></i>Cascade Uygula</button>
+      </div>
+      <div id="mourning-list" class="space-y-2"></div>
+    </div>
   </section>
 
 <!-- ===== TOAST ===== -->
@@ -2641,10 +2736,747 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
-const pages=['dashboard','captains','users','tours-bookings','reservations','page-manager','cms-web','cms-app','finance','subscriptions','shop-admin','marine','modules','captain-add','platform-control','mucbir'];
-const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','subscriptions':'Abonelik & Üyelik','shop-admin':'Mağaza Yönetimi','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi','mucbir':'Mucbir Sebepler Yonetimi'};
+const pages=['dashboard','captains','users','tours-bookings','reservations','system-health','page-manager','cms-web','cms-app','finance','subscriptions','shop-admin','marine','modules','captain-add','platform-control','mucbir'];
+const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','system-health':'Sistem Sağlığı','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','subscriptions':'Abonelik & Üyelik','shop-admin':'Mağaza Yönetimi','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi','mucbir':'Mucbir Sebepler Yonetimi'};
 
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+
+/* ── INTEGRITY HELPERS (B1,B5,B7,B8,B9,B11,B12,B14) ── */
+function trToISO(tr){const m=/^(\d{2})\.(\d{2})\.(\d{4})$/.exec(tr||'');return m?`${m[3]}-${m[2]}-${m[1]}`:null;}
+function isoToTr(iso){if(!iso)return null;const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);return m?`${m[3]}.${m[2]}.${m[1]}`:null;}
+function normalizeBookingDates(b){
+  if(b.tarihISO && !b.tarih) b.tarih=isoToTr(b.tarihISO);
+  if(b.tarih && !b.tarihISO) b.tarihISO=trToISO(b.tarih);
+  return b;
+}
+function uniqueBookingId(){return 'BK'+Date.now()+Math.floor(Math.random()*10000);}
+
+/* Tüm db_bookings üzerinde bir migration + auto-transition pass.
+   Idempotent — flag'le tekrar çalışmaz, manuel de çağrılabilir. */
+function runIntegrityPass(opts={}){
+  const tours=lsGet('db_tours',[]);
+  const tourById=new Map(tours.map(t=>[String(t.id),t]));
+  const bookings=lsGet('db_bookings',[]);
+  const today=new Date();today.setHours(0,0,0,0);
+  const report={backfilled_tarihISO:0,past_autocompleted:0,boarding_autocomplete:0,dedup_ids:0,captain_fixed:0,payment_clamp:0,upserted_users:0,removed_boardings:0};
+  const seenIds=new Set();
+  bookings.forEach(b=>{
+    // B7: Duplicate id → append suffix
+    if(seenIds.has(b.id)){b.id=b.id+'_dup'+Math.floor(Math.random()*10000);report.dedup_ids++;}
+    seenIds.add(b.id);
+    // B1: tarih ↔ tarihISO
+    normalizeBookingDates(b);
+    if(b.tarihISO && !b.tarih){b.tarih=isoToTr(b.tarihISO);}
+    if(!b.tarihISO && b.tarih){const iso=trToISO(b.tarih);if(iso){b.tarihISO=iso;report.backfilled_tarihISO++;}}
+    // B8: captain türet
+    const t=tourById.get(String(b.tourId));
+    if(t){
+      if(t.captainEmail && b.captainEmail!==t.captainEmail){b.captainEmail=t.captainEmail;report.captain_fixed++;}
+      if(t.captainName && !b.captainName) b.captainName=t.captainName;
+    }
+    // B5: past-date active → tamamlandı (onaylandı) / iptal (bekliyor)
+    if(b.tarihISO && ['bekliyor','onaylandi'].includes(b.durum)){
+      const d=new Date(b.tarihISO);
+      if(d<today){
+        if(b.durum==='onaylandi'){b.durum='tamamlandi';b.autoTransition='past_date_completed';}
+        else{b.durum='iptal';b.autoTransition='past_date_expired';}
+        report.past_autocompleted++;
+      }
+    }
+    // B9: binisYapildi=true && durum=onaylandi → tamamlandı
+    if(b.binisYapildi && b.durum==='onaylandi'){b.durum='tamamlandi';report.boarding_autocomplete++;}
+    // B10: reddedildi/iptal ise binisYapildi olamaz
+    if(b.binisYapildi && (b.durum==='reddedildi'||b.durum==='iptal')){b.binisYapildi=false;b.binisZamani=null;report.removed_boardings++;}
+    // B12: odemeYapildi=true ama ref yok → false'a çek
+    if(b.odemeYapildi===true && !b.odemeRef){b.odemeYapildi=false;report.payment_clamp++;}
+    // B14: tamamlandi ama ödenmemiş → not düş (hard kapat değil, flag)
+    if(b.durum==='tamamlandi' && b.odemeYapildi===false){b._paymentWarning='completed-but-unpaid';}
+  });
+  lsSet('db_bookings',bookings);
+  // B11: Unknown customer → users upsert
+  const users=lsGet('db_users',[]);
+  const userEmails=new Set(users.map(u=>(u.email||'').toLowerCase()));
+  bookings.forEach(b=>{
+    const em=(b.customerEmail||'').toLowerCase();
+    if(em && !userEmails.has(em)){
+      const [ad,...rest]=(b.customerName||'Müşteri').split(' ');
+      users.push({id:Date.now()+Math.floor(Math.random()*10000),email:b.customerEmail,
+        ad:ad||'Müşteri',soyad:rest.join(' ')||'',telefon:b.customerPhone||null,
+        roles:['customer'],status:'active',createdAt:b.createdAt||new Date().toISOString(),
+        kaynak:'integrity-pass-upsert'});
+      userEmails.add(em);
+      report.upserted_users++;
+    }
+  });
+  lsSet('db_users',users);
+  // ADMIN ONAY TIMEOUT: 48h+ bekleyen turları otomatik reddet (non-destructive)
+  report.admin_timeout_rejected=0;
+  tours.forEach(t=>{
+    if(t.durum==='bekliyor' && t.createdAt){
+      const age=(Date.now()-new Date(t.createdAt).getTime())/3600000;
+      if(age>48){
+        t.durum='reddedildi';
+        t.redSebep='Admin onay zaman aşımı (48h+)';
+        t._autoRejectedAt=new Date().toISOString();
+        report.admin_timeout_rejected++;
+      }
+    }
+  });
+  if(report.admin_timeout_rejected>0)lsSet('db_tours',tours);
+  // AGRESİF: opt-in — admin Fix butonundan çalışır
+  if(opts.aggressive){
+    report.cancelled_cascaded=0;report.orphan_cancelled=0;report.invalid_guests_cancelled=0;report.tarihISO_rederive=0;report.overcap_trimmed=0;report.tarih_not_in_tour_cascaded=0;
+    bookings.forEach(b=>{
+      const t=tourById.get(String(b.tourId));
+      if(!t){if(['bekliyor','onaylandi'].includes(b.durum)){b.durum='iptal';b.iptalNedeni='Tur bulunamadı (orphan)';b.iptalTarihi=new Date().toISOString();report.orphan_cancelled++;}return;}
+      if(t.durum==='iptal' && !['iptal','reddedildi'].includes(b.durum)){b.durum='iptal';b.iptalNedeni=b.iptalNedeni||'Tur iptal edildi';b.iptalTarihi=new Date().toISOString();report.cancelled_cascaded++;}
+      if((+b.guests||0)<=0 && !['iptal','reddedildi'].includes(b.durum)){b.durum='iptal';b.iptalNedeni='Geçersiz kişi sayısı';b.iptalTarihi=new Date().toISOString();report.invalid_guests_cancelled++;}
+      if(b.tarihISO && b.tarih){const tr=isoToTr(b.tarihISO);if(tr!==b.tarih){const reISO=trToISO(b.tarih);if(reISO){b.tarihISO=reISO;report.tarihISO_rederive++;}}}
+      if(t.tarihler?.length && b.tarihISO && !t.tarihler.includes(b.tarihISO) && ['bekliyor','onaylandi'].includes(b.durum)){b.durum='iptal';b.iptalNedeni='Tarih artık tur programında yok';b.iptalTarihi=new Date().toISOString();report.tarih_not_in_tour_cascaded++;}
+    });
+    // Aşırı doluluk: en yeni aktif bookingleri iptal et, kapasiteye düşene kadar
+    const byKey=new Map();
+    bookings.filter(b=>['bekliyor','onaylandi','tamamlandi'].includes(b.durum)).forEach(b=>{
+      const key=`${b.tourId}||${b.tarihISO||b.tarih}`;
+      if(!byKey.has(key))byKey.set(key,[]);
+      byKey.get(key).push(b);
+    });
+    byKey.forEach((arr,key)=>{
+      const [tid]=key.split('||');
+      const t=tourById.get(tid);
+      if(!t?.kapasite)return;
+      let total=arr.reduce((s,b)=>s+(+b.guests||0),0);
+      if(total<=t.kapasite)return;
+      arr.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+      for(const b of arr){
+        if(total<=t.kapasite)break;
+        if(b.durum==='tamamlandi')continue;
+        b.durum='iptal';b.iptalNedeni='Kapasite aşımı — otomatik iptal';b.iptalTarihi=new Date().toISOString();
+        total-=(+b.guests||0);
+        report.overcap_trimmed++;
+      }
+    });
+    lsSet('db_bookings',bookings);
+  }
+  if(opts.silent!==true)console.log('[integrity]',report);
+  return report;
+}
+
+/* ── İPTAL SEBEP TAKSONOMİSİ (canonical enum) ── */
+const IPTAL_KATEGORILERI={
+  hava:'Hava muhalefeti',
+  mucbir:'Mücbir sebep',
+  cayma:'Müşteri cayma hakkı',
+  kaptan:'Kaptan iptali',
+  'admin-timeout':'Admin onay zaman aşımı',
+  yas:'Ulusal yas',
+  kapasite:'Kapasite aşımı',
+  teknik:'Teknik arıza',
+  diger:'Diğer'
+};
+
+/* ── ÜLKE YASI TAKVİMİ (admin tarafından yönetilir) ── */
+function getNationalMourningDates(){
+  const raw=lsGet('db_mourning',[]); // [{date, sebep}]
+  return raw.map(x=>typeof x==='string'?x:x.date).filter(Boolean);
+}
+function renderMourningList(){
+  const el=document.getElementById('mourning-list');if(!el)return;
+  const list=lsGet('db_mourning',[]);
+  if(!list.length){el.innerHTML='<div class="text-xs text-gray-400 p-3 bg-gray-50 rounded-lg">Henüz yas tarihi yok.</div>';return;}
+  el.innerHTML=list.sort((a,b)=>String(a.date).localeCompare(String(b.date))).map((m,i)=>`
+    <div class="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg">
+      <div><div class="font-bold text-sm text-red-800">${m.date}</div><div class="text-xs text-red-600">${m.sebep||''}</div></div>
+      <button onclick="removeMourningDate(${i})" class="text-red-500 text-xs hover:underline">Kaldır</button>
+    </div>`).join('');
+}
+function addMourningDate(){
+  const d=document.getElementById('mourning-date-input').value;
+  const s=document.getElementById('mourning-reason-input').value.trim();
+  if(!d){showToast('Tarih seçin','danger');return;}
+  const list=lsGet('db_mourning',[]);
+  if(list.some(x=>x.date===d)){showToast('Bu tarih zaten eklenmiş','warning');return;}
+  list.push({date:d,sebep:s||'Ulusal yas',addedAt:new Date().toISOString()});
+  lsSet('db_mourning',list);
+  document.getElementById('mourning-date-input').value='';
+  document.getElementById('mourning-reason-input').value='';
+  renderMourningList();showToast('Yas tarihi eklendi','success');
+}
+function removeMourningDate(i){
+  const list=lsGet('db_mourning',[]);list.splice(i,1);
+  lsSet('db_mourning',list);renderMourningList();
+}
+function applyMourningCascade(){
+  const dates=new Set(getNationalMourningDates());
+  if(!dates.size){showToast('Önce yas tarihi ekleyin','warning');return;}
+  if(!confirm('Yas tarihlerine denk gelen tüm aktif turlar iptal edilecek + müşterilere otomatik iade talebi açılacak.\n\nDevam?'))return;
+  const tours=lsGet('db_tours',[]);let n=0;
+  tours.forEach(t=>{
+    if(t.durum==='iptal')return;
+    const hits=(t.tarihler||[]).filter(x=>dates.has(x));
+    if(!hits.length)return;
+    const r=cancelTourCascade(t.id, 'Ulusal yas — '+hits.join(', '), 'yas');
+    if(r.ok)n+=r.cascaded;
+  });
+  showToast(`Cascade tamamlandı — ${n} rezervasyon iptal + iade`,'success');
+  renderMourningList();shScan();
+}
+
+/* ── CAYMA-CEZA HESABI (tarih yakınlığına göre yüzde) ── */
+function computeCaymaCeza(tarihISO, price){
+  if(!tarihISO||!price)return {oran:0,tutar:0,iade:price||0};
+  const now=new Date();now.setHours(0,0,0,0);
+  const t=new Date(tarihISO);
+  const days=Math.floor((t-now)/86400000);
+  let oran=0;
+  if(days<2)oran=100;
+  else if(days<7)oran=50;
+  else if(days<14)oran=25;
+  const tutar=Math.floor((+price||0)*oran/100);
+  return {oran, tutar, iade:Math.max(0,(+price||0)-tutar), gun:days};
+}
+
+/* ── REFUND STATE MACHINE ── */
+const REFUND_STATES=['pending','approved','paid','reddedildi'];
+function setRefundState(b, next, note){
+  if(!REFUND_STATES.includes(next))return false;
+  const prev=b.refundStatus||null;
+  const valid={
+    null:['pending','paid','reddedildi'],
+    pending:['approved','reddedildi'],
+    approved:['paid','reddedildi'],
+    paid:[],
+    reddedildi:['pending']
+  };
+  if(!valid[prev]?.includes(next))return false;
+  b.refundStatus=next;
+  b.refundHistory=b.refundHistory||[];
+  b.refundHistory.push({from:prev,to:next,ts:new Date().toISOString(),note:note||''});
+  return true;
+}
+
+/* ── SİSTEM SAĞLIĞI TARAMASI (B18 + P0 genişletme) ── */
+function runHealthScan(){
+  const tours=lsGet('db_tours',[]);
+  const bookings=lsGet('db_bookings',[]);
+  const users=lsGet('db_users',[]);
+  const complaints=lsGet('db_complaints',[]);
+  const mourning=new Set(getNationalMourningDates());
+  const tourById=new Map(tours.map(t=>[String(t.id),t]));
+  const userByEmail=new Map(users.map(u=>[(u.email||'').toLowerCase(),u]));
+  const today=new Date();today.setHours(0,0,0,0);
+  const findings={};
+  const push=(cat,rec)=>{(findings[cat]=findings[cat]||[]).push(rec);};
+  const seen=new Map();
+  bookings.forEach(b=>{
+    const c=(seen.get(b.id)||0)+1;seen.set(b.id,c);
+    if(c>1)push('duplicate_booking_id',{id:b.id,tour:b.tourTitle});
+  });
+  bookings.forEach(b=>{
+    if(!tourById.has(String(b.tourId)))push('orphan_booking',{id:b.id,tourId:b.tourId});
+    if(b.customerEmail && !userByEmail.has(b.customerEmail.toLowerCase()))push('unknown_customer',{id:b.id,email:b.customerEmail});
+    if(b.tarihISO){const d=new Date(b.tarihISO);if(d<today && ['bekliyor','onaylandi'].includes(b.durum))push('past_date_active',{id:b.id,tarih:b.tarihISO,durum:b.durum});}
+    if(!b.tarihISO && ['bekliyor','onaylandi','tamamlandi'].includes(b.durum))push('missing_tarihISO',{id:b.id,tarih:b.tarih});
+    if(b.tarihISO && b.tarih){const tr=new Date(b.tarihISO).toLocaleDateString('tr-TR');if(tr!==b.tarih)push('tarihISO_mismatch',{id:b.id,tarih:b.tarih,tarihISO:b.tarihISO});}
+    if(!b.guests || b.guests<=0)push('invalid_guests',{id:b.id,guests:b.guests});
+    if(b.odemeYapildi===true && !b.odemeRef)push('paid_no_ref',{id:b.id});
+    if(b.odemeYapildi===false && b.durum==='tamamlandi')push('completed_unpaid',{id:b.id});
+    if(b.binisYapildi && b.durum==='reddedildi')push('rejected_yet_boarded',{id:b.id});
+    if(b.binisYapildi && b.durum==='onaylandi')push('boarded_not_completed',{id:b.id});
+    const t=tourById.get(String(b.tourId));
+    if(t && t.captainEmail && b.captainEmail && t.captainEmail!==b.captainEmail)push('captain_mismatch',{id:b.id,tour:t.captainEmail,booking:b.captainEmail});
+    if(t && t.tarihler?.length && b.tarihISO && !t.tarihler.includes(b.tarihISO))push('tarih_not_in_tour',{id:b.id,tarih:b.tarihISO});
+    if(t && t.durum==='bekliyor' && ['bekliyor','onaylandi','tamamlandi'].includes(b.durum))push('booking_on_unapproved_tour',{id:b.id,tour:t.ad||t.title});
+    if(t && t.durum==='iptal' && !['iptal','reddedildi'].includes(b.durum))push('booking_on_cancelled_tour',{id:b.id,tour:t.ad||t.title});
+  });
+  const cap=new Map();
+  bookings.filter(b=>['bekliyor','onaylandi','tamamlandi'].includes(b.durum)).forEach(b=>{
+    const key=`${b.tourId}||${b.tarihISO||b.tarih}`;
+    if(!cap.has(key))cap.set(key,{total:0,bids:[]});
+    const c=cap.get(key);c.total+=(+b.guests||0);c.bids.push(b.id);
+  });
+  cap.forEach((info,key)=>{
+    const [tid,date]=key.split('||');
+    const t=tourById.get(tid);
+    if(t && t.kapasite && info.total>t.kapasite)push('overcapacity',{tour:t.ad||t.title,date,dolu:info.total,kapasite:t.kapasite,bookings:info.bids.length});
+  });
+  /* ===== P0 EK DEDEKTÖRLER ===== */
+  const KNOWN_KAT=new Set(['Balik Avi','Tekne Gezisi','Yuzme Turu','Gunbatimi Turu','Mavi Tur','Dalis Turu','Snorkeling','Ozel Etkinlik','Kurumsal']);
+  tours.forEach(t=>{
+    const f=+t.fiyat; const p=+t.price;
+    if(!(f>0)||f>500000||(p!==undefined&&!(p>0))||(p>500000))push('price_invalid',{id:t.id,ad:t.ad,fiyat:t.fiyat,price:t.price});
+    const bad=(!t.ad||String(t.ad).trim().length<3) || !t.sure || String(t.sure).trim()==='0'
+      || !(+t.kapasite>0) || !(t.tarihler?.length>0);
+    if(bad)push('malformed_tour',{id:t.id,ad:t.ad,sure:t.sure,kapasite:t.kapasite,tarihler:t.tarihler?.length||0});
+    if(t.aciklama===''||(t.kategoriler?.length && t.kategoriler.some(k=>!KNOWN_KAT.has(k))))
+      push('wrong_tour_info',{id:t.id,ad:t.ad,aciklama:t.aciklama?.slice?.(0,30),kat:t.kategoriler});
+    if(t.durum==='bekliyor' && t.createdAt){
+      const age=(Date.now()-new Date(t.createdAt).getTime())/3600000;
+      if(age>48)push('admin_approval_timeout',{id:t.id,ad:t.ad,bekleme_saat:Math.floor(age)});
+    }
+    if(mourning.size && t.tarihler?.length && t.durum!=='iptal'){
+      const hits=t.tarihler.filter(x=>mourning.has(x));
+      if(hits.length)push('national_mourning_tours',{id:t.id,ad:t.ad,tarihler:hits});
+    }
+  });
+  bookings.forEach(b=>{
+    const stuckDays=b.refundTalebTarihi ? (Date.now()-new Date(b.refundTalebTarihi).getTime())/86400000 : 0;
+    if(b.refundStatus==='pending' && stuckDays>7)push('refund_stuck',{id:b.id,gun:Math.floor(stuckDays)});
+    if(b.iptalKategori==='hava' && b.refundStatus!=='paid' && b.refundStatus!=='approved')push('weather_cancel_no_compensation',{id:b.id});
+    if(b.iptalKategori==='mucbir' && !b.refundStatus)push('force_majeure_unhandled',{id:b.id});
+    if(b.iptalKategori==='cayma' && (b.caymaCezaOrani===undefined||b.iadeTutari===undefined))push('withdrawal_fee_missing',{id:b.id});
+    if(b.tarihISO){
+      const d=new Date(b.tarihISO);
+      if(d<today && b.durum==='tamamlandi' && b.binisYapildi===false)push('no_show_uncompensated',{id:b.id,tarih:b.tarihISO});
+    }
+  });
+  complaints.forEach(c=>{
+    if(c.resolved===true || c.durum==='kapali')return;
+    const age=c.createdAt?(Date.now()-new Date(c.createdAt).getTime())/86400000:0;
+    if(age>3)push('dispute_open',{id:c.id,konu:c.konu,gun:Math.floor(age),booking:c.bookingId});
+  });
+  return findings;
+}
+
+const SH_LABELS={
+  duplicate_booking_id:{label:'Duplicate Booking ID',icon:'fa-copy',color:'red',desc:'Aynı ID birden fazla rezervasyonda'},
+  orphan_booking:{label:'Orphan Booking',icon:'fa-unlink',color:'red',desc:'tourId geçersiz (tur yok)'},
+  unknown_customer:{label:'Bilinmeyen Müşteri',icon:'fa-user-slash',color:'orange',desc:'customerEmail kullanıcılar tablosunda yok'},
+  past_date_active:{label:'Geçmiş Tarih / Aktif',icon:'fa-clock-rotate-left',color:'orange',desc:'Tarihi geçmiş ama hâlâ bekliyor/onaylandı'},
+  missing_tarihISO:{label:'Eksik tarihISO',icon:'fa-calendar-minus',color:'orange',desc:'Sadece tr-TR tarih var, ISO yok'},
+  tarihISO_mismatch:{label:'Tarih Uyuşmazlığı',icon:'fa-not-equal',color:'orange',desc:'tarih ↔ tarihISO farklı'},
+  invalid_guests:{label:'Geçersiz Kişi Sayısı',icon:'fa-users-slash',color:'red',desc:'0 veya negatif misafir'},
+  paid_no_ref:{label:'Ödeme Ref Yok',icon:'fa-credit-card',color:'orange',desc:'odemeYapildi=true ama odemeRef yok'},
+  completed_unpaid:{label:'Tamamlandı / Ödenmedi',icon:'fa-money-check-dollar',color:'red',desc:'Durum tamamlandı ama ödeme yok'},
+  rejected_yet_boarded:{label:'Reddedildi ama Binmiş',icon:'fa-ban',color:'red',desc:'Durum reddedildi/iptal ama binisYapildi=true'},
+  boarded_not_completed:{label:'Binmiş / Tamamlanmamış',icon:'fa-person-walking-arrow-right',color:'orange',desc:'Binmiş ama durum hâlâ onaylandı'},
+  captain_mismatch:{label:'Kaptan Uyuşmazlığı',icon:'fa-user-xmark',color:'orange',desc:'booking.captainEmail ≠ tour.captainEmail'},
+  tarih_not_in_tour:{label:'Tur Tarihi Geçersiz',icon:'fa-calendar-xmark',color:'orange',desc:'Booking tarihi t.tarihler[] içinde yok'},
+  booking_on_unapproved_tour:{label:'Onaysız Turda Rezervasyon',icon:'fa-hourglass',color:'red',desc:'Tur durum=bekliyor fakat rezervasyon var'},
+  booking_on_cancelled_tour:{label:'İptal Turda Aktif Rez.',icon:'fa-xmark',color:'red',desc:'Tur iptal edildi ama rez hâlâ aktif'},
+  overcapacity:{label:'Kapasite Aşımı',icon:'fa-people-group',color:'red',desc:'Tur tarih-kapasitesi aşılmış'},
+  price_invalid:{label:'Geçersiz Fiyat',icon:'fa-tag',color:'red',desc:'Tur fiyatı 0, negatif veya absürt yüksek'},
+  malformed_tour:{label:'Bozuk Tur Kaydı',icon:'fa-file-circle-exclamation',color:'red',desc:'Eksik ad/kapasite/süre/tarih'},
+  wrong_tour_info:{label:'Yanlış Tur Bilgisi',icon:'fa-triangle-exclamation',color:'orange',desc:'Boş açıklama veya geçersiz kategori'},
+  refund_stuck:{label:'İade Takılmış',icon:'fa-hand-holding-dollar',color:'red',desc:'7+ gündür pending refund'},
+  weather_cancel_no_compensation:{label:'Hava İptali / İade Yok',icon:'fa-cloud-showers-heavy',color:'orange',desc:'Hava sebebiyle iptal ama iade yok'},
+  force_majeure_unhandled:{label:'Mücbir / İşlenmemiş',icon:'fa-bolt',color:'orange',desc:'Mücbir sebep iptal ama refund state yok'},
+  withdrawal_fee_missing:{label:'Cayma Cezası Eksik',icon:'fa-scale-balanced',color:'orange',desc:'Cayma iptali ama ceza/iade hesaplanmamış'},
+  no_show_uncompensated:{label:'No-show Çözümsüz',icon:'fa-user-slash',color:'orange',desc:'Tarih geçti, tamamlandı ama binis yok'},
+  dispute_open:{label:'Açık Şikayet (72h+)',icon:'fa-comments',color:'red',desc:'3+ gündür çözülmemiş şikayet'},
+  admin_approval_timeout:{label:'Admin Onay Timeout',icon:'fa-hourglass-end',color:'red',desc:'48+ saattir bekleyen tur'},
+  national_mourning_tours:{label:'Ulusal Yas Çakışma',icon:'fa-calendar-xmark',color:'red',desc:'Yas tarihine denk gelen aktif tur'}
+};
+
+function renderSystemHealth(){
+  shScan();
+}
+function shScan(){
+  const findings=runHealthScan();
+  const sum=document.getElementById('sh-summary');
+  const cats=document.getElementById('sh-categories');
+  const totals={red:0,orange:0,ok:0};
+  Object.entries(findings).forEach(([k,v])=>{const c=SH_LABELS[k]?.color||'orange';totals[c]+=v.length;});
+  const totalIssues=totals.red+totals.orange;
+  sum.innerHTML=`
+    <div class="bg-white rounded-xl p-4 border-l-4 border-red-500"><div class="text-xs text-gray-500">Kritik</div><div class="text-3xl font-bold text-red-600">${totals.red}</div></div>
+    <div class="bg-white rounded-xl p-4 border-l-4 border-orange-400"><div class="text-xs text-gray-500">Uyarı</div><div class="text-3xl font-bold text-orange-500">${totals.orange}</div></div>
+    <div class="bg-white rounded-xl p-4 border-l-4 border-green-500"><div class="text-xs text-gray-500">Durum</div><div class="text-lg font-bold ${totalIssues?'text-red-600':'text-green-600'}">${totalIssues?'Sorun tespit edildi':'Tüm kontroller geçti'}</div></div>
+    <div class="bg-white rounded-xl p-4 border-l-4 border-primary"><div class="text-xs text-gray-500">Toplam Kategori</div><div class="text-3xl font-bold text-primary">${Object.keys(findings).length}/${Object.keys(SH_LABELS).length}</div></div>`;
+  if(!Object.keys(findings).length){
+    cats.innerHTML='<div class="bg-green-50 border border-green-200 rounded-xl p-8 text-center text-green-700"><i class="fas fa-check-circle text-4xl mb-3"></i><div class="font-bold text-lg">Tüm kontroller temiz!</div><div class="text-sm mt-1 text-green-600">Sistem verileri tutarlı.</div></div>';
+    return;
+  }
+  cats.innerHTML=Object.entries(findings).sort(([,a],[,b])=>b.length-a.length).map(([k,items])=>{
+    const L=SH_LABELS[k]||{label:k,icon:'fa-circle-exclamation',color:'orange',desc:''};
+    const bar=L.color==='red'?'bg-red-500':'bg-orange-400';
+    const txt=L.color==='red'?'text-red-700':'text-orange-700';
+    const bg=L.color==='red'?'bg-red-50':'bg-orange-50';
+    const samples=items.slice(0,5).map(x=>`<div class="text-[11px] text-gray-500 font-mono truncate">${JSON.stringify(x)}</div>`).join('');
+    const more=items.length>5?`<div class="text-[11px] text-gray-400 mt-1">+${items.length-5} daha…</div>`:'';
+    return `<details class="${bg} border rounded-xl overflow-hidden">
+      <summary class="flex items-center justify-between p-4 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 ${bar} text-white rounded-lg flex items-center justify-center"><i class="fas ${L.icon}"></i></div>
+          <div><div class="font-bold text-sm ${txt}">${L.label}</div><div class="text-xs text-gray-500">${L.desc}</div></div>
+        </div>
+        <div class="font-bold text-2xl ${txt}">${items.length}</div>
+      </summary>
+      <div class="px-4 pb-4 pt-1 border-t border-white/50">${samples}${more}</div>
+    </details>`;
+  }).join('');
+}
+
+function shRunFix(aggressive){
+  const msg=aggressive
+    ? 'AGRESİF düzeltme çalıştırılacak — geri alınamaz değişiklikler:\n\n• Yetim rezervasyon → iptal\n• İptal tura bağlı rezervasyon → iptal\n• Geçersiz misafir → iptal\n• tarihISO yeniden türet\n• Tur tarihinde olmayan rezervasyon → iptal\n• Kapasite aşımı → en yeniler iptal\n\n+ tüm güvenli düzeltmeler\n\nDevam?'
+    : 'Güvenli düzeltme çalıştırılacak:\n\n• tarihISO backfill\n• Duplicate ID düzeltme\n• Past-date auto-transition\n• Biniş→tamamlandı güncellemesi\n• Kaptan email türetme\n• Bilinmeyen müşteri upsert\n• Ödeme invariant\n\nDevam?';
+  if(!confirm(msg))return;
+  const rep=runIntegrityPass(aggressive?{aggressive:true}:{});
+  const el=document.getElementById('sh-last-fix');
+  const items=Object.entries(rep).filter(([,v])=>v>0).map(([k,v])=>`<span class="inline-block bg-white border rounded-full px-3 py-1 mr-1 mb-1"><b class="text-primary">${v}</b> ${k}</span>`).join('')||'<span class="text-gray-400">Düzeltilecek kayıt bulunamadı.</span>';
+  el.innerHTML=`<div class="font-bold text-gray-700 mb-2"><i class="fas fa-wrench text-success mr-1"></i>Son düzeltme</div>${items}`;
+  el.style.display='';
+  shScan();
+  showToast('Otomatik düzeltme tamamlandı','success');
+}
+
+/* Admin açılışta bir kere çalıştır */
+(function autoRunIntegrity(){
+  try{
+    const key='_integrity_last_run';
+    const last=+localStorage.getItem(key)||0;
+    // Her 30 dakikada bir, veya first open
+    if(Date.now()-last>30*60*1000){
+      runIntegrityPass({silent:true});
+      localStorage.setItem(key,String(Date.now()));
+    }
+  }catch{}
+})();
+
+/* ============================================================
+   FABRİKA RESET + GERÇEKÇİ SİMÜLASYON
+   ============================================================ */
+
+function factoryReset(){
+  if(!confirm('TÜM VERİ SİLİNECEK:\n• Kullanıcılar\n• Kaptanlar\n• Turlar\n• Rezervasyonlar\n• Mesajlar / Şikayetler\n• Ödemeler / Ayarlar\n\nBu işlem GERİ ALINAMAZ.\n\nDevam?')) return;
+  if(!confirm('SON UYARI — localStorage tamamen temizlenecek. Emin misiniz?')) return;
+  try{ localStorage.clear(); sessionStorage.clear(); }catch(e){ console.warn(e); }
+  showToast('Sistem sıfırlandı. Yenileniyor…','success');
+  setTimeout(()=>location.reload(), 900);
+}
+
+const SIM_POOLS = {
+  isim:['Ali','Ayşe','Mehmet','Fatma','Ahmet','Zeynep','Mustafa','Hatice','Hüseyin','Emine','Osman','Elif','İbrahim','Merve','Yusuf','Büşra','Hasan','Ebru','Kemal','Selin','Murat','Derya','Emre','Burcu','Can','Ceren','Serkan','Esra','Tolga','Pınar','Onur','Gamze','Barış','Seda','Cem','Özlem','Kerem','Burak','Sinem','Deniz'],
+  soyisim:['Yılmaz','Kaya','Demir','Şahin','Çelik','Yıldız','Yıldırım','Öztürk','Aydın','Özdemir','Arslan','Doğan','Kılıç','Aslan','Çetin','Kara','Koç','Kurt','Özkan','Şimşek','Polat','Korkmaz','Taş','Aksoy','Duran','Bulut','Ateş','Güneş','Erdoğan','Kartal'],
+  bolge:['Bodrum','Fethiye','Marmaris','Çeşme','Antalya','Kaş','Ayvalık','Göcek','Datça','Kuşadası'],
+  tekneTip:['Gulet','Yelkenli','Motor Yat','Katamaran','Balıkçı Teknesi','Speedboat'],
+  tekneAdi:['Deniz Yıldızı','Poseidon','Mavi Rüya','Akdeniz Prensesi','Neptün','Karayel','Lodos','Ege Işığı','Marmaris Pearl','Kaptan Yusuf','Gezgin','Özgürlük','Rüzgar','Dalga','Fırtına','Su Perisi','Kıyı','Liman','Yelken','Mavi Vatan','Akıntı','Kurtuluş','Nazar','Turkuaz','İnci','Palamut','Levrek','Çipura','Trançeti','Sudak','Mercan','Korsan','Atlantis','Denizci','Efe'],
+  kategori:['Balik Avi','Tekne Gezisi','Yuzme Turu','Gunbatimi Turu','Mavi Tur','Dalis Turu','Snorkeling','Ozel Etkinlik','Kurumsal'],
+  tema:['Koy Turu','Günübirlik Seyir','Balık Avı Macerası','Günbatımı','VIP Seyir','Aile Günü','Adalar Turu','Sunset Cruise','Sabah Yüzme','Öğle Mola','Özel Organizasyon','Doğum Günü','Kurumsal Etkinlik','Bekarlığa Veda','Yunus Gözlemi'],
+  saatler:['06:00','07:00','08:00','09:00','10:00','11:00','14:00','15:00','16:00','17:00','18:00','19:00'],
+  sureler:['2 saat','3 saat','4 saat','5 saat','6 saat','Tam Gün (8 saat)'],
+  disputeKonu:['Kaptan kaba davrandı','Tur geç başladı','Tekne temiz değildi','Vaat edilen güzergah izlenmedi','Kapasite aşıldı — sıkışıktık','İade yapılmadı','Yemek kalitesi kötü','Güvenlik ekipmanları eksikti','Saat değişikliği bildirilmedi','Tur erken bitti']
+};
+
+function _rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function _pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function _pickN(arr,n){ const s=[...arr], out=[]; while(n-- && s.length) out.push(s.splice(Math.floor(Math.random()*s.length),1)[0]); return out; }
+function _pickWeighted(items){ let t=items.reduce((s,i)=>s+i.weight,0); let r=Math.random()*t; for(const it of items){ if((r-=it.weight)<=0) return it; } return items[items.length-1]; }
+function _iso(d){ return d.toISOString().slice(0,10); }
+function _tr(d){ return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`; }
+function _randDate(s,e){ return new Date(s.getTime()+Math.random()*(e.getTime()-s.getTime())); }
+function _slug(){ return Math.random().toString(36).slice(2,8); }
+
+const SIM_PROBLEMS=[
+  {key:'overcapacity',            weight:15, scope:'booking'},
+  {key:'past_date_active',        weight:10, scope:'booking'},
+  {key:'no_show',                 weight:10, scope:'booking'},
+  {key:'refund_pending',          weight: 8, scope:'booking'},
+  {key:'price_error',             weight: 8, scope:'tour'},
+  {key:'captain_overbook',        weight: 8, scope:'booking'},
+  {key:'weather_cancel',          weight: 7, scope:'booking'},
+  {key:'malformed_tour',          weight: 6, scope:'tour'},
+  {key:'captain_cancel_no_cascade',weight:6, scope:'booking'},
+  {key:'force_majeure',           weight: 5, scope:'booking'},
+  {key:'wrong_tour_info',         weight: 5, scope:'tour'},
+  {key:'customer_dispute',        weight: 4, scope:'booking'},
+  {key:'admin_timeout',           weight: 3, scope:'tour'},
+  {key:'national_mourning',       weight: 3, scope:'booking'},
+  {key:'customer_withdrawal',     weight: 2, scope:'booking'}
+];
+
+async function runRealisticSimulation(){
+  if(!confirm('Gerçekçi Simülasyon başlayacak:\n• 35 kaptan\n• 800 müşteri\n• ~400 tur (3 aylık periyot)\n• ~3000 rezervasyon\n• %90 sorun enjeksiyonu\n\nMEVCUT VERİLER ÜSTÜNE YAZILACAK.\n\nDevam?')) return;
+  const pEl=document.getElementById('sim-progress');
+  const pBar=document.getElementById('sim-progress-bar');
+  const pTxt=document.getElementById('sim-progress-text');
+  const rEl=document.getElementById('sim-report');
+  pEl.classList.remove('hidden'); rEl.classList.add('hidden');
+  const setProgress=(pct,txt)=>{ pBar.style.width=pct+'%'; pTxt.textContent=txt; };
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+  // 1. Kaptanlar
+  setProgress(5,'Kaptanlar üretiliyor…'); await sleep(40);
+  const captains=[];
+  for(let i=0;i<35;i++){
+    const ad=_pick(SIM_POOLS.isim), soyad=_pick(SIM_POOLS.soyisim), bolge=_pick(SIM_POOLS.bolge);
+    const tekne={ ad:_pick(SIM_POOLS.tekneAdi)+' '+(i+1), tipi:_pick(SIM_POOLS.tekneTip), kapasite:_rand(6,24), yapimYili:_rand(2000,2022), uzunluk:_rand(8,24) };
+    captains.push({
+      id:1000+i, email:`kaptan${i+1}@denizbul.tr`, ad, soyad,
+      phone:`05${_rand(30,59)}${_rand(1000000,9999999)}`,
+      password:'demo1234', roles:['captain'], status:'active',
+      createdAt:new Date(Date.now()-_rand(30,365)*86400000).toISOString(),
+      captainProfile:{
+        tekne, bolge,
+        kategoriler:_pickN(SIM_POOLS.kategori,_rand(2,4)),
+        onayDurumu:'aktif', redSebep:'',
+        yil:_rand(3,25), puan:parseFloat((4+Math.random()).toFixed(1)),
+        captainIdLegacy:1000+i
+      }
+    });
+  }
+
+  // 2. Müşteriler
+  setProgress(15,'Müşteriler üretiliyor…'); await sleep(40);
+  const customers=[];
+  for(let i=0;i<800;i++){
+    const ad=_pick(SIM_POOLS.isim), soyad=_pick(SIM_POOLS.soyisim);
+    customers.push({
+      id:5000+i, email:`musteri${i+1}@example.com`, ad, soyad,
+      phone:`05${_rand(30,59)}${_rand(1000000,9999999)}`,
+      password:'demo1234', roles:['customer'], status:'active',
+      createdAt:new Date(Date.now()-_rand(1,730)*86400000).toISOString()
+    });
+  }
+
+  // 3. Turlar (bugünden -60 … +30 gün)
+  setProgress(28,'Turlar üretiliyor…'); await sleep(40);
+  const now=new Date(); now.setHours(0,0,0,0);
+  const startD=new Date(now); startD.setDate(now.getDate()-60);
+  const endD=new Date(now);   endD.setDate(now.getDate()+30);
+  const tours=[]; let tourId=1;
+  captains.forEach(cap=>{
+    const n=_rand(8,15);
+    for(let i=0;i<n;i++){
+      const kat=_pick(cap.captainProfile.kategoriler||SIM_POOLS.kategori);
+      const sure=_pick(SIM_POOLS.sureler);
+      const kapasite=cap.captainProfile.tekne.kapasite;
+      const fiyat=_rand(400,3000);
+      const tarihCount=_rand(2,6);
+      const tarihler=[];
+      for(let k=0;k<tarihCount;k++) tarihler.push(_iso(_randDate(startD,endD)));
+      tours.push({
+        id:tourId++,
+        ad:`${_pick(SIM_POOLS.tema)} — ${cap.captainProfile.bolge}`,
+        aciklama:`${cap.captainProfile.tekne.tipi} ile ${cap.captainProfile.bolge} açıklarında ${sure} keyifli tur.`,
+        kategoriler:[kat], kategori:kat,
+        sure, fiyat, price:fiyat, kapasite,
+        tarihler:[...new Set(tarihler)].sort(),
+        saatler:_pickN(SIM_POOLS.saatler,_rand(1,3)),
+        kalkisNoktasi:`${cap.captainProfile.bolge} Limanı`,
+        bolge:cap.captainProfile.bolge,
+        captainEmail:cap.email, captainName:cap.ad+' '+cap.soyad,
+        tekneAdi:cap.captainProfile.tekne.ad,
+        durum:'aktif',
+        createdAt:new Date(Date.now()-_rand(1,90)*86400000).toISOString()
+      });
+    }
+  });
+
+  // 4. Rezervasyonlar
+  setProgress(45,'Rezervasyonlar üretiliyor…'); await sleep(40);
+  const bookings=[]; const complaints=[]; let bookingCounter=0;
+  tours.forEach(t=>{
+    const n=_rand(3,18);
+    for(let i=0;i<n;i++){
+      const cust=_pick(customers);
+      const tarihISO=_pick(t.tarihler);
+      const guests=_rand(1,Math.max(1,Math.floor(t.kapasite/2)));
+      const tarihD=new Date(tarihISO);
+      const past=tarihD<now;
+      bookings.push({
+        id:'BK'+Date.now()+'_'+(bookingCounter++)+'_'+_slug(),
+        tourId:t.id, tourTitle:t.ad,
+        captainEmail:t.captainEmail, captainName:t.captainName,
+        customerEmail:cust.email, customerName:cust.ad+' '+cust.soyad, customerPhone:cust.phone,
+        guests, tarih:_tr(tarihD), tarihISO,
+        price:t.fiyat*guests, odemeYapildi:true, odemeRef:'PAY-'+_slug().toUpperCase(),
+        binisYapildi:past, binisZamani:past?tarihD.toISOString():null,
+        durum: past?'tamamlandi':'onaylandi',
+        kayitKanali:'web',
+        createdAt:new Date(tarihD.getTime()-_rand(1,30)*86400000).toISOString()
+      });
+    }
+  });
+
+  // 5. SORUN ENJEKSİYONU (%90)
+  setProgress(65,'%90 sorun enjekte ediliyor…'); await sleep(40);
+  const targetCount=Math.floor(bookings.length*0.90);
+  const injected={};
+  const shuffledB=[...bookings].sort(()=>Math.random()-0.5);
+  const shuffledT=[...tours].sort(()=>Math.random()-0.5);
+  let tourIdx=0;
+  for(let i=0;i<targetCount;i++){
+    const prob=_pickWeighted(SIM_PROBLEMS);
+    injected[prob.key]=(injected[prob.key]||0)+1;
+    if(prob.scope==='booking'){
+      const b=shuffledB[i]; if(!b) continue;
+      _applyBookingProblem(b, prob.key, tours, complaints, now);
+    } else {
+      const t=shuffledT[tourIdx++ % shuffledT.length];
+      _applyTourProblem(t, prob.key);
+    }
+  }
+
+  // 6. LocalStorage yazma
+  setProgress(85,'Veritabanı yazılıyor…'); await sleep(40);
+  const allUsers=[...captains, ...customers];
+  localStorage.setItem('db_users', JSON.stringify(allUsers));
+  localStorage.setItem('db_tours', JSON.stringify(tours));
+  localStorage.setItem('db_bookings', JSON.stringify(bookings));
+  localStorage.setItem('db_complaints', JSON.stringify(complaints));
+  localStorage.setItem('cu_users', JSON.stringify(customers.map(c=>({email:c.email,ad:c.ad,soyad:c.soyad,phone:c.phone,password:c.password,createdAt:c.createdAt}))));
+  localStorage.setItem('cp_tours', JSON.stringify(tours));
+
+  // 7. Sistem Sağlığı taraması
+  setProgress(95,'Sistem Sağlığı taranıyor…'); await sleep(40);
+  const findings=runHealthScan();
+  const findingTotals={}; Object.entries(findings).forEach(([k,v])=>findingTotals[k]=v.length);
+
+  // 8. Rapor
+  setProgress(100,'Tamamlandı');
+  rEl.innerHTML=_renderSimReport({
+    captains:captains.length, customers:customers.length,
+    tours:tours.length, bookings:bookings.length,
+    complaints:complaints.length,
+    injected, findings:findingTotals
+  });
+  rEl.classList.remove('hidden');
+  showToast(`Simülasyon tamam: ${tours.length} tur, ${bookings.length} rez, ${Object.values(injected).reduce((s,v)=>s+v,0)} enjekte sorun`,'success');
+  shScan();
+}
+
+function _applyBookingProblem(b, key, tours, complaints, now){
+  const t=tours.find(x=>x.id===b.tourId);
+  switch(key){
+    case 'overcapacity':
+      if(t) b.guests=t.kapasite+_rand(1,3);
+      break;
+    case 'past_date_active': {
+      const oldD=new Date(); oldD.setDate(oldD.getDate()-_rand(5,45));
+      b.tarihISO=_iso(oldD); b.tarih=_tr(oldD);
+      b.durum='onaylandi'; b.binisYapildi=false;
+      break;
+    }
+    case 'no_show': {
+      const d=new Date(b.tarihISO);
+      if(d>=now){ const nD=new Date(); nD.setDate(nD.getDate()-_rand(2,20)); b.tarihISO=_iso(nD); b.tarih=_tr(nD); }
+      b.durum='tamamlandi'; b.binisYapildi=false; b._noShow=true;
+      break;
+    }
+    case 'refund_pending':
+      b.durum='iptal'; b.iptalNedeni='Müşteri iptal talebi';
+      b.refundStatus='pending'; b.refundTalebTarihi=new Date().toISOString();
+      b.iadeTutari=b.price;
+      break;
+    case 'captain_overbook':
+      if(t) b.guests=_rand(t.kapasite+1, t.kapasite+5);
+      b._captainForced=true;
+      break;
+    case 'weather_cancel':
+      b.durum='iptal'; b.iptalNedeni='Hava muhalefeti'; b.iptalKategori='hava';
+      b.iptalTarihi=new Date().toISOString();
+      b.refundStatus='pending';
+      break;
+    case 'captain_cancel_no_cascade':
+      if(t){ t.durum='iptal'; t.iptalNedeni='Kaptan kararı'; t.iptalTarihi=new Date().toISOString(); }
+      // cascade YAPILMAMIŞ — bug
+      b.durum='onaylandi';
+      break;
+    case 'force_majeure':
+      b.durum='iptal'; b.iptalNedeni='Mücbir sebep (teknik arıza)'; b.iptalKategori='mucbir';
+      b.iptalTarihi=new Date().toISOString();
+      break;
+    case 'customer_dispute':
+      complaints.push({
+        id:'CMP'+Date.now()+'_'+_slug(),
+        bookingId:b.id, tourId:b.tourId, tourTitle:b.tourTitle,
+        captainEmail:b.captainEmail, customerEmail:b.customerEmail,
+        konu:_pick(SIM_POOLS.disputeKonu),
+        durum:'acik', resolved:false,
+        mesajlar:[
+          {who:'customer', text:'Beklentimin çok altındaydı, mağdur oldum.', ts:new Date().toISOString()},
+          {who:'captain',  text:'Elimizden geleni yaptık, koşullar elverişsizdi.', ts:new Date().toISOString()}
+        ],
+        createdAt:new Date().toISOString()
+      });
+      b._dispute=true;
+      break;
+    case 'national_mourning': {
+      const m=new Date('2026-03-15');
+      b.tarihISO=_iso(m); b.tarih=_tr(m);
+      b._nationalMourningAffected=true;
+      // cascade eksik
+      break;
+    }
+    case 'customer_withdrawal': {
+      const tD=new Date(b.tarihISO);
+      const days=Math.floor((tD-now)/86400000);
+      let ceza=0;
+      if(days<2) ceza=100; else if(days<7) ceza=50; else if(days<14) ceza=25;
+      b.durum='iptal'; b.iptalNedeni='Müşteri cayma hakkı'; b.iptalKategori='cayma';
+      b.caymaCezaOrani=ceza; b.caymaCezaTutari=Math.floor(b.price*ceza/100);
+      b.iadeTutari=b.price-b.caymaCezaTutari;
+      b.refundStatus= ceza===100 ? 'reddedildi' : 'pending';
+      break;
+    }
+  }
+}
+
+function _applyTourProblem(t, key){
+  switch(key){
+    case 'price_error':
+      t.fiyat=_pick([0,-500,999999,0.01]); t.price=t.fiyat;
+      break;
+    case 'malformed_tour': {
+      const v=_rand(0,3);
+      if(v===0){ t.sure='0'; t.kapasite=0; }
+      else if(v===1){ t.ad=''; }
+      else if(v===2){ t.kapasite=-5; }
+      else { t.tarihler=[]; }
+      break;
+    }
+    case 'wrong_tour_info': {
+      const v=_rand(0,2);
+      if(v===0) t.ad='asdf test '+_slug();
+      else if(v===1) t.aciklama='';
+      else t.kategoriler=['YOK OLAN KATEGORİ'];
+      break;
+    }
+    case 'admin_timeout': {
+      t.durum='bekliyor';
+      const old=new Date(); old.setDate(old.getDate()-_rand(50,90));
+      t.createdAt=old.toISOString();
+      break;
+    }
+  }
+}
+
+function _renderSimReport(r){
+  const pct=v=>`${((v/r.bookings)*100).toFixed(1)}%`;
+  const injRows=Object.entries(r.injected).sort((a,b)=>b[1]-a[1])
+    .map(([k,v])=>`<tr class="border-b border-purple-100"><td class="px-2 py-1 font-medium">${k}</td><td class="px-2 py-1 text-right font-mono text-purple-700">${v}</td><td class="px-2 py-1 text-right text-gray-400 text-[10px]">${pct(v)}</td></tr>`).join('');
+  const findingRows=Object.entries(r.findings).sort((a,b)=>b[1]-a[1])
+    .map(([k,v])=>{
+      const lbl=(typeof SH_LABELS!=='undefined' && SH_LABELS[k])?SH_LABELS[k].label:k;
+      const col=(typeof SH_LABELS!=='undefined' && SH_LABELS[k] && SH_LABELS[k].color==='red')?'text-red-600':'text-orange-600';
+      return `<tr class="border-b border-gray-100"><td class="px-2 py-1">${lbl}</td><td class="px-2 py-1 text-right font-mono ${col} font-bold">${v}</td></tr>`;
+    }).join('');
+  const totalInj=Object.values(r.injected).reduce((s,v)=>s+v,0);
+  const totalFind=Object.values(r.findings).reduce((s,v)=>s+v,0);
+  return `
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+      <div class="bg-blue-50 p-3 rounded-lg"><div class="text-[10px] text-blue-700 font-bold">KAPTAN</div><div class="text-xl font-bold">${r.captains}</div></div>
+      <div class="bg-green-50 p-3 rounded-lg"><div class="text-[10px] text-green-700 font-bold">MÜŞTERİ</div><div class="text-xl font-bold">${r.customers}</div></div>
+      <div class="bg-purple-50 p-3 rounded-lg"><div class="text-[10px] text-purple-700 font-bold">TUR</div><div class="text-xl font-bold">${r.tours}</div></div>
+      <div class="bg-orange-50 p-3 rounded-lg"><div class="text-[10px] text-orange-700 font-bold">REZERVASYON</div><div class="text-xl font-bold">${r.bookings}</div></div>
+      <div class="bg-red-50 p-3 rounded-lg"><div class="text-[10px] text-red-700 font-bold">ŞİKAYET</div><div class="text-xl font-bold">${r.complaints}</div></div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-purple-50 rounded-lg p-3">
+        <div class="font-bold text-purple-900 mb-2 text-sm">🧪 Enjekte Edilen Sorunlar <span class="float-right font-mono">${totalInj}</span></div>
+        <table class="w-full text-[11px]"><tbody>${injRows}</tbody></table>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3">
+        <div class="font-bold text-gray-900 mb-2 text-sm">🔍 Sistem Sağlığı Bulguları <span class="float-right font-mono">${totalFind}</span></div>
+        <table class="w-full text-[11px]"><tbody>${findingRows||'<tr><td class="text-gray-400 p-2">Bulgu yok</td></tr>'}</tbody></table>
+      </div>
+    </div>
+    <div class="mt-3 text-[11px] text-gray-500"><b>Yorum:</b> "Enjekte" = simülasyonun ürettiği sorunlar (zemin gerçekliği). "Bulgular" = mevcut tarayıcının yakaladığı. Arasındaki fark → tarayıcının kör noktaları (iyileştirme fırsatı).</div>
+  `;
+}
 
 function handleRoute(){
   let h=window.location.hash.replace('#','')||'dashboard';
@@ -2656,6 +3488,7 @@ function handleRoute(){
   if(h==='users')               renderUsers();
   if(h==='tours-bookings')      renderToursBookings();
   if(h==='reservations')        renderReservations();
+  if(h==='system-health')       renderSystemHealth();
   if(h==='page-manager')        renderPageManager();
   if(h==='cms-web')             renderCmsWeb();
   if(h==='cms-app')             renderCmsApp();
@@ -2668,8 +3501,11 @@ function handleRoute(){
   if(h==='mucbir')              renderMucbir();
 }
 window.addEventListener('hashchange',handleRoute);
-window.addEventListener('load',()=>{
-  localStorage.clear();
+window.addEventListener('load',async()=>{
+  await window._sbSync?.();
+  migrateToUnifiedUsers();
+  uBridgePendingCaptains();
+  uSyncCaptainsToUsers();
   purgeDatelessTours();
   handleRoute();pmUpdateBadge();initShopToggle();pcUpdateMaintenanceBadge();mcUpdateBadge();
 });
@@ -2680,10 +3516,8 @@ function updateResBadge(){
   const el=document.getElementById('res-badge');
   if(el){el.style.display=bek?'':'none';el.textContent=bek;}
 }
-window.addEventListener('storage',(e)=>{
-  const izlenen=['db_captains','db_tours','db_bookings','cu_users','db_payments','db_messages'];
-  if(!izlenen.includes(e.key))return;
-  // Aktif sayfayı yenile
+/* Ortak sayfa yenileyici — hem storage event hem visibility/focus'tan çağrılır */
+function adminRefreshActivePage(){
   const h=window.location.hash.replace('#','')||'dashboard';
   if(h==='dashboard')renderDashboard();
   else if(h==='captains'){captains=loadCaptains();renderCaptains();}
@@ -2691,11 +3525,35 @@ window.addEventListener('storage',(e)=>{
   else if(h==='tours-bookings'){renderToursBookings();renderTBStats();}
   else if(h==='reservations')renderReservations();
   else if(h==='finance')renderFinance();
-  // Sidebar badge'lerini her durumda güncelle
-  if(e.key==='db_bookings')updateResBadge();
-  pmUpdateBadge();mcUpdateBadge();
+  pmUpdateBadge();mcUpdateBadge();updateResBadge();
+}
+
+window.addEventListener('storage',(e)=>{
+  const izlenen=['db_captains','db_tours','db_bookings','cu_users','db_users','db_payments','db_messages'];
+  if(!izlenen.includes(e.key))return;
+  if(e.key==='db_users'){uBridgePendingCaptains();}
+  if(e.key==='db_captains'){uSyncCaptainsToUsers();}
+  adminRefreshActivePage();
   // Toast bildirimi
   showToast('Veriler güncellendi — başka sekme kayıt yaptı','info');
+});
+
+/* Fix: Aynı-sekme senaryosu — storage event sadece çapraz-sekme tetiklenir.
+   Kullanıcı sekmeye dönünce veri tazelensin (sadece visibilitychange — focus event'i
+   çok sık tetiklenip UI'ı meşgul edebilir). */
+let _lastAdminRefresh=0;
+function adminMaybeRefresh(){
+  try{
+    const now=Date.now();
+    if(now-_lastAdminRefresh<800)return; // debounce
+    _lastAdminRefresh=now;
+    if(typeof uBridgePendingCaptains==='function')uBridgePendingCaptains();
+    if(typeof uSyncCaptainsToUsers==='function')uSyncCaptainsToUsers();
+    if(typeof adminRefreshActivePage==='function')adminRefreshActivePage();
+  }catch(e){console.warn('adminMaybeRefresh',e);}
+}
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible')adminMaybeRefresh();
 });
 
 /* ── TARİHSİZ TUR TEMİZLEYİCİ ── */
@@ -2741,6 +3599,7 @@ function sidebarToggleShop(){
 
 /* ── DASHBOARD ── */
 function renderDashboard(){
+  if(typeof uBridgePendingCaptains==='function')uBridgePendingCaptains();
   const caps=loadCaptains();
   const tours=lsGet('db_tours',[]);
   const bookings=lsGet('db_bookings',[]);
@@ -2811,16 +3670,54 @@ function renderDashboard(){
   if(badge)badge.textContent=pending.length+' bekliyor';
   const tbody=document.getElementById('dash-pending-tbody');
   if(tbody){
-    if(!pending.length){tbody.innerHTML='<tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Onay bekleyen basvuru yok</td></tr>';return;}
-    tbody.innerHTML=pending.map(c=>`<tr>
-      <td><div class="font-medium">${c.ad} ${c.soyad}</div><div class="text-[10px] text-gray-400">${c.email}</div></td>
-      <td>${c.tekne||'—'}</td><td>${c.bolge||'—'}</td><td>${c.tarih||'—'}</td>
-      <td><span class="badge bg-amber-100 text-amber-700">Bekliyor</span></td>
-      <td>
-        <button onclick="setCaptainDurum(${c.id},'aktif');renderDashboard()" class="bg-success text-white px-2 py-1 rounded text-xs mr-1 hover:bg-green-600">Onayla</button>
-        <button onclick="setCaptainDurum(${c.id},'askida');renderDashboard()" class="text-danger text-xs hover:underline">Reddet</button>
-      </td>
-    </tr>`).join('');
+    if(!pending.length){tbody.innerHTML='<tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Onay bekleyen basvuru yok</td></tr>';}
+    else {
+      tbody.innerHTML=pending.map(c=>`<tr>
+        <td><div class="font-medium">${c.ad} ${c.soyad}</div><div class="text-[10px] text-gray-400">${c.email}</div></td>
+        <td>${c.tekne||'—'}</td><td>${c.bolge||'—'}</td><td>${c.tarih||'—'}</td>
+        <td><span class="badge bg-amber-100 text-amber-700">Bekliyor</span></td>
+        <td>
+          <button onclick="setCaptainDurum(${c.id},'aktif');renderDashboard()" class="bg-success text-white px-2 py-1 rounded text-xs mr-1 hover:bg-green-600">Onayla</button>
+          <button onclick="setCaptainDurum(${c.id},'askida');renderDashboard()" class="text-danger text-xs hover:underline">Reddet</button>
+        </td>
+      </tr>`).join('');
+    }
+  }
+
+  // ── Onay Bekleyen Turlar ── (pendingTours zaten yukarıda tanımlı)
+  const tBadge=document.getElementById('dash-pending-tours-badge');
+  if(tBadge)tBadge.textContent=pendingTours.length+' bekliyor';
+  const tTbody=document.getElementById('dash-pending-tours-tbody');
+  if(tTbody){
+    if(!pendingTours.length){
+      tTbody.innerHTML='<tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Onay bekleyen tur yok</td></tr>';
+    } else {
+      tTbody.innerHTML=pendingTours.map(t=>{
+        const ad=t.ad||t.title||'(Başlıksız)';
+        const fiyat=(t.fiyat??t.price??0).toLocaleString('tr-TR');
+        const bolge=t.kalkis||t.konum||t.bolge||'—';
+        const ts=t.createdAt||t.updatedAt;
+        const tarih=ts?new Date(ts).toLocaleDateString('tr-TR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
+        const cap=t.captainName||t.captainEmail||'—';
+        const rej=t.reddedilmeSayisi>0?`<span class="text-[10px] text-danger ml-1">(${t.reddedilmeSayisi}. deneme)</span>`:'';
+        const eksikArr=[];
+        if(!(t.tarihler&&t.tarihler.length)&&!(t.gunler&&t.gunler.length))eksikArr.push('tarih');
+        if(!(t.saatler&&t.saatler.length))eksikArr.push('saat');
+        if(!(+(t.fiyat||t.price||0)))eksikArr.push('fiyat');
+        const eksikBadge=eksikArr.length?`<span class="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded ml-1" title="Eksik: ${eksikArr.join(', ')}"><i class="fas fa-exclamation-triangle mr-1"></i>Eksik bilgi</span>`:'';
+        return `<tr>
+          <td><div class="font-medium">${ad}${rej}${eksikBadge}</div><div class="text-[10px] text-gray-400">${(t.kategoriler||[]).join(', ')||'—'}</div></td>
+          <td>${cap}</td>
+          <td><strong>${fiyat} TL</strong></td>
+          <td>${bolge}</td>
+          <td class="text-xs text-gray-500">${tarih}</td>
+          <td>
+            <button onclick="quickApproveTour(${t.id})" class="bg-success text-white px-2 py-1 rounded text-xs mr-1 hover:bg-green-600"><i class="fas fa-check mr-1"></i>Onayla</button>
+            <button onclick="quickRejectTour(${t.id})" class="bg-danger text-white px-2 py-1 rounded text-xs hover:bg-red-600"><i class="fas fa-times mr-1"></i>Reddet</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
   }
 }
 
@@ -2907,8 +3804,8 @@ function renderToursBookings(){
   }
   if(countEl)countEl.textContent=groupMap.size+' kaptan · '+tours.length+' tur · '+bookings.length+' rezervasyon';
 
-  const durumColor={aktif:'bg-green-100 text-green-700',pasif:'bg-gray-100 text-gray-500',bekliyor:'bg-amber-100 text-amber-700'};
-  const durumLabel={aktif:'Aktif',pasif:'Pasif',bekliyor:'Onay Bekliyor'};
+  const durumColor={aktif:'bg-green-100 text-green-700',pasif:'bg-gray-100 text-gray-500',bekliyor:'bg-amber-100 text-amber-700',reddedildi:'bg-red-100 text-red-700'};
+  const durumLabel={aktif:'Aktif',pasif:'Pasif',bekliyor:'Onay Bekliyor',reddedildi:'Reddedildi'};
 
   container.innerHTML=[...groupMap.entries()].map(([gid,group])=>{
     const gTours=group.tours;
@@ -2935,8 +3832,11 @@ function renderToursBookings(){
         ?`<button onclick="event.stopPropagation();quickApproveTour(${t.id})" class="bg-success text-white px-2 py-1 rounded text-[11px] font-medium hover:bg-green-600">Onayla</button>
            <button onclick="event.stopPropagation();quickRejectTour(${t.id})" class="bg-red-100 text-danger px-2 py-1 rounded text-[11px] hover:bg-red-200">Reddet</button>
            <button onclick="event.stopPropagation();adminDeleteTour(${t.id})" class="text-danger text-[11px] hover:underline ml-1">Sil</button>`
+        :d==='reddedildi'
+        ?`<button onclick="event.stopPropagation();quickApproveTour(${t.id})" class="bg-success text-white px-2 py-1 rounded text-[11px] font-medium hover:bg-green-600">Yeniden Onayla</button>
+           <button onclick="event.stopPropagation();adminDeleteTour(${t.id})" class="text-danger text-[11px] hover:underline ml-1">Sil</button>`
         :`<button onclick="event.stopPropagation();openTourEdit(${t.id},null)" class="border px-2 py-1 rounded text-[11px] hover:bg-gray-50 mr-1">Duzenle</button>
-           <button onclick="event.stopPropagation();quickRejectTour(${t.id})" class="text-gray-400 text-[11px] hover:text-danger mr-1">${d==='aktif'?'Pasife Al':'Aktif Et'}</button>
+           <button onclick="event.stopPropagation();toggleTourActive(${t.id})" class="text-gray-400 text-[11px] hover:text-danger mr-1">${d==='aktif'?'Pasife Al':'Aktif Et'}</button>
            <button onclick="event.stopPropagation();adminDeleteTour(${t.id})" class="text-danger text-[11px] hover:underline">Sil</button>`;
 
       // Reservations sub-table
@@ -2974,13 +3874,14 @@ function renderToursBookings(){
 
       return`<div style="border-bottom:1px solid #f1f5f9;">
         <div onclick="event.stopPropagation();openTourDetailModal(${t.id})" style="padding:11px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .12s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
-          <span style="width:10px;height:10px;border-radius:50%;background:${{aktif:'#10b981',pasif:'#94a3b8',bekliyor:'#f59e0b'}[d]||'#f59e0b'};flex-shrink:0"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:${{aktif:'#10b981',pasif:'#94a3b8',bekliyor:'#f59e0b',reddedildi:'#ef4444'}[d]||'#f59e0b'};flex-shrink:0"></span>
           <div style="flex:1;min-width:0">
-            <span style="font-weight:600;font-size:13px;color:#1e293b">${t.title||t.ad||'Isimsiz Tur'}</span>
+            <span style="font-weight:600;font-size:13px;color:#1e293b">${t.ad||t.title||'Isimsiz Tur'}</span>
             <span style="font-size:11px;color:#94a3b8;margin-left:8px">${t.kalkis||t.konum||''} ${t.sure?'· '+t.sure:''}</span>
+            ${d==='reddedildi'&&t.redSebep?`<div style="font-size:10px;color:#dc2626;margin-top:2px" title="${t.redSebep}"><i class="fas fa-exclamation-circle"></i> Red sebebi: ${t.redSebep.slice(0,60)}${t.redSebep.length>60?'...':''}</div>`:''}
           </div>
-          <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:${{aktif:'#dcfce7',pasif:'#f3f4f6',bekliyor:'#fef3c7'}[d]};color:${{aktif:'#15803d',pasif:'#6b7280',bekliyor:'#d97706'}[d]}">${durumLabel[d]||d}</span>
-          <span style="font-size:12px;font-weight:700;color:#0369a1;min-width:70px;text-align:right">${(t.price||t.fiyat||0).toLocaleString('tr-TR')} TL</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:${{aktif:'#dcfce7',pasif:'#f3f4f6',bekliyor:'#fef3c7',reddedildi:'#fee2e2'}[d]||'#fef3c7'};color:${{aktif:'#15803d',pasif:'#6b7280',bekliyor:'#d97706',reddedildi:'#b91c1c'}[d]||'#d97706'}">${durumLabel[d]||d}</span>
+          <span style="font-size:12px;font-weight:700;color:#0369a1;min-width:70px;text-align:right">${(t.fiyat||t.price||0).toLocaleString('tr-TR')} TL</span>
           <div style="display:flex;gap:6px;flex-shrink:0">${tActions}</div>
           ${tKalan!==null?`<span style="font-size:11px;padding:4px 10px;border-radius:8px;font-weight:600;flex-shrink:0;background:${tKalan===0?'#fee2e2':tKalan<=2?'#fef3c7':'#f0fdf4'};color:${tKalan===0?'#dc2626':tKalan<=2?'#d97706':'#15803d'}">${tKalan===0?'Dolu':tKalan+' yer'}</span>`:''}
           ${tBkgs.length?`<button onclick="event.stopPropagation();toggleTourReservations(${t.id})" style="display:flex;align-items:center;gap:4px;background:#eff6ff;color:#1d4ed8;border:none;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0">
@@ -3311,6 +4212,59 @@ function openTourDetailModal(id){
     }
   })();
 
+  /* ── TARİH BAŞINA DOLULUK TABLOSU ── */
+  (function(){
+    const sec=document.getElementById('tdm-doluluk-section');
+    const rowsEl=document.getElementById('tdm-doluluk-rows');
+    const sumEl=document.getElementById('tdm-doluluk-summary');
+    if(!sec||!rowsEl)return;
+    const tarihler=(t.tarihler||[]).slice();
+    if(tarihler.length<=1){sec.style.display='none';return;}
+    const kapasite=+t.kapasite||0;
+    const today=new Date();today.setHours(0,0,0,0);
+    const aktif=bookings.filter(b=>['bekliyor','onaylandi','tamamlandi'].includes((b.durum||'').toLowerCase()));
+    // group active bookings by their date (ISO or tr-TR) and sum guest counts
+    const seatsFor=(iso)=>{
+      const d=new Date(iso);
+      const trStr=d.toLocaleDateString('tr-TR');
+      return aktif.filter(b=>{
+        const bISO=b.tarihISO||'';
+        const bTR=b.tarih||'';
+        return bISO===iso || bTR===trStr;
+      }).reduce((s,b)=>s+(+b.guests||1),0);
+    };
+    const sorted=tarihler.map(iso=>{
+      const d=new Date(iso);
+      const dolu=seatsFor(iso);
+      const kalan=Math.max(0,kapasite-dolu);
+      const tam=kapasite>0&&dolu>=kapasite;
+      const gecti=d<today;
+      return {iso,d,dolu,kalan,tam,gecti};
+    }).sort((a,b)=>a.d-b.d);
+    let dolu=0,acik=0,gecmis=0;
+    const rows=sorted.map(r=>{
+      if(r.gecti)gecmis++;
+      else if(r.tam)dolu++;
+      else acik++;
+      const dateTxt=r.d.toLocaleDateString('tr-TR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+      let durumBadge;
+      if(r.gecti) durumBadge='<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">GEÇTİ</span>';
+      else if(r.tam) durumBadge='<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-danger">DOLU</span>';
+      else if(r.kalan<=2) durumBadge='<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">AZ YER</span>';
+      else durumBadge='<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">AÇIK</span>';
+      const rowCls=r.gecti?'opacity-60':'';
+      return `<div class="grid grid-cols-12 px-3 py-2 items-center ${rowCls}">
+        <div class="col-span-5 font-medium text-gray-700">${dateTxt}</div>
+        <div class="col-span-3 text-center text-gray-600">${r.dolu}/${kapasite||'—'}</div>
+        <div class="col-span-2 text-center font-semibold ${r.tam?'text-danger':r.kalan<=2&&!r.gecti?'text-amber-600':'text-gray-700'}">${kapasite?r.kalan:'—'}</div>
+        <div class="col-span-2 text-right">${durumBadge}</div>
+      </div>`;
+    }).join('');
+    rowsEl.innerHTML=rows;
+    sumEl.textContent=`${acik} açık · ${dolu} dolu · ${gecmis} geçti`;
+    sec.style.display='';
+  })();
+
   const saatler=t.saatler||[];
   const saatlerSec=document.getElementById('tdm-saatler-section');
   if(saatler.length){
@@ -3337,11 +4291,15 @@ function openTourDetailModal(id){
     tdmRenderList();
   }else{bsec.style.display='none';}
   const actionsEl=document.getElementById('tdm-actions');
-  actionsEl.innerHTML=d!=='aktif'
-    ?`<button onclick="closeTourDetailModal();quickApproveTour(${id})" class="bg-success text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-check mr-1"></i>Onayla</button>`
-    :`<button onclick="closeTourDetailModal();quickRejectTour(${id})" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Pasife Al</button>`;
+  actionsEl.innerHTML=d==='bekliyor'
+    ?`<button onclick="closeTourDetailModal();quickApproveTour(${id})" class="bg-success text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-check mr-1"></i>Onayla</button>
+      <button onclick="closeTourDetailModal();quickRejectTour(${id})" class="bg-red-100 text-danger px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-times mr-1"></i>Reddet</button>`
+    :d==='reddedildi'
+    ?`<button onclick="closeTourDetailModal();quickApproveTour(${id})" class="bg-success text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-check mr-1"></i>Yeniden Onayla</button>`
+    :`<button onclick="closeTourDetailModal();toggleTourActive(${id})" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">${d==='aktif'?'Pasife Al':'Aktif Et'}</button>`;
   actionsEl.innerHTML+=`<button onclick="closeTourDetailModal();openTourEdit(${id},null)" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"><i class="fas fa-edit mr-1"></i>Duzenle</button>`;
-  actionsEl.innerHTML+=`<button onclick="if(confirm('Bu turu silmek istediginizden emin misiniz?')){closeTourDetailModal();adminDeleteTour(${id})}" class="ml-auto text-danger border border-danger/30 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-50"><i class="fas fa-trash mr-1"></i>Sil</button>`;
+  actionsEl.innerHTML+=`<button onclick="adminCascadeCancelTour(${id})" class="ml-auto bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600"><i class="fas fa-ban mr-1"></i>İptal Et (Cascade)</button>`;
+  actionsEl.innerHTML+=`<button onclick="if(confirm('Bu turu silmek istediginizden emin misiniz?')){closeTourDetailModal();adminDeleteTour(${id})}" class="text-danger border border-danger/30 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-50"><i class="fas fa-trash mr-1"></i>Sil</button>`;
   document.getElementById('tour-detail-modal').style.display='flex';
 }
 function closeTourDetailModal(){document.getElementById('tour-detail-modal').style.display='none';}
@@ -3481,8 +4439,12 @@ function tdmQuickApprove(bid){
   const bookings=lsGet('db_bookings',[]);
   const b=bookings.find(x=>x.id===bid);
   if(!b)return;
+  // B6: kapasite kontrolü
+  const cap=bookingCapacityOK(b,b.id);
+  if(!cap.ok){showToast(`Kapasite asiliyor! ${cap.dolu}/${cap.kapasite} dolu, ${cap.kalan} yer kaldi, bu rezervasyon ${cap.istenen} kisi.`,'danger');return;}
   b.durum='onaylandi';b.onayTarihi=new Date().toISOString();
   localStorage.setItem('db_bookings',JSON.stringify(bookings));
+  notifyCaptainOfBookingStatus(b,'onaylandi');
   _tdmAllBookings=_tdmAllBookings.map(x=>x.id===bid?{...x,durum:'onaylandi'}:x);
   tdmRenderStats(_tdmAllBookings);tdmRenderList();
   renderToursBookings();showToast('Rezervasyon onaylandi','success');
@@ -3496,33 +4458,163 @@ function tdmQuickReject(bid){
   if(!b)return;
   b.durum='reddedildi';b.redNedeni=reason.trim();b.redTarihi=new Date().toISOString();
   localStorage.setItem('db_bookings',JSON.stringify(bookings));
+  notifyCaptainOfBookingStatus(b,'reddedildi');
   _tdmAllBookings=_tdmAllBookings.map(x=>x.id===bid?{...x,durum:'reddedildi',redNedeni:reason.trim()}:x);
   tdmRenderStats(_tdmAllBookings);tdmRenderList();
   renderToursBookings();showToast('Rezervasyon reddedildi','danger');
 }
 
+function pushCaptainNotification(email, notif){
+  if(!email) return;
+  const payload={id:Date.now()+Math.floor(Math.random()*1000), ts:Date.now(), read:false, captainEmail:email, ...notif};
+  ['cp_notifications','ca_notifications'].forEach(k=>{
+    const arr=lsGet(k,[]);
+    arr.unshift({...payload,id:payload.id+(k==='ca_notifications'?1:0)});
+    localStorage.setItem(k, JSON.stringify(arr.slice(0,50)));
+  });
+}
+
 function quickApproveTour(id){
   const tours=lsGet('db_tours',[]);
   const t=tours.find(x=>x.id===id);
-  if(t){t.durum='aktif';t.aktif=true;t.status='aktif';localStorage.setItem('db_tours',JSON.stringify(tours));renderToursBookings();renderDashboard();showToast((t.title||t.ad||'Tur')+' onaylandi ve rezervasyona acildi','success');}
+  if(!t)return;
+  const eksik=[];
+  if(!(t.tarihler&&t.tarihler.length)&&!(t.gunler&&t.gunler.length))eksik.push('tarih/gun');
+  if(!(t.saatler&&t.saatler.length))eksik.push('kalkis saati');
+  if(!(+(t.fiyat||t.price||0)))eksik.push('fiyat');
+  if(!((t.ad||t.title||'').trim()))eksik.push('tur adi');
+  if(eksik.length){
+    showToast('Eksik bilgi: '+eksik.join(', ')+'. Kaptandan duzeltme isteyin.','danger');
+    return;
+  }
+  t.durum='aktif';t.aktif=true;t.status='aktif';
+  t.redSebep=null;
+  t.updatedAt=new Date().toISOString();
+  localStorage.setItem('db_tours',JSON.stringify(tours));
+  try{if(DB_MODE==='remote')DB.turlar.updateDurum(id,'aktif').catch(e=>console.warn('[SB]',e));}catch(e){}
+  pushCaptainNotification(t.captainEmail,{
+    title:'Tur onaylandi',
+    body:'"'+(t.ad||t.title||'Tur')+'" yayina alindi ve rezervasyona acildi.',
+    type:'success'
+  });
+  renderToursBookings();renderDashboard();
+  showToast((t.ad||t.title||'Tur')+' onaylandi ve rezervasyona acildi','success');
 }
 function quickRejectTour(id){
   const tours=lsGet('db_tours',[]);
   const t=tours.find(x=>x.id===id);
   if(!t)return;
+  const sebep=prompt('Red sebebi (kaptana gosterilecek):');
+  if(sebep===null)return;
+  if(!sebep.trim()){showToast('Red sebebi zorunlu','danger');return;}
+  t.durum='reddedildi';t.status='reddedildi';t.aktif=false;
+  t.redSebep=sebep.trim();
+  t.reddedilmeSayisi=(t.reddedilmeSayisi||0)+1;
+  t.updatedAt=new Date().toISOString();
+  localStorage.setItem('db_tours',JSON.stringify(tours));
+  try{if(DB_MODE==='remote')DB.turlar.updateDurum(id,'reddedildi').catch(e=>console.warn('[SB]',e));}catch(e){}
+  pushCaptainNotification(t.captainEmail,{
+    title:'Tur reddedildi',
+    body:'"'+(t.ad||t.title||'Tur')+'" reddedildi. Sebep: '+sebep.trim(),
+    type:'danger'
+  });
+  renderToursBookings();renderDashboard();
+  showToast((t.ad||t.title||'Tur')+' reddedildi','info');
+}
+function toggleTourActive(id){
+  const tours=lsGet('db_tours',[]);
+  const t=tours.find(x=>x.id===id);
+  if(!t)return;
+  if(t.durum==='bekliyor'||t.durum==='reddedildi'){
+    showToast('Bu durumdaki tur toggle edilemez','danger');return;
+  }
   const newDurum=t.durum==='aktif'?'pasif':'aktif';
   t.durum=newDurum;t.status=newDurum;t.aktif=newDurum==='aktif';
+  t.updatedAt=new Date().toISOString();
   localStorage.setItem('db_tours',JSON.stringify(tours));
   renderToursBookings();
-  showToast((t.title||t.ad||'Tur')+' '+(newDurum==='pasif'?'pasife alindi':'aktif edildi'),'info');
+  showToast((t.ad||t.title||'Tur')+' '+(newDurum==='pasif'?'pasife alindi':'aktif edildi'),'info');
+}
+
+function adminCascadeCancelTour(id){
+  const sebep=prompt('İptal sebebi (taksonomi: hava / mucbir / yas / teknik / diger)', 'teknik');
+  if(!sebep)return;
+  const kategori=['hava','mucbir','yas','teknik','diger','kaptan','admin-timeout','cayma','kapasite'].includes(sebep)?sebep:'diger';
+  if(!confirm(`Tur "${kategori}" kategorisinde iptal edilecek. Tüm aktif rezervasyonlar iptal + iade talebi açılacak. Devam?`))return;
+  const r=cancelTourCascade(id, IPTAL_KATEGORILERI[kategori]||sebep, kategori);
+  if(r.ok){showToast(`Tur iptal — ${r.cascaded} rezervasyon cascade + iade`,'success');closeTourDetailModal();renderToursBookings();}
+  else showToast('İptal başarısız','danger');
 }
 
 function adminDeleteTour(id){
-  if(!confirm('Bu turu silmek istediginizden emin misiniz?'))return;
-  const tours=lsGet('db_tours',[]).filter(t=>t.id!==id);
-  localStorage.setItem('db_tours',JSON.stringify(tours));
+  const tours=lsGet('db_tours',[]);
+  const tour=tours.find(t=>t.id===id);
+  if(!tour){showToast('Tur bulunamadi','danger');return;}
+  const bookings=lsGet('db_bookings',[]);
+  const aktifBookings=bookings.filter(b=>String(b.tourId)===String(id)&&['bekliyor','onaylandi'].includes((b.durum||'').toLowerCase()));
+  const msg=aktifBookings.length
+    ? `Bu turun ${aktifBookings.length} aktif rezervasyonu var. Silinirse tümü otomatik iptal edilecek. Devam edilsin mi?`
+    : 'Bu turu silmek istediginizden emin misiniz?';
+  if(!confirm(msg))return;
+  // Cascade iptal
+  let cascaded=0;
+  bookings.forEach(b=>{
+    if(String(b.tourId)===String(id)&&['bekliyor','onaylandi'].includes((b.durum||'').toLowerCase())){
+      b.durum='iptal';
+      b.iptalNedeni='Tur admin tarafından silindi';
+      b.iptalTarihi=new Date().toISOString();
+      notifyCaptainOfBookingStatus(b,'iptal');
+      cascaded++;
+    }
+  });
+  lsSet('db_bookings',bookings);
+  const remaining=tours.filter(t=>t.id!==id);
+  lsSet('db_tours',remaining);
   renderToursBookings();
-  showToast('Tur silindi','danger');
+  showToast(`Tur silindi${cascaded?' — '+cascaded+' rezervasyon iptal edildi':''}`,'danger');
+}
+
+/* Tur iptal (kaptan veya admin) — bookings cascade iptal + refund başlat. (B3 + P1 refund) */
+function cancelTourCascade(tourId, reason, kategori){
+  const tours=lsGet('db_tours',[]);
+  const t=tours.find(x=>String(x.id)===String(tourId));
+  if(!t)return {ok:false};
+  t.durum='iptal';t.status='iptal';t.aktif=false;t._cancelledAt=new Date().toISOString();
+  if(reason)t._cancelReason=reason;
+  if(kategori)t._cancelKategori=kategori;
+  lsSet('db_tours',tours);
+  const bookings=lsGet('db_bookings',[]);
+  let n=0;
+  bookings.forEach(b=>{
+    if(String(b.tourId)===String(tourId)&&['bekliyor','onaylandi'].includes((b.durum||'').toLowerCase())){
+      b.durum='iptal';
+      b.iptalNedeni=reason||'Tur iptal edildi';
+      b.iptalKategori=kategori||'kaptan';
+      b.iptalTarihi=new Date().toISOString();
+      if(b.odemeYapildi){
+        setRefundState(b,'pending','Tur iptal — otomatik iade talebi');
+        b.refundTalebTarihi=new Date().toISOString();
+        b.iadeTutari=+b.price||0;
+      }
+      notifyCaptainOfBookingStatus(b,'iptal');
+      n++;
+    }
+  });
+  lsSet('db_bookings',bookings);
+  return {ok:true,cascaded:n};
+}
+
+/* Kapasite kontrolü write-time (B6) — her booking yazma noktasında çağrılabilir */
+function bookingCapacityOK(booking, ignoreBookingId){
+  const tours=lsGet('db_tours',[]);
+  const t=tours.find(x=>String(x.id)===String(booking.tourId));
+  if(!t||!t.kapasite)return {ok:true,reason:'no-cap'};
+  const all=lsGet('db_bookings',[]);
+  const dateKey=booking.tarihISO||booking.tarih;
+  const sum=all.filter(b=>b.id!==ignoreBookingId&&String(b.tourId)===String(booking.tourId)&&((b.tarihISO&&b.tarihISO===booking.tarihISO)||b.tarih===booking.tarih)&&['bekliyor','onaylandi','tamamlandi'].includes((b.durum||'').toLowerCase())).reduce((s,b)=>s+(+b.guests||0),0);
+  const kalan=Math.max(0,t.kapasite-sum);
+  if((+booking.guests||0)>kalan)return {ok:false,reason:'overcap',kapasite:t.kapasite,dolu:sum,kalan,istenen:+booking.guests};
+  return {ok:true,kalan,dolu:sum};
 }
 
 /* ── FINANCE ── */
@@ -3605,9 +4697,48 @@ let _udmCurrentUid=null;
 
 /* ── Unified user list: real users + demo users (deduped by email) ── */
 function getAllUsers(){
+  // Tek kaynak: db_users. Rich alanlari cu_users'tan email ile merge et.
+  const dbUsers=lsGet('db_users',[]);
   const lsUsers=lsGet('cu_users',[]);
-  const emails=new Set(lsUsers.map(u=>u.email||''));
-  return [...lsUsers,...DEMO_USERS.filter(d=>!emails.has(d.email))];
+  const cuByEmail=new Map(lsUsers.map(u=>[(u.email||'').toLowerCase(),u]));
+  const out=[];
+  const seen=new Set();
+  dbUsers.forEach(u=>{
+    const email=(u.email||'').toLowerCase(); if(!email) return;
+    seen.add(email);
+    const cu=cuByEmail.get(email)||{};
+    const name=((u.ad||'')+' '+(u.soyad||'')).trim()||cu.name||email;
+    out.push({
+      // cu_users uyumlu view objesi
+      name, email, phone:u.phone||cu.phone||'',
+      sehir:cu.sehir||'',
+      adres:cu.adres||'',
+      kayitKanali:cu.kayitKanali||'web',
+      sosyalGiris:cu.sosyalGiris||'—',
+      emailOnaylandi:cu.emailOnaylandi!==false,
+      bildirimIzni:cu.bildirimIzni!==false,
+      toplamHarcama:cu.toplamHarcama||0,
+      turSayisi:cu.turSayisi||0,
+      createdAt:u.createdAt||cu.createdAt||new Date().toISOString(),
+      sonGiris:cu.sonGiris||u.createdAt,
+      durum:cu.durum||'aktif',
+      plan:cu.plan||'free',
+      roles:u.roles||['customer'],
+      captainProfile:u.captainProfile||null,
+      password:u.password||cu.password
+    });
+  });
+  // db_users'a yazilmamis ama cu_users'ta olanlari (legacy) dahil et
+  lsUsers.forEach(cu=>{
+    const email=(cu.email||'').toLowerCase();
+    if(email&&!seen.has(email)){ seen.add(email); out.push(cu); }
+  });
+  // Demo fallback
+  DEMO_USERS.forEach(d=>{
+    const email=(d.email||'').toLowerCase();
+    if(email&&!seen.has(email)) out.push(d);
+  });
+  return out;
 }
 
 function saveUsers(arr){
@@ -4760,12 +5891,178 @@ function showSubTab(btn,tabId){
   });
 }
 
+/* ---- UNIFIED USER MODEL (Aşama A) ----
+   db_users: tek kaynak. cu_users + db_captains zamanla buraya tasiniyor.
+   Schema: {id, ad, soyad, email, phone, password, avatarUrl, createdAt,
+            roles:['customer'] | ['customer','captain'],
+            captainProfile:null | {...db_captains fields, onayDurumu, redSebep, captainIdLegacy}}
+   Migration v1: cu_users ve db_captains'i okur, email uzerinden birlestirir,
+                 db_users'a yazar. Idempotent (flag: db_users_migrated_v1).
+*/
+function uGetUsers(){try{return JSON.parse(localStorage.getItem('db_users')||'[]');}catch{return[];}}
+function uSaveUsers(list){localStorage.setItem('db_users',JSON.stringify(list));}
+function uFindByEmail(email){
+  if(!email)return null;
+  return uGetUsers().find(u=>u.email===email.toLowerCase())||null;
+}
+function uNextId(){
+  const list=uGetUsers();
+  return list.length?Math.max(...list.map(u=>u.id||0))+1:1;
+}
+function uCaptainProfileFrom(c){
+  // db_captains kaydindan captainProfile uret
+  return {
+    tc:c.tc||'', tekne:c.tekne||'', tekneTuru:c.tekneTuru||'',
+    uzunluk:c.uzunluk||0, kapasite:c.kapasite||0, yil:c.yil||'',
+    marka:c.marka||'', bolge:c.bolge||'', marina:c.marina||'',
+    lisans:c.lisans||'', lisansTarih:c.lisansTarih||'',
+    ruhsat:c.ruhsat||'', sigorta:c.sigorta||'', not:c.not||'',
+    kategoriler:c.kategoriler||[],
+    onayDurumu:c.durum||'bekliyor',
+    onayTarihi:c.tarih||new Date().toLocaleDateString('tr-TR'),
+    redSebep:c.redSebep||null,
+    captainIdLegacy:c.id||null
+  };
+}
+function migrateToUnifiedUsers(){
+  if(localStorage.getItem('db_users_migrated_v1')==='true')return;
+  const existing=uGetUsers();
+  const byEmail=new Map(existing.map(u=>[u.email,u]));
+  let nextId=existing.length?Math.max(...existing.map(u=>u.id||0)):0;
+
+  // 1) cu_users → customer rolu
+  const cu=(()=>{try{return JSON.parse(localStorage.getItem('cu_users')||'[]');}catch{return[];}})();
+  cu.forEach(c=>{
+    const email=(c.email||'').toLowerCase();
+    if(!email)return;
+    if(byEmail.has(email))return;
+    const fullName=(c.name||'').trim();
+    const parts=fullName.split(/\s+/);
+    const ad=parts[0]||'';
+    const soyad=parts.slice(1).join(' ')||'';
+    const u={
+      id:++nextId, ad, soyad, email,
+      phone:c.phone||'', password:c.password||'',
+      avatarUrl:null,
+      createdAt:new Date().toISOString(),
+      roles:['customer'],
+      captainProfile:null,
+      plan:c.plan||null, planStarted:c.planStarted||null
+    };
+    byEmail.set(email,u);
+  });
+
+  // 2) db_captains → captain rolu ekle (email match) veya yeni kullanici olustur
+  const caps=(()=>{try{return JSON.parse(localStorage.getItem('db_captains')||'[]');}catch{return[];}})();
+  caps.forEach(c=>{
+    const email=(c.email||'').toLowerCase();
+    if(!email)return;
+    const cp=uCaptainProfileFrom(c);
+    if(byEmail.has(email)){
+      const u=byEmail.get(email);
+      if(!u.roles.includes('captain'))u.roles.push('captain');
+      u.captainProfile=cp;
+      if(!u.ad&&c.ad)u.ad=c.ad;
+      if(!u.soyad&&c.soyad)u.soyad=c.soyad;
+      if(!u.phone&&c.telefon)u.phone=c.telefon;
+    } else {
+      const u={
+        id:++nextId, ad:c.ad||'', soyad:c.soyad||'', email,
+        phone:c.telefon||'', password:c.password||'captain123',
+        avatarUrl:null,
+        createdAt:new Date().toISOString(),
+        roles:['customer','captain'],
+        captainProfile:cp
+      };
+      byEmail.set(email,u);
+    }
+  });
+
+  uSaveUsers([...byEmail.values()]);
+  localStorage.setItem('db_users_migrated_v1','true');
+  console.log('[UserDB] Migration v1 completed. Users:',byEmail.size);
+}
+
+/* Sync helpers — gecis doneminde eski tablolar ile bi-directional uyum.
+   db_captains bir kaptan kullanicisi guncellendiginde refresh edilir. */
+function uSyncCaptainToLegacy(user){
+  if(!user||!user.captainProfile)return;
+  const cp=user.captainProfile;
+  const list=(()=>{try{return JSON.parse(localStorage.getItem('db_captains')||'[]');}catch{return[];}})();
+  let c=list.find(x=>x.email===user.email);
+  if(!c){
+    const nid=list.length?Math.max(...list.map(x=>x.id||0))+1:1;
+    c={id:nid}; list.push(c);
+    cp.captainIdLegacy=c.id;
+  }
+  Object.assign(c,{
+    ad:user.ad, soyad:user.soyad, email:user.email, telefon:user.phone,
+    tc:cp.tc, tekne:cp.tekne, tekneTuru:cp.tekneTuru,
+    uzunluk:cp.uzunluk, kapasite:cp.kapasite, yil:cp.yil, marka:cp.marka,
+    bolge:cp.bolge, marina:cp.marina,
+    lisans:cp.lisans, lisansTarih:cp.lisansTarih,
+    ruhsat:cp.ruhsat, sigorta:cp.sigorta, not:cp.not,
+    kategoriler:cp.kategoriler, durum:cp.onayDurumu,
+    tarih:cp.onayTarihi, redSebep:cp.redSebep
+  });
+  localStorage.setItem('db_captains',JSON.stringify(list));
+}
+function uSyncCustomerToLegacy(user){
+  if(!user)return;
+  const list=(()=>{try{return JSON.parse(localStorage.getItem('cu_users')||'[]');}catch{return[];}})();
+  const name=((user.ad||'')+' '+(user.soyad||'')).trim();
+  let c=list.find(x=>x.email===user.email);
+  if(!c){c={}; list.push(c);}
+  Object.assign(c,{
+    name, email:user.email, phone:user.phone, password:user.password,
+    plan:user.plan||null, planStarted:user.planStarted||null
+  });
+  localStorage.setItem('cu_users',JSON.stringify(list));
+}
+
+/* Fix #2: Ters sync — db_captains degisiklikleri db_users.captainProfile'a yansir.
+   Admin kaptan edit/duzenleme veya captain-app profil kaydinde cagirilir. */
+function uSyncCaptainsToUsers(){
+  const caps=(()=>{try{return JSON.parse(localStorage.getItem('db_captains')||'[]');}catch{return[];}})();
+  const users=uGetUsers();
+  const byEmail=new Map(users.map(u=>[u.email,u]));
+  let changed=false;
+  let nextId=users.length?Math.max(...users.map(u=>u.id||0)):0;
+  caps.forEach(c=>{
+    const email=(c.email||'').toLowerCase();
+    if(!email)return;
+    const cpNew=uCaptainProfileFrom(c);
+    let u=byEmail.get(email);
+    if(!u){
+      u={
+        id:++nextId, ad:c.ad||'', soyad:c.soyad||'', email,
+        phone:c.telefon||'', password:c.password||'captain123',
+        avatarUrl:null, createdAt:new Date().toISOString(),
+        roles:['customer','captain'], captainProfile:cpNew
+      };
+      users.push(u); byEmail.set(email,u); changed=true;
+      return;
+    }
+    // Kisisel alanlar senkron
+    if(c.ad&&u.ad!==c.ad){u.ad=c.ad;changed=true;}
+    if(c.soyad&&u.soyad!==c.soyad){u.soyad=c.soyad;changed=true;}
+    if(c.telefon&&u.phone!==c.telefon){u.phone=c.telefon;changed=true;}
+    if(!u.roles.includes('captain')){u.roles.push('captain');changed=true;}
+    // captainProfile diff
+    const cur=u.captainProfile||{};
+    const diff=Object.keys(cpNew).some(k=>JSON.stringify(cur[k])!==JSON.stringify(cpNew[k]));
+    if(diff){u.captainProfile={...cur,...cpNew};changed=true;}
+  });
+  if(changed)uSaveUsers(users);
+}
+
 /* ---- Kaptan Veri Yonetimi ---- */
 function loadCaptains(){
   try{const v=localStorage.getItem('db_captains');return v?JSON.parse(v):[];}catch{return[];}
 }
 function saveCaptains(){
   localStorage.setItem('db_captains',JSON.stringify(captains));
+  if(typeof uSyncCaptainsToUsers==='function')uSyncCaptainsToUsers();
 }
 let captains=loadCaptains();
 let captainIdCounter=captains.length>0?Math.max(...captains.map(c=>c.id||0))+1:1;
@@ -4910,7 +6207,63 @@ function closeCaptainDetailModal(){document.getElementById('captain-detail-modal
 
 function setCaptainDurum(id,durum){
   const c=captains.find(x=>x.id===id);
-  if(c){c.durum=durum;saveCaptains();renderCaptains();showToast(c.ad+' '+c.soyad+' durumu guncellendi','info');}
+  if(!c)return;
+  c.durum=durum;
+  saveCaptains();
+  try{if(DB_MODE==='remote')DB.kaptanlar.updateDurum(id,durum).catch(e=>console.warn('[SB]',e));}catch(e){}
+  // db_users captainProfile senkronu + bildirim
+  const users=uGetUsers();
+  const u=users.find(x=>x.email===c.email);
+  if(u&&u.captainProfile){
+    const onceki=u.captainProfile.onayDurumu;
+    u.captainProfile.onayDurumu=durum;
+    if(durum==='aktif'){
+      if(!u.roles.includes('captain'))u.roles.push('captain');
+      u.captainProfile.redSebep=null;
+      pushCaptainNotification(u.email,{title:'Kaptan başvurun onaylandı',body:'Artık kaptan paneline erişebilir ve tur açabilirsin.',type:'success'});
+    } else if(durum==='askida'&&onceki==='bekliyor'){
+      u.captainProfile.onayDurumu='reddedildi';
+      u.captainProfile.redSebep=u.captainProfile.redSebep||'Admin tarafından reddedildi.';
+      pushCaptainNotification(u.email,{title:'Kaptan başvurun reddedildi',body:u.captainProfile.redSebep,type:'warning'});
+    }
+    uSaveUsers(users);
+  }
+  renderCaptains();
+  showToast(c.ad+' '+c.soyad+' durumu guncellendi','info');
+}
+
+/* Bridge: db_users.captainProfile=bekliyor olan başvuruları db_captains'e yansıtır */
+function uBridgePendingCaptains(){
+  const users=uGetUsers();
+  const caps=loadCaptains();
+  const byEmail=new Map(caps.map(c=>[c.email,c]));
+  let changed=false;
+  let nextId=caps.length?Math.max(...caps.map(c=>c.id||0)):0;
+  users.forEach(u=>{
+    if(!u.captainProfile)return;
+    if(byEmail.has(u.email))return; // zaten var
+    const cp=u.captainProfile;
+    nextId++;
+    const cRec={
+      id:nextId, ad:u.ad, soyad:u.soyad, email:u.email, telefon:u.phone,
+      tc:cp.tc||'', tekne:cp.tekne||'', tekneTuru:cp.tekneTuru||'',
+      uzunluk:cp.uzunluk||0, kapasite:cp.kapasite||0, yil:cp.yil||'',
+      marka:cp.marka||'', bolge:cp.bolge||'', marina:cp.marina||'',
+      lisans:cp.lisans||'', lisansTarih:cp.lisansTarih||'',
+      ruhsat:cp.ruhsat||'', sigorta:cp.sigorta||'', not:cp.not||'',
+      kategoriler:cp.kategoriler||[], durum:cp.onayDurumu||'bekliyor',
+      tarih:cp.onayTarihi||new Date().toLocaleDateString('tr-TR')
+    };
+    caps.push(cRec);
+    cp.captainIdLegacy=nextId;
+    changed=true;
+  });
+  if(changed){
+    localStorage.setItem('db_captains',JSON.stringify(caps));
+    uSaveUsers(users);
+    captains=loadCaptains();
+    captainIdCounter=captains.length>0?Math.max(...captains.map(c=>c.id||0))+1:1;
+  }
 }
 
 function openDeleteModal(id){
@@ -5566,10 +6919,28 @@ function setResDurum(durum){
   if(durum==='onaylandi'&&!checkCapacity(activeResId,all))return;
   b.durum=durum;
   localStorage.setItem('db_bookings',JSON.stringify(all));
+  notifyCaptainOfBookingStatus(b,durum);
   openResDetail(activeResId);
   renderReservations();
   renderDashboard();
   showToast('Durum guncellendi: '+durum,'success');
+}
+
+function notifyCaptainOfBookingStatus(b,durum){
+  if(!b||!b.captainEmail)return;
+  const title=({
+    onaylandi:'Rezervasyon onaylandı',
+    reddedildi:'Rezervasyon reddedildi',
+    iptal:'Rezervasyon iptal edildi',
+    tamamlandi:'Rezervasyon tamamlandı',
+    bekliyor:'Rezervasyon beklemeye alındı'
+  })[durum]||'Rezervasyon güncellendi';
+  const type=durum==='onaylandi'?'success':(durum==='reddedildi'||durum==='iptal')?'warning':'info';
+  pushCaptainNotification(b.captainEmail,{
+    title,
+    body:`"${b.tourTitle||'Tur'}" — ${b.customerName||'Müşteri'} (${b.tarih||'—'}${b.saat?' '+b.saat:''})`,
+    type
+  });
 }
 
 function saveAdminNote(){
@@ -5590,6 +6961,7 @@ function quickResApprove(id){
   if(!checkCapacity(id,all))return;
   b.durum='onaylandi';
   localStorage.setItem('db_bookings',JSON.stringify(all));
+  notifyCaptainOfBookingStatus(b,'onaylandi');
   renderReservations();
   renderDashboard();
   showToast('Rezervasyon onaylandi','success');
@@ -6073,6 +7445,7 @@ function saveGlobalSettings(gs){localStorage.setItem('global_settings',JSON.stri
 
 function renderPlatformControl(){
   const gs=getGlobalSettings();
+  renderMourningList();
 
   // Sync global settings toggles
   const regToggle=document.getElementById('gs-toggle-registration');
@@ -6527,7 +7900,26 @@ function systemReset(seedCaptain){
     ?'TÜM VERİLER SİLİNECEK ve demo kaptan oluşturulacak!\n\nBu işlem geri alınamaz. Devam etmek istiyor musunuz?'
     :'TÜM VERİLER SİLİNECEK!\n\nTurlar, rezervasyonlar, kullanıcılar, kaptanlar, siparişler ve tüm ayarlar sıfırlanacak.\nBu işlem geri alınamaz. Devam etmek istiyor musunuz?';
   if(!confirm(msg))return;
-  const fixed=['db_tours','db_bookings','db_captains','db_payments','db_orders','db_sellers','db_disruptions','db_reassignments','cu_users','auth_user','cu_session','seller_session','cp_active_id','active_captain_id','page_settings','global_settings','module_settings'];
+  const fixed=[
+    /* Çekirdek işletme */
+    'db_tours','db_bookings','db_captains','db_payments','db_orders','db_sellers','db_disruptions','db_reassignments','db_complaints','db_messages',
+    /* Birleşik kullanıcı modeli */
+    'db_users','db_users_migrated_v1','db_users_seeded_from_cu',
+    /* Mağaza */
+    'db_shop_cats','db_shop_orders','db_shop_products','db_shop_sellers','db_shop_settings',
+    /* Abonelik */
+    'db_sub_members','db_sub_packages',
+    /* Müşteri tarafı */
+    'cu_users','cu_session','cu_profile','cu_favs','cu_bookings','cu_notifs','cu_seen_status',
+    /* Oturum */
+    'auth_user','seller_session','active_captain_id','active_user_email',
+    /* Kaptan paneli */
+    'cp_active_id','cp_messages','cp_profile','cp_notifications','ca_notifications',
+    /* Ayarlar */
+    'page_settings','global_settings','module_settings','idx_modules',
+    /* Diğer */
+    'ow_api_key','marine_from'
+  ];
   fixed.forEach(k=>localStorage.removeItem(k));
   Object.keys(localStorage).filter(k=>k.startsWith('cms_content_')||k.startsWith('seller_products_')).forEach(k=>localStorage.removeItem(k));
   if(seedCaptain){
@@ -6540,6 +7932,11 @@ function systemReset(seedCaptain){
     const captain={id:1,ad,soyad,email,sifre:'demo1234',telefon:'0500 000 0000',tekne:boat,bolge:'Bodrum',durum:'aktif',puan:5,yorumSayisi:0,plan:'free',createdAt:new Date().toISOString()};
     localStorage.setItem('db_captains',JSON.stringify([captain]));
     localStorage.setItem('cp_active_id',1);
+    /* Birleşik kullanıcı modeli — demo kaptanı db_users'a da yaz */
+    const uUser={id:1,ad,soyad,email:email.toLowerCase(),phone:'0500 000 0000',password:'demo1234',avatarUrl:'',createdAt:new Date().toISOString(),roles:['customer','captain'],captainProfile:{tekne:boat,bolge:'Bodrum',onayDurumu:'aktif',redSebep:'',captainIdLegacy:1}};
+    localStorage.setItem('db_users',JSON.stringify([uUser]));
+    localStorage.setItem('db_users_migrated_v1','1');
+    localStorage.setItem('active_user_email',email.toLowerCase());
   }
   showToast('Sistem sıfırlandı'+(seedCaptain?' — demo kaptan oluşturuldu':''),'success');
   setTimeout(()=>location.reload(),1800);
