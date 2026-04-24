@@ -307,7 +307,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
     <div class="map-bg rounded-2xl h-32 flex items-center justify-center mb-4"><i class="fas fa-route text-primary text-2xl opacity-30"></i></div>
   </div>
   <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t p-3 flex items-center justify-between z-40">
-    <div><span class="text-xl font-bold text-primary" id="detail-price">—</span><span class="text-xs text-gray-400"> TL / kişi</span></div>
+    <div><span class="text-xl font-bold text-primary" id="detail-price">—</span><span class="text-xs text-gray-400"> TL / tekne</span></div>
     <button onclick="navigateTo('booking')" class="bg-accent text-white px-6 py-3 rounded-xl font-bold text-sm">Rezervasyon Yap</button>
   </div>
 </section>
@@ -1488,7 +1488,7 @@ function renderHome(){
         <div class="font-semibold text-xs mb-0.5">${t.name}</div>
         <div class="text-[10px] text-gray-500 mb-1"><i class="fas fa-map-marker-alt text-primary"></i> ${t.loc} &bull; ${t.dur}</div>
         <div class="flex items-center justify-between">
-          <span class="font-bold text-primary text-sm">${(t.perPerson||t.price).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/kişi</span></span>
+          <span class="font-bold text-primary text-sm">${(t.price||t.fiyat||0).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/tekne</span></span>
           <span class="text-[10px] text-amber-500"><i class="fas fa-star"></i> ${t.rating}</span>
         </div>
       </div>
@@ -1508,7 +1508,7 @@ function renderHome(){
         <div class="font-semibold text-sm mb-0.5">${t.name}${t._db?'<span class="ml-1 text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Yeni</span>':''}</div>
         <div class="text-[10px] text-gray-500 mb-1"><i class="fas fa-map-marker-alt text-primary"></i> ${t.loc} &bull; ${t.dur}</div>
         <div class="flex items-center justify-between">
-          <span class="font-bold text-primary">${(t.perPerson||t.price).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/kişi</span></span>
+          <span class="font-bold text-primary">${(t.price||t.fiyat||0).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/tekne</span></span>
           <span class="text-[10px] text-amber-500"><i class="fas fa-star"></i> ${t.rating}</span>
         </div>
       </div>
@@ -1544,7 +1544,7 @@ function applyFilters(){
   const list=allTours().filter(t=>{
     const mCat=!catFilter||t.cat===catFilter;
     const mQ=!q||t.name.toLowerCase().includes(q)||t.loc.toLowerCase().includes(q)||(t.captainName||'').toLowerCase().includes(q);
-    const mP=(t.perPerson||t.price)>=minP&&(t.perPerson||t.price)<=maxP;
+    const mP=(t.price||t.fiyat||0)>=minP&&(t.price||t.fiyat||0)<=maxP;
     return mCat&&mQ&&mP;
   });
   const el=document.getElementById('search-results-app');
@@ -1568,7 +1568,7 @@ function applyFilters(){
         <div class="font-semibold text-sm mb-0.5">${t.name}${t._db?'<span class="ml-1 text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Kaptan Listesi</span>':''}</div>
         <div class="text-[10px] text-gray-500 mb-1.5"><i class="fas fa-map-marker-alt text-primary"></i> ${t.loc} &bull; <i class="fas fa-clock"></i> ${t.dur} &bull; Max ${t.kapasite} kisi</div>
         <div class="flex items-center justify-between">
-          <div><span class="text-lg font-bold text-primary">${(t.perPerson||t.price).toLocaleString('tr-TR')}</span><span class="text-xs text-gray-400"> TL/kişi</span></div>
+          <div><span class="text-lg font-bold text-primary">${(t.price||t.fiyat||0).toLocaleString('tr-TR')}</span><span class="text-xs text-gray-400"> TL/tekne</span></div>
           <span class="text-xs text-amber-500 font-medium"><i class="fas fa-star"></i> ${t.rating}</span>
         </div>
         ${t.captainName?`<div class="text-[10px] text-gray-400 mt-1"><i class="fas fa-user-tie text-primary mr-0.5"></i>${t.captainName}</div>`:''}
@@ -1621,7 +1621,7 @@ function renderDetail(){
     fishSec.style.display='none';
   }
   document.getElementById('detail-desc').textContent=t.desc||`${t.name} - ${t.loc} kalkisli ${t.dur} sureli tur.`;
-  document.getElementById('detail-price').textContent=(t.perPerson||t.price).toLocaleString('tr-TR');
+  document.getElementById('detail-price').textContent=(t.price||t.fiyat||0).toLocaleString('tr-TR');
   // fav btn
   const favs=S.get('cu_favs',[]).map(String);
   const fav=favs.includes(String(t.id));
@@ -1826,9 +1826,10 @@ function adjGuest(d){
   updPrice();
 }
 function calcBookingPrice(t,guests){
-  const perPerson=t.perPerson||Math.round((t.price||0)/(t.kapasite||8));
+  const boatPrice=t.price||t.fiyat||0;
   const g=Math.max(1,guests||guestVal);
-  const fee=perPerson*g;
+  const perPerson=Math.round(boatPrice/g);
+  const fee=boatPrice;
   const svc=Math.round(fee*.1);
   return{perPerson,fee,svc,total:fee+svc};
 }
@@ -1837,7 +1838,7 @@ function updPrice(){
   const {perPerson,fee,svc,total}=calcBookingPrice(t,guestVal);
   const s=n=>n.toLocaleString('tr-TR')+' TL';
   const bEl=document.getElementById('b-fee');if(bEl)bEl.textContent=s(fee);
-  const dEl=document.getElementById('b-fee-detail');if(dEl)dEl.textContent=`(${perPerson.toLocaleString('tr-TR')} TL × ${guestVal} kişi)`;
+  const dEl=document.getElementById('b-fee-detail');if(dEl)dEl.textContent=`(${(t.price||t.fiyat||0).toLocaleString('tr-TR')} TL ÷ ${guestVal} kişi)`;
   const sEl=document.getElementById('b-svc');if(sEl)sEl.textContent=s(svc);
   const tEl=document.getElementById('b-total');if(tEl)tEl.textContent=s(total);
 }
@@ -1949,7 +1950,7 @@ function renderAltTours(alts){
         </div>
       </div>
       <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:13px;font-weight:800;color:#0369a1">${(t.perPerson||Math.round((t.price||t.fiyat||0)/(t.kapasite||8))).toLocaleString('tr-TR')} TL<span style="font-size:9px;font-weight:400;color:#9ca3af">/kişi</span></div>
+        <div style="font-size:13px;font-weight:800;color:#0369a1">${(t.price||t.fiyat||0).toLocaleString('tr-TR')} TL<span style="font-size:9px;font-weight:400;color:#9ca3af">/tekne</span></div>
         <button onclick="closeCapWarning();selectTourFromModal('${t.id}')" style="margin-top:4px;background:#0369a1;color:#fff;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">Seç</button>
       </div>
     </div>`;
@@ -2033,7 +2034,7 @@ function doBooking(){
   };
   const db=S.get('db_bookings',[]);db.unshift(b);S.set('db_bookings',db);
   const my=S.get('cu_bookings',[]);my.unshift(b.id);S.set('cu_bookings',my);
-  try{if(DB_MODE==='remote')DB.rezervasyonlar.create({...b,turFiyat:t.perPerson||Math.round((t.price||t.fiyat||0)/(t.kapasite||8)),tur_id:t.id,kayitKanali:'mobil_app'}).catch(e=>console.warn('[SB]',e));}catch(e){}
+  try{if(DB_MODE==='remote')DB.rezervasyonlar.create({...b,turFiyat:t.price||t.fiyat||0,tur_id:t.id,kayitKanali:'mobil_app'}).catch(e=>console.warn('[SB]',e));}catch(e){}
   addNotif('Rezervasyon alindi',`${t.name} icin talebiniz kaptana iletildi.`,'info');
   renderConf(b);
   navigateTo('confirmation');
@@ -2273,7 +2274,7 @@ function renderFavorites(){
       <div class="p-3 flex-1">
         <div class="font-semibold text-sm">${t.name}</div>
         <div class="text-[10px] text-gray-500">${t.loc} &bull; ${t.dur}</div>
-        <div class="font-bold text-primary text-sm mt-1">${(t.perPerson||Math.round((t.price||0)/(t.kapasite||8))).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/kişi</span></div>
+        <div class="font-bold text-primary text-sm mt-1">${(t.price||t.fiyat||0).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/tekne</span></div>
       </div>
       <button class="px-3 text-danger" onclick="event.stopPropagation();rmFav('${t.id}')"><i class="fas fa-heart"></i></button>
     </div>`;
@@ -2299,7 +2300,7 @@ function renderCaptainProfile(){
       <div class="p-3 flex-1">
         <div class="font-semibold text-sm">${x.name}</div>
         <div class="text-[10px] text-gray-500">${x.dur} &bull; Max ${x.kapasite}</div>
-        <div class="font-bold text-primary text-sm mt-1">${(x.perPerson||Math.round((x.price||0)/(x.kapasite||8))).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/kişi</span></div>
+        <div class="font-bold text-primary text-sm mt-1">${(x.price||x.fiyat||0).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/tekne</span></div>
       </div>
     </div>`;
   }).join('');

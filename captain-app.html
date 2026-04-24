@@ -419,6 +419,7 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
             <button class="stepper-btn" onclick="changeCapacity(1)">+</button>
             <span class="text-xs text-gray-400">kisi</span>
           </div>
+          <div class="text-xs text-gray-400 mt-1" id="capacity-limit-hint"></div>
         </div>
         <div>
           <label class="text-xs font-medium text-gray-500 mb-1 block">Kalkis Noktasi</label>
@@ -1867,12 +1868,14 @@ function addCustomInclude(){
   document.getElementById('custom-include-input-wrap').style.display='none';
 }
 let capacity=8;
-function changeCapacity(d){capacity=Math.max(1,Math.min(30,capacity+d));document.getElementById('capacity-val').textContent=capacity;calcPerPerson();}
+function changeCapacity(d){const boatMax=(getActiveCaptain()?.kapasite||30);capacity=Math.max(1,Math.min(boatMax,capacity+d));document.getElementById('capacity-val').textContent=capacity;const limEl=document.getElementById('capacity-limit-hint');if(limEl)limEl.textContent=`(maks. ${boatMax} kişi — tekne kapasitesi)`;calcPerPerson();}
 function calcPerPerson(){const p=document.getElementById('tour-price-input').value;document.getElementById('per-person-calc').textContent=p?`${capacity} kisi icin kisi basi: ${Math.round(p/capacity)} TL`:`${capacity} kisi icin kisi basi: — TL`;}
 function resetWizard(){
   caEditingTourId=null;
   capacity=8;
   const capEl=document.getElementById('capacity-val');if(capEl)capEl.textContent='8';
+  const boatMax=(getActiveCaptain()?.kapasite||0);
+  const limEl=document.getElementById('capacity-limit-hint');if(limEl)limEl.textContent=boatMax>0?`(maks. ${boatMax} kişi — tekne kapasitesi)`:'';
   const ppEl=document.getElementById('per-person-calc');if(ppEl)ppEl.textContent='8 kisi icin kisi basi: — TL';
   document.querySelectorAll('.cat-pill').forEach((el,i)=>el.classList.toggle('selected',i===0));
   const nameEl=document.querySelector('#wizard-2 input[type=text]');if(nameEl)nameEl.value='';
@@ -1984,7 +1987,7 @@ function publishTour(){
   if(!cats.length){showToast('En az bir kategori seçin','danger');return;}
   if(!durEl){showToast('Tur süresini seçin','danger');return;}
   if(!(capacity>0)){showToast('Geçersiz kapasite','danger');return;}
-  if(capacity>(cap.kapasite||capacity)){showToast(`Kapasite tekne kapasitesinden (${cap.kapasite}) büyük olamaz`,'danger');return;}
+  if(cap.kapasite>0 && capacity>cap.kapasite){showToast(`Tekne kapasitesi aşılamaz — teknenizin kapasitesi ${cap.kapasite} kişi`,'danger');return;}
   if(!saatler.length){showToast('En az bir kalkis saati secin','danger');return;}
   if(priceVal_<=0){showToast('Fiyat 0 veya negatif olamaz','danger');return;}
   if(priceVal_>100000){showToast('Fiyat 100.000 TL üstünde olamaz — kontrol edin','danger');return;}
