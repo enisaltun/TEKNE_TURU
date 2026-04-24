@@ -307,7 +307,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
     <div class="map-bg rounded-2xl h-32 flex items-center justify-center mb-4"><i class="fas fa-route text-primary text-2xl opacity-30"></i></div>
   </div>
   <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t p-3 flex items-center justify-between z-40">
-    <div><span class="text-xl font-bold text-primary" id="detail-price">—</span><span class="text-xs text-gray-400"> TL / tekne</span></div>
+    <div><span class="text-xl font-bold text-primary" id="detail-price">—</span><span class="text-xs text-gray-400"> TL / kişi</span></div>
     <button onclick="navigateTo('booking')" class="bg-accent text-white px-6 py-3 rounded-xl font-bold text-sm">Rezervasyon Yap</button>
   </div>
 </section>
@@ -354,6 +354,10 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
         <div class="font-medium text-sm" id="booking-tour-name">—</div>
         <div class="text-[11px] text-gray-500" id="booking-tour-meta">—</div>
       </div>
+    </div>
+    <div id="booking-nodate-banner" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;line-height:1.5">
+      <div style="display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:4px"><i class="fas fa-triangle-exclamation"></i>Bu tur su an rezervasyona kapali</div>
+      <div style="color:#991b1b;font-weight:500">Kaptan tarafindan uygun bir tarih tanimlanmamis. Lutfen daha sonra tekrar deneyin veya baska bir tur secin.</div>
     </div>
     <div class="card p-4 mb-3">
       <h3 class="font-semibold text-sm mb-3"><i class="fas fa-calendar-day text-primary mr-1"></i> Tarih Sec</h3>
@@ -671,6 +675,9 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
     <div id="prof-plan-card" class="mb-4 rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition-transform" onclick="showProModal()">
       <!-- rendered by renderProfile() -->
     </div>
+    <!-- Kaptan Ol / Kaptan Paneli rol kartı -->
+    <div id="prof-captain-card" class="mb-4" style="display:none"></div>
+
     <div class="space-y-1.5">
       <div class="card p-3.5 flex items-center gap-3 card-hover" onclick="navigateTo('my-tours')"><i class="fas fa-calendar-check text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Rezervasyonlarim</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
       <div class="card p-3.5 flex items-center gap-3 card-hover" onclick="navigateTo('favorites')"><i class="fas fa-heart text-primary w-6 text-center"></i><span class="text-sm font-medium flex-1">Favorilerim</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
@@ -684,6 +691,92 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
       <span>DenizBul v1.0.0</span>
       <a href="admin-panel.html" target="_blank" class="text-primary">Admin</a>
       <a href="captain-panel.html" target="_blank" class="text-primary">Kaptan</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ PAGE: KAPTAN BAŞVURU -->
+<section id="page-captain-apply" class="page">
+  <div class="px-4 pt-2 pb-24">
+    <div class="flex items-center gap-3 mb-4">
+      <button onclick="navigateTo('profile')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+      <span class="font-semibold text-sm">Kaptan Başvurusu</span>
+    </div>
+    <div class="card p-4 mb-3" style="background:linear-gradient(135deg,#0369a1,#075985);color:#fff">
+      <div class="flex items-center gap-2 mb-1"><i class="fas fa-anchor"></i><span class="font-bold text-sm">DenizBul Kaptan Ağına Katıl</span></div>
+      <div class="text-[11px] text-blue-100 leading-relaxed">Tekneniz varsa, platformumuzda tur ilanı açıp rezervasyon alabilirsiniz. Başvurunuz admin onayından sonra kaptan paneline erişim sağlar.</div>
+    </div>
+    <div class="card p-4 space-y-3">
+      <div>
+        <label class="text-[11px] text-gray-500 font-medium">Tekne Adı *</label>
+        <input id="ca-tekne" type="text" placeholder="Deniz Yıldızı" class="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[11px] text-gray-500 font-medium">Tekne Türü *</label>
+          <select id="ca-tekne-turu" class="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
+            <option value="">Seçiniz</option>
+            <option>Yelkenli</option><option>Motor Yat</option><option>Gulet</option>
+            <option>Katamaran</option><option>Balık Teknesi</option><option>Sürat Teknesi</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[11px] text-gray-500 font-medium">Uzunluk (m) *</label>
+          <input id="ca-uzunluk" type="number" min="5" max="60" placeholder="12" class="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[11px] text-gray-500 font-medium">Kapasite *</label>
+          <input id="ca-kapasite" type="number" min="1" max="50" placeholder="8" class="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="text-[11px] text-gray-500 font-medium">Yıl</label>
+          <input id="ca-yil" type="number" min="1980" max="2030" placeholder="2020" class="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+      </div>
+      <div>
+        <label class="text-[11px] text-gray-500 font-medium">Bölge / Şehir *</label>
+        <select id="ca-bolge" class="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
+          <option value="">Seçiniz</option>
+          <option>Istanbul</option><option>Izmir</option><option>Mugla/Bodrum</option>
+          <option>Mugla/Fethiye</option><option>Mugla/Marmaris</option><option>Antalya</option>
+          <option>Aydın/Kusadasi</option><option>Balikesir/Ayvalik</option><option>Canakkale</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-[11px] text-gray-500 font-medium">Marina (opsiyonel)</label>
+        <input id="ca-marina" type="text" placeholder="D-Marin Turgutreis" class="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="text-[11px] text-gray-500 font-medium">Lisans / Amatör Denizci Belgesi No</label>
+        <input id="ca-lisans" type="text" placeholder="ADB-2024-xxxxx" class="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="text-[11px] text-gray-500 font-medium">Ruhsat No</label>
+        <input id="ca-ruhsat" type="text" placeholder="TR-ISB-xxxxx" class="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="text-[11px] text-gray-500 font-medium">Tur Kategorileri *</label>
+        <div id="ca-kategoriler" class="flex flex-wrap gap-2 mt-1">
+          <label class="cat-chk flex items-center gap-1.5 text-xs border rounded-lg px-2.5 py-1.5 cursor-pointer"><input type="checkbox" value="Balik Avi"> Balık Avı</label>
+          <label class="cat-chk flex items-center gap-1.5 text-xs border rounded-lg px-2.5 py-1.5 cursor-pointer"><input type="checkbox" value="Tekne Gezisi"> Tekne Gezisi</label>
+          <label class="cat-chk flex items-center gap-1.5 text-xs border rounded-lg px-2.5 py-1.5 cursor-pointer"><input type="checkbox" value="Gun Batimi"> Gün Batımı</label>
+          <label class="cat-chk flex items-center gap-1.5 text-xs border rounded-lg px-2.5 py-1.5 cursor-pointer"><input type="checkbox" value="Yuzme"> Yüzme</label>
+          <label class="cat-chk flex items-center gap-1.5 text-xs border rounded-lg px-2.5 py-1.5 cursor-pointer"><input type="checkbox" value="Ozel Etkinlik"> Özel Etkinlik</label>
+          <label class="cat-chk flex items-center gap-1.5 text-xs border rounded-lg px-2.5 py-1.5 cursor-pointer"><input type="checkbox" value="Kurumsal"> Kurumsal</label>
+        </div>
+      </div>
+      <div>
+        <label class="text-[11px] text-gray-500 font-medium">Kısa Not (tecrübe, referans vb.)</label>
+        <textarea id="ca-not" rows="3" class="mt-1 w-full border rounded-lg px-3 py-2 text-sm" placeholder="15 yıldır Ege'de balık turu düzenliyorum..."></textarea>
+      </div>
+      <div class="text-[10px] text-gray-400 leading-relaxed">
+        <i class="fas fa-info-circle mr-1"></i>Başvurunuz admin tarafından incelenecek. Onay sonrası kaptan paneline erişebilir ve tur ilanı açabilirsiniz.
+      </div>
+      <button onclick="submitCaptainApplication()" class="w-full bg-primary text-white rounded-lg py-3 text-sm font-semibold active:scale-95 transition-transform">
+        <i class="fas fa-paper-plane mr-1"></i>Başvuruyu Gönder
+      </button>
     </div>
   </div>
 </section>
@@ -853,7 +946,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 
 <script>
 /* ── CONSTANTS ── */
-const ALL_PAGES=['auth','home','search','detail','captain-profile','booking','payment','confirmation','my-tours','booking-detail','favorites','messages','notifications','profile','tools'];
+const ALL_PAGES=['auth','home','search','detail','captain-profile','booking','payment','confirmation','my-tours','booking-detail','favorites','messages','notifications','profile','tools','captain-apply'];
 const HIDE_NAV=['auth','detail','booking','payment','confirmation','captain-profile','notifications','booking-detail'];
 const CM={
   balik:    {label:'Balik Avi',   icon:'fa-fish',      color:'blue',   grad:'from-blue-400 to-blue-600'},
@@ -878,6 +971,72 @@ let curChatId=null, curTab='up', catFilter='';
 const tourMap={};
 
 /* ── AUTH ── */
+/* UserDB shim: db_users birleşik tabloya yazar, cu_users backward-compat */
+const U={
+  list(){try{return JSON.parse(localStorage.getItem('db_users')||'[]');}catch{return[];}},
+  save(l){localStorage.setItem('db_users',JSON.stringify(l));},
+  find(email){if(!email)return null;const e=email.toLowerCase();return this.list().find(u=>u.email===e)||null;},
+  nextId(){const l=this.list();return l.length?Math.max(...l.map(u=>u.id||0))+1:1;},
+  migrateLegacy(){
+    // Idempotent sync: cu_users + db_captains → db_users
+    const cu=(()=>{try{return JSON.parse(localStorage.getItem('cu_users')||'[]');}catch{return[];}})();
+    const caps=(()=>{try{return JSON.parse(localStorage.getItem('db_captains')||'[]');}catch{return[];}})();
+    const list=this.list();
+    const byEmail=new Map(list.map(u=>[u.email,u]));
+    let nid=list.length?Math.max(...list.map(u=>u.id||0)):0;
+    cu.forEach(c=>{
+      const email=(c.email||'').toLowerCase();
+      if(!email||byEmail.has(email))return;
+      const parts=(c.name||'').trim().split(/\s+/);
+      byEmail.set(email,{
+        id:++nid, ad:parts[0]||'', soyad:parts.slice(1).join(' ')||'',
+        email, phone:c.phone||'', password:c.password||'',
+        avatarUrl:null, createdAt:new Date().toISOString(),
+        roles:['customer'], captainProfile:null,
+        plan:c.plan||null, planStarted:c.planStarted||null
+      });
+    });
+    caps.forEach(c=>{
+      const email=(c.email||'').toLowerCase();
+      if(!email)return;
+      const cp={
+        tc:c.tc||'', tekne:c.tekne||'', tekneTuru:c.tekneTuru||'',
+        uzunluk:c.uzunluk||0, kapasite:c.kapasite||0, yil:c.yil||'',
+        marka:c.marka||'', bolge:c.bolge||'', marina:c.marina||'',
+        lisans:c.lisans||'', lisansTarih:c.lisansTarih||'',
+        ruhsat:c.ruhsat||'', sigorta:c.sigorta||'', not:c.not||'',
+        kategoriler:c.kategoriler||[],
+        onayDurumu:c.durum||'bekliyor',
+        onayTarihi:c.tarih||new Date().toLocaleDateString('tr-TR'),
+        redSebep:c.redSebep||null,
+        captainIdLegacy:c.id||null
+      };
+      if(byEmail.has(email)){
+        const u=byEmail.get(email);
+        if(!u.roles.includes('captain'))u.roles.push('captain');
+        u.captainProfile=cp;
+      } else {
+        byEmail.set(email,{
+          id:++nid, ad:c.ad||'', soyad:c.soyad||'', email,
+          phone:c.telefon||'', password:c.password||'captain123',
+          avatarUrl:null, createdAt:new Date().toISOString(),
+          roles:['customer','captain'], captainProfile:cp
+        });
+      }
+    });
+    this.save([...byEmail.values()]);
+  },
+  syncToLegacy(user){
+    const list=(()=>{try{return JSON.parse(localStorage.getItem('cu_users')||'[]');}catch{return[];}})();
+    const name=((user.ad||'')+' '+(user.soyad||'')).trim();
+    let c=list.find(x=>x.email===user.email);
+    if(!c){c={};list.push(c);}
+    Object.assign(c,{name,email:user.email,phone:user.phone,password:user.password,plan:user.plan||null,planStarted:user.planStarted||null});
+    localStorage.setItem('cu_users',JSON.stringify(list));
+  }
+};
+U.migrateLegacy();
+
 function isLoggedIn(){
   try{const v=localStorage.getItem('cu_session');return v!==null&&v!=='null'&&v!=='false';}catch{return false;}
 }
@@ -916,11 +1075,12 @@ function doLogin(){
   const pass=(passEl.value||'');
   if(!email){showAuthErr('login','E-posta adresi gerekli.');emailEl.focus();return;}
   if(!pass){showAuthErr('login','Sifre gerekli.');passEl.focus();return;}
-  const users=S.get('cu_users',[]);
-  const user=users.find(function(u){return u.email===email&&u.password===pass;});
-  if(!user){showAuthErr('login','E-posta veya sifre yanlis.');passEl.value='';passEl.focus();return;}
+  const user=U.find(email);
+  if(!user||user.password!==pass){showAuthErr('login','E-posta veya sifre yanlis.');passEl.value='';passEl.focus();return;}
   localStorage.setItem('cu_session','active');
-  S.set('cu_profile',{name:user.name,email:user.email,phone:user.phone||''});
+  localStorage.setItem('active_user_email',user.email);
+  const fullName=((user.ad||'')+' '+(user.soyad||'')).trim();
+  S.set('cu_profile',{name:fullName,email:user.email,phone:user.phone||'',roles:user.roles||['customer']});
   enterApp();
 }
 
@@ -937,12 +1097,23 @@ function doRegister(){
   if(!name){showAuthErr('reg','Ad Soyad gerekli.');nameEl.focus();return;}
   if(!email||!email.includes('@')){showAuthErr('reg','Gecerli bir e-posta girin.');emailEl.focus();return;}
   if(!pass||pass.length<6){showAuthErr('reg','Sifre en az 6 karakter olmali.');passEl.focus();return;}
-  const users=S.get('cu_users',[]);
-  if(users.find(function(u){return u.email===email;})){showAuthErr('reg','Bu e-posta zaten kayitli. Giris yapin.');return;}
-  users.push({name:name,email:email,phone:phone,password:pass});
-  S.set('cu_users',users);
+  if(U.find(email)){showAuthErr('reg','Bu e-posta zaten kayitli. Giris yapin.');return;}
+  const parts=name.split(/\s+/);
+  const newUser={
+    id:U.nextId(),
+    ad:parts[0]||'',
+    soyad:parts.slice(1).join(' ')||'',
+    email,phone,password:pass,
+    avatarUrl:null,
+    createdAt:new Date().toISOString(),
+    roles:['customer'],
+    captainProfile:null
+  };
+  const list=U.list();list.push(newUser);U.save(list);
+  U.syncToLegacy(newUser);
   localStorage.setItem('cu_session','active');
-  S.set('cu_profile',{name:name,email:email,phone:phone});
+  localStorage.setItem('active_user_email',newUser.email);
+  S.set('cu_profile',{name:name,email:email,phone:phone,roles:newUser.roles});
   enterApp();
 }
 
@@ -1072,9 +1243,10 @@ window.addEventListener('storage',function(e){
   const h=window.location.hash.replace('#','')||'home';
   if(e.key==='db_tours'){rebuildTourMap();if(h==='home'||h==='search')handleRoute();}
   if(e.key==='db_bookings'){if(h==='my-tours')renderMyTours(curTab);pollBookingStatus();}
+  // Fix #3: admin kaptan başvuruyu onaylayınca profildeki "Kaptan Paneli" butonu canli belirsin
+  if(e.key==='db_users'||e.key==='db_captains'){if(h==='profile'&&typeof renderProfile==='function')renderProfile();}
 });
 window.addEventListener('load',function(){
-  localStorage.clear();
   if(checkGlobalSettings('customer_app'))return;
   rebuildTourMap();
   handleRoute();
@@ -1142,15 +1314,40 @@ function _activeDates(t){
   return [];
 }
 
+// Doluluk: kapasite dolmayan acik tarihler
+function _dateBookedSeats(tourId,trLocaleStr){
+  return S.get('db_bookings',[])
+    .filter(b=>String(b.tourId)===String(tourId) && b.tarih===trLocaleStr && ['bekliyor','onaylandi','tamamlandi'].includes((b.durum||'').toLowerCase()))
+    .reduce((s,b)=>s+(+b.guests||1),0);
+}
+function _openDates(t){
+  const kap=+(t.kapasite||8);
+  return _activeDates(t).filter(iso=>{
+    const trStr=new Date(iso).toLocaleDateString('tr-TR');
+    return _dateBookedSeats(t.id,trStr)<kap;
+  });
+}
+
 function getDbTours(){
   return S.get('db_tours',[])
-    .filter(t=>t.durum==='aktif'||t.aktif===true||t.status==='aktif')
+    .filter(t=>{
+      // Canonical durum: bekliyor/reddedildi/pasif asla müşteriye görünmez
+      const d=t.durum||t.status||(t.aktif===true?'aktif':'bekliyor');
+      if(d!=='aktif')return false;
+      // Savunma: eksik bilgili turlar admin'den sızmışsa da musteriye gosterilmesin
+      if(!(t.saatler&&t.saatler.length))return false;
+      if(!_activeDates(t).length)return false;
+      if(!(+(t.fiyat||t.price||0)))return false;
+      // Tum tarihler dolduysa yayindan cek
+      if(!_openDates(t).length)return false;
+      return true;
+    })
     .map(t=>{
       const cat=DB_CAT[t.kategoriler?.[0]||'Tekne Gezisi']||'gezi';
       const tarihler=_activeDates(t);
       const boatPrice=t.price||t.fiyat||0;const kap=t.kapasite||8;
       const perPerson=Math.round(boatPrice/kap);
-      return{id:t.id,name:t.ad||t.title||'Tur',loc:t.kalkis||t.konum||'Turkiye',price:boatPrice,perPerson,rating:t.puan||4.8,reviews:t.inceleme||0,dur:t.sure||'—',cat,kapasite:kap,tarihler,gunler:t.gunler||[],saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||(t.dahil||'').split('\n').filter(Boolean)||[],hedefBaliklar:t.hedefBaliklar||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,heroImage:t.heroImage||null,_db:true};
+      return{id:t.id,name:t.ad||t.title||'Tur',loc:t.kalkis||t.konum||'Turkiye',price:boatPrice,perPerson,rating:t.puan||4.8,reviews:t.inceleme||0,dur:t.sure||'—',cat,kapasite:kap,tarihler,gunler:t.gunler||[],saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||(t.dahil||'').split('\n').filter(Boolean)||[],hedefBaliklar:t.hedefBaliklar||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,heroImage:t.heroImage||null,durum:'aktif',status:'aktif',_db:true};
     });
 }
 
@@ -1571,6 +1768,8 @@ function renderBooking(){
 
   // Tarih yoksa fiyat ve CTA'yı devre dışı bırak
   const noDate=!upcomingISO.length;
+  const banner=document.getElementById('booking-nodate-banner');
+  if(banner)banner.style.display=noDate?'block':'none';
   const priceCard=document.querySelector('#page-booking .card.p-4');
   if(priceCard)priceCard.style.opacity=noDate?'0.35':'1';
   const proceedBtn=document.getElementById('booking-proceed-btn');
@@ -1697,11 +1896,10 @@ function isTourFull(t){
 }
 
 function buildAltTours(refTour, userLat, userLng){
-  const all=S.get('db_tours',[]).filter(t=>
-    String(t.id)!==String(refTour?.id) &&
-    (t.durum==='aktif'||t.durum==='yayinda') &&
-    !isTourFull(t)
-  );
+  const all=S.get('db_tours',[]).filter(t=>{
+    const d=t.durum||t.status||(t.aktif===true?'aktif':'bekliyor');
+    return String(t.id)!==String(refTour?.id) && d==='aktif' && !isTourFull(t);
+  });
   const refLoc=refTour?(refTour.loc||refTour.kalkis||''):' ';
   const refKats=new Set((refTour?.kategoriler||refTour?.cats||[]).map(k=>k.toLowerCase()));
 
@@ -1798,25 +1996,38 @@ function selectTourFromModal(tourId){
   navigateTo('tour-detail');
 }
 
+function _trToISO(tr){const m=/^(\d{2})\.(\d{2})\.(\d{4})$/.exec(tr||'');return m?`${m[3]}-${m[2]}-${m[1]}`:null;}
+function _isoToTr(iso){if(!iso)return null;const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);return m?`${m[3]}.${m[2]}.${m[1]}`:null;}
+
 function doBooking(){
   const t=selTour;
   if(!t){showToast('Lutfen bir tur secin','danger');return;}
+  const turDurum=(t.durum||t.status||'bekliyor').toLowerCase();
+  if(turDurum!=='aktif'){showToast('Bu tur şu anda rezervasyona açık değil','danger');return;}
   if(!_activeDates(t).length){showToast('Bu tur icin kaptan henuz tarih belirlemedi','danger');return;}
   if(!selDate){showToast('Lutfen bir tarih secin','danger');return;}
-  const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.tarih===selDate&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
+  const guestN=+guestVal||0;
+  if(guestN<=0||guestN>30){showToast('Geçersiz kişi sayısı','danger');return;}
+  const tarihISO=_trToISO(selDate);
+  const rezerveKisi=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&((b.tarihISO&&tarihISO&&b.tarihISO===tarihISO)||b.tarih===selDate)&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
   const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);
   if(kalanKisi<=0){showCapWarning(t.kapasite,rezerveKisi,0,0);return;}
-  if(guestVal>kalanKisi){showCapWarning(t.kapasite,rezerveKisi,kalanKisi,guestVal);return;}
-  const {fee,svc,total}=calcBookingPrice(t,guestVal);
+  if(guestN>kalanKisi){showCapWarning(t.kapasite,rezerveKisi,kalanKisi,guestN);return;}
+  const {fee,svc,total}=calcBookingPrice(t,guestN);
   const profile=S.get('cu_profile',{name:'Misafir'});
+  const customerEmail=profile.email||null;
+  if(customerEmail)_upsertCustomerToUsers(profile);
   const b={
-    id:'BK'+Date.now(),tourId:t.id,tourTitle:t.name,
-    captainEmail:t.captainEmail||null,captainName:t.captainName||'DenizBul',
-    customerName:profile.name||'Misafir',customerEmail:profile.email||null,customerPhone:profile.phone||null,
-    guests:guestVal,durum:'bekliyor',
-    amount:total,tarih:selDate||new Date().toLocaleDateString('tr-TR'),
+    id:'BK'+Date.now()+Math.floor(Math.random()*1000),tourId:t.id,tourTitle:t.name||t.ad||t.title,
+    captainEmail:t.captainEmail||null,captainName:t.captainName||(t.captainEmail?'Kaptan':'DenizBul'),
+    customerName:profile.name||'Misafir',customerEmail,customerPhone:profile.phone||null,
+    guests:guestN,durum:'bekliyor',
+    amount:total,tarih:selDate||_isoToTr(tarihISO)||new Date().toLocaleDateString('tr-TR'),
+    tarihISO:tarihISO||null,
     saat:selTime||'—',note:document.getElementById('booking-note')?.value||'',
     loc:t.loc||t.kalkis||null,
+    odemeYapildi:false,odemeRef:null,kartSon4:null,kartTuru:null,
+    binisYapildi:false,kayitKanali:'app',
     createdAt:new Date().toISOString()
   };
   const db=S.get('db_bookings',[]);db.unshift(b);S.set('db_bookings',db);
@@ -1824,6 +2035,24 @@ function doBooking(){
   addNotif('Rezervasyon alindi',`${t.name} icin talebiniz kaptana iletildi.`,'info');
   renderConf(b);
   navigateTo('confirmation');
+}
+
+function _upsertCustomerToUsers(profile){
+  if(!profile||!profile.email)return;
+  const em=profile.email.toLowerCase();
+  const users=S.get('db_users',[]);
+  const existing=users.find(u=>(u.email||'').toLowerCase()===em);
+  if(existing){
+    if(!(existing.roles||[]).includes('customer')){existing.roles=[...(existing.roles||[]),'customer'];S.set('db_users',users);}
+    return;
+  }
+  const [ad,...rest]=(profile.name||'Müşteri').split(' ');
+  users.push({
+    id:Date.now(),email:profile.email,ad:ad||'Müşteri',soyad:rest.join(' ')||'',
+    telefon:profile.phone||null,roles:['customer'],status:'active',
+    createdAt:new Date().toISOString(),kaynak:'booking-upsert'
+  });
+  S.set('db_users',users);
 }
 
 function renderConf(b){
@@ -1858,9 +2087,20 @@ function renderConf(b){
 function setTab(tab,el){curTab=tab;document.querySelectorAll('#page-my-tours .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderMyTours(tab);}
 
 function renderMyTours(tab){
-  const all=S.get('db_bookings',[]);
+  // Aktif kullanıcının email/telefon kimliği
+  const prof=S.get('cu_profile',{});
+  const myEmail=(localStorage.getItem('active_user_email')||prof.email||'').toLowerCase();
+  const myPhone=(prof.phone||'').replace(/\D+/g,'');
+  const myBkIds=new Set(S.get('cu_bookings',[]));
+  const isMine=b=>{
+    if(myBkIds.has(b.id))return true;
+    if(myEmail&&(b.customerEmail||'').toLowerCase()===myEmail)return true;
+    if(myPhone&&(b.customerPhone||'').replace(/\D+/g,'')===myPhone)return true;
+    return false;
+  };
+  const all=S.get('db_bookings',[]).filter(isMine);
   const now=Date.now();
-  const up=all.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi');
+  const up=all.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi'&&b.durum!=='tamamlandi');
   const past=all.filter(b=>b.durum==='tamamlandi');
   const canc=all.filter(b=>b.durum==='iptal'||b.durum==='reddedildi');
   document.getElementById('tab-up').textContent=`Yaklasan (${up.length})`;
@@ -2030,7 +2270,7 @@ function renderFavorites(){
       <div class="p-3 flex-1">
         <div class="font-semibold text-sm">${t.name}</div>
         <div class="text-[10px] text-gray-500">${t.loc} &bull; ${t.dur}</div>
-        <div class="font-bold text-primary text-sm mt-1">${t.price.toLocaleString('tr-TR')} TL</div>
+        <div class="font-bold text-primary text-sm mt-1">${(t.perPerson||Math.round((t.price||0)/(t.kapasite||8))).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/kişi</span></div>
       </div>
       <button class="px-3 text-danger" onclick="event.stopPropagation();rmFav(${t.id})"><i class="fas fa-heart"></i></button>
     </div>`;
@@ -2056,7 +2296,7 @@ function renderCaptainProfile(){
       <div class="p-3 flex-1">
         <div class="font-semibold text-sm">${x.name}</div>
         <div class="text-[10px] text-gray-500">${x.dur} &bull; Max ${x.kapasite}</div>
-        <div class="font-bold text-primary text-sm mt-1">${x.price.toLocaleString('tr-TR')} TL</div>
+        <div class="font-bold text-primary text-sm mt-1">${(x.perPerson||Math.round((x.price||0)/(x.kapasite||8))).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/kişi</span></div>
       </div>
     </div>`;
   }).join('');
@@ -2215,6 +2455,124 @@ function renderProfile(){
       planCard.style.cursor='pointer';
     }
   }
+
+  /* Kaptan rol kartı — kullanıcı durumuna göre 3 varyant */
+  const capCard=document.getElementById('prof-captain-card');
+  if(capCard){
+    const cur=U.find(p.email||'');
+    const cp=cur?.captainProfile||null;
+    const onay=cp?.onayDurumu;
+    if(!cur){
+      capCard.style.display='none';
+    } else if(cur.roles?.includes('captain')&&onay==='aktif'){
+      capCard.style.display='block';
+      capCard.innerHTML=`<div class="card p-3.5 flex items-center gap-3 card-hover" onclick="openCaptainPanel()" style="background:linear-gradient(135deg,#0369a1,#075985);color:#fff;border:0">
+        <i class="fas fa-anchor w-6 text-center text-amber-300"></i>
+        <div class="flex-1"><div class="text-sm font-bold">Kaptan Paneline Geç</div><div class="text-[10px] text-blue-100">${cp.tekne||'Teknen'} · ${cp.bolge||''}</div></div>
+        <i class="fas fa-chevron-right text-blue-200 text-xs"></i>
+      </div>`;
+    } else if(onay==='bekliyor'){
+      capCard.style.display='block';
+      capCard.innerHTML=`<div class="card p-3.5 flex items-center gap-3" style="background:#fffbeb;border-color:#fde68a">
+        <i class="fas fa-hourglass-half w-6 text-center text-amber-600"></i>
+        <div class="flex-1"><div class="text-sm font-semibold text-amber-900">Kaptan Başvurun İncelemede</div><div class="text-[10px] text-amber-700">Admin onayı bekleniyor.</div></div>
+      </div>`;
+    } else if(onay==='reddedildi'){
+      capCard.style.display='block';
+      capCard.innerHTML=`<div class="card p-3.5" style="background:#fef2f2;border-color:#fecaca">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-circle-xmark w-6 text-center text-danger"></i>
+          <div class="flex-1"><div class="text-sm font-semibold text-red-900">Başvurun Reddedildi</div><div class="text-[10px] text-red-700">${cp.redSebep||'Sebep belirtilmedi'}</div></div>
+        </div>
+        <button onclick="navigateTo('captain-apply')" class="mt-2 text-[11px] text-primary font-medium"><i class="fas fa-redo mr-1"></i>Tekrar Başvur</button>
+      </div>`;
+    } else {
+      capCard.style.display='block';
+      capCard.innerHTML=`<div class="card p-3.5 flex items-center gap-3 card-hover" onclick="navigateTo('captain-apply')" style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-color:#bae6fd">
+        <i class="fas fa-anchor w-6 text-center text-primary"></i>
+        <div class="flex-1"><div class="text-sm font-semibold text-primary">Kaptan Olmak İster Misin?</div><div class="text-[10px] text-primaryDark">Tekneni DenizBul'da listeleyip gelir elde et.</div></div>
+        <i class="fas fa-chevron-right text-primary text-xs"></i>
+      </div>`;
+    }
+  }
+}
+
+function submitCaptainApplication(){
+  const p=S.get('cu_profile',{});
+  if(!p.email){showToast('Önce giriş yapın','danger');return;}
+  const user=U.find(p.email);
+  if(!user){showToast('Kullanıcı bulunamadı','danger');return;}
+  const tekne=document.getElementById('ca-tekne').value.trim();
+  const tekneTuru=document.getElementById('ca-tekne-turu').value;
+  const uzunluk=+document.getElementById('ca-uzunluk').value;
+  const kapasite=+document.getElementById('ca-kapasite').value;
+  const bolge=document.getElementById('ca-bolge').value;
+  const kategoriler=[...document.querySelectorAll('#ca-kategoriler input:checked')].map(x=>x.value);
+  if(!tekne){showToast('Tekne adı zorunlu','danger');return;}
+  if(!tekneTuru){showToast('Tekne türü seçin','danger');return;}
+  if(!uzunluk){showToast('Uzunluk girin','danger');return;}
+  if(!kapasite){showToast('Kapasite girin','danger');return;}
+  if(!bolge){showToast('Bölge seçin','danger');return;}
+  if(!kategoriler.length){showToast('En az bir kategori seçin','danger');return;}
+
+  user.captainProfile={
+    tc:'',
+    tekne, tekneTuru, uzunluk, kapasite,
+    yil:document.getElementById('ca-yil').value||'',
+    marka:'',
+    bolge,
+    marina:document.getElementById('ca-marina').value.trim(),
+    lisans:document.getElementById('ca-lisans').value.trim(),
+    lisansTarih:'',
+    ruhsat:document.getElementById('ca-ruhsat').value.trim(),
+    sigorta:'',
+    not:document.getElementById('ca-not').value.trim(),
+    kategoriler,
+    onayDurumu:'bekliyor',
+    onayTarihi:new Date().toLocaleDateString('tr-TR'),
+    redSebep:null,
+    captainIdLegacy:null
+  };
+  const list=U.list();
+  const idx=list.findIndex(u=>u.email===user.email);
+  if(idx>=0)list[idx]=user; else list.push(user);
+  U.save(list);
+
+  /* Fix: Admin panel açılmadan da captain-app'in kaptanı bulabilmesi için
+     db_captains'e anında 'bekliyor' kaydı köprüle. */
+  try{
+    const caps=JSON.parse(localStorage.getItem('db_captains')||'[]');
+    if(!caps.find(c=>c.email===user.email)){
+      const nid=caps.length?Math.max(...caps.map(c=>c.id||0))+1:1;
+      caps.push({
+        id:nid, ad:user.ad, soyad:user.soyad, email:user.email, telefon:user.phone,
+        tc:'', tekne:user.captainProfile.tekne, tekneTuru:user.captainProfile.tekneTuru,
+        uzunluk:user.captainProfile.uzunluk, kapasite:user.captainProfile.kapasite,
+        yil:user.captainProfile.yil, marka:'', bolge:user.captainProfile.bolge,
+        marina:user.captainProfile.marina, lisans:user.captainProfile.lisans,
+        lisansTarih:'', ruhsat:user.captainProfile.ruhsat, sigorta:'',
+        not:user.captainProfile.not, kategoriler:user.captainProfile.kategoriler,
+        durum:'bekliyor', tarih:user.captainProfile.onayTarihi, redSebep:null,
+        plan:'free', createdAt:new Date().toISOString()
+      });
+      user.captainProfile.captainIdLegacy=nid;
+      localStorage.setItem('db_captains',JSON.stringify(caps));
+      // db_users'taki captainIdLegacy değişti → tekrar kaydet
+      const l2=U.list();
+      const i2=l2.findIndex(u=>u.email===user.email);
+      if(i2>=0){l2[i2]=user; U.save(l2);}
+    }
+  }catch(e){console.warn('db_captains bridge failed',e);}
+
+  showToast('Başvurunuz alındı. Admin onayı bekleniyor.','success');
+  setTimeout(()=>navigateTo('profile'),1200);
+}
+
+function openCaptainPanel(){
+  // Aktif kullanıcı emailini aktarıp captain-app'i aç
+  const p=S.get('cu_profile',{});
+  if(p.email)localStorage.setItem('active_user_email',p.email);
+  window.open('captain-app.html','_blank');
 }
 
 function saveProfile(){
@@ -2263,7 +2621,19 @@ function pollBookingStatus(){
 /* ── CLEAR DATA ── */
 function clearAll(){
   if(!confirm('Tum test verisini silmek istiyor musunuz?'))return;
-  ['db_bookings','db_tours','db_messages','cu_bookings','cu_favs','cu_notifs','cu_profile','cu_seen_status'].forEach(k=>localStorage.removeItem(k));
+  [
+    /* Çekirdek işletme */
+    'db_tours','db_bookings','db_captains','db_payments','db_orders','db_sellers','db_disruptions','db_reassignments','db_complaints','db_messages',
+    /* Birleşik kullanıcı modeli */
+    'db_users','db_users_migrated_v1','db_users_seeded_from_cu',
+    /* Mağaza & Abonelik */
+    'db_shop_cats','db_shop_orders','db_shop_products','db_shop_sellers','db_shop_settings','db_sub_members','db_sub_packages',
+    /* Müşteri tarafı */
+    'cu_users','cu_session','cu_profile','cu_favs','cu_bookings','cu_notifs','cu_seen_status',
+    /* Oturum & kaptan */
+    'auth_user','seller_session','active_captain_id','active_user_email','cp_active_id','cp_messages','cp_profile','cp_notifications','ca_notifications'
+  ].forEach(k=>localStorage.removeItem(k));
+  Object.keys(localStorage).filter(k=>k.startsWith('cms_content_')||k.startsWith('seller_products_')).forEach(k=>localStorage.removeItem(k));
   location.reload();
 }
 </script>

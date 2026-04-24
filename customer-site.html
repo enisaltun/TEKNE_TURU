@@ -82,10 +82,11 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
         <span class="text-sm font-medium text-primary" id="nav-username">Kullanici</span>
         <i class="fas fa-chevron-down text-primary text-xs"></i>
       </button>
-      <div id="user-dropdown" style="display:none;position:absolute;right:0;top:calc(100%+8px);background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;z-index:100;overflow:hidden">
+      <div id="user-dropdown" style="display:none;position:absolute;right:0;top:calc(100%+8px);background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:200px;z-index:100;overflow:hidden">
         <a href="#profile" onclick="closeUserMenu()" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-user text-primary w-4"></i>Profilim</a>
         <a href="#my-bookings" onclick="closeUserMenu()" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-calendar text-primary w-4"></i>Rezervasyonlarim</a>
         <a href="#messages" onclick="closeUserMenu()" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-comment text-primary w-4"></i>Mesajlarim</a>
+        <div id="user-dropdown-captain-section"></div>
         <hr class="my-1">
         <button onclick="doSiteLogout()" class="w-full flex items-center gap-2 px-4 py-3 text-sm text-danger hover:bg-red-50 text-left"><i class="fas fa-sign-out-alt w-4"></i>Cikis Yap</button>
       </div>
@@ -541,12 +542,15 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
         <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-20">
           <div class="flex items-baseline gap-2 mb-4">
             <span class="text-3xl font-bold text-primary" id="booking-price">1,800</span>
-            <span class="text-gray-500">TL / tekne</span>
+            <span class="text-gray-500">TL / kişi</span>
           </div>
           <div class="border rounded-xl mb-4">
             <div class="p-3 border-b">
               <label class="text-xs font-medium text-gray-500">TARIH</label>
-              <input type="date" class="w-full text-sm mt-1 border-0 p-0">
+              <select id="detail-tarih-select" class="w-full text-sm mt-1 border-0 p-0 bg-transparent">
+                <option value="">Tarih secin</option>
+              </select>
+              <div id="detail-tarih-full-msg" class="hidden text-xs text-red-600 mt-1"><i class="fas fa-ban mr-1"></i>Tum tarihler dolu</div>
             </div>
             <div class="p-3 border-b">
               <label class="text-xs font-medium text-gray-500">SAAT</label>
@@ -577,7 +581,7 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
   </div>
   <!-- Mobile Booking Bar -->
   <div class="md:hidden fixed bottom-14 left-0 right-0 bg-white border-t p-3 flex items-center justify-between z-40">
-    <div><span class="text-xl font-bold text-primary">1,800 TL</span><span class="text-xs text-gray-500"> / tekne</span></div>
+    <div><span class="text-xl font-bold text-primary" id="mobile-bar-price">1,800 TL</span><span class="text-xs text-gray-500"> / kişi</span></div>
     <button onclick="navigateTo('payment')" class="bg-accent text-white px-6 py-2.5 rounded-xl font-semibold text-sm">Rezervasyon Yap</button>
   </div>
 </section>
@@ -846,12 +850,17 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
           <h2 class="font-semibold mb-3">Misafir Bilgileri</h2>
           <div class="space-y-3">
             <div class="flex gap-3">
-              <div class="flex-1"><label class="text-xs font-medium text-gray-500">Ad</label><input type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" value="Ali"></div>
-              <div class="flex-1"><label class="text-xs font-medium text-gray-500">Soyad</label><input type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" value="Kaya"></div>
+              <div class="flex-1"><label class="text-xs font-medium text-gray-500">Ad</label><input id="pay-ad" type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="Ad"></div>
+              <div class="flex-1"><label class="text-xs font-medium text-gray-500">Soyad</label><input id="pay-soyad" type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="Soyad"></div>
             </div>
-            <div><label class="text-xs font-medium text-gray-500">E-posta</label><input type="email" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" value="ali@email.com"></div>
-            <div><label class="text-xs font-medium text-gray-500">Telefon</label><input type="tel" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" value="+90 535 123 45 67"></div>
-            <div><label class="text-xs font-medium text-gray-500">Ozel Not (opsiyonel)</label><textarea class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1 h-20" placeholder="Kaptan icin ozel istekleriniz..."></textarea></div>
+            <div><label class="text-xs font-medium text-gray-500">E-posta</label><input id="pay-email" type="email" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="ornek@mail.com"></div>
+            <div><label class="text-xs font-medium text-gray-500">Telefon</label><input id="pay-phone" type="tel" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="+90 5XX XXX XX XX"></div>
+            <div class="flex gap-3">
+              <div class="flex-1"><label class="text-xs font-medium text-gray-500">Tur Tarihi</label><input id="pay-date" type="date" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1"></div>
+              <div class="flex-1"><label class="text-xs font-medium text-gray-500">Saat</label><input id="pay-time" type="time" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1"></div>
+              <div class="w-24"><label class="text-xs font-medium text-gray-500">Misafir</label><input id="pay-guest" type="number" min="1" value="2" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1"></div>
+            </div>
+            <div><label class="text-xs font-medium text-gray-500">Ozel Not (opsiyonel)</label><textarea id="pay-note" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1 h-20" placeholder="Kaptan icin ozel istekleriniz..."></textarea></div>
           </div>
         </div>
 
@@ -872,21 +881,23 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
             </label>
           </div>
           <div class="mt-4 space-y-3">
-            <div><label class="text-xs font-medium text-gray-500">Kart Numarasi</label><input type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="XXXX XXXX XXXX XXXX"></div>
+            <div><label class="text-xs font-medium text-gray-500">Kart Uzerindeki Isim</label><input id="pay-card-name" type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="AD SOYAD"></div>
+            <div><label class="text-xs font-medium text-gray-500">Kart Numarasi</label><input id="pay-card" type="text" inputmode="numeric" maxlength="23" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="XXXX XXXX XXXX XXXX"></div>
             <div class="flex gap-3">
-              <div class="flex-1"><label class="text-xs font-medium text-gray-500">Son Kullanma</label><input type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="AA/YY"></div>
-              <div class="w-28"><label class="text-xs font-medium text-gray-500">CVV</label><input type="text" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="***"></div>
+              <div class="flex-1"><label class="text-xs font-medium text-gray-500">Son Kullanma</label><input id="pay-exp" type="text" inputmode="numeric" maxlength="5" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="AA/YY"></div>
+              <div class="w-28"><label class="text-xs font-medium text-gray-500">CVV</label><input id="pay-cvv" type="text" inputmode="numeric" maxlength="4" class="w-full px-3 py-2.5 border rounded-lg text-sm mt-1" placeholder="***"></div>
             </div>
           </div>
+          <div id="pay-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg p-3 mt-3"><i class="fas fa-exclamation-circle mr-1"></i> <span id="pay-error-msg"></span></div>
         </div>
 
         <!-- Terms -->
         <label class="flex items-start gap-2">
-          <input type="checkbox" class="accent-primary mt-1">
+          <input id="pay-terms" type="checkbox" class="accent-primary mt-1">
           <span class="text-xs text-gray-600"><a href="#" class="text-primary">Iptal ve iade politikasi</a>'ni okudum, kabul ediyorum. 24 saat oncesine kadar ucretsiz iptal.</span>
         </label>
 
-        <button onclick="confirmBooking()" class="w-full bg-accent hover:bg-accentDark text-white py-3.5 rounded-xl font-semibold text-lg transition"><i class="fas fa-lock mr-2"></i> 1,980 TL Ode</button>
+        <button onclick="confirmBooking()" class="w-full bg-accent hover:bg-accentDark text-white py-3.5 rounded-xl font-semibold text-lg transition"><i class="fas fa-lock mr-2"></i> <span id="pay-total-label">Ode</span></button>
         <div class="flex items-center justify-center gap-4 text-xs text-gray-400">
           <span><i class="fas fa-shield-alt text-green-500"></i> 256-bit SSL</span>
           <span><i class="fas fa-lock text-green-500"></i> Iyzico Guvenli Odeme</span>
@@ -988,63 +999,12 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
     <h1 class="text-2xl font-bold mb-6">Rezervasyonlarim</h1>
     <!-- Tabs -->
     <div class="flex gap-2 mb-6">
-      <button class="tab-btn active px-4 py-2 rounded-full text-sm font-medium" onclick="filterBookings('upcoming')">Yaklasan (2)</button>
-      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="filterBookings('past')">Gecmis (5)</button>
-      <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="filterBookings('cancelled')">Iptal (1)</button>
+      <button id="mb-tab-upcoming" class="tab-btn active px-4 py-2 rounded-full text-sm font-medium" onclick="filterBookings('upcoming')">Yaklasan (0)</button>
+      <button id="mb-tab-past" class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="filterBookings('past')">Gecmis (0)</button>
+      <button id="mb-tab-cancelled" class="tab-btn px-4 py-2 rounded-full text-sm font-medium" onclick="filterBookings('cancelled')">Iptal (0)</button>
     </div>
     <div class="space-y-4" id="bookings-list">
-      <!-- Upcoming 1 -->
-      <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col md:flex-row gap-4 card-hover">
-        <div class="w-full md:w-32 h-24 bg-primary/10 rounded-lg flex items-center justify-center"><i class="fas fa-fish text-primary text-2xl"></i></div>
-        <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-medium">Onaylandi</span>
-            <span class="text-xs text-gray-400">#DB-2026-4821</span>
-          </div>
-          <h3 class="font-semibold">Kaptan Mehmet ile Balik Avi Turu</h3>
-          <div class="text-sm text-gray-500 mt-1"><i class="fas fa-calendar mr-1"></i> 25 Nisan 2026, 06:00 &bull; <i class="fas fa-users ml-1 mr-1"></i> 2 kisi &bull; <i class="fas fa-map-marker-alt ml-1 mr-1"></i> Kemer</div>
-          <div class="flex gap-2 mt-3">
-            <a href="#detail" class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium">Detay</a>
-            <a href="#messages" class="border px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-comment mr-1"></i> Mesaj</a>
-            <button class="border text-danger px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-times mr-1"></i> Iptal</button>
-          </div>
-        </div>
-        <div class="text-right"><div class="text-lg font-bold text-primary">1,980 TL</div><div class="text-xs text-gray-400">6 saat</div></div>
-      </div>
-      <!-- Upcoming 2 -->
-      <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col md:flex-row gap-4 card-hover">
-        <div class="w-full md:w-32 h-24 bg-pink-50 rounded-lg flex items-center justify-center"><i class="fas fa-heart text-pink-500 text-2xl"></i></div>
-        <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="bg-amber-100 text-amber-700 text-[10px] px-2 py-0.5 rounded-full font-medium">Bekliyor</span>
-            <span class="text-xs text-gray-400">#DB-2026-4835</span>
-          </div>
-          <h3 class="font-semibold">Gun Batimi Nisan Teklifi Turu</h3>
-          <div class="text-sm text-gray-500 mt-1"><i class="fas fa-calendar mr-1"></i> 1 Mayis 2026, 18:00 &bull; <i class="fas fa-users ml-1 mr-1"></i> 2 kisi &bull; <i class="fas fa-map-marker-alt ml-1 mr-1"></i> Bodrum</div>
-          <div class="flex gap-2 mt-3">
-            <a href="#detail" class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium">Detay</a>
-            <a href="#messages" class="border px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-comment mr-1"></i> Mesaj</a>
-          </div>
-        </div>
-        <div class="text-right"><div class="text-lg font-bold text-primary">4,500 TL</div><div class="text-xs text-gray-400">3 saat</div></div>
-      </div>
-      <!-- Past -->
-      <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col md:flex-row gap-4 opacity-70">
-        <div class="w-full md:w-32 h-24 bg-cyan-50 rounded-lg flex items-center justify-center"><i class="fas fa-compass text-cyan-500 text-2xl"></i></div>
-        <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full font-medium">Tamamlandi</span>
-            <span class="text-xs text-gray-400">#DB-2026-3891</span>
-          </div>
-          <h3 class="font-semibold">Fethiye 12 Adalar Gezi Turu</h3>
-          <div class="text-sm text-gray-500 mt-1"><i class="fas fa-calendar mr-1"></i> 10 Mart 2026 &bull; <i class="fas fa-users ml-1 mr-1"></i> 4 kisi</div>
-          <div class="flex gap-2 mt-3">
-            <a href="#write-review" class="bg-accent text-white px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-star mr-1"></i> Yorum Yaz</a>
-            <button class="border px-3 py-1.5 rounded-lg text-xs font-medium">Tekrar Rezervasyon</button>
-          </div>
-        </div>
-        <div class="text-right"><div class="text-lg font-bold text-gray-500">2,400 TL</div></div>
-      </div>
+      <div class="text-sm text-gray-400 text-center py-10">Yukleniyor...</div>
     </div>
   </div>
 </section>
@@ -1173,20 +1133,23 @@ input:focus,select:focus,textarea:focus{outline:none;ring:2px;border-color:#0369
 <section id="page-profile" class="page pb-20">
   <div class="max-w-2xl mx-auto px-4 py-6">
     <h1 class="text-2xl font-bold mb-6">Profilim</h1>
+    <div id="profile-guest-hint" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl p-4 mb-4">
+      <i class="fas fa-info-circle mr-1"></i> Profilinizi görmek için <a href="#login" class="font-semibold underline">giriş yapın</a>.
+    </div>
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
       <div class="flex items-center gap-4 mb-6">
-        <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center"><i class="fas fa-user text-primary text-2xl"></i></div>
-        <div>
-          <h2 class="font-bold text-lg">Ali Kaya</h2>
-          <p class="text-sm text-gray-500">ali@email.com &bull; +90 535 123 45 67</p>
-          <p class="text-xs text-gray-400">Uye: Ocak 2026</p>
+        <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center"><span id="profile-avatar-initial" class="text-primary text-2xl font-bold">·</span></div>
+        <div class="flex-1 min-w-0">
+          <h2 id="profile-name" class="font-bold text-lg">—</h2>
+          <p class="text-sm text-gray-500"><span id="profile-email">—</span> &bull; <span id="profile-phone">—</span></p>
+          <p class="text-xs text-gray-400">Uye: <span id="profile-since">—</span></p>
         </div>
         <button class="ml-auto text-primary text-sm font-medium">Duzenle</button>
       </div>
       <div class="grid grid-cols-3 gap-4 text-center border-t pt-4">
-        <div><div class="text-xl font-bold text-primary">7</div><div class="text-xs text-gray-500">Tur</div></div>
-        <div><div class="text-xl font-bold text-accent">3</div><div class="text-xs text-gray-500">Yorum</div></div>
-        <div><div class="text-xl font-bold text-success">15,200 TL</div><div class="text-xs text-gray-500">Harcama</div></div>
+        <div><div id="profile-stat-tours" class="text-xl font-bold text-primary">0</div><div class="text-xs text-gray-500">Tur</div></div>
+        <div><div id="profile-stat-reviews" class="text-xl font-bold text-accent">0</div><div class="text-xs text-gray-500">Yorum</div></div>
+        <div><div id="profile-stat-spend" class="text-xl font-bold text-success">0 TL</div><div class="text-xs text-gray-500">Harcama</div></div>
       </div>
     </div>
 
@@ -1531,6 +1494,12 @@ function handleRoute() {
     n.classList.toggle('text-primary', isActive);
     n.classList.toggle('text-gray-400', !isActive);
   });
+  // Lazy per-page render (session-sensitive)
+  try{
+    if(hash==='profile'&&typeof renderProfile==='function')renderProfile();
+    if(hash==='my-bookings'&&typeof renderMyBookings==='function')renderMyBookings();
+    if(hash==='payment'&&typeof preparePaymentPage==='function')preparePaymentPage();
+  }catch(e){console.warn('route-render',e);}
   window.scrollTo(0,0);
 }
 // ── GLOBAL SETTINGS (admin panel kontrolü) ──
@@ -1558,6 +1527,10 @@ function checkGlobalSettings(platformKey){
   return false;
 }
 window.addEventListener('hashchange', handleRoute);
+// Fix #3: admin kaptan onayinda navbar dropdown canli guncellensin
+window.addEventListener('storage', function(e){
+  if(e.key==='db_users'||e.key==='db_captains'||e.key==='cu_users'){updateNavAuth();}
+});
 window.addEventListener('load', function(){
   if(checkGlobalSettings('customer_site'))return;
   const users=lsGet('cu_users',[]);
@@ -1565,6 +1538,7 @@ window.addEventListener('load', function(){
     users.push({name:'Ayse Demir',email:'ayse@test.com',phone:'0532 999 0101',password:'test123'});
     lsSet('cu_users',users);
   }
+  U.migrateLegacy(); // Fix #1: demo seed sonrasi yeniden sync
   handleRoute();
   renderAll();
   updateNavAuth();
@@ -1573,6 +1547,73 @@ window.addEventListener('load', function(){
 // ===== LOCALSTORAGE HELPERS =====
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}}
 function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
+/* UserDB shim: db_users birlesik tablo (Asama B) */
+const U={
+  list(){return lsGet('db_users',[]);},
+  save(l){lsSet('db_users',l);},
+  find(email){if(!email)return null;const e=email.toLowerCase();return this.list().find(u=>u.email===e)||null;},
+  nextId(){const l=this.list();return l.length?Math.max(...l.map(u=>u.id||0))+1:1;},
+  migrateLegacy(){
+    // Idempotent: her yuklemede calisir, email bazli dedupe
+    const cu=lsGet('cu_users',[]);
+    const caps=lsGet('db_captains',[]);
+    const list=this.list();
+    const byEmail=new Map(list.map(u=>[u.email,u]));
+    let nid=list.length?Math.max(...list.map(u=>u.id||0)):0;
+    cu.forEach(c=>{
+      const email=(c.email||'').toLowerCase();
+      if(!email||byEmail.has(email))return;
+      const parts=(c.name||'').trim().split(/\s+/);
+      byEmail.set(email,{
+        id:++nid, ad:parts[0]||'', soyad:parts.slice(1).join(' ')||'',
+        email, phone:c.phone||'', password:c.password||'',
+        avatarUrl:null, createdAt:new Date().toISOString(),
+        roles:['customer'], captainProfile:null,
+        plan:c.plan||null, planStarted:c.planStarted||null
+      });
+    });
+    // db_captains da aktar (Fix #4)
+    caps.forEach(c=>{
+      const email=(c.email||'').toLowerCase();
+      if(!email)return;
+      const cp={
+        tc:c.tc||'', tekne:c.tekne||'', tekneTuru:c.tekneTuru||'',
+        uzunluk:c.uzunluk||0, kapasite:c.kapasite||0, yil:c.yil||'',
+        marka:c.marka||'', bolge:c.bolge||'', marina:c.marina||'',
+        lisans:c.lisans||'', lisansTarih:c.lisansTarih||'',
+        ruhsat:c.ruhsat||'', sigorta:c.sigorta||'', not:c.not||'',
+        kategoriler:c.kategoriler||[],
+        onayDurumu:c.durum||'bekliyor',
+        onayTarihi:c.tarih||new Date().toLocaleDateString('tr-TR'),
+        redSebep:c.redSebep||null,
+        captainIdLegacy:c.id||null
+      };
+      if(byEmail.has(email)){
+        const u=byEmail.get(email);
+        if(!u.roles.includes('captain'))u.roles.push('captain');
+        u.captainProfile=cp;
+      } else {
+        byEmail.set(email,{
+          id:++nid, ad:c.ad||'', soyad:c.soyad||'', email,
+          phone:c.telefon||'', password:c.password||'captain123',
+          avatarUrl:null, createdAt:new Date().toISOString(),
+          roles:['customer','captain'], captainProfile:cp
+        });
+      }
+    });
+    this.save([...byEmail.values()]);
+  },
+  syncToLegacy(user){
+    const list=lsGet('cu_users',[]);
+    const name=((user.ad||'')+' '+(user.soyad||'')).trim();
+    let c=list.find(x=>x.email===user.email);
+    if(!c){c={};list.push(c);}
+    Object.assign(c,{name,email:user.email,phone:user.phone,password:user.password,plan:user.plan||null,planStarted:user.planStarted||null});
+    lsSet('cu_users',list);
+  }
+};
+U.migrateLegacy();
 
 const CAT_META={
   'Balik Avi':{cat:'balik',catColor:'blue',icon:'fa-fish',img:'from-blue-400 to-blue-600'},
@@ -1583,8 +1624,49 @@ const CAT_META={
   'Gun Batimi':{cat:'gunbatimi',catColor:'orange',icon:'fa-sun',img:'from-orange-400 to-amber-500'},
 };
 
+// ===== DOLULUK HELPERS =====
+function _turAktifBookings(tourId){
+  return lsGet('db_bookings',[]).filter(b=>
+    String(b.tourId)===String(tourId) && ['bekliyor','onaylandi','tamamlandi'].includes((b.durum||'').toLowerCase())
+  );
+}
+function turTarihDoluluk(tourId,tarihISO,kapasite){
+  const kap=+kapasite||0;
+  const dolu=_turAktifBookings(tourId).filter(b=>(b.tarihISO||'')===tarihISO)
+    .reduce((s,b)=>s+(+b.guests||0),0);
+  return {dolu, kapasite:kap, kalan:Math.max(0,kap-dolu), tam:kap>0&&dolu>=kap};
+}
+function turAcikTarihler(tour){
+  const raw=tour._raw||tour;
+  const kap=+(tour.kapasite||raw.kapasite||8);
+  const bugun=new Date(); bugun.setHours(0,0,0,0);
+  return (raw.tarihler||[]).filter(iso=>{
+    const d=new Date(iso); if(isNaN(d)||d<bugun) return false;
+    return !turTarihDoluluk(tour.id||raw.id,iso,kap).tam;
+  });
+}
+
 function getDbTours(){
-  return lsGet('db_tours',[]).filter(t=>t.durum==='aktif'||t.status==='aktif'||t.aktif===true).map(t=>{
+  return lsGet('db_tours',[]).filter(t=>{
+    const d=t.durum||t.status||(t.aktif===true?'aktif':'bekliyor');
+    if(d!=='aktif')return false;
+    // Savunma: eksik tur bilgisi admin'den sızsa bile musteriye gorunmesin
+    if(!(t.saatler&&t.saatler.length))return false;
+    const bugun=new Date();bugun.setHours(0,0,0,0);
+    const gelecekTarih=(t.tarihler||[]).some(iso=>new Date(iso)>=bugun);
+    if(!gelecekTarih&&!(t.gunler&&t.gunler.length))return false;
+    if(!(+(t.fiyat||t.price||0)))return false;
+    // Doluluk: hic acik tarih yoksa yayindan cek
+    const tarihler=t.tarihler||[];
+    if(tarihler.length){
+      const acik=tarihler.some(iso=>{
+        const dd=new Date(iso); if(isNaN(dd)||dd<bugun) return false;
+        return !turTarihDoluluk(t.id,iso,t.kapasite||8).tam;
+      });
+      if(!acik) return false;
+    }
+    return true;
+  }).map(t=>{
     const cat=t.kategoriler?.[0]||t.kategori||'Tekne Gezisi';
     const meta=CAT_META[cat]||CAT_META['Tekne Gezisi'];
     const includes=t.includes?.length?t.includes:(t.dahil||'').split('\n').filter(Boolean);
@@ -1608,6 +1690,8 @@ function getDbTours(){
       aciklama:t.aciklama||'',
       sezon:t.sezon||'',
       heroImage:t.heroImage||null,
+      durum:'aktif',
+      status:'aktif',
       ...meta,
       _isReal:true,
       _raw:t
@@ -1787,6 +1871,25 @@ function renderDetailPage(t){
   if(priceEl) priceEl.textContent=_pp.toLocaleString('tr-TR');
   updateBookingPrice(_pp);
 
+  // Tarih dropdown — sadece acik (dolmamis) tarihler
+  const tarihSel=document.getElementById('detail-tarih-select');
+  const fullMsg=document.getElementById('detail-tarih-full-msg');
+  if(tarihSel){
+    const acik=turAcikTarihler(t);
+    const kap=t.kapasite||8;
+    if(acik.length){
+      tarihSel.innerHTML='<option value="">Tarih secin</option>'+
+        acik.map(iso=>{
+          const dol=turTarihDoluluk(t.id,iso,kap);
+          const lbl=new Date(iso).toLocaleDateString('tr-TR',{day:'2-digit',month:'short',weekday:'short'});
+          return `<option value="${iso}">${lbl} · ${dol.kalan}/${kap} yer</option>`;
+        }).join('');
+      if(fullMsg)fullMsg.classList.add('hidden');
+    }else{
+      tarihSel.innerHTML='<option value="">—</option>';
+      if(fullMsg)fullMsg.classList.remove('hidden');
+    }
+  }
   // Saat dropdown — kaptanın seçtiği saatler
   const saatSel=document.getElementById('detail-saat-select');
   if(saatSel && t.saatler?.length){
@@ -2168,14 +2271,15 @@ function renderCaptainTours() {
 
 // ===== PACKAGES =====
 const packages = [
-  {name:'Balik Avi Paketi',price:1800,desc:'Acik denizde trolling ve jigging ile profesyonel balik avi deneyimi. Tum ekipmanlar dahil.',includes:['Olta ve makine','Yem','Can yelegi','Cay/Kahve','Fotografci']},
-  {name:'Gezi Paketi',price:1200,desc:'Kemer koylarini dolasarak yuzme ve doga ile iç ice bir gun. Ogle yemegi dahil.',includes:['Ogle yemegi','Snorkel seti','Muzik','Can yelegi','Havlu']},
-  {name:'Ozel Etkinlik',price:4500,desc:'Nisan teklifi, dogum gunu, yildonumu — hayalinizdeki ozel ani denizde yasayin.',includes:['Dekorasyon','Pasta','Sampanya','Fotografci','Ozel muzik']},
-  {name:'Kurumsal',price:8000,desc:'Team building, kutlama veya toplanti icin ozel tekne deneyimi. 20 kisiye kadar.',includes:['Catering','Sunum ekrani','Wifi','Fotografci','DJ']},
+  {name:'Balik Avi Paketi',price:1800,kapasite:8,desc:'Acik denizde trolling ve jigging ile profesyonel balik avi deneyimi. Tum ekipmanlar dahil.',includes:['Olta ve makine','Yem','Can yelegi','Cay/Kahve','Fotografci']},
+  {name:'Gezi Paketi',price:1200,kapasite:8,desc:'Kemer koylarini dolasarak yuzme ve doga ile iç ice bir gun. Ogle yemegi dahil.',includes:['Ogle yemegi','Snorkel seti','Muzik','Can yelegi','Havlu']},
+  {name:'Ozel Etkinlik',price:4500,kapasite:8,desc:'Nisan teklifi, dogum gunu, yildonumu — hayalinizdeki ozel ani denizde yasayin.',includes:['Dekorasyon','Pasta','Sampanya','Fotografci','Ozel muzik']},
+  {name:'Kurumsal',price:8000,kapasite:20,desc:'Team building, kutlama veya toplanti icin ozel tekne deneyimi. 20 kisiye kadar.',includes:['Catering','Sunum ekrani','Wifi','Fotografci','DJ']},
 ];
 
 function selectPackage(idx) {
   const p = packages[idx];
+  const pp = Math.round(p.price / (p.kapasite||8));
   document.querySelectorAll('#detail-package-tabs .tab-btn').forEach((b,i) => {
     b.classList.toggle('active', i===idx);
   });
@@ -2184,48 +2288,155 @@ function selectPackage(idx) {
       <h3 class="font-semibold mb-1">${p.name}</h3>
       <p class="text-sm text-gray-600 mb-3">${p.desc}</p>
       <div class="flex flex-wrap gap-2">${p.includes.map(i => `<span class="bg-white text-sm px-3 py-1 rounded-full border"><i class="fas fa-check text-success mr-1"></i>${i}</span>`).join('')}</div>
-      <div class="mt-3 text-right"><span class="text-2xl font-bold text-primary">${p.price.toLocaleString()} TL</span><span class="text-gray-500 text-sm"> / tekne</span></div>
+      <div class="mt-3 text-right"><span class="text-2xl font-bold text-primary">${pp.toLocaleString()} TL</span><span class="text-gray-500 text-sm"> / kişi</span></div>
     </div>`;
   // Update booking card
   const bp = document.getElementById('booking-price');
-  if(bp) bp.textContent = p.price.toLocaleString();
-  updateBookingPrice(p.price);
+  if(bp) bp.textContent = pp.toLocaleString();
+  updateBookingPrice(pp);
 }
 
 // ===== BOOKING =====
 let guestCount = 2;
 let basePrice = 1800;
 
+function preparePaymentPage(){
+  const prof=lsGet('cu_profile',{});
+  const u=U.find(prof.email||localStorage.getItem('active_user_email')||'');
+  const set=(id,v)=>{const el=document.getElementById(id); if(el&&!el.value) el.value=v||'';};
+  set('pay-ad', u?.ad || (prof.name||'').split(' ')[0]);
+  set('pay-soyad', u?.soyad || (prof.name||'').split(' ').slice(1).join(' '));
+  set('pay-email', u?.email || prof.email || '');
+  set('pay-phone', u?.phone || prof.phone || '');
+  // detail'den tarih/saat varsa al
+  const detTarih=document.getElementById('detail-tarih-select');
+  const detSaat=document.getElementById('detail-saat-select');
+  if(detTarih&&detTarih.value) set('pay-date', detTarih.value);
+  if(detSaat&&detSaat.value){
+    const hh=(detSaat.value.match(/\d{1,2}:\d{2}/)||[''])[0];
+    if(hh) set('pay-time', hh.padStart(5,'0'));
+  }
+  const gEl=document.getElementById('pay-guest');
+  if(gEl&&(!gEl.value||gEl.value==='0')) gEl.value=guestCount||2;
+  // toplam etiketi
+  const fee=basePrice*(guestCount||1); const svc=Math.round(fee*0.1);
+  const tot=document.getElementById('pay-total-label');
+  if(tot) tot.textContent=((fee+svc).toLocaleString('tr-TR'))+' TL Ode';
+  const perr=document.getElementById('pay-error'); if(perr)perr.classList.add('hidden');
+}
+function _payShowErr(msg){
+  const box=document.getElementById('pay-error');
+  const sp=document.getElementById('pay-error-msg');
+  if(box&&sp){sp.textContent=msg; box.classList.remove('hidden'); box.scrollIntoView({behavior:'smooth',block:'center'});}
+  else alert(msg);
+}
+function _normCard(v){return (v||'').replace(/\D+/g,'');}
 function confirmBooking(){
   const t=selectedTour;
-  const saatSel=document.getElementById('detail-saat-select');
-  const tarihInput=document.querySelector('#page-detail input[type=date]');
-  const saat=saatSel?saatSel.value:'—';
-  const tarih=tarihInput&&tarihInput.value?new Date(tarihInput.value).toLocaleDateString('tr-TR'):'—';
-  const prof=lsGet('cu_profile',{});
-  const fee=basePrice*guestCount;
+  // 0) Tur rezervasyona açık mı
+  const turDurum=((t?.durum||t?.status||'bekliyor')+'').toLowerCase();
+  if(turDurum!=='aktif'){return _payShowErr('Bu tur şu anda rezervasyona açık değil.');}
+  // 1) Login guard
+  if(!siteIsLoggedIn()){ _payShowErr('Devam etmek icin once giris yapin.'); navigateTo('login'); return; }
+  // 2) Misafir bilgileri
+  const ad=(document.getElementById('pay-ad')?.value||'').trim();
+  const soyad=(document.getElementById('pay-soyad')?.value||'').trim();
+  const email=(document.getElementById('pay-email')?.value||'').trim().toLowerCase();
+  const phone=(document.getElementById('pay-phone')?.value||'').trim();
+  if(!ad||!soyad){return _payShowErr('Ad ve soyad zorunlu.');}
+  if(!email||!email.includes('@')){return _payShowErr('Gecerli bir e-posta girin.');}
+  // 3) Tarih / saat / misafir
+  const dateVal=document.getElementById('pay-date')?.value||'';
+  const timeVal=document.getElementById('pay-time')?.value||'';
+  const gVal=parseInt(document.getElementById('pay-guest')?.value||'0',10);
+  if(!dateVal){return _payShowErr('Tur tarihi secin.');}
+  const dObj=new Date(dateVal);
+  if(isNaN(dObj.getTime())){return _payShowErr('Tarih gecersiz.');}
+  const bugun=new Date(); bugun.setHours(0,0,0,0);
+  if(dObj.getTime()<bugun.getTime()){return _payShowErr('Gecmis bir tarih secilemez.');}
+  if(!gVal||gVal<1){return _payShowErr('Misafir sayisi en az 1 olmali.');}
+  const maxKap=t?.kapasite||20;
+  if(gVal>maxKap){return _payShowErr('Bu tur icin maksimum misafir: '+maxKap);}
+  // Doluluk kontrolu
+  if(t?.id){
+    const dol=turTarihDoluluk(t.id,dateVal,maxKap);
+    if(dol.tam){return _payShowErr('Bu tarih dolu. Lutfen baska bir tarih secin.');}
+    if(gVal>dol.kalan){return _payShowErr('Bu tarihte yalnizca '+dol.kalan+' yer kaldi.');}
+  }
+  // 4) Kart validasyonu
+  const cardName=(document.getElementById('pay-card-name')?.value||'').trim();
+  const cardRaw=_normCard(document.getElementById('pay-card')?.value);
+  const exp=(document.getElementById('pay-exp')?.value||'').trim();
+  const cvv=(document.getElementById('pay-cvv')?.value||'').trim();
+  if(!cardName){return _payShowErr('Kart uzerindeki isim zorunlu.');}
+  if(!/^\d{15,19}$/.test(cardRaw)){return _payShowErr('Kart numarasi 15-19 hane olmali.');}
+  if(!/^\d{2}\/\d{2}$/.test(exp)){return _payShowErr('Son kullanma AA/YY formatinda olmali.');}
+  const [eM,eY]=exp.split('/').map(x=>parseInt(x,10));
+  if(eM<1||eM>12){return _payShowErr('Son kullanma ayi gecersiz.');}
+  const nowY=new Date().getFullYear()%100, nowM=new Date().getMonth()+1;
+  if(eY<nowY||(eY===nowY&&eM<nowM)){return _payShowErr('Kartin suresi dolmus.');}
+  if(!/^\d{3,4}$/.test(cvv)){return _payShowErr('CVV 3-4 hane olmali.');}
+  if(!document.getElementById('pay-terms')?.checked){return _payShowErr('Iptal/iade politikasini onaylayin.');}
+  // 5) Booking kaydet
+  const fee=basePrice*gVal;
   const svc=Math.round(fee*0.1);
+  guestCount=gVal;
+  const kartTuru=cardRaw.startsWith('4')?'Visa':(cardRaw.startsWith('5')?'MasterCard':(cardRaw.startsWith('9')?'Troy':'Kart'));
+  const now=new Date();
+  // Customer upsert (B11)
+  _upsertCustomerSite({email,ad,soyad,phone});
   const booking={
-    id:'BK'+Date.now(),
+    id:'BK'+Date.now()+Math.floor(Math.random()*1000),
     tourId:t?t.id:null,
-    tourTitle:t?t.name:'Tur',
+    tourTitle:t?(t.name||t.ad||t.title):'Tur',
     captainEmail:t?t.captainEmail:null,
-    captainName:t?t.captainName:null,
-    customerName:prof.name||'Misafir',
-    customerEmail:prof.email||null,
-    customerPhone:prof.phone||null,
-    guests:guestCount,
+    captainName:t?(t.captainName||(t.captainEmail?'Kaptan':null)):null,
+    customerName:(ad+' '+soyad).trim(),
+    customerEmail:email,
+    customerPhone:phone,
+    guests:gVal,
     durum:'bekliyor',
     amount:fee+svc,
-    tarih,
-    saat,
+    tarih:dObj.toLocaleDateString('tr-TR'),
+    tarihISO:dateVal,
+    saat:timeVal||'—',
     loc:t?t.location:null,
-    createdAt:new Date().toISOString()
+    odemeYapildi:true,
+    odemeRef:'TRX'+Math.floor(Math.random()*1e9).toString(36).toUpperCase(),
+    odemeZamani:now.toISOString(),
+    kartSon4:cardRaw.slice(-4),
+    kartTuru,
+    binisYapildi:false,
+    kayitKanali:'web',
+    ozelNot:(document.getElementById('pay-note')?.value||'').trim(),
+    createdAt:now.toISOString()
   };
   const db=lsGet('db_bookings',[]);
   db.unshift(booking);
   lsSet('db_bookings',db);
+  // Kullanıcı-rezervasyon bağını mobil uygulama formatıyla tut
+  const myBks=lsGet('cu_bookings',[]);
+  myBks.unshift(booking.id);
+  lsSet('cu_bookings',myBks);
   navigateTo('confirmation');
+  showToast('Odeme basarili! Rezervasyon #'+booking.id);
+}
+
+function _upsertCustomerSite(p){
+  if(!p||!p.email)return;
+  const em=p.email.toLowerCase();
+  const users=lsGet('db_users',[]);
+  const existing=users.find(u=>(u.email||'').toLowerCase()===em);
+  if(existing){
+    if(!(existing.roles||[]).includes('customer')){existing.roles=[...(existing.roles||[]),'customer'];lsSet('db_users',users);}
+    return;
+  }
+  users.push({
+    id:Date.now(),email:p.email,ad:p.ad||'Müşteri',soyad:p.soyad||'',
+    telefon:p.phone||null,roles:['customer'],status:'active',
+    createdAt:new Date().toISOString(),kaynak:'booking-upsert'
+  });
+  lsSet('db_users',users);
 }
 
 function changeGuest(d) {
@@ -2265,7 +2476,30 @@ function updateNavAuth(){
     const un=document.getElementById('nav-username');
     if(av)av.textContent=name[0].toUpperCase();
     if(un)un.textContent=name.split(' ')[0];
+    // Kaptan rol bölümü
+    const sec=document.getElementById('user-dropdown-captain-section');
+    if(sec){
+      const u=U.find(p.email||'');
+      const cp=u?.captainProfile;
+      const onay=cp?.onayDurumu;
+      if(u&&u.roles?.includes('captain')&&onay==='aktif'){
+        sec.innerHTML='<hr class="my-1"><button onclick="openCaptainPanelFromSite()" class="w-full flex items-center gap-2 px-4 py-3 text-sm text-primary hover:bg-blue-50 text-left font-semibold"><i class="fas fa-anchor w-4"></i>Kaptan Paneli</button>';
+      } else if(onay==='bekliyor'){
+        sec.innerHTML='<hr class="my-1"><div class="flex items-center gap-2 px-4 py-3 text-xs text-amber-700 bg-amber-50"><i class="fas fa-hourglass-half w-4"></i>Kaptan başvurun incelemede</div>';
+      } else if(onay==='reddedildi'){
+        sec.innerHTML='<hr class="my-1"><a href="customer-app.html#captain-apply" class="flex items-center gap-2 px-4 py-3 text-sm text-danger hover:bg-red-50"><i class="fas fa-redo w-4"></i>Tekrar Kaptan Ol</a>';
+      } else {
+        sec.innerHTML='<hr class="my-1"><a href="customer-app.html#captain-apply" class="flex items-center gap-2 px-4 py-3 text-sm text-primary hover:bg-blue-50"><i class="fas fa-anchor w-4"></i>Kaptan Ol</a>';
+      }
+    }
   }
+}
+
+function openCaptainPanelFromSite(){
+  const p=lsGet('cu_profile',{});
+  if(p.email)localStorage.setItem('active_user_email',p.email);
+  closeUserMenu();
+  window.open('captain-app.html','_blank');
 }
 
 function toggleUserMenu(){
@@ -2299,14 +2533,15 @@ function doSiteLogin(){
   const pass=(passEl.value||'');
   if(!email){showSiteErr('login','E-posta adresi gerekli.');emailEl.focus();return;}
   if(!pass){showSiteErr('login','Sifre gerekli.');passEl.focus();return;}
-  const users=lsGet('cu_users',[]);
-  const user=users.find(function(u){return u.email===email&&u.password===pass;});
-  if(!user){showSiteErr('login','E-posta veya sifre yanlis.');passEl.value='';passEl.focus();return;}
+  const user=U.find(email);
+  if(!user||user.password!==pass){showSiteErr('login','E-posta veya sifre yanlis.');passEl.value='';passEl.focus();return;}
   localStorage.setItem('cu_session','active');
-  lsSet('cu_profile',{name:user.name,email:user.email,phone:user.phone||''});
+  localStorage.setItem('active_user_email',user.email);
+  const fullName=((user.ad||'')+' '+(user.soyad||'')).trim();
+  lsSet('cu_profile',{name:fullName,email:user.email,phone:user.phone||'',roles:user.roles||['customer']});
   updateNavAuth();
   navigateTo('home');
-  showToast('Hosgeldiniz, '+user.name.split(' ')[0]+'!');
+  showToast('Hosgeldiniz, '+(user.ad||fullName.split(' ')[0])+'!');
 }
 
 function doSiteRegister(){
@@ -2319,13 +2554,21 @@ function doSiteRegister(){
   if(!ad||!soyad){showSiteErr('reg','Ad ve soyad gerekli.');document.getElementById('site-reg-ad').focus();return;}
   if(!email||!email.includes('@')){showSiteErr('reg','Gecerli bir e-posta girin.');document.getElementById('site-reg-email').focus();return;}
   if(!pass||pass.length<6){showSiteErr('reg','Sifre en az 6 karakter olmali.');document.getElementById('site-reg-pass').focus();return;}
-  const users=lsGet('cu_users',[]);
-  if(users.find(function(u){return u.email===email;})){showSiteErr('reg','Bu e-posta zaten kayitli. Giris yapin.');return;}
+  if(U.find(email)){showSiteErr('reg','Bu e-posta zaten kayitli. Giris yapin.');return;}
   const name=ad+' '+soyad;
-  users.push({name:name,email:email,phone:phone,password:pass});
-  lsSet('cu_users',users);
+  const newUser={
+    id:U.nextId(),
+    ad, soyad, email, phone, password:pass,
+    avatarUrl:null,
+    createdAt:new Date().toISOString(),
+    roles:['customer'],
+    captainProfile:null
+  };
+  const list=U.list();list.push(newUser);U.save(list);
+  U.syncToLegacy(newUser);
   localStorage.setItem('cu_session','active');
-  lsSet('cu_profile',{name:name,email:email,phone:phone});
+  localStorage.setItem('active_user_email',newUser.email);
+  lsSet('cu_profile',{name:name,email:email,phone:phone,roles:newUser.roles});
   updateNavAuth();
   navigateTo('home');
   showToast('Hosgeldiniz '+ad+'! Hesabiniz olusturuldu.');
@@ -2393,10 +2636,123 @@ function showToast(msg) {
 function setFilter(cat) {
   // placeholder for filter logic
 }
+let _myBookingsFilter='upcoming';
 function filterBookings(type) {
-  document.querySelectorAll('#page-my-bookings .tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', b.textContent.toLowerCase().includes(type.substring(0,3)));
+  _myBookingsFilter=type;
+  ['upcoming','past','cancelled'].forEach(k=>{
+    const el=document.getElementById('mb-tab-'+k);
+    if(el) el.classList.toggle('active', k===type);
   });
+  renderMyBookings();
+}
+
+// ===== PROFILE + MY BOOKINGS (real data) =====
+function _bkDurumBadge(d){
+  const map={
+    'bekliyor':   ['bg-amber-100 text-amber-700','Bekliyor'],
+    'onaylandi':  ['bg-green-100 text-green-700','Onaylandi'],
+    'tamamlandi': ['bg-gray-100 text-gray-600','Tamamlandi'],
+    'iptal':      ['bg-red-100 text-red-600','Iptal'],
+    'reddedildi': ['bg-red-100 text-red-600','Reddedildi']
+  };
+  const [cls,lbl]=map[d]||['bg-gray-100 text-gray-600',d||'—'];
+  return `<span class="${cls} text-[10px] px-2 py-0.5 rounded-full font-medium">${lbl}</span>`;
+}
+function _bkIsPast(b){
+  if(!b.tarih||b.tarih==='—')return false;
+  const parts=b.tarih.split(/[./-]/);
+  if(parts.length!==3)return false;
+  const d=new Date(parts[2],+parts[1]-1,+parts[0]);
+  return d.getTime()<Date.now()-86400000;
+}
+function _bkCategory(b){
+  if((b.durum||'').toLowerCase().includes('iptal'))return 'cancelled';
+  if(b.durum==='tamamlandi'||_bkIsPast(b))return 'past';
+  return 'upcoming';
+}
+function getMyBookings(){
+  const prof=lsGet('cu_profile',{});
+  const email=(localStorage.getItem('active_user_email')||prof.email||'').toLowerCase();
+  const phone=(prof.phone||'').replace(/\D+/g,'');
+  const myIds=new Set(lsGet('cu_bookings',[]));
+  if(!email&&!phone&&!myIds.size)return [];
+  return lsGet('db_bookings',[]).filter(b=>{
+    if(myIds.has(b.id))return true;
+    const bEmail=(b.customerEmail||'').toLowerCase();
+    const bPhone=(b.customerPhone||'').replace(/\D+/g,'');
+    if(email&&bEmail===email)return true;
+    if(phone&&bPhone&&bPhone===phone)return true;
+    return false;
+  });
+}
+function renderProfile(){
+  const email=(localStorage.getItem('active_user_email')||lsGet('cu_profile',{}).email||'').toLowerCase();
+  const hint=document.getElementById('profile-guest-hint');
+  if(!email){ if(hint)hint.classList.remove('hidden'); return; }
+  if(hint)hint.classList.add('hidden');
+  const u=U.find(email);
+  const prof=lsGet('cu_profile',{});
+  const name=u?((u.ad||'')+' '+(u.soyad||'')).trim():(prof.name||'Kullanici');
+  const phone=u?.phone||prof.phone||'—';
+  const created=u?.createdAt?new Date(u.createdAt):null;
+  const since=created?created.toLocaleDateString('tr-TR',{month:'long',year:'numeric'}):'—';
+  const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
+  set('profile-name',name||'—');
+  set('profile-email',email||'—');
+  set('profile-phone',phone);
+  set('profile-since',since);
+  set('profile-avatar-initial',(name||'?')[0].toUpperCase());
+  // stats
+  const bks=getMyBookings();
+  const paidOrDone=bks.filter(b=>b.odemeYapildi||b.durum==='tamamlandi');
+  const spend=paidOrDone.reduce((s,b)=>s+(+b.amount||0),0);
+  set('profile-stat-tours', paidOrDone.length);
+  set('profile-stat-reviews', 0);
+  set('profile-stat-spend', spend.toLocaleString('tr-TR')+' TL');
+}
+function renderMyBookings(){
+  const listEl=document.getElementById('bookings-list');
+  if(!listEl)return;
+  const email=(localStorage.getItem('active_user_email')||lsGet('cu_profile',{}).email||'').toLowerCase();
+  if(!email){
+    listEl.innerHTML='<div class="bg-white rounded-xl shadow-sm p-8 text-center"><i class="fas fa-lock text-gray-300 text-3xl mb-3"></i><div class="text-sm text-gray-500 mb-3">Rezervasyonlarinizi gormek icin giris yapin.</div><a href="#login" class="inline-block bg-primary text-white text-sm px-4 py-2 rounded-lg font-medium">Giris Yap</a></div>';
+    ['upcoming','past','cancelled'].forEach(k=>{const el=document.getElementById('mb-tab-'+k); if(el)el.textContent=el.textContent.replace(/\(\d+\)/,'(0)');});
+    return;
+  }
+  const all=getMyBookings();
+  const counts={upcoming:0,past:0,cancelled:0};
+  all.forEach(b=>{counts[_bkCategory(b)]++;});
+  document.getElementById('mb-tab-upcoming').textContent='Yaklasan ('+counts.upcoming+')';
+  document.getElementById('mb-tab-past').textContent='Gecmis ('+counts.past+')';
+  document.getElementById('mb-tab-cancelled').textContent='Iptal ('+counts.cancelled+')';
+  const filtered=all.filter(b=>_bkCategory(b)===_myBookingsFilter)
+    .sort((a,b)=>(new Date(b.createdAt||0))-(new Date(a.createdAt||0)));
+  if(!filtered.length){
+    listEl.innerHTML='<div class="bg-white rounded-xl shadow-sm p-8 text-center text-sm text-gray-500"><i class="fas fa-inbox text-gray-300 text-3xl mb-3 block"></i>Bu sekmede rezervasyon yok.</div>';
+    return;
+  }
+  listEl.innerHTML=filtered.map(b=>{
+    const ref='#'+(b.id||'');
+    const title=b.tourTitle||'Tur';
+    const tarih=b.tarih||'—';
+    const saat=b.saat||'—';
+    const guests=b.guests||1;
+    const loc=b.loc||'—';
+    const amt=(+b.amount||0).toLocaleString('tr-TR')+' TL';
+    const paid=b.odemeYapildi?'<span class="text-[10px] text-green-600 ml-1"><i class="fas fa-check-circle"></i> Odendi</span>':'';
+    return `<div class="bg-white rounded-xl shadow-sm p-5 flex flex-col md:flex-row gap-4 card-hover">
+      <div class="w-full md:w-32 h-24 bg-primary/10 rounded-lg flex items-center justify-center"><i class="fas fa-ship text-primary text-2xl"></i></div>
+      <div class="flex-1">
+        <div class="flex items-center gap-2 mb-1">${_bkDurumBadge(b.durum)}<span class="text-xs text-gray-400">${ref}</span>${paid}</div>
+        <h3 class="font-semibold">${title}</h3>
+        <div class="text-sm text-gray-500 mt-1"><i class="fas fa-calendar mr-1"></i> ${tarih}${saat&&saat!=='—'?', '+saat:''} &bull; <i class="fas fa-users ml-1 mr-1"></i> ${guests} kisi &bull; <i class="fas fa-map-marker-alt ml-1 mr-1"></i> ${loc}</div>
+        <div class="flex gap-2 mt-3">
+          <a href="#messages" class="border px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fas fa-comment mr-1"></i> Mesaj</a>
+        </div>
+      </div>
+      <div class="text-right"><div class="text-lg font-bold text-primary">${amt}</div></div>
+    </div>`;
+  }).join('');
 }
 </script>
 </body>
