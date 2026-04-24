@@ -1493,7 +1493,7 @@ function handleRoute(){
   if(h==='profile')    renderProfile();
   if(h==='tools')      renderCaptainTools();
   if(h==='notifications') renderNotifications();
-  if(h==='create-tour'){currentStep=1;updateWizardUI();for(let i=1;i<=5;i++){const w=document.getElementById('wizard-'+i);if(w)w.style.display=i===1?'block':'none';}}
+  if(h==='create-tour'){currentStep=1;resetWizard();updateWizardUI();for(let i=1;i<=5;i++){const w=document.getElementById('wizard-'+i);if(w)w.style.display=i===1?'block':'none';}}
 }
 window.addEventListener('hashchange',handleRoute);
 // ── GLOBAL SETTINGS (admin panel kontrolü) ──
@@ -1869,6 +1869,23 @@ function addCustomInclude(){
 let capacity=8;
 function changeCapacity(d){capacity=Math.max(1,Math.min(30,capacity+d));document.getElementById('capacity-val').textContent=capacity;calcPerPerson();}
 function calcPerPerson(){const p=document.getElementById('tour-price-input').value;document.getElementById('per-person-calc').textContent=p?`${capacity} kisi icin kisi basi: ${Math.round(p/capacity)} TL`:`${capacity} kisi icin kisi basi: — TL`;}
+function resetWizard(){
+  caEditingTourId=null;
+  capacity=8;
+  const capEl=document.getElementById('capacity-val');if(capEl)capEl.textContent='8';
+  const ppEl=document.getElementById('per-person-calc');if(ppEl)ppEl.textContent='8 kisi icin kisi basi: — TL';
+  document.querySelectorAll('.cat-pill').forEach((el,i)=>el.classList.toggle('selected',i===0));
+  const nameEl=document.querySelector('#wizard-2 input[type=text]');if(nameEl)nameEl.value='';
+  const descEl=document.querySelector('#wizard-2 textarea');if(descEl)descEl.value='';
+  document.querySelectorAll('#wizard-2 .pill').forEach(el=>el.classList.remove('selected'));
+  const selEl=document.querySelector('#wizard-2 select');if(selEl)selEl.selectedIndex=0;
+  const priceEl=document.getElementById('tour-price-input');if(priceEl)priceEl.value='';
+  document.querySelectorAll('#wizard-3 .pill').forEach(el=>el.classList.remove('selected'));
+  document.querySelectorAll('#wizard-4 input[type=checkbox]').forEach(el=>el.checked=false);
+  document.getElementById('custom-includes-list')?.querySelectorAll('label').forEach(el=>el.remove());
+  const pd=document.getElementById('prev-price');if(pd)pd.innerHTML='<span class="text-gray-400 text-base">Fiyat girilmedi</span>';
+  wizardDates=[];initWizardCal();
+}
 
 /* ── WIZARD TAKVİM ── */
 let wizardDates=[];  // ['2026-05-10','2026-05-17', ...]
