@@ -1477,7 +1477,7 @@ function renderHome(){
   document.getElementById('nearby-tours').innerHTML=tours.slice(0,5).map(t=>{
     const m=CM[t.cat]||CM.gezi;
     const _h1=t.heroImage||TOUR_IMG_MAP[t.cat]||'';
-    return`<div class="min-w-[200px] card overflow-hidden flex-shrink-0 card-hover" onclick="go(${t.id},'detail')">
+    return`<div class="min-w-[200px] card overflow-hidden flex-shrink-0 card-hover" onclick="go('${t.id}','detail')">
       <div class="h-28 bg-gradient-to-br ${m.grad} relative overflow-hidden">
         ${_h1?`<img src="${_h1}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'">`:''}
         <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
@@ -1498,7 +1498,7 @@ function renderHome(){
   document.getElementById('popular-tours-app').innerHTML=tours.slice(0,5).map(t=>{
     const m=CM[t.cat]||CM.gezi;
     const _h2=t.heroImage||TOUR_IMG_MAP[t.cat]||'';
-    return`<div class="card overflow-hidden flex flex-row card-hover" onclick="go(${t.id},'detail')">
+    return`<div class="card overflow-hidden flex flex-row card-hover" onclick="go('${t.id}','detail')">
       <div class="w-28 h-24 bg-gradient-to-br ${m.grad} flex-shrink-0 relative overflow-hidden">
         ${_h2?`<img src="${_h2}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'">`:''}
         <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
@@ -1540,7 +1540,7 @@ function applyFilters(){
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
   const minP=parseFloat(document.getElementById('flt-min')?.value)||0;
   const maxP=parseFloat(document.getElementById('flt-max')?.value)||Infinity;
-  const favs=S.get('cu_favs',[]);
+  const favs=S.get('cu_favs',[]).map(String);
   const list=allTours().filter(t=>{
     const mCat=!catFilter||t.cat===catFilter;
     const mQ=!q||t.name.toLowerCase().includes(q)||t.loc.toLowerCase().includes(q)||(t.captainName||'').toLowerCase().includes(q);
@@ -1554,9 +1554,9 @@ function applyFilters(){
   if(!list.length){el.innerHTML='<div class="text-center py-12 text-sm text-gray-400"><i class="fas fa-search text-3xl mb-2 block text-gray-200"></i>Tur bulunamadi</div>';return;}
   el.innerHTML=list.map(t=>{
     const m=CM[t.cat]||CM.gezi;
-    const isFav=favs.includes(t.id);
+    const isFav=favs.includes(String(t.id));
     const _h3=t.heroImage||TOUR_IMG_MAP[t.cat]||'';
-    return`<div class="card overflow-hidden card-hover" onclick="go(${t.id},'detail')">
+    return`<div class="card overflow-hidden card-hover" onclick="go('${t.id}','detail')">
       <div class="h-40 bg-gradient-to-br ${m.grad} relative overflow-hidden">
         ${_h3?`<img src="${_h3}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'">`:''}
         <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
@@ -1623,8 +1623,8 @@ function renderDetail(){
   document.getElementById('detail-desc').textContent=t.desc||`${t.name} - ${t.loc} kalkisli ${t.dur} sureli tur.`;
   document.getElementById('detail-price').textContent=(t.perPerson||t.price).toLocaleString('tr-TR');
   // fav btn
-  const favs=S.get('cu_favs',[]);
-  const fav=favs.includes(t.id);
+  const favs=S.get('cu_favs',[]).map(String);
+  const fav=favs.includes(String(t.id));
   document.getElementById('btn-fav-detail').innerHTML=`<i class="${fav?'fas text-danger':'far text-gray-700'} fa-heart text-sm"></i>`;
 }
 
@@ -1710,7 +1710,7 @@ function renderBooking(){
       const str=d.toLocaleDateString('tr-TR');
       const isSel=selDate===str;
       // Kapasite kontrolü
-      const gunRez=allBookings.filter(b=>b.tourId===t.id&&b.tarih===str&&b.durum!=='iptal'&&b.durum!=='reddedildi');
+      const gunRez=allBookings.filter(b=>String(b.tourId)===String(t.id)&&b.tarih===str&&b.durum!=='iptal'&&b.durum!=='reddedildi');
       const gunKisi=gunRez.reduce((s,b)=>s+(b.guests||1),0);
       const dolu=gunKisi>=(t.kapasite||8);
       if(!dolu&&!firstAvailable)firstAvailable=str;
@@ -1750,7 +1750,7 @@ function renderBooking(){
   // Kapasite notu: seçili güne göre
   const selDateStatus=selDate?gunAktifMi(new Date(selDate.split('.').reverse().join('-')),t):'aktif';
   if(selDate){
-    const gunRez=S.get('db_bookings',[]).filter(b=>b.tourId===t.id&&b.tarih===selDate&&b.durum!=='iptal'&&b.durum!=='reddedildi');
+    const gunRez=S.get('db_bookings',[]).filter(b=>String(b.tourId)===String(t.id)&&b.tarih===selDate&&b.durum!=='iptal'&&b.durum!=='reddedildi');
     const gunKisi=gunRez.reduce((s,b)=>s+(b.guests||1),0);
     const gunKalan=Math.max(0,(t.kapasite||8)-gunKisi);
     document.getElementById('booking-cap-note').textContent=gunKalan===0?'Bu tarihte tur dolu!':`${gunKalan} yer kaldi (${selDate})`;
@@ -2225,7 +2225,7 @@ function renderBookingDetail(){
   const canCancel=b.durum==='bekliyor'||b.durum==='onaylandi';
   document.getElementById('bdet-actions').innerHTML=
     `<button onclick="navigateTo('messages')" class="flex-1 border py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-comment mr-1"></i>Kaptana Yaz</button>`+
-    `<button onclick="go(${b.tourId},'detail')" class="flex-1 border border-primary text-primary py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-ship mr-1"></i>Tur Sayfasi</button>`+
+    `<button onclick="go('${b.tourId}','detail')" class="flex-1 border border-primary text-primary py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-ship mr-1"></i>Tur Sayfasi</button>`+
     (canCancel?`<button onclick="cancelBFromDetail('${b.id}')" class="border border-danger text-danger px-4 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-times"></i></button>`:'');
 }
 function cancelBFromDetail(id){
@@ -2262,25 +2262,25 @@ function toggleFav(id,btn){
 
 function renderFavorites(){
   rebuildTourMap();
-  const favIds=S.get('cu_favs',[]);
-  const tours=allTours().filter(t=>favIds.includes(t.id));
+  const favIds=S.get('cu_favs',[]).map(String);
+  const tours=allTours().filter(t=>favIds.includes(String(t.id)));
   const el=document.getElementById('favorites-list');
   if(!tours.length){el.innerHTML='<div class="text-center py-12 text-sm text-gray-400"><i class="fas fa-heart text-3xl mb-3 block text-gray-200"></i>Henuz favori turunuz yok.<br>Tur kartlarindaki <i class="far fa-heart"></i> ile ekleyin.</div>';return;}
   el.innerHTML=tours.map(t=>{
     const m=CM[t.cat]||CM.gezi;
-    return`<div class="card overflow-hidden flex flex-row card-hover" onclick="go(${t.id},'detail')">
+    return`<div class="card overflow-hidden flex flex-row card-hover" onclick="go('${t.id}','detail')">
       <div class="w-24 h-20 bg-gradient-to-br ${m.grad} flex-shrink-0 flex items-center justify-center"><i class="fas ${m.icon} text-white text-xl"></i></div>
       <div class="p-3 flex-1">
         <div class="font-semibold text-sm">${t.name}</div>
         <div class="text-[10px] text-gray-500">${t.loc} &bull; ${t.dur}</div>
         <div class="font-bold text-primary text-sm mt-1">${(t.perPerson||Math.round((t.price||0)/(t.kapasite||8))).toLocaleString('tr-TR')} TL<span class="text-[9px] font-normal text-gray-400">/kişi</span></div>
       </div>
-      <button class="px-3 text-danger" onclick="event.stopPropagation();rmFav(${t.id})"><i class="fas fa-heart"></i></button>
+      <button class="px-3 text-danger" onclick="event.stopPropagation();rmFav('${t.id}')"><i class="fas fa-heart"></i></button>
     </div>`;
   }).join('');
 }
 
-function rmFav(id){const favs=S.get('cu_favs',[]).filter(f=>f!==id);S.set('cu_favs',favs);renderFavorites();}
+function rmFav(id){const favs=S.get('cu_favs',[]).filter(f=>String(f)!==String(id));S.set('cu_favs',favs);renderFavorites();}
 
 /* ── CAPTAIN PROFILE ── */
 function renderCaptainProfile(){
@@ -2294,7 +2294,7 @@ function renderCaptainProfile(){
   document.getElementById('cp-tour-count').textContent=capTours.length;
   document.getElementById('captain-tours-list').innerHTML=capTours.slice(0,4).map(x=>{
     const m=CM[x.cat]||CM.gezi;
-    return`<div class="card overflow-hidden flex flex-row card-hover" onclick="go(${x.id},'detail')">
+    return`<div class="card overflow-hidden flex flex-row card-hover" onclick="go('${x.id}','detail')">
       <div class="w-20 h-20 bg-gradient-to-br ${m.grad} flex-shrink-0 flex items-center justify-center rounded-l-2xl"><i class="fas ${m.icon} text-white"></i></div>
       <div class="p-3 flex-1">
         <div class="font-semibold text-sm">${x.name}</div>

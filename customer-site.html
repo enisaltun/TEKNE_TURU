@@ -1931,7 +1931,7 @@ function tourCard(t, isSearch) {
   const layout = isSearch ? 'flex flex-col md:flex-row gap-4' : '';
   const imgClass = isSearch ? 'w-full md:w-48 h-40 md:h-auto' : 'h-44';
   const _hero = t.heroImage || TOUR_IMG_MAP[t.cat] || '';
-  return `<a href="#detail" onclick="selectTourById(${t.id})" class="bg-white rounded-xl shadow-sm overflow-hidden card-hover block">
+  return `<a href="#detail" onclick="selectTourById('${t.id}')" class="bg-white rounded-xl shadow-sm overflow-hidden card-hover block">
     <div class="${layout}">
       <div class="${imgClass} bg-gradient-to-br ${t.img} relative overflow-hidden">
         ${_hero?`<img src="${_hero}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" alt="${t.name}" onerror="this.style.display='none'">`:''}
