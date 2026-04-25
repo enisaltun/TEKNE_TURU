@@ -3145,6 +3145,37 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         </div>
       </div>
       <div id="sim-report" class="hidden p-4 bg-white rounded-xl border text-xs"></div>
+
+      <!-- Supabase Export -->
+      <div id="sb-export-box" class="mt-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50" style="display:none">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div class="text-sm font-bold text-emerald-900"><i class="fas fa-cloud-upload-alt mr-1.5"></i>Supabase'e Aktar</div>
+            <div class="text-xs text-emerald-700 mt-0.5">localStorage simülasyon verisini buluta yükle — arkadaşlar aynı veriyi görsün</div>
+          </div>
+          <button onclick="runExportToSupabase()" id="sb-export-btn"
+            class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition flex items-center gap-2">
+            <i class="fas fa-upload"></i> Supabase'e Gönder
+          </button>
+        </div>
+        <div id="sb-export-progress" style="display:none" class="mt-3">
+          <div class="text-xs text-emerald-800 mb-1 font-medium" id="sb-export-text">Hazırlanıyor…</div>
+          <div class="w-full h-2 bg-emerald-200 rounded-full overflow-hidden">
+            <div id="sb-export-bar" class="h-full bg-emerald-600 rounded-full transition-all" style="width:0%"></div>
+          </div>
+        </div>
+        <div id="sb-export-result" style="display:none" class="mt-3 text-xs"></div>
+        <!-- Test hesapları -->
+        <div class="mt-3 p-3 bg-white rounded-lg border border-emerald-200 text-xs">
+          <div class="font-bold text-gray-700 mb-2"><i class="fas fa-key mr-1 text-emerald-500"></i>Test Hesapları (arkadaşlarla paylaş)</div>
+          <div class="grid grid-cols-2 gap-1.5 font-mono">
+            <div class="bg-blue-50 rounded p-1.5"><span class="text-blue-700 font-bold">Müşteri:</span><br>musteri@test.com<br>test1234</div>
+            <div class="bg-cyan-50 rounded p-1.5"><span class="text-cyan-700 font-bold">Kaptan:</span><br>kaptan@test.com<br>test1234</div>
+            <div class="bg-orange-50 rounded p-1.5"><span class="text-orange-700 font-bold">Satıcı:</span><br>satici@test.com<br>test1234</div>
+            <div class="bg-purple-50 rounded p-1.5"><span class="text-purple-700 font-bold">Admin:</span><br>admin@test.com<br>test1234</div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -4385,8 +4416,44 @@ async function runRealisticSimulation(cfg){
   showToast(`Simülasyon tamam: ${allUsers.length} kullanıcı, ${tours.length} tur, ${bookings.length} rez`,'success');
   shScan();
   renderDashboard?.(); renderUsers?.();
+  // Supabase export kutusunu goster
+  const sbBox=document.getElementById('sb-export-box');
+  if(sbBox) sbBox.style.display='block';
 }
 let _simInjected={};
+
+async function runExportToSupabase(){
+  const btn=document.getElementById('sb-export-btn');
+  const progBox=document.getElementById('sb-export-progress');
+  const progBar=document.getElementById('sb-export-bar');
+  const progTxt=document.getElementById('sb-export-text');
+  const result=document.getElementById('sb-export-result');
+  if(btn) btn.disabled=true;
+  progBox.style.display='block';
+  result.style.display='none';
+  try {
+    await window.exportToSupabase({
+      onProgress:(pct,txt)=>{
+        if(progBar) progBar.style.width=pct+'%';
+        if(progTxt) progTxt.textContent=txt;
+      }
+    });
+    const users=lsGet('db_users',[]).length;
+    const tours=lsGet('db_tours',[]).length;
+    const bks=lsGet('db_bookings',[]).length;
+    result.style.display='block';
+    result.innerHTML=`<div class="flex items-center gap-2 text-emerald-700 font-semibold"><i class="fas fa-check-circle text-lg"></i>
+      Aktarım tamamlandı! ${users} kullanıcı · ${tours} tur · ${bks} rezervasyon Supabase'de.</div>
+      <div class="mt-1.5 text-gray-500">Arkadaşlarınız siteyi açtığında veriler otomatik yüklenir.</div>`;
+    showToast('Supabase aktarımı tamamlandı!','success');
+  } catch(e) {
+    result.style.display='block';
+    result.innerHTML=`<div class="text-red-600"><i class="fas fa-exclamation-triangle mr-1"></i>${e.message}</div>`;
+    showToast('Aktarım hatası: '+e.message,'error');
+  } finally {
+    if(btn) btn.disabled=false;
+  }
+}
 
 function _applyBookingProblem(b, key, tours, complaints, now){
   const t=tours.find(x=>x.id===b.tourId);

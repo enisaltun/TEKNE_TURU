@@ -73,7 +73,7 @@ function _denormalizeKaptan(k) {
   };
 }
 
-// DB kullanicilar satırını localStorage uyumlu nesneye çevirir
+// DB kullanicilar satırını localStorage uyumlu nesneye çevirir (eski schema)
 function _denormalizeKullanici(u) {
   return {
     ...u,
@@ -87,6 +87,37 @@ function _denormalizeKullanici(u) {
     sonGiris:       u.son_giris,
     kayitKanali:    u.kayit_kanali,
     createdAt:      u.created_at,
+  };
+}
+
+// YENİ SCHEMA: Supabase kullanicilar satırı → db_users localStorage formatı
+function _sbUserToLocal(u) {
+  return {
+    id:           u.id,
+    email:        u.email,
+    ad:           u.ad,
+    soyad:        u.soyad,
+    name:         (u.ad || '') + ' ' + (u.soyad || ''),
+    ad_soyad:     (u.ad || '') + ' ' + (u.soyad || ''),
+    telefon:      u.telefon,
+    phone:        u.telefon,
+    password:     u.sifre,
+    sifre:        u.sifre,
+    tcKimlik:     u.tc_kimlik,
+    sehir:        u.sehir,
+    city:         u.sehir,
+    avatarUrl:    u.avatar_url,
+    roles:        u.roller || ['customer'],
+    roller:       u.roller || ['customer'],
+    durum:        u.durum  || 'aktif',
+    plan:         u.plan   || 'free',
+    riskScore:    u.risk_score || 0,
+    captainData:  u.captain_data,
+    vendorData:   u.vendor_data,
+    shopData:     u.shop_data,
+    kayitKanali:  u.kayit_kanali,
+    createdAt:    u.created_at,
+    updatedAt:    u.updated_at,
   };
 }
 
@@ -883,6 +914,55 @@ window.DB = {
   },
 
   // ──────────────────────────────────────────────────────────────
+  // AUTH — Login / Register (Supabase kullanicilar tablosu)
+  // ──────────────────────────────────────────────────────────────
+  auth: {
+
+    // Email + sifre ile giris — customer-app/captain-app: doLogin()
+    async login(email, password) {
+      const em = (email || '').trim().toLowerCase();
+      if (DB_MODE === 'remote') {
+        const { data, error } = await _sb
+          .from('kullanicilar').select('*')
+          .eq('email', em).eq('sifre', password).single();
+        if (error || !data) return null;
+        return _sbUserToLocal(data);
+      }
+      const users = _ls('db_users', []);
+      return users.find(u => u.email === em && u.password === password) || null;
+    },
+
+    // Yeni kullanici olustur — customer-app: doRegister()
+    async register(userData) {
+      const em = (userData.email || '').trim().toLowerCase();
+      if (DB_MODE === 'remote') {
+        const { data, error } = await _sb.from('kullanicilar').insert({
+          email:        em,
+          ad:           userData.ad   || (userData.name || '').split(' ')[0] || em,
+          soyad:        userData.soyad|| (userData.name || '').split(' ').slice(1).join(' ') || '',
+          telefon:      userData.telefon || userData.phone || '',
+          sifre:        userData.password || userData.sifre || '',
+          tc_kimlik:    userData.tcKimlik || null,
+          roller:       userData.roles || ['customer'],
+          durum:        userData.durum || 'aktif',
+          captain_data: userData.captainData || null,
+          vendor_data:  userData.vendorData  || null,
+          shop_data:    userData.shopData    || null,
+          kayit_kanali: userData.kayitKanali || 'web',
+        }).select().single();
+        if (error) return _err('auth.register', error);
+        return _sbUserToLocal(data);
+      }
+      const list = _ls('db_users', []);
+      if (list.find(u => u.email === em)) return null;
+      const user = { id: Date.now(), ...userData, email: em, createdAt: new Date().toISOString() };
+      list.push(user);
+      _lsSet('db_users', list);
+      return user;
+    },
+  },
+
+  // ──────────────────────────────────────────────────────────────
   // YARDIMCI: Dashboard istatistikleri — admin-panel
   // ──────────────────────────────────────────────────────────────
   dashboard: {
@@ -919,20 +999,37 @@ window.DB = {
 window._sbSync = async function() {
   if (DB_MODE !== 'remote' || !_sb) return;
   try {
-    const [kaps, turs, rezs, kuls, odes, msgs] = await Promise.all([
-      _sb.from('kaptanlar').select('*').order('created_at', { ascending: false }),
+    const [kuls, turs, rezs, odes, yorumlar, saticiIlanlar, magazaUrunler] = await Promise.all([
+      _sb.from('kullanicilar').select('*').order('created_at', { ascending: false }),
       _sb.from('turlar').select('*').order('created_at', { ascending: false }),
       _sb.from('rezervasyonlar').select('*').order('created_at', { ascending: false }),
-      _sb.from('kullanicilar').select('*').order('created_at', { ascending: false }),
       _sb.from('odemeler').select('*').order('created_at', { ascending: false }),
-      _sb.from('mesajlar').select('*').order('created_at', { ascending: true }),
+      _sb.from('yorumlar').select('*').order('created_at', { ascending: false }),
+      _sb.from('satici_ilanlari').select('*').order('created_at', { ascending: false }),
+      _sb.from('magaza_urunleri').select('*').order('created_at', { ascending: false }),
     ]);
-    if (!kaps.error && kaps.data.length) _lsSet('db_captains', kaps.data.map(_denormalizeKaptan));
-    if (!turs.error && turs.data.length) _lsSet('db_tours', turs.data
-      .filter(t => { const f=+(t.fiyat||0); if(f>500000){console.warn('[SB] Anormal fiyat, sync atlandı:',t.tur_adi,'fiyat:',f);return false;} return true; })
-      .map(t => ({ ..._denormalizeTur(t), perPerson: Math.round((t.fiyat||0) / (t.kapasite||8)) })));
-    if (!rezs.error && rezs.data.length) {
-      // Mevcut localStorage'daki local-only alanları koru (adminReply, adminNote, vb.)
+
+    // Kullanicilari hem db_users hem cu_users'a yaz
+    if (!kuls.error && kuls.data && kuls.data.length) {
+      const normalized = kuls.data.map(_sbUserToLocal);
+      _lsSet('db_users', normalized);
+      _lsSet('cu_users', normalized);
+      // Geriye uyumluluk: kaptan profillerini db_captains'e de yaz
+      const captains = normalized
+        .filter(u => (u.roles || []).includes('captain'))
+        .map(u => ({ ...u, captainProfile: u.captainData, status: u.durum, aktif: u.durum === 'aktif' }));
+      if (captains.length) _lsSet('db_captains', captains);
+    }
+
+    if (!turs.error && turs.data && turs.data.length) {
+      const tours = turs.data
+        .filter(t => { const f = +(t.fiyat || 0); return f <= 500000; })
+        .map(t => ({ ..._denormalizeTur(t), perPerson: Math.round((t.fiyat || 0) / (t.kapasite || 8)) }));
+      _lsSet('db_tours', tours);
+      _lsSet('cp_tours', tours);
+    }
+
+    if (!rezs.error && rezs.data && rezs.data.length) {
       const existingBks = _ls('db_bookings', []);
       const localMap = new Map(existingBks.map(b => [String(b.id), b]));
       _lsSet('db_bookings', rezs.data.map(r => {
@@ -944,14 +1041,180 @@ window._sbSync = async function() {
         return d;
       }));
     }
-    if (!kuls.error && kuls.data.length) _lsSet('cu_users', kuls.data.map(_denormalizeKullanici));
-    if (!odes.error && odes.data.length) _lsSet('db_payments', odes.data);
-    // db_messages: Supabase formatı (düz array) local formatla (bookingId→[] objesi) uyumsuz.
-    // Mesajlar sadece gönderilir (send), Supabase'den çekilmez.
-    console.log('[SB] sync tamamlandi — kaptanlar:', kaps.data?.length, 'turlar:', turs.data?.length, 'rezervasyonlar:', rezs.data?.length);
+
+    if (!odes.error && odes.data && odes.data.length) _lsSet('db_payments', odes.data);
+    if (!yorumlar.error && yorumlar.data && yorumlar.data.length) _lsSet('db_reviews', yorumlar.data);
+    if (!saticiIlanlar.error && saticiIlanlar.data && saticiIlanlar.data.length) _lsSet('db_vendor_listings', saticiIlanlar.data);
+    if (!magazaUrunler.error && magazaUrunler.data && magazaUrunler.data.length) _lsSet('db_shop_listings', magazaUrunler.data);
+
+    console.log('[SB] sync tamamlandi — kullanicilar:', kuls.data?.length,
+      'turlar:', turs.data?.length, 'rezervasyonlar:', rezs.data?.length,
+      'yorumlar:', yorumlar.data?.length);
   } catch(e) {
     console.warn('[SB] sync hatasi', e);
   }
+};
+
+// ================================================================
+// exportToSupabase — localStorage simülasyon verisini Supabase'e aktar
+// Admin panelden çağrılır: await exportToSupabase({ onProgress })
+// ================================================================
+window.exportToSupabase = async function(opts = {}) {
+  if (DB_MODE !== 'remote' || !_sb) throw new Error('DB_MODE remote olmali');
+  const setP  = opts.onProgress || (() => {});
+  const CHUNK = 50;
+  const chunkArr = (arr, n) => { const r=[]; for(let i=0;i<arr.length;i+=n) r.push(arr.slice(i,i+n)); return r; };
+  const safeFlt  = v => (isFinite(+v) && +v >= 0 && +v <= 999999) ? +v : 0;
+  const safeDate = v => { try { const d=new Date(v); return isNaN(d)?null:d.toISOString().slice(0,10); } catch{return null;} };
+  const safeTS   = v => { try { const d=new Date(v); return isNaN(d)?null:d.toISOString(); } catch{return null;} };
+
+  // 1. Tabloları temizle (simülasyon verisi baştan yazılsın)
+  setP(3, 'Eski simülasyon verisi temizleniyor…');
+  await Promise.all([
+    _sb.from('rezervasyonlar').delete().neq('id','__none__'),
+    _sb.from('yorumlar').delete().neq('id',_uuid()),
+    _sb.from('satici_ilanlari').delete().neq('id','__none__'),
+    _sb.from('magaza_urunleri').delete().neq('id','__none__'),
+  ]);
+  await _sb.from('turlar').delete().neq('id',_uuid());
+  // Kullanicilari silmiyoruz, upsert yapiyoruz (test hesaplari korunur)
+
+  // 2. Kullanicilar
+  setP(10, 'Kullanıcılar yükleniyor…');
+  const lsUsers = _ls('db_users', []);
+  const usersPayload = lsUsers.map(u => ({
+    email:        (u.email || '').toLowerCase(),
+    ad:           u.ad   || (u.name || '').split(' ')[0] || 'Kullanici',
+    soyad:        u.soyad|| (u.name || '').split(' ').slice(1).join(' ') || '',
+    telefon:      u.telefon || u.phone || '',
+    sifre:        u.password || u.sifre || 'demo1234',
+    tc_kimlik:    u.tcKimlik || null,
+    sehir:        u.sehir || u.city || '',
+    roller:       u.roles  || u.roller || ['customer'],
+    durum:        u.durum  || u.status || 'aktif',
+    plan:         u.plan   || 'free',
+    risk_score:   u.riskScore || u.risk_score || 0,
+    captain_data: u.captainData || u.captain_data || null,
+    vendor_data:  u.vendorData  || u.vendor_data  || null,
+    shop_data:    u.shopData    || u.shop_data     || null,
+    kayit_kanali: u.kayitKanali || u.kayit_kanali  || 'web',
+    created_at:   safeTS(u.createdAt || u.created_at) || new Date().toISOString(),
+  })).filter(u => u.email && u.email.includes('@'));
+  for (const ch of chunkArr(usersPayload, CHUNK)) {
+    const { error } = await _sb.from('kullanicilar').upsert(ch, { onConflict: 'email' });
+    if (error) console.warn('[Export] kullanicilar:', error.message);
+  }
+
+  // 3. Turlar
+  setP(28, 'Turlar yükleniyor…');
+  const lsTours = _ls('db_tours', []);
+  const toursPayload = lsTours.map(t => {
+    const n = _normalizeTur(t);
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(String(n.id || ''));
+    if (!isUuid) delete n.id;
+    // Tarihler dizisini DATE[] formatına cevir
+    if (Array.isArray(n.tarihler)) {
+      n.tarihler = n.tarihler.map(d => safeDate(d)).filter(Boolean);
+    }
+    return n;
+  }).filter(t => t.kaptan_email && t.tur_adi);
+  const tourIdMap = new Map(); // localStorage integer id → Supabase UUID
+  for (const ch of chunkArr(toursPayload, CHUNK)) {
+    const { data, error } = await _sb.from('turlar').insert(ch).select('id,kaptan_email,tur_adi');
+    if (error) { console.warn('[Export] turlar:', error.message); continue; }
+    (data || []).forEach((row, i) => {
+      const orig = ch[i];
+      if (orig) tourIdMap.set(orig.tur_adi + '|' + orig.kaptan_email, row.id);
+    });
+  }
+
+  // 4. Rezervasyonlar
+  setP(48, 'Rezervasyonlar yükleniyor…');
+  const lsBks = _ls('db_bookings', []);
+  const bkPayload = lsBks.map(b => ({
+    id:             String(b.id),
+    tur_id:         tourIdMap.get((b.tourTitle || b.tur_adi || '') + '|' + (b.captainEmail || b.kaptan_email || '')) || null,
+    tur_adi:        b.tourTitle || b.tur_adi || '',
+    kaptan_email:   b.captainEmail  || b.kaptan_email  || '',
+    kaptan_adi:     b.captainName   || b.kaptan_adi    || '',
+    musteri_email:  b.customerEmail || b.musteri_email || '',
+    musteri_adi:    b.customerName  || b.musteri_adi   || '',
+    musteri_telefon:b.customerPhone || b.musteri_telefon|| '',
+    kisi_sayisi:    +(b.guests || b.kisi_sayisi || 1),
+    durum:          b.durum || 'onaylandi',
+    toplam_tutar:   safeFlt(b.price || b.toplam_tutar),
+    tur_fiyati:     safeFlt(b.fiyat || b.tur_fiyati),
+    tur_tarihi:     safeDate(b.tarihISO || b.tur_tarihi),
+    tur_saati:      b.saat || b.tur_saati || '09:00',
+    odeme_yapildi:  b.odemeYapildi || false,
+    odeme_ref:      b.odemeRef || b.odeme_ref || null,
+    binis_yapildi:  b.binisYapildi || false,
+    kayit_kanali:   b.kayitKanali || b.kayit_kanali || 'web',
+    created_at:     safeTS(b.createdAt || b.created_at) || new Date().toISOString(),
+  })).filter(b => b.id && b.kaptan_email);
+  for (const ch of chunkArr(bkPayload, CHUNK)) {
+    const { error } = await _sb.from('rezervasyonlar').insert(ch);
+    if (error) console.warn('[Export] rezervasyonlar:', error.message);
+  }
+
+  // 5. Yorumlar
+  setP(65, 'Yorumlar yükleniyor…');
+  const lsReviews = _ls('db_reviews', []).slice(0, 1000);
+  const revPayload = lsReviews.map(r => ({
+    rezervasyon_id: r.bookingId  || r.rezervasyon_id || null,
+    musteri_email:  r.customerEmail || r.musteri_email || '',
+    musteri_adi:    r.customerName  || r.musteri_adi   || '',
+    kaptan_email:   r.captainEmail  || r.kaptan_email  || '',
+    puan:           Math.min(5, Math.max(1, +(r.puan || 4))),
+    yorum:          r.yorum || '',
+    created_at:     safeTS(r.createdAt || r.created_at) || new Date().toISOString(),
+  })).filter(r => r.musteri_email);
+  for (const ch of chunkArr(revPayload, CHUNK)) {
+    const { error } = await _sb.from('yorumlar').insert(ch);
+    if (error) console.warn('[Export] yorumlar:', error.message);
+  }
+
+  // 6. Satici ilanlari
+  setP(78, 'Satıcı ilanları yükleniyor…');
+  const lsVend = _ls('db_vendor_listings', []);
+  for (const ch of chunkArr(lsVend, CHUNK)) {
+    const payload = ch.map(v => ({
+      id:           String(v.id),
+      satici_email: v.vendorEmail || '',
+      satici_adi:   v.vendorName  || '',
+      sahil:        v.sahil || '',
+      urun:         v.urun  || '',
+      fiyat:        safeFlt(v.fiyat),
+      stok:         +(v.stok || 0),
+      durum:        v.durum || 'aktif',
+      created_at:   safeTS(v.createdAt) || new Date().toISOString(),
+    }));
+    const { error } = await _sb.from('satici_ilanlari').insert(payload);
+    if (error) console.warn('[Export] satici_ilanlari:', error.message);
+  }
+
+  // 7. Magaza urunleri
+  setP(88, 'Mağaza ürünleri yükleniyor…');
+  const lsShop = _ls('db_shop_listings', []);
+  for (const ch of chunkArr(lsShop, CHUNK)) {
+    const payload = ch.map(s => ({
+      id:           String(s.id),
+      magaza_email: s.shopEmail  || '',
+      magaza_adi:   s.magazaAdi  || '',
+      urun:         s.urun  || '',
+      fiyat:        safeFlt(s.fiyat),
+      stok:         +(s.stok || 0),
+      durum:        s.durum || 'aktif',
+      created_at:   safeTS(s.createdAt) || new Date().toISOString(),
+    }));
+    const { error } = await _sb.from('magaza_urunleri').insert(payload);
+    if (error) console.warn('[Export] magaza_urunleri:', error.message);
+  }
+
+  // 8. Geri sync (Supabase UUID'leri localStorage'a yaz)
+  setP(96, 'Veriler senkronize ediliyor…');
+  await window._sbSync();
+  setP(100, 'Tamamlandı ✓');
 };
 
 // ================================================================
