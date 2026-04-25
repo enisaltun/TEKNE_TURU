@@ -621,6 +621,21 @@ window.DB = {
       return list[idx];
     },
 
+    // Genel alan güncelle — admin-panel: adminReply, adminNote vb.
+    async update(id, fields) {
+      if (DB_MODE === 'remote') {
+        const { data, error } = await _sb.from('rezervasyonlar').update(fields).eq('id', id).select().single();
+        if (error) return _err('rezervasyonlar.update', error);
+        return data;
+      }
+      const list = _ls('db_bookings', []);
+      const idx = list.findIndex(b => String(b.id) === String(id));
+      if (idx === -1) return null;
+      list[idx] = { ...list[idx], ...fields };
+      _lsSet('db_bookings', list);
+      return list[idx];
+    },
+
     // Rezervasyon sil — admin-panel
     async delete(id) {
       if (DB_MODE === 'remote') {
@@ -913,11 +928,26 @@ window._sbSync = async function() {
       _sb.from('mesajlar').select('*').order('created_at', { ascending: true }),
     ]);
     if (!kaps.error && kaps.data.length) _lsSet('db_captains', kaps.data.map(_denormalizeKaptan));
-    if (!turs.error && turs.data.length) _lsSet('db_tours', turs.data.map(t => ({ ..._denormalizeTur(t), perPerson: Math.round((t.fiyat||0) / (t.kapasite||8)) })));
-    if (!rezs.error && rezs.data.length) _lsSet('db_bookings', rezs.data.map(_denormalizeRez));
+    if (!turs.error && turs.data.length) _lsSet('db_tours', turs.data
+      .filter(t => { const f=+(t.fiyat||0); if(f>500000){console.warn('[SB] Anormal fiyat, sync atlandı:',t.tur_adi,'fiyat:',f);return false;} return true; })
+      .map(t => ({ ..._denormalizeTur(t), perPerson: Math.round((t.fiyat||0) / (t.kapasite||8)) })));
+    if (!rezs.error && rezs.data.length) {
+      // Mevcut localStorage'daki local-only alanları koru (adminReply, adminNote, vb.)
+      const existingBks = _ls('db_bookings', []);
+      const localMap = new Map(existingBks.map(b => [String(b.id), b]));
+      _lsSet('db_bookings', rezs.data.map(r => {
+        const local = localMap.get(String(r.id)) || {};
+        const d = _denormalizeRez(r);
+        if (local.adminReply)   d.adminReply   = local.adminReply;
+        if (local.adminReplyAt) d.adminReplyAt = local.adminReplyAt;
+        if (local.adminNote)    d.adminNote    = local.adminNote;
+        return d;
+      }));
+    }
     if (!kuls.error && kuls.data.length) _lsSet('cu_users', kuls.data.map(_denormalizeKullanici));
     if (!odes.error && odes.data.length) _lsSet('db_payments', odes.data);
-    if (!msgs.error && msgs.data.length) _lsSet('db_messages', msgs.data);
+    // db_messages: Supabase formatı (düz array) local formatla (bookingId→[] objesi) uyumsuz.
+    // Mesajlar sadece gönderilir (send), Supabase'den çekilmez.
     console.log('[SB] sync tamamlandi — kaptanlar:', kaps.data?.length, 'turlar:', turs.data?.length, 'rezervasyonlar:', rezs.data?.length);
   } catch(e) {
     console.warn('[SB] sync hatasi', e);

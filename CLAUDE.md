@@ -12,11 +12,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |---|---|---|
 | `customer-site.html` | Müşteri | Responsive web sitesi (masaüstü + mobil) |
 | `customer-app.html` | Müşteri | Mobil uygulama (max-width: 430px) |
-| `captain-panel.html` | Kaptan | Mobil panel (max-width: 430px) |
-| `captain-app.html` | Kaptan | Gelişmiş mobil uygulama (max-width: 430px) |
+| `captain-app.html` | Kaptan | Mobil uygulama (max-width: 430px) |
 | `admin-panel.html` | Platform yöneticisi | Desktop dashboard (sidebar layout) |
-
-`captain-panel.html` ile `captain-app.html` aynı kullanıcıya hizmet eden iki farklı tasarım iterasyonudur; `captain-app.html` daha gelişmiş versiyondur.
 
 ## Çalıştırma
 
@@ -71,7 +68,7 @@ danger:  #ef4444     success:     #10b981     surface: #f8fafc
 
 ### Mobil-first Layout Farklılıkları
 
-- **Mobil app dosyaları** (`customer-app.html`, `captain-app.html`, `captain-panel.html`):  
+- **Mobil app dosyaları** (`customer-app.html`, `captain-app.html`):  
   `body { max-width: 430px; margin: 0 auto }` + `padding-bottom: 72-80px` (bottom nav alanı için)  
   Simüle edilmiş status bar (`clock`, sinyal/wifi/batarya ikonları)  
   `env(safe-area-inset-bottom)` ile iOS safe area desteği

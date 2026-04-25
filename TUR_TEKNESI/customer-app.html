@@ -7,6 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',primaryDark:'#075985',primaryLight:'#e0f2fe',accent:'#f59e0b',accentDark:'#d97706',surface:'#f8fafc',danger:'#ef4444',success:'#10b981',dark:'#0f172a'}}}}</script>
+<script src="vendor-config.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 *{font-family:'Inter',sans-serif;margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -156,6 +157,15 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
       <div class="text-xs opacity-90 mb-2">Secili turlarda %20'ye varan indirim!</div>
       <button class="bg-white text-accent px-4 py-2 rounded-xl text-xs font-bold" onclick="navigateTo('search')">Firsatlari Gor</button>
     </div>
+  </div>
+
+  <!-- Yakınımda Satıcılar banner -->
+  <div class="px-4 mb-5">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-bold text-base">Yakinimdaki Saticilar</h2>
+      <button class="text-primary text-xs font-medium" onclick="navigateTo('live-sale')">Tumu <i class="fas fa-arrow-right ml-0.5"></i></button>
+    </div>
+    <div id="home-vendors" class="flex gap-3 overflow-x-auto pb-2" style="-webkit-overflow-scrolling:touch"></div>
   </div>
 </section>
 
@@ -465,6 +475,70 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
   </div>
 </section>
 
+<!-- ================================================================ PAGE: CANLI SATIS -->
+<section id="page-live-sale" class="page">
+  <div class="px-4 pt-3 pb-2">
+    <div class="flex items-center gap-3 mb-3">
+      <button onclick="history.back()" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <h1 class="font-bold text-base">Canli Satis</h1>
+          <span class="flex items-center gap-1 text-[10px] font-semibold text-success bg-green-50 px-2 py-0.5 rounded-full">
+            <span class="w-1.5 h-1.5 bg-success rounded-full animate-pulse inline-block"></span>
+            <span id="ls-live-count">0</span> Canli
+          </span>
+        </div>
+        <div class="text-[11px] text-gray-400">Sahilde balik ekipmani satan saticilar</div>
+      </div>
+      <button class="w-8 h-8 bg-white rounded-lg shadow-sm flex items-center justify-center text-gray-400" onclick="toggleLsView()" id="ls-view-btn"><i class="fas fa-map"></i></button>
+    </div>
+
+    <!-- Filter pills -->
+    <div class="flex gap-2 overflow-x-auto pb-2 mb-3" style="-webkit-overflow-scrolling:touch" id="ls-cat-pills">
+      <div class="pill active" data-lscat="" onclick="setLsCat(this,'')">Tumu</div>
+    </div>
+
+    <!-- List view -->
+    <div id="ls-list-view" class="space-y-3 pb-4"></div>
+
+    <!-- Map view -->
+    <div id="ls-map-view" class="hidden">
+      <div class="map-bg rounded-2xl h-52 flex items-center justify-center mb-3 relative overflow-hidden">
+        <div class="absolute inset-0 flex items-center justify-center opacity-20"><i class="fas fa-map-marked-alt text-primary text-5xl"></i></div>
+        <div id="ls-map-pins" class="absolute inset-0 p-3 flex flex-wrap gap-2 items-start content-start overflow-hidden"></div>
+      </div>
+      <div class="space-y-3 pb-4" id="ls-map-list"></div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="ls-empty" class="hidden text-center py-12">
+      <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fas fa-store text-gray-300 text-2xl"></i></div>
+      <div class="font-semibold text-gray-600 mb-1">Su an aktif satici yok</div>
+      <div class="text-xs text-gray-400">Saticilar 05:00-23:00 arasi aktif olur</div>
+    </div>
+  </div>
+</section>
+
+<!-- VENDOR DETAIL SHEET -->
+<div class="bottom-sheet" id="vendor-detail-sheet">
+  <div class="swipe-indicator"></div>
+  <div id="vendor-detail-content"></div>
+</div>
+
+<!-- VENDOR REVIEW SHEET -->
+<div class="bottom-sheet" id="vendor-review-sheet">
+  <div class="swipe-indicator"></div>
+  <h2 class="font-bold text-base mb-1 pt-2">Yorum Yaz</h2>
+  <p class="text-xs text-gray-500 mb-4" id="vr-vendor-name">Satici</p>
+  <div id="vr-categories" class="space-y-4 mb-4"></div>
+  <div>
+    <label class="text-xs font-medium text-gray-500">Yorum (opsiyonel)</label>
+    <textarea id="vr-comment" rows="3" placeholder="Deneyiminizi paylasın..." class="mt-1 resize-none"></textarea>
+  </div>
+  <button onclick="submitVendorReview()" class="w-full bg-primary text-white py-3 rounded-xl font-semibold mt-4">Yorumu Gonder</button>
+  <button onclick="closeSheet()" class="w-full border py-2.5 rounded-xl text-sm font-medium mt-2">Vazgec</button>
+</div>
+
 <!-- FILTER SHEET -->
 <div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
 <div class="bottom-sheet" id="filter-sheet">
@@ -511,7 +585,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 
 <script>
 /* ── CONSTANTS ── */
-const ALL_PAGES=['home','search','detail','captain-profile','booking','payment','confirmation','my-tours','favorites','messages','notifications','profile'];
+const ALL_PAGES=['home','search','detail','captain-profile','booking','payment','confirmation','my-tours','favorites','messages','notifications','profile','live-sale'];
 const HIDE_NAV=['detail','booking','payment','confirmation','captain-profile','notifications'];
 const CM={
   balik:    {label:'Balik Avi',   icon:'fa-fish',      color:'blue',   grad:'from-blue-400 to-blue-600'},
@@ -553,6 +627,7 @@ function handleRoute(){
   if(h==='messages') {document.getElementById('msg-list-view').style.display='';document.getElementById('msg-chat-view').style.display='none';renderMsgList();}
   if(h==='notifications') renderNotifs();
   if(h==='profile')  renderProfile();
+  if(h==='live-sale') renderLiveSale();
   window.scrollTo(0,0);
 }
 window.addEventListener('hashchange',handleRoute);
@@ -624,6 +699,9 @@ function renderHome(){
       </div>
     </div>`;
   }).join('');
+
+  const liveSellers = MOCK_LIVE_VENDORS.filter(v=>v.live);
+  _renderHomeVendors(liveSellers);
 }
 
 /* ── SEARCH ── */
@@ -1110,6 +1188,242 @@ function clearAll(){
   if(!confirm('Tum test verisini silmek istiyor musunuz?'))return;
   ['db_bookings','db_tours','db_messages','cu_bookings','cu_favs','cu_notifs','cu_profile','cu_seen_status'].forEach(k=>localStorage.removeItem(k));
   location.reload();
+}
+
+/* ══════════════════════════════════════════════════════
+   CANLI SATIS — Seyyar Satici Modulu
+══════════════════════════════════════════════════════ */
+const VC = (typeof VENDOR_CONFIG !== 'undefined') ? VENDOR_CONFIG : null;
+
+const MOCK_LIVE_VENDORS = [
+  {
+    id:'v1', name:'Hasan Usta', live:true, beach:'Konyaalti Sahili', beach_id:'konyaalti',
+    badge:'super', rating:4.7, reviewCount:32, distance:'320m',
+    lat:36.880, lng:30.627,
+    products:[
+      {id:'p1', name:'Sinek Oltasi Takimi', cat:'rod',   price:180, stock:8,  tags:['discount'], desc:'Hafif karbon sap, 4m uzunluk.'},
+      {id:'p2', name:'Canli Yem Paketi',    cat:'bait',  price:35,  stock:3,  tags:['last2','fresh'], desc:'Taze solucan ve bob karisimi.'},
+      {id:'p3', name:'Olta Aksesuar Seti',  cat:'accessory', price:75, stock:12, tags:[], desc:'Makara, kivircik tel, kopca seti.'},
+    ],
+  },
+  {
+    id:'v2', name:'Cemal Bey', live:true, beach:'Lara Plaji', beach_id:'lara',
+    badge:'trusted', rating:4.3, reviewCount:11, distance:'1.2km',
+    lat:36.856, lng:30.712,
+    products:[
+      {id:'p4', name:'Hazir Balik Seti',    cat:'package', price:250, stock:5,  tags:['new_item'], desc:'Baslangic icin tum ekipman dahil.'},
+      {id:'p5', name:'Jig Yem Koleksiyonu', cat:'bait',    price:90,  stock:2,  tags:['ending'], desc:'10 farkli renk jig.'},
+    ],
+  },
+  {
+    id:'v3', name:'Fatih Satici', live:false, beach:'Goynuk Koyu', beach_id:'goynuk',
+    badge:'new', rating:0, reviewCount:0, distance:'4.5km',
+    lat:36.809, lng:30.568,
+    products:[],
+  },
+];
+
+let lsCatFilter = '';
+let lsView = 'list';
+let selVendorId = null;
+const vrStars = {};
+
+function renderLiveSale(){
+  if(!VC){ document.getElementById('ls-list-view').innerHTML='<p class="text-sm text-gray-400 text-center py-8">Konfigurasyon yuklenemedi.</p>'; return; }
+  const live = MOCK_LIVE_VENDORS.filter(v=>v.live);
+
+  // live count badge
+  document.getElementById('ls-live-count').textContent = live.length;
+
+  // build category pills from config
+  const pillsEl = document.getElementById('ls-cat-pills');
+  pillsEl.innerHTML = `<div class="pill active" data-lscat="" onclick="setLsCat(this,'')">Tumu</div>`;
+  VC.productCategories.forEach(c=>{
+    pillsEl.innerHTML += `<div class="pill" data-lscat="${c.id}" onclick="setLsCat(this,'${c.id}')">${c.label}</div>`;
+  });
+
+  _renderLsVendors();
+  _renderHomeVendors(live);
+}
+
+function _renderLsVendors(){
+  const live = MOCK_LIVE_VENDORS.filter(v=>v.live);
+  const filtered = lsCatFilter ? live.filter(v=>v.products.some(p=>p.cat===lsCatFilter)) : live;
+
+  document.getElementById('ls-empty').classList.toggle('hidden', filtered.length > 0);
+
+  const listEl = document.getElementById('ls-list-view');
+  const mapListEl = document.getElementById('ls-map-list');
+  const mapPinsEl = document.getElementById('ls-map-pins');
+
+  const cards = filtered.map(v=>_vendorCard(v)).join('');
+  listEl.innerHTML = cards;
+  mapListEl.innerHTML = cards;
+
+  // map pins
+  mapPinsEl.innerHTML = filtered.map(v=>{
+    const b = _getBadge(v.badge);
+    return `<div class="bg-white rounded-xl px-2 py-1 shadow text-[10px] font-semibold flex items-center gap-1 cursor-pointer card-hover" onclick="openVendorDetail('${v.id}')">
+      <span style="color:${b.color}">${b.icon||'●'}</span>${v.name}
+    </div>`;
+  }).join('');
+}
+
+function _renderHomeVendors(live){
+  const el = document.getElementById('home-vendors');
+  if(!el) return;
+  if(!live.length){
+    el.innerHTML = '<p class="text-xs text-gray-400 py-2">Su an aktif satici yok.</p>';
+    return;
+  }
+  el.innerHTML = live.map(v=>{
+    const b = _getBadge(v.badge);
+    return `<div class="flex-shrink-0 w-32 card p-3 card-hover" onclick="navigateTo('live-sale');setTimeout(()=>openVendorDetail('${v.id}'),200)">
+      <div class="flex items-center gap-1 mb-1">
+        <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-sm">${v.name[0]}</div>
+        <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 bg-success rounded-full animate-pulse"></span></span>
+      </div>
+      <div class="text-xs font-semibold leading-tight">${v.name}</div>
+      <div class="text-[10px] text-gray-400 mt-0.5">${v.distance}</div>
+      <div class="text-[10px] font-semibold mt-1" style="color:${b.color}">${b.icon} ${b.label}</div>
+    </div>`;
+  }).join('');
+}
+
+function _getBadge(badgeId){
+  if(!VC) return {id:'new',label:'',color:'#94a3b8',icon:''};
+  return VC.badges.find(b=>b.id===badgeId) || VC.badges[0];
+}
+
+function _vendorCard(v){
+  const b = _getBadge(v.badge);
+  const cats = [...new Set(v.products.map(p=>p.cat))];
+  const catLabels = cats.map(c=>{ const cfg=VC.productCategories.find(x=>x.id===c); return cfg?cfg.label:c; }).join(', ');
+  const stars = v.reviewCount>0 ? `<span class="text-[10px] text-amber-500">★ ${v.rating.toFixed(1)}</span><span class="text-[10px] text-gray-400">(${v.reviewCount})</span>` : `<span class="text-[10px] text-gray-400">Henuz yorum yok</span>`;
+  return `<div class="card p-3 card-hover" onclick="openVendorDetail('${v.id}')">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">${v.name[0]}</div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-sm">${v.name}</span>
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style="background:${b.color}22;color:${b.color}">${b.icon} ${b.label}</span>
+        </div>
+        <div class="text-[11px] text-gray-500 mt-0.5"><i class="fas fa-map-marker-alt text-primary mr-1"></i>${v.beach}</div>
+        <div class="flex items-center gap-2 mt-1">${stars}</div>
+      </div>
+      <div class="text-right flex-shrink-0">
+        <div class="text-xs font-semibold text-primary">${v.distance}</div>
+        <div class="text-[10px] text-gray-400 mt-1">${catLabels||'—'}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function setLsCat(el, cat){
+  lsCatFilter = cat;
+  document.querySelectorAll('#ls-cat-pills .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  _renderLsVendors();
+}
+
+function toggleLsView(){
+  lsView = lsView==='list' ? 'map' : 'list';
+  document.getElementById('ls-list-view').classList.toggle('hidden', lsView==='map');
+  document.getElementById('ls-map-view').classList.toggle('hidden', lsView==='list');
+  const btn = document.getElementById('ls-view-btn');
+  btn.innerHTML = lsView==='map' ? '<i class="fas fa-list"></i>' : '<i class="fas fa-map"></i>';
+}
+
+function openVendorDetail(vendorId){
+  const v = MOCK_LIVE_VENDORS.find(x=>x.id===vendorId);
+  if(!v) return;
+  selVendorId = vendorId;
+  const b = _getBadge(v.badge);
+  const stars = v.reviewCount>0 ? `★ ${v.rating.toFixed(1)} (${v.reviewCount} yorum)` : 'Henuz yorum yok';
+
+  const productsHtml = v.products.length
+    ? v.products.map(p=>{
+        const stock = VC.stockStatuses.slice().reverse().find(s=>s.threshold!==null && p.stock<=s.threshold) || VC.stockStatuses[0];
+        const tagsHtml = p.tags.map(t=>{ const tg=VC.marketingTags.find(x=>x.id===t); return tg?`<span class="text-[10px] font-semibold text-amber-600">${tg.icon} ${tg.label}</span>`:''; }).join('');
+        return `<div class="border border-gray-100 rounded-xl p-3 mb-2">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <div class="font-semibold text-sm">${p.name}</div>
+              <div class="text-[11px] text-gray-500 mt-0.5">${p.desc}</div>
+              ${tagsHtml ? `<div class="flex flex-wrap gap-2 mt-1">${tagsHtml}</div>` : ''}
+            </div>
+            <div class="text-right flex-shrink-0 ml-3">
+              <div class="font-bold text-primary text-sm">${p.price} TL</div>
+              <div class="text-[10px] font-semibold mt-1" style="color:${stock.color}">${stock.label}</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')
+    : '<p class="text-sm text-gray-400 text-center py-4">Su an urun yok</p>';
+
+  document.getElementById('vendor-detail-content').innerHTML = `
+    <div class="pt-2 pb-2">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary font-bold text-xl flex-shrink-0">${v.name[0]}</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-bold text-base">${v.name}</span>
+            <span class="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:${b.color}22;color:${b.color}">${b.icon} ${b.label}</span>
+          </div>
+          <div class="text-xs text-gray-500 mt-0.5"><i class="fas fa-map-marker-alt text-primary mr-1"></i>${v.beach} · ${v.distance}</div>
+          <div class="text-xs text-amber-500 mt-0.5">${stars}</div>
+        </div>
+      </div>
+      <div class="flex gap-2 mb-4">
+        <a href="https://maps.google.com/?q=${v.lat},${v.lng}" target="_blank"
+           class="flex-1 bg-primary/10 text-primary py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5">
+          <i class="fas fa-directions"></i> Yol Tarifi
+        </a>
+        <button onclick="closeSheet();openVendorReview('${v.id}')" class="flex-1 border py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5">
+          <i class="fas fa-star text-amber-400"></i> Yorum Yaz
+        </button>
+      </div>
+      <h3 class="font-bold text-sm mb-3">Urunler</h3>
+      ${productsHtml}
+    </div>`;
+  openSheet('vendor-detail-sheet');
+}
+
+function openVendorReview(vendorId){
+  const v = MOCK_LIVE_VENDORS.find(x=>x.id===vendorId);
+  if(!v) return;
+  selVendorId = vendorId;
+  document.getElementById('vr-vendor-name').textContent = v.name + ' icin yorum';
+  const catEl = document.getElementById('vr-categories');
+  catEl.innerHTML = VC.reviewCategories.map(c=>{
+    vrStars[c.id] = 0;
+    return `<div>
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-xs font-medium">${c.label}</span>
+        <span class="text-xs text-amber-500 font-semibold" id="vrs-label-${c.id}">Puan ver</span>
+      </div>
+      <div class="flex gap-2">${[1,2,3,4,5].map(n=>`<button class="w-8 h-8 rounded-lg border border-gray-200 text-lg transition-all" id="vrs-${c.id}-${n}" onclick="setVrStar('${c.id}',${n})">☆</button>`).join('')}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('vr-comment').value = '';
+  openSheet('vendor-review-sheet');
+}
+
+function setVrStar(catId, val){
+  vrStars[catId] = val;
+  document.getElementById(`vrs-label-${catId}`).textContent = ['','Cok Kotu','Kotu','Orta','Iyi','Mukemmel'][val];
+  [1,2,3,4,5].forEach(n=>{
+    const btn = document.getElementById(`vrs-${catId}-${n}`);
+    btn.textContent = n<=val ? '★' : '☆';
+    btn.className = `w-8 h-8 rounded-lg border transition-all text-lg ${n<=val?'border-amber-300 bg-amber-50 text-amber-500':'border-gray-200'}`;
+  });
+}
+
+function submitVendorReview(){
+  const allRated = VC.reviewCategories.every(c=>vrStars[c.id]>0);
+  if(!allRated){ showToast('Lutfen tum kategorilere puan verin','danger'); return; }
+  closeSheet();
+  showToast('Yorumunuz gonderildi. Tesekkurler!','success');
 }
 </script>
 </body>

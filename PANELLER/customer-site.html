@@ -1651,7 +1651,9 @@ function getDbTours(){
     const bugun=new Date();bugun.setHours(0,0,0,0);
     const gelecekTarih=(t.tarihler||[]).some(iso=>new Date(iso)>=bugun);
     if(!gelecekTarih&&!(t.gunler&&t.gunler.length))return false;
-    if(!(+(t.fiyat||t.price||0)))return false;
+    const _rawPrice=+(t.fiyat||t.price||0);
+    if(!_rawPrice)return false;
+    if(_rawPrice>500000){console.warn('[DenizBul] Anormal fiyat — tur gizlendi. Admin panelinden düzeltin:',t.ad||t.title,'fiyat:',_rawPrice);return false;}
     // Doluluk: hic acik tarih yoksa yayindan cek
     const tarihler=t.tarihler||[];
     if(tarihler.length){

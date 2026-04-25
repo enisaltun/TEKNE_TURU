@@ -55,7 +55,20 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
 .bottom-sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-radius:20px 20px 0 0;z-index:56;padding:0 16px 24px;max-height:85vh;overflow-y:auto;display:none}
 .swipe-indicator{width:36px;height:4px;background:#cbd5e1;border-radius:2px;margin:8px auto}
 ::-webkit-scrollbar{width:0}
+.baslik-pill{display:inline-flex;align-items:center;padding:8px 14px;border:1.5px solid #e2e8f0;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;background:#fff;transition:all .15s;margin:3px}
+.baslik-pill.selected{background:#0369a1;color:#fff;border-color:#0369a1}
+.baslik-cat-label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px}
+.baslik-selected-banner{background:#e0f2fe;border:1.5px solid #0369a1;border-radius:12px;padding:10px 14px;margin-bottom:12px;display:none}
+@keyframes field-pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.45)}70%{box-shadow:0 0 0 8px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+.field-error{border-color:#ef4444!important;animation:field-pulse 1s ease 2}
+div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animation:field-pulse 1s ease 2}
+.step-ind-btn{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .15s}
+.step-ind-btn:active{opacity:.7}
+#validation-modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;display:none;align-items:flex-end;justify-content:center}
+#validation-modal.open{display:flex}
+#validation-modal-inner{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:24px 20px 36px}
 </style>
+<script src="tur-basliklari-config.js"></script>
 </head>
 <body>
 
@@ -362,22 +375,22 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
 
     <!-- Progress Steps -->
     <div class="flex items-center justify-between mb-6 px-1">
-      <div class="flex flex-col items-center" id="step-ind-1"><div class="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">1</div><span class="text-[9px] mt-1 font-medium text-primary">Kategori</span></div>
+      <div class="flex flex-col items-center step-ind-btn" id="step-ind-1" onclick="goToStep(1)"><div class="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">1</div><span class="text-[9px] mt-1 font-medium text-primary">Kategori</span></div>
       <div class="flex-1 h-0.5 bg-gray-200 mx-1"><div class="h-full bg-primary transition-all duration-300" id="prog-1" style="width:0%"></div></div>
-      <div class="flex flex-col items-center" id="step-ind-2"><div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-400">2</div><span class="text-[9px] mt-1 text-gray-400">Detay</span></div>
+      <div class="flex flex-col items-center step-ind-btn" id="step-ind-2" onclick="goToStep(2)"><div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-400">2</div><span class="text-[9px] mt-1 text-gray-400">Detay</span></div>
       <div class="flex-1 h-0.5 bg-gray-200 mx-1"><div class="h-full bg-primary transition-all duration-300" id="prog-2" style="width:0%"></div></div>
-      <div class="flex flex-col items-center" id="step-ind-3"><div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-400">3</div><span class="text-[9px] mt-1 text-gray-400">Fiyat</span></div>
+      <div class="flex flex-col items-center step-ind-btn" id="step-ind-3" onclick="goToStep(3)"><div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-400">3</div><span class="text-[9px] mt-1 text-gray-400">Fiyat</span></div>
       <div class="flex-1 h-0.5 bg-gray-200 mx-1"><div class="h-full bg-primary transition-all duration-300" id="prog-3" style="width:0%"></div></div>
-      <div class="flex flex-col items-center" id="step-ind-4"><div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-400">4</div><span class="text-[9px] mt-1 text-gray-400">Dahil</span></div>
+      <div class="flex flex-col items-center step-ind-btn" id="step-ind-4" onclick="goToStep(4)"><div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-400">4</div><span class="text-[9px] mt-1 text-gray-400">Dahil</span></div>
       <div class="flex-1 h-0.5 bg-gray-200 mx-1"><div class="h-full bg-primary transition-all duration-300" id="prog-4" style="width:0%"></div></div>
-      <div class="flex flex-col items-center" id="step-ind-5"><div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-400">5</div><span class="text-[9px] mt-1 text-gray-400">Onizleme</span></div>
+      <div class="flex flex-col items-center step-ind-btn" id="step-ind-5" onclick="goToStep(5)"><div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-400">5</div><span class="text-[9px] mt-1 text-gray-400">Onizleme</span></div>
     </div>
 
     <!-- Step 1: Category -->
     <div class="wizard-step fade-in" id="wizard-1">
       <h2 class="font-semibold mb-1">Tur Kategorisi</h2>
       <p class="text-xs text-gray-500 mb-4">Birden fazla secebilirsiniz</p>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-2 gap-3" id="cat-grid">
         <div class="pill cat-pill selected text-center justify-center" onclick="togglePillCat(this)"><i class="fas fa-fish mr-2 text-blue-500"></i>Balik Avi</div>
         <div class="pill cat-pill text-center justify-center" onclick="togglePillCat(this)"><i class="fas fa-compass mr-2 text-cyan-500"></i>Tekne Gezisi</div>
         <div class="pill cat-pill text-center justify-center" onclick="togglePillCat(this)"><i class="fas fa-swimmer mr-2 text-sky-500"></i>Yuzme</div>
@@ -392,16 +405,25 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
       <h2 class="font-semibold mb-4">Tur Detaylari</h2>
       <div class="space-y-4">
         <div>
-          <label class="text-xs font-medium text-gray-500 mb-1 block">Tur Adi</label>
-          <input type="text" placeholder="Ornek: Kemer Aciklari Balik Avi" maxlength="60">
+          <label class="text-xs font-medium text-gray-500 mb-2 block">Baslik Sec</label>
+          <div class="baslik-selected-banner" id="baslik-banner">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-primary" id="baslik-banner-text">Baslik secilmedi</span>
+              <button onclick="clearBaslik()" class="text-[10px] text-gray-400 underline ml-2">Degistir</button>
+            </div>
+          </div>
+          <div id="baslik-selector-wrap">
+            <div class="text-xs text-gray-400 mb-2" id="baslik-empty-hint" style="display:none">Once Step 1'den en az bir kategori secin.</div>
+            <div id="baslik-pills-container" class="max-h-52 overflow-y-auto pr-1"></div>
+          </div>
         </div>
         <div>
           <label class="text-xs font-medium text-gray-500 mb-1 block">Aciklama</label>
-          <textarea placeholder="Turu kisa ve etkileyici sekilde anlatin..." class="h-24"></textarea>
+          <textarea id="wizard-aciklama" placeholder="Sectiginiz basliga gore otomatik dolar, isterseniz duzenleyebilirsiniz..." class="h-24"></textarea>
         </div>
         <div>
           <label class="text-xs font-medium text-gray-500 mb-2 block">Tur Suresi</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2" id="sure-pills">
             <div class="pill" onclick="selectSingle(this)">2 saat</div>
             <div class="pill" onclick="selectSingle(this)">3 saat</div>
             <div class="pill" onclick="selectSingle(this)">4 saat</div>
@@ -469,7 +491,7 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
         </div>
         <div>
           <label class="text-xs font-medium text-gray-500 mb-2 block">Kalkis Saatleri</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2" id="saat-pills">
             <div class="pill selected" onclick="togglePillCat(this)">06:00</div>
             <div class="pill" onclick="togglePillCat(this)">07:00</div>
             <div class="pill" onclick="togglePillCat(this)">08:00</div>
@@ -1235,7 +1257,15 @@ function handleRoute(){
   if(h==='my-tours')   renderMyTours();
   if(h==='bookings')   renderBookings();
   if(h==='profile')    renderProfile();
-  if(h==='create-tour'){currentStep=1;updateWizardUI();for(let i=1;i<=5;i++){const w=document.getElementById('wizard-'+i);if(w)w.style.display=i===1?'block':'none';}}
+  if(h==='create-tour'){
+    currentStep=1;updateWizardUI();
+    for(let i=1;i<=5;i++){const w=document.getElementById('wizard-'+i);if(w)w.style.display=i===1?'block':'none';}
+    wizardSelectedBaslik='';
+    const banner=document.getElementById('baslik-banner');const wrap=document.getElementById('baslik-selector-wrap');
+    if(banner)banner.style.display='none';if(wrap)wrap.style.display='';
+    const descEl=document.getElementById('wizard-aciklama');if(descEl)descEl.value='';
+    document.querySelectorAll('.cat-pill').forEach((el,i)=>el.classList.toggle('selected',i===0));
+  }
 }
 window.addEventListener('hashchange',handleRoute);
 window.addEventListener('load',()=>{handleRoute();renderCalendar();updateClock();});
@@ -1347,13 +1377,60 @@ function deleteTour(id){
 
 /* ── CREATE TOUR ── */
 let currentStep=1;
-function wizardStep(dir){
-  const n=currentStep+dir;
-  if(n<1||n>5)return;
-  document.getElementById('wizard-'+currentStep).style.display='none';
-  document.getElementById('wizard-'+n).style.display='block';
-  currentStep=n;updateWizardUI();
+let wizardSelectedBaslik='';
+
+function renderTitleSelector(){
+  const cats=[...document.querySelectorAll('.cat-pill.selected')].map(el=>el.textContent.trim());
+  const container=document.getElementById('baslik-pills-container');
+  const emptyHint=document.getElementById('baslik-empty-hint');
+  if(!container)return;
+  if(!cats.length){container.innerHTML='';if(emptyHint)emptyHint.style.display='';return;}
+  if(emptyHint)emptyHint.style.display='none';
+  // Secili baslik artik secili kategorilere aitmiyorsa temizle
+  if(wizardSelectedBaslik){
+    const allValid=cats.some(cat=>{
+      const key=Object.keys(TUR_BASLIKLARI).find(k=>k===cat||cat.includes(k)||k.includes(cat));
+      return key&&TUR_BASLIKLARI[key]?.some(item=>item.baslik===wizardSelectedBaslik);
+    });
+    if(!allValid){wizardSelectedBaslik='';const b=document.getElementById('baslik-banner');const w=document.getElementById('baslik-selector-wrap');if(b)b.style.display='none';if(w)w.style.display='';}
+  }
+  let html='';
+  cats.forEach(cat=>{
+    const key=Object.keys(TUR_BASLIKLARI).find(k=>k===cat||cat.includes(k)||k.includes(cat));
+    const list=key?TUR_BASLIKLARI[key]:null;
+    if(!list||!list.length)return;
+    if(cats.length>1)html+=`<div class="baslik-cat-label">${cat}</div>`;
+    list.forEach(item=>{
+      const sel=wizardSelectedBaslik===item.baslik;
+      html+=`<span class="baslik-pill${sel?' selected':''}" onclick="selectBaslik('${item.baslik.replace(/'/g,"\\'")}','${item.aciklama.replace(/'/g,"\\'").replace(/\n/g,' ')}')">${item.baslik}</span>`;
+    });
+  });
+  container.innerHTML=html||'<span class="text-xs text-gray-400">Bu kategoriler icin baslik bulunamadi.</span>';
+  // Banner ile selector arasinda tutarlilik
+  const banner=document.getElementById('baslik-banner');const wrap=document.getElementById('baslik-selector-wrap');
+  if(banner)banner.style.display=wizardSelectedBaslik?'':'none';
+  if(wrap)wrap.style.display=wizardSelectedBaslik?'none':'';
 }
+function selectBaslik(baslik, aciklama){
+  wizardSelectedBaslik=baslik;
+  const banner=document.getElementById('baslik-banner');
+  const bannerText=document.getElementById('baslik-banner-text');
+  const wrap=document.getElementById('baslik-selector-wrap');
+  if(banner){banner.style.display='';bannerText.textContent=baslik;}
+  if(wrap)wrap.style.display='none';
+  const descEl=document.getElementById('wizard-aciklama');
+  if(descEl&&aciklama)descEl.value=aciklama;
+}
+function clearBaslik(){
+  wizardSelectedBaslik='';
+  const banner=document.getElementById('baslik-banner');
+  const wrap=document.getElementById('baslik-selector-wrap');
+  if(banner)banner.style.display='none';
+  if(wrap)wrap.style.display='';
+  renderTitleSelector();
+}
+
+function wizardStep(dir){goToStep(currentStep+dir);}
 function updateWizardUI(){
   for(let i=1;i<=5;i++){
     const ind=document.getElementById('step-ind-'+i);
@@ -1368,7 +1445,70 @@ function updateWizardUI(){
   document.getElementById('wizard-prev').style.display=currentStep>1?'':'none';
   document.getElementById('wizard-next').style.display=currentStep<5?'':'none';
 }
-function togglePillCat(el){el.classList.toggle('selected')}
+
+/* ── Herhangi bir adıma doğrudan git ── */
+function goToStep(n){
+  if(n<1||n>5)return;
+  document.getElementById('wizard-'+currentStep).style.display='none';
+  document.getElementById('wizard-'+n).style.display='block';
+  currentStep=n;
+  updateWizardUI();
+  if(n===2)renderTitleSelector();
+  if(n===5){
+    const h3=document.querySelector('#wizard-5 h3');if(h3)h3.textContent=wizardSelectedBaslik||'Baslik Secilmedi';
+    const cats=[...document.querySelectorAll('.cat-pill.selected')].map(el=>el.textContent.trim());
+    const catBadges=document.querySelector('#wizard-5 .flex.gap-1');
+    if(catBadges)catBadges.innerHTML=cats.map(c=>`<span class="badge bg-blue-100 text-blue-700">${c}</span>`).join('')+'<span class="badge bg-green-100 text-green-700"><i class="fas fa-bolt mr-0.5"></i>Aninda Onay</span>';
+    const priceEl=document.getElementById('tour-price-input');
+    const priceDisp=document.querySelector('#wizard-5 .text-xl');
+    if(priceDisp&&priceEl)priceDisp.innerHTML=priceEl.value?`${(+priceEl.value).toLocaleString('tr-TR')} TL <span class="text-xs text-gray-400 font-normal">/ tekne</span>`:'<span class="text-gray-400 text-base">Fiyat girilmedi</span>';
+  }
+  /* Sayfanın üstüne scroll et */
+  document.getElementById('page-create-tour')?.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── Validation: eksik alanları tespit et ── */
+let _missingFields=[];
+function validateWizard(){
+  const fields=[];
+  if(![...document.querySelectorAll('.cat-pill.selected')].length)
+    fields.push({label:'Kategori secilmedi',step:1,focusId:'cat-grid'});
+  if(!wizardSelectedBaslik)
+    fields.push({label:'Baslik secilmedi',step:2,focusId:'baslik-pills-container'});
+  if(!document.querySelector('#sure-pills .pill.selected'))
+    fields.push({label:'Sur suresi secilmedi',step:2,focusId:'sure-pills'});
+  const priceEl=document.getElementById('tour-price-input');
+  if(!(+(priceEl?.value||0)>0))
+    fields.push({label:'Fiyat girilmedi',step:3,focusId:'tour-price-input'});
+  if(![...document.querySelectorAll('#saat-pills .pill.selected')].length)
+    fields.push({label:'Kalkis saati secilmedi',step:3,focusId:'saat-pills'});
+  _missingFields=fields;
+  return fields;
+}
+
+/* ── Eksik alana git ve highlight et ── */
+function focusField(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  setTimeout(()=>{
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.classList.add('field-error');
+    setTimeout(()=>el.classList.remove('field-error'),2200);
+    if(el.tagName==='INPUT'||el.tagName==='TEXTAREA')el.focus();
+  },350);
+}
+function fixFirstMissing(){
+  document.getElementById('validation-modal').classList.remove('open');
+  if(!_missingFields.length)return;
+  const f=_missingFields[0];
+  goToStep(f.step);
+  focusField(f.focusId);
+}
+
+function togglePillCat(el){
+  el.classList.toggle('selected');
+  if(currentStep===2)renderTitleSelector();
+}
 function selectSingle(el){el.parentElement.querySelectorAll('.pill').forEach(p=>p.classList.remove('selected'));el.classList.add('selected')}
 let capacity=8;
 function changeCapacity(d){capacity=Math.max(1,Math.min(30,capacity+d));document.getElementById('capacity-val').textContent=capacity;calcPerPerson();}
@@ -1377,17 +1517,29 @@ function calcPerPerson(){const p=document.getElementById('tour-price-input').val
 function publishTour(){
   const cap=getActiveCaptain();
   if(!cap){showToast('Once profil sayfasindan aktif bir kaptan secin');return;}
+
+  /* Validasyon */
+  const missing=validateWizard();
+  if(missing.length){
+    const list=document.getElementById('validation-list');
+    if(list)list.innerHTML=missing.map(f=>`<li class="flex items-center gap-2 text-sm"><span class="w-5 h-5 rounded-full bg-red-100 text-danger flex items-center justify-center text-[10px] flex-shrink-0"><i class="fas fa-times"></i></span>${f.label} <span class="ml-auto text-[10px] text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">Adim ${f.step}</span></li>`).join('');
+    document.getElementById('validation-modal').classList.add('open');
+    return;
+  }
+
   const cats=[...document.querySelectorAll('.cat-pill.selected')].map(el=>el.textContent.trim());
-  const durEl=document.querySelector('#wizard-2 .pill.selected');
-  const nameEl=document.querySelector('#wizard-2 input[type=text]');
-  const descEl=document.querySelector('#wizard-2 textarea');
+  const durEl=document.querySelector('#sure-pills .pill.selected');
+  const descEl=document.getElementById('wizard-aciklama');
   const priceEl=document.getElementById('tour-price-input');
-  const saatler=[...document.querySelectorAll('#wizard-3 .pill.selected')].map(el=>el.textContent.trim()).filter(s=>/^\d{2}:\d{2}$/.test(s));
+  const saatler=[...document.querySelectorAll('#saat-pills .pill.selected')].map(el=>el.textContent.trim()).filter(s=>/^\d{2}:\d{2}$/.test(s));
   const includes=[...document.querySelectorAll('#wizard-4 input:checked')].map(el=>el.parentElement.querySelector('span')?.textContent.trim()).filter(Boolean);
   const kalkisEl=document.querySelector('#wizard-2 select');
+  if(!wizardSelectedBaslik){showToast('Tur basligini secmelisiniz','danger');navigateTo('create-tour');return;}
+  if(!cats.length){showToast('En az bir kategori secin','danger');return;}
   const tour={
     id:Date.now(),
-    title:nameEl?.value.trim()||'Yeni Tur',
+    title:wizardSelectedBaslik,
+    ad:wizardSelectedBaslik,
     aciklama:descEl?.value.trim()||'',
     kategoriler:cats.length?cats:['Tekne Gezisi'],
     sure:durEl?durEl.textContent.trim():'—',
@@ -1632,5 +1784,21 @@ function showToast(msg){
   setTimeout(()=>t.classList.add('-translate-y-20','opacity-0'),3500);
 }
 </script>
+
+<!-- Validation Modal -->
+<div id="validation-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div id="validation-modal-inner">
+    <div class="flex items-center gap-2 mb-3">
+      <div class="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0"><i class="fas fa-exclamation text-danger"></i></div>
+      <div>
+        <div class="font-semibold text-sm">Bazi alanlar eksik</div>
+        <div class="text-xs text-gray-400">Yayinlamadan once tamamlanmasi gerekiyor</div>
+      </div>
+    </div>
+    <ul id="validation-list" class="space-y-2 mb-5"></ul>
+    <button id="validation-fix-btn" onclick="fixFirstMissing()" class="w-full bg-danger text-white py-3.5 rounded-2xl font-bold text-sm"><i class="fas fa-arrow-right mr-2"></i>Ilk Eksik Alana Git</button>
+    <button onclick="document.getElementById('validation-modal').classList.remove('open')" class="w-full mt-2 py-3 rounded-2xl text-sm text-gray-500">Kapat</button>
+  </div>
+</div>
 </body>
 </html>

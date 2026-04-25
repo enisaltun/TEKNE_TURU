@@ -9,6 +9,7 @@
 <script>
 tailwind.config={theme:{extend:{colors:{primary:'#0369a1',primaryDark:'#075985',primaryLight:'#e0f2fe',accent:'#f59e0b',surface:'#f8fafc',danger:'#ef4444',success:'#10b981'}}}}
 </script>
+<script src="vendor-config.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 *{font-family:'Inter',sans-serif;margin:0;padding:0;box-sizing:border-box}
@@ -57,6 +58,7 @@ tr:hover td{background:#f8fafc}
   <a href="#tours-bookings" data-nav="tours-bookings"><i class="fas fa-ship"></i> Tur & Rezervasyon</a>
   <a href="#finance" data-nav="finance"><i class="fas fa-wallet"></i> Finans</a>
   <a href="#modules" data-nav="modules"><i class="fas fa-puzzle-piece"></i> Modul Yonetimi</a>
+  <a href="#live-vendors" data-nav="live-vendors"><i class="fas fa-store"></i> Canli Satis</a>
 
   <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Sistem</div>
   <a href="#"><i class="fas fa-cog"></i> Ayarlar</a>
@@ -701,6 +703,199 @@ tr:hover td{background:#f8fafc}
       </div>
     </div>
   </section>
+
+  <!-- ================================================================
+       PAGE: CANLI SATIS
+       ================================================================ -->
+  <section id="page-live-vendors" class="page">
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="stat-card">
+        <div class="stat-icon bg-green-100"><i class="fas fa-store text-success"></i></div>
+        <div>
+          <div class="text-sm text-gray-500">Canli Satici</div>
+          <div class="text-2xl font-bold text-success" id="lv-stat-live">2</div>
+          <div class="flex items-center gap-1.5 mt-1"><span style="width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse 1.5s infinite;display:inline-block"></span><span class="text-xs text-gray-400">su an aktif</span></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-orange-100"><i class="fas fa-tag text-orange-500"></i></div>
+        <div>
+          <div class="text-sm text-gray-500">Bugunku Ilan</div>
+          <div class="text-2xl font-bold" id="lv-stat-listings">7</div>
+          <div class="text-xs text-gray-400 mt-1">bugune kadar</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-amber-100"><i class="fas fa-coins text-accent"></i></div>
+        <div>
+          <div class="text-sm text-gray-500">Ilan Geliri</div>
+          <div class="text-2xl font-bold text-accent" id="lv-stat-revenue">140 TL</div>
+          <div class="text-xs text-gray-400 mt-1">bugunku toplam</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-blue-100"><i class="fas fa-boxes text-primary"></i></div>
+        <div>
+          <div class="text-sm text-gray-500">Aktif Urun</div>
+          <div class="text-2xl font-bold text-primary" id="lv-stat-products">6</div>
+          <div class="text-xs text-gray-400 mt-1">canli satisda</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="flex gap-2 mb-6 flex-wrap">
+      <button class="tab-btn active text-xs rounded-xl" onclick="switchVTab(this,'vt-harita')"><i class="fas fa-map-marker-alt mr-1"></i>Canli Harita</button>
+      <button class="tab-btn text-xs rounded-xl" onclick="switchVTab(this,'vt-ilanlar')"><i class="fas fa-tag mr-1"></i>Aktif Ilanlar</button>
+      <button class="tab-btn text-xs rounded-xl" onclick="switchVTab(this,'vt-saticilar')"><i class="fas fa-users mr-1"></i>Satici Yonetimi</button>
+      <button class="tab-btn text-xs rounded-xl" onclick="switchVTab(this,'vt-gelir')"><i class="fas fa-chart-line mr-1"></i>Gelir Analizi</button>
+      <button class="tab-btn text-xs rounded-xl" onclick="switchVTab(this,'vt-ayarlar')"><i class="fas fa-cog mr-1"></i>Sistem Ayarlari</button>
+    </div>
+
+    <!-- TAB 1: CANLI HARİTA -->
+    <div id="vt-harita">
+      <div class="card mb-4" style="background:linear-gradient(160deg,#e0f7fa 0%,#b3e5fc 60%,#c8e6c9 100%);border:2px solid #81d4fa;padding:20px;position:relative">
+        <div class="flex items-center justify-between mb-4">
+          <div class="text-sm font-bold text-blue-800"><i class="fas fa-water mr-1.5"></i>Sahil Haritasi (Simulasyon)</div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-bold">
+              <span style="width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 1.5s infinite;display:inline-block"></span>
+              <span id="lv-map-live-count">2 Canli</span>
+            </span>
+          </div>
+        </div>
+        <div id="lv-map-pins" class="grid grid-cols-2 gap-3"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: AKTİF İLANLAR -->
+    <div id="vt-ilanlar" style="display:none">
+      <div class="card">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-semibold text-sm">Aktif Ilanlar</h3>
+          <span class="badge bg-green-100 text-green-700" id="lv-listing-count">7 ilan</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead><tr>
+              <th>Satici</th><th>Konum</th><th>Urun</th><th>Fiyat</th>
+              <th>Stok</th><th>Ilan Ucreti</th><th>Durum</th><th>Aksiyon</th>
+            </tr></thead>
+            <tbody id="lv-listings-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: SATICI YÖNETİMİ -->
+    <div id="vt-saticilar" style="display:none">
+      <!-- Başvurular -->
+      <div class="card mb-4">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm">Yeni Basvurular</h3>
+          <span class="badge bg-amber-100 text-amber-700" id="lv-app-count">2 bekliyor</span>
+        </div>
+        <div id="lv-applications-list"></div>
+      </div>
+      <!-- Satıcı Listesi -->
+      <div class="card mb-4">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm">Kayitli Saticilar</h3>
+          <span class="badge bg-blue-100 text-blue-700" id="lv-vendor-count">4 satici</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead><tr>
+              <th>Satici</th><th>Konum</th><th>Rozet</th><th>Yorum / Puan</th>
+              <th>GPS Dogruluk</th><th>Konum Onay</th><th>Uyari</th><th>Toplam Ilan</th><th>Durum</th><th>Aksiyon</th>
+            </tr></thead>
+            <tbody id="lv-vendors-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Yorum Moderasyonu -->
+      <div class="card">
+        <h3 class="font-semibold text-sm mb-4">Yorum Moderasyonu</h3>
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-start gap-2">
+          <i class="fas fa-shield-alt text-primary mt-0.5 text-sm"></i>
+          <p class="text-xs text-blue-800">Sadece admin cevap verebilir. Saticilar kendi yorumlarini gorebilir ancak yanit yazamaz.</p>
+        </div>
+        <div id="lv-reviews-list"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: GELİR ANALİZİ -->
+    <div id="vt-gelir" style="display:none">
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <div class="card text-center"><div class="text-xs text-gray-500 mb-1">Bugun</div><div class="text-2xl font-bold text-primary">140 TL</div><div class="text-xs text-gray-400">7 ilan</div></div>
+        <div class="card text-center"><div class="text-xs text-gray-500 mb-1">Bu Ay</div><div class="text-2xl font-bold text-primary">2,860 TL</div><div class="text-xs text-gray-400">143 ilan</div></div>
+        <div class="card text-center"><div class="text-xs text-gray-500 mb-1">Toplam</div><div class="text-2xl font-bold text-primary">14,400 TL</div><div class="text-xs text-gray-400">720 ilan</div></div>
+      </div>
+      <div class="card mb-4">
+        <div class="font-semibold text-sm mb-3">Son 7 Gun — Ilan Geliri (TL)</div>
+        <div class="chart-bar">
+          <div style="height:40%;background:#0369a1;border-radius:4px 4px 0 0" title="Pzt: 80TL"></div>
+          <div style="height:65%;background:#0369a1;border-radius:4px 4px 0 0" title="Sal: 140TL"></div>
+          <div style="height:35%;background:#0369a1;border-radius:4px 4px 0 0" title="Car: 60TL"></div>
+          <div style="height:80%;background:#0369a1;border-radius:4px 4px 0 0" title="Per: 160TL"></div>
+          <div style="height:55%;background:#0369a1;border-radius:4px 4px 0 0" title="Cum: 120TL"></div>
+          <div style="height:90%;background:#f59e0b;border-radius:4px 4px 0 0" title="Cmt: 200TL"></div>
+          <div style="height:70%;background:#0369a1;border-radius:4px 4px 0 0" title="Paz: 140TL"></div>
+        </div>
+        <div class="flex justify-between mt-2 text-[10px] text-gray-400 px-1">
+          <span>Pzt</span><span>Sal</span><span>Car</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="font-semibold text-sm mb-4">En Aktif Saticilar</div>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2"><div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">MU</div><div><div class="font-medium text-sm">Mehmet Usta</div><div class="text-xs text-gray-400">Konyaalti Sahili</div></div></div>
+            <div class="text-right"><div class="font-bold text-primary">89 ilan</div><div class="text-xs text-gray-400">1,780 TL</div></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2"><div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">IK</div><div><div class="font-medium text-sm">Ibrahim Kaya</div><div class="text-xs text-gray-400">Lara Plaji</div></div></div>
+            <div class="text-right"><div class="font-bold text-primary">34 ilan</div><div class="text-xs text-gray-400">680 TL</div></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2"><div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">FD</div><div><div class="font-medium text-sm">Fatma Deniz</div><div class="text-xs text-gray-400">Ataturk Iskelesi</div></div></div>
+            <div class="text-right"><div class="font-bold text-primary">12 ilan</div><div class="text-xs text-gray-400">240 TL</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SİSTEM AYARLARI -->
+    <div id="vt-ayarlar" style="display:none">
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 flex items-start gap-3">
+        <i class="fas fa-info-circle text-primary mt-0.5"></i>
+        <div>
+          <div class="font-semibold text-sm">Salt Okunur Gorunum</div>
+          <p class="text-xs text-gray-600 mt-1">Bu degerler <code class="bg-white px-1 rounded border">vendor-config.js</code> dosyasinda tanimlidir. Degistirmek icin o dosyayi duzenleyin.</p>
+        </div>
+      </div>
+      <div id="vt-config-display" class="space-y-4"></div>
+    </div>
+
+  </section>
+</div>
+
+<!-- ===== YORUM CEVAP MODALI ===== -->
+<div id="review-reply-modal" style="display:none" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-lg mx-4 shadow-2xl">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center"><i class="fas fa-reply text-primary"></i></div>
+      <div><div class="font-bold text-base">Yoruma Cevap Ver</div><div class="text-xs text-gray-400">Sadece admin cevap verebilir</div></div>
+    </div>
+    <div class="bg-gray-50 rounded-xl p-3 mb-4 text-xs text-gray-600 italic" id="reply-modal-review-text"></div>
+    <textarea id="reply-modal-textarea" rows="4" placeholder="Musteri yorumuna admin cevabi yazin..." class="w-full border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-primary resize-none" style="font-family:inherit"></textarea>
+    <div class="flex gap-3 mt-4">
+      <button onclick="closeReplyModal()" class="flex-1 border py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50">Iptal</button>
+      <button onclick="submitReviewReply()" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-bold hover:bg-primaryDark">Cevabi Kaydet</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== SIL ONAY MODALI ===== -->
@@ -726,8 +921,8 @@ tr:hover td{background:#f8fafc}
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
-const pages=['dashboard','captains','users','tours-bookings','finance','modules','captain-add'];
-const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur & Rezervasyon','finance':'Finans','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle'};
+const pages=['dashboard','captains','users','tours-bookings','finance','modules','live-vendors','captain-add'];
+const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur & Rezervasyon','finance':'Finans','modules':'Modul Yonetimi','live-vendors':'Canli Satis','captain-add':'Yeni Kaptan Ekle'};
 
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
 
@@ -740,6 +935,7 @@ function handleRoute(){
   if(h==='captains')       renderCaptains();
   if(h==='tours-bookings') renderToursBookings();
   if(h==='finance')        renderFinance();
+  if(h==='live-vendors')   renderLiveVendors();
 }
 window.addEventListener('hashchange',handleRoute);
 window.addEventListener('load',handleRoute);
@@ -1108,6 +1304,311 @@ function showToast(msg,type='success'){
 }
 
 document.getElementById('delete-modal').addEventListener('click',function(e){if(e.target===this)closeDeleteModal();});
+document.getElementById('review-reply-modal').addEventListener('click',function(e){if(e.target===this)closeReplyModal();});
+
+/* ════════════════════════════════════════════════════════
+   CANLI SATIS — VERİ
+   ════════════════════════════════════════════════════════ */
+const mockVendors=[
+  {id:'v1',name:'Mehmet Usta',initials:'MU',location:'Konyaalti Sahili',detail:'3. kamelya yani',isLive:true,liveStart:'06:15',balance:80,listings:[{name:'Jig Set 20gr',price:45,stock:'critical'},{name:'Canli Solucan',price:15,stock:'plenty'}],reviewCount:12,avgRating:4.6,warnCount:0,status:'active',joinDate:'15 Mar 2025',totalListings:89, gps:{accuracy:42,distM:118,verifiedAt:'06:12'}},
+  {id:'v2',name:'Ibrahim Kaya',initials:'IK',location:'Lara Plaji',detail:'Sahil yolunda duruyor',isLive:true,liveStart:'05:45',balance:170,listings:[{name:'Kalamar Yemi',price:25,stock:'low'},{name:'Snap Seti',price:12,stock:'plenty'},{name:'Olta Ipi 100m',price:35,stock:'few5'}],reviewCount:8,avgRating:4.2,warnCount:1,status:'active',joinDate:'2 Nis 2025',totalListings:34, gps:{accuracy:89,distM:231,verifiedAt:'05:41'}},
+  {id:'v3',name:'Fatma Deniz',initials:'FD',location:'Ataturk Iskelesi',detail:'Balikci teknelerinin karsisinda',isLive:false,liveStart:null,balance:20,listings:[{name:'Solucan Seti',price:20,stock:'plenty'}],reviewCount:3,avgRating:3.8,warnCount:0,status:'active',joinDate:'20 Nis 2025',totalListings:12, gps:{accuracy:107,distM:54,verifiedAt:'07:30'}},
+  {id:'v4',name:'Kemal Yildiz',initials:'KY',location:'Kemer Marina',detail:'Marina girisi',isLive:false,liveStart:null,balance:0,listings:[],reviewCount:0,avgRating:0,warnCount:3,status:'warned',joinDate:'22 Nis 2025',totalListings:5, gps:null},
+];
+const mockVendorApps=[
+  {id:'a1',name:'Ahmet Ozturk',location:'Olympos Koyu',phone:'0532 111 2233',date:'24 Nis 2025'},
+  {id:'a2',name:'Selin Yavuz',location:'Phaselis Koyu',phone:'0545 444 5566',date:'25 Nis 2025'},
+];
+const mockVendorReviews=[
+  {id:'rv1',vendorId:'v1',vendorName:'Mehmet Usta',author:'Ali Demir',date:'23 Nis',rating:5,text:'Jig setleri cok kaliteliydi, fiyatlar da uygundu!',adminReply:'Guzel yorumunuz icin tesekkurler!'},
+  {id:'rv2',vendorId:'v1',vendorName:'Mehmet Usta',author:'Sevgi Yilmaz',date:'21 Nis',rating:4,text:'Canli yem tazeligi iyiydi ama yerini bulmak biraz zor oldu.',adminReply:null},
+  {id:'rv3',vendorId:'v2',vendorName:'Ibrahim Kaya',author:'Can Turk',date:'24 Nis',rating:4,text:'Kalamar yemi iyi. Fiyatlar makul.',adminReply:null},
+  {id:'rv4',vendorId:'v3',vendorName:'Fatma Deniz',author:'Mert Ay',date:'22 Nis',rating:3,text:'Solucanlar pek taze degil gibiydi.',adminReply:null},
+];
+let editingReviewId=null;
+
+/* ── BADGE HELPER ── */
+function getVendorBadge(reviewCount,avgRating){
+  if(typeof VENDOR_CONFIG==='undefined') return {label:'—',color:'#94a3b8',icon:''};
+  return [...VENDOR_CONFIG.badges].reverse().find(b=>reviewCount>=b.minReviews&&avgRating>=b.minRating)||VENDOR_CONFIG.badges[0];
+}
+
+/* ── RENDER LIVE VENDORS ── */
+function renderLiveVendors(){
+  const liveCount=mockVendors.filter(v=>v.isLive).length;
+  const allListings=mockVendors.flatMap(v=>v.listings);
+  const fee=(typeof VENDOR_CONFIG!=='undefined'?VENDOR_CONFIG.listing.baseFee:20);
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('lv-stat-live',liveCount);
+  set('lv-stat-listings',allListings.length);
+  set('lv-stat-revenue',allListings.length*fee+' TL');
+  set('lv-stat-products',mockVendors.filter(v=>v.isLive).reduce((s,v)=>s+v.listings.length,0));
+  const mapCnt=document.getElementById('lv-map-live-count');
+  if(mapCnt) mapCnt.textContent=liveCount+' Canli';
+  renderVendorMap();
+  renderVendorListingsTab();
+  renderVendorManagement();
+  renderVendorConfigDisplay();
+}
+
+/* ── TAB SWITCH ── */
+function switchVTab(btn,tabId){
+  btn.closest('section').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['vt-harita','vt-ilanlar','vt-saticilar','vt-gelir','vt-ayarlar'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display=id===tabId?'':'none';
+  });
+}
+
+/* ── MAP TAB ── */
+function renderVendorMap(){
+  const pins=document.getElementById('lv-map-pins');
+  if(!pins) return;
+  pins.innerHTML=mockVendors.map(v=>{
+    const badge=getVendorBadge(v.reviewCount,v.avgRating);
+    return`<div class="bg-white/90 rounded-xl p-3 shadow-sm">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center text-[10px] font-bold text-primary">${v.initials}</div>
+          <span class="font-semibold text-xs">${v.name}</span>
+        </div>
+        ${v.isLive
+          ?'<span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;background:#dcfce7;color:#166534;display:inline-flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:#10b981;animation:pulse 1.5s infinite;display:inline-block"></span>Canli</span>'
+          :'<span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;background:#f1f5f9;color:#64748b">Kapali</span>'}
+      </div>
+      <div class="text-[10px] text-gray-500 mb-1"><i class="fas fa-map-marker-alt mr-1 text-primary"></i>${v.location}</div>
+      ${v.detail?'<div class="text-[10px] text-gray-400 italic mb-1">'+v.detail+'</div>':''}
+      <div class="flex items-center justify-between mt-1">
+        <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;background:${badge.color}">${badge.icon} ${badge.label}</span>
+        <span class="text-[10px] text-gray-400">${v.listings.length} ilan${v.avgRating>0?' • '+v.avgRating+'★':''}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── LISTINGS TAB ── */
+function renderVendorListingsTab(){
+  const tbody=document.getElementById('lv-listings-tbody');
+  if(!tbody) return;
+  const fee=(typeof VENDOR_CONFIG!=='undefined'?VENDOR_CONFIG.listing.baseFee:20);
+  const allListings=mockVendors.flatMap(v=>v.listings.map(l=>({...l,vendor:v})));
+  const cntEl=document.getElementById('lv-listing-count');
+  if(cntEl) cntEl.textContent=allListings.length+' ilan';
+  if(!allListings.length){tbody.innerHTML='<tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Su an aktif ilan yok</td></tr>';return;}
+  const stockMap={};
+  if(typeof VENDOR_CONFIG!=='undefined') VENDOR_CONFIG.stockStatuses.forEach(s=>stockMap[s.id]=s);
+  tbody.innerHTML=allListings.map(item=>{
+    const s=stockMap[item.stock]||{label:item.stock,color:'#94a3b8'};
+    return`<tr>
+      <td><div class="font-medium text-xs">${item.vendor.name}</div></td>
+      <td class="text-xs">${item.vendor.location}</td>
+      <td class="font-medium text-xs">${item.name}</td>
+      <td class="font-bold text-xs">${item.price} TL</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px;background:${s.color}18;color:${s.color}">${s.label}</span></td>
+      <td class="text-xs font-bold text-primary">${fee} TL</td>
+      <td><span class="badge bg-green-100 text-green-700">Aktif</span></td>
+      <td><button onclick="stopVendorListing('${item.vendor.id}','${item.name.replace(/'/g,"\\'")}')" class="text-danger text-xs hover:underline">Durdur</button></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── VENDOR MANAGEMENT TAB ── */
+function renderVendorManagement(){
+  // Basvurular
+  const appList=document.getElementById('lv-applications-list');
+  const appCnt=document.getElementById('lv-app-count');
+  if(appCnt) appCnt.textContent=mockVendorApps.length+' bekliyor';
+  if(appList){
+    appList.innerHTML=!mockVendorApps.length
+      ?'<p class="text-xs text-gray-400 text-center py-4">Yeni basvuru yok</p>'
+      :mockVendorApps.map(a=>`
+        <div class="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+          <div><div class="font-medium text-sm">${a.name}</div><div class="text-xs text-gray-400">${a.location} &bull; ${a.phone} &bull; ${a.date}</div></div>
+          <div class="flex gap-2">
+            <button onclick="approveVendorApp('${a.id}')" class="bg-success text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-600">Onayla</button>
+            <button onclick="rejectVendorApp('${a.id}')" class="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-200">Reddet</button>
+          </div>
+        </div>`).join('');
+  }
+
+  // Saticilar tablosu
+  const tbody=document.getElementById('lv-vendors-tbody');
+  const cntEl=document.getElementById('lv-vendor-count');
+  if(cntEl) cntEl.textContent=mockVendors.length+' satici';
+  if(!tbody) return;
+  const warnAt=(typeof VENDOR_CONFIG!=='undefined'?VENDOR_CONFIG.trustScore.warnAt:3);
+  const suspendAt=(typeof VENDOR_CONFIG!=='undefined'?VENDOR_CONFIG.trustScore.suspendAt:5);
+  tbody.innerHTML=mockVendors.map(v=>{
+    const badge=getVendorBadge(v.reviewCount,v.avgRating);
+    const warnBadge=v.warnCount>=suspendAt
+      ?'<span class="badge bg-red-100 text-danger">Askida</span>'
+      :v.warnCount>=warnAt
+        ?'<span class="badge bg-amber-100 text-amber-700">Uyarili</span>'
+        :v.warnCount>0?'<span class="badge bg-gray-100 text-gray-600">'+v.warnCount+' bildirim</span>'
+        :'<span class="text-gray-300">—</span>';
+    const statusBadge=v.status==='warned'
+      ?'<span class="badge bg-amber-100 text-amber-700">Uyarili</span>'
+      :v.isLive
+        ?'<span class="badge bg-green-100 text-green-700">Canli</span>'
+        :'<span class="badge bg-gray-100 text-gray-600">Kapali</span>';
+    const actions=v.status==='warned'
+      ?`<button onclick="activateVendor('${v.id}')" class="text-success text-xs hover:underline mr-2">Aktif Et</button><button onclick="suspendVendor('${v.id}')" class="text-danger text-xs hover:underline">Askiya Al</button>`
+      :`<button onclick="suspendVendor('${v.id}')" class="text-danger text-xs hover:underline">Askiya Al</button>`;
+    const gpsBadge=v.gps
+      ?`<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:#d1fae5;color:#065f46">±${v.gps.accuracy}m</span>`
+      :`<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:#fee2e2;color:#991b1b">Yok</span>`;
+    const locVerify=v.gps
+      ?`<span class="text-[10px] text-gray-700">${v.gps.verifiedAt}<br><span class="text-gray-400">${v.gps.distM}m sahile</span></span>`
+      :`<span class="text-[10px] text-danger font-semibold">Dogrulanmadi</span>`;
+    return`<tr>
+      <td><div class="flex items-center gap-2"><div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">${v.initials}</div><div><div class="font-medium text-xs">${v.name}</div><div class="text-[10px] text-gray-400">${v.joinDate}</div></div></div></td>
+      <td class="text-xs">${v.location}</td>
+      <td><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;background:${badge.color}">${badge.icon} ${badge.label}</span></td>
+      <td class="text-xs">${v.reviewCount} yorum${v.avgRating>0?' &bull; '+v.avgRating+'★':''}</td>
+      <td>${gpsBadge}</td>
+      <td>${locVerify}</td>
+      <td>${warnBadge}</td>
+      <td class="text-xs">${v.totalListings}</td>
+      <td>${statusBadge}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+
+  // Yorumlar
+  const reviewList=document.getElementById('lv-reviews-list');
+  if(!reviewList) return;
+  if(!mockVendorReviews.length){reviewList.innerHTML='<p class="text-xs text-gray-400 text-center py-4">Yorum yok</p>';return;}
+  reviewList.innerHTML=mockVendorReviews.map(r=>{
+    const stars=Array.from({length:5},(_,i)=>`<i class="${i<r.rating?'fas':'far'} fa-star" style="font-size:10px;color:#f59e0b"></i>`).join('');
+    const replySection=r.adminReply
+      ?`<div class="mt-2 p-2 bg-blue-50 rounded-lg border-l-2 border-primary">
+           <div class="text-[10px] font-bold text-primary mb-0.5"><i class="fas fa-shield-alt mr-1"></i>Admin Cevabi</div>
+           <p class="text-[10px] text-gray-600">${r.adminReply}</p>
+           <button onclick="openReplyModal('${r.id}')" class="text-[10px] text-primary hover:underline mt-1">Duzenle</button>
+         </div>`
+      :`<button onclick="openReplyModal('${r.id}')" class="mt-1.5 text-[11px] text-primary font-semibold hover:underline"><i class="fas fa-reply mr-1"></i>Cevap Ver</button>`;
+    return`<div class="py-3 border-b border-gray-50 last:border-0">
+      <div class="flex items-start justify-between mb-1">
+        <div>
+          <span class="font-medium text-xs">${r.author}</span>
+          <span class="text-gray-400 text-xs"> → ${r.vendorName}</span>
+          <div class="flex items-center gap-2 mt-0.5">${stars}<span class="text-[10px] text-gray-400">${r.date}</span></div>
+        </div>
+        <button onclick="hideReview('${r.id}')" class="text-[10px] text-gray-400 hover:text-danger ml-4 whitespace-nowrap">Gizle</button>
+      </div>
+      <p class="text-xs text-gray-600">${r.text}</p>
+      ${replySection}
+    </div>`;
+  }).join('');
+}
+
+/* ── CONFIG DISPLAY TAB ── */
+function renderVendorConfigDisplay(){
+  const el=document.getElementById('vt-config-display');
+  if(!el||typeof VENDOR_CONFIG==='undefined') return;
+  const VC=VENDOR_CONFIG;
+  el.innerHTML=`
+  <div class="card">
+    <div class="font-semibold text-sm mb-3"><i class="fas fa-clock mr-2 text-primary"></i>Canli Satis Saatleri</div>
+    <div class="flex gap-4">
+      <div class="bg-gray-50 rounded-xl p-3 flex-1 text-center"><div class="text-xs text-gray-400">Acilis</div><div class="text-2xl font-bold text-primary">${String(VC.liveHours.start).padStart(2,'0')}:00</div></div>
+      <div class="flex items-center text-gray-300 text-xl">–</div>
+      <div class="bg-gray-50 rounded-xl p-3 flex-1 text-center"><div class="text-xs text-gray-400">Kapanis</div><div class="text-2xl font-bold text-primary">${String(VC.liveHours.end).padStart(2,'0')}:00</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="font-semibold text-sm mb-3"><i class="fas fa-receipt mr-2 text-primary"></i>Ilan Ucretleri</div>
+    <div class="flex justify-between py-2 border-b"><span class="text-xs text-gray-500">Standart Ilan</span><span class="font-bold text-primary">${VC.listing.baseFee} TL</span></div>
+    <div class="flex justify-between py-2"><span class="text-xs text-gray-500">One Cikan Ilan (ek)</span><span class="font-bold text-accent">+${VC.listing.featuredExtra} TL</span></div>
+  </div>
+  <div class="card">
+    <div class="font-semibold text-sm mb-3"><i class="fas fa-box-open mr-2 text-primary"></i>Paket Fiyatlari</div>
+    <div class="space-y-1">${VC.packages.map(p=>`
+      <div class="flex justify-between items-center py-2 border-b last:border-0">
+        <div><div class="text-sm font-medium">${p.label}</div><div class="text-[10px] text-gray-400">${p.count} ilan &bull; Ilan basi ${p.pricePerUnit} TL</div></div>
+        <div class="text-right"><div class="font-bold text-primary">${p.price} TL</div>${p.discount>0?'<div class="text-[10px] text-success font-bold">%'+p.discount+' indirim</div>':''}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="card">
+    <div class="font-semibold text-sm mb-3"><i class="fas fa-medal mr-2 text-primary"></i>Rozet Seviyeleri</div>
+    <div class="space-y-1">${VC.badges.map(b=>`
+      <div class="flex items-center justify-between py-2 border-b last:border-0">
+        <div class="flex items-center gap-2">
+          <span style="width:10px;height:10px;border-radius:50%;background:${b.color};display:inline-block"></span>
+          <div><div class="text-sm font-medium">${b.icon} ${b.label}</div><div class="text-[10px] text-gray-400">${b.minReviews}+ yorum &bull; ${b.minRating}+ puan</div></div>
+        </div>
+        <div class="text-right">${b.discountPct>0?'<div class="text-xs font-bold text-success">%'+b.discountPct+' indirim</div>':'<div class="text-xs text-gray-400">Indirim yok</div>'}<div class="text-[10px] text-gray-400">${Math.round(VC.listing.baseFee*(1-b.discountPct/100))} TL/ilan</div></div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="card">
+    <div class="font-semibold text-sm mb-3"><i class="fas fa-comment mr-2 text-primary"></i>Yorum Kategorileri</div>
+    <div class="flex flex-wrap gap-2">${VC.reviewCategories.map(c=>`<span class="badge bg-blue-100 text-blue-700">${c.label}</span>`).join('')}</div>
+  </div>
+  <div class="card">
+    <div class="font-semibold text-sm mb-3"><i class="fas fa-shield-alt mr-2 text-primary"></i>Guven Skoru Esikleri</div>
+    <div class="flex justify-between py-2 border-b"><span class="text-xs text-gray-500">Uyari Esligi</span><span class="font-bold text-amber-600">${VC.trustScore.warnAt} bildirim</span></div>
+    <div class="flex justify-between py-2"><span class="text-xs text-gray-500">Otomatik Askiya Alma</span><span class="font-bold text-danger">${VC.trustScore.suspendAt} bildirim</span></div>
+  </div>`;
+}
+
+/* ── VENDOR ACTIONS ── */
+function approveVendorApp(id){
+  const idx=mockVendorApps.findIndex(a=>a.id===id);
+  if(idx>-1){const a=mockVendorApps.splice(idx,1)[0];showToast(a.name+' basvurusu onaylandi','success');renderVendorManagement();}
+}
+function rejectVendorApp(id){
+  const idx=mockVendorApps.findIndex(a=>a.id===id);
+  if(idx>-1){const a=mockVendorApps.splice(idx,1)[0];showToast(a.name+' basvurusu reddedildi','danger');renderVendorManagement();}
+}
+function suspendVendor(id){
+  const v=mockVendors.find(x=>x.id===id);
+  if(v){v.status='warned';v.isLive=false;showToast(v.name+' gecici olarak askiya alindi','danger');renderLiveVendors();}
+}
+function activateVendor(id){
+  const v=mockVendors.find(x=>x.id===id);
+  if(v){v.status='active';v.warnCount=0;showToast(v.name+' aktif edildi','success');renderLiveVendors();}
+}
+function stopVendorListing(vendorId,listingName){
+  const v=mockVendors.find(x=>x.id===vendorId);
+  if(!v) return;
+  v.listings=v.listings.filter(l=>l.name!==listingName);
+  showToast('"'+listingName+'" ilani durduruldu','info');
+  renderVendorListingsTab();renderVendorMap();
+  const allL=mockVendors.flatMap(v=>v.listings);
+  const fee=(typeof VENDOR_CONFIG!=='undefined'?VENDOR_CONFIG.listing.baseFee:20);
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('lv-stat-listings',allL.length);
+  set('lv-stat-revenue',allL.length*fee+' TL');
+  set('lv-stat-products',mockVendors.filter(v=>v.isLive).reduce((s,v)=>s+v.listings.length,0));
+}
+function openReplyModal(reviewId){
+  editingReviewId=reviewId;
+  const r=mockVendorReviews.find(x=>x.id===reviewId);
+  if(!r) return;
+  document.getElementById('reply-modal-review-text').textContent='"'+r.text+'" — '+r.author;
+  const ta=document.getElementById('reply-modal-textarea');
+  if(ta) ta.value=r.adminReply||'';
+  document.getElementById('review-reply-modal').style.display='flex';
+}
+function closeReplyModal(){
+  document.getElementById('review-reply-modal').style.display='none';
+  editingReviewId=null;
+}
+function submitReviewReply(){
+  const text=(document.getElementById('reply-modal-textarea').value||'').trim();
+  if(!text){showToast('Cevap metni bos olamaz','danger');return;}
+  const r=mockVendorReviews.find(x=>x.id===editingReviewId);
+  if(r) r.adminReply=text;
+  closeReplyModal();
+  showToast('Cevap kaydedildi','success');
+  renderVendorManagement();
+}
+function hideReview(id){
+  const idx=mockVendorReviews.findIndex(x=>x.id===id);
+  if(idx>-1){mockVendorReviews.splice(idx,1);showToast('Yorum gizlendi','info');renderVendorManagement();}
+}
 </script>
 </body>
 </html>

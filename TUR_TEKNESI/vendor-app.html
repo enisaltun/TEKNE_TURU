@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>DenizBul Satici — App</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0369a1',primaryDark:'#075985',primaryLight:'#e0f2fe',accent:'#f59e0b',accentDark:'#d97706',surface:'#f8fafc',danger:'#ef4444',success:'#10b981',dark:'#0f172a'}}}}</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{font-family:'Inter',sans-serif;margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#f8fafc;color:#1e293b;max-width:430px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden}
+.page{display:none;padding-bottom:88px;min-height:100vh}
+.page.active{display:block}
+.fade-in{animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}70%{box-shadow:0 0 0 14px rgba(16,185,129,0)}}
+.slide-up{animation:slideUp .3s ease}
+.card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-hover:active{transform:scale(.98)}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid #e2e8f0;display:flex;justify-content:space-around;align-items:flex-end;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:50}
+.bottom-nav a{display:flex;flex-direction:column;align-items:center;padding:4px 12px;color:#94a3b8;text-decoration:none;font-size:9px;font-weight:500;transition:color .15s;position:relative}
+.bottom-nav a.active{color:#0369a1}
+.bottom-nav a.active i{transform:scale(1.1)}
+.bottom-nav a i{font-size:20px;margin-bottom:2px;transition:transform .15s}
+.status-bar{background:#fff;padding:8px 16px 6px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;position:sticky;top:0;z-index:50;border-bottom:1px solid #f1f5f9}
+input,select,textarea{border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px;width:100%;outline:none;transition:border .2s;background:#fff}
+input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,161,.1)}
+.pill{display:inline-flex;align-items:center;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;transition:all .15s;white-space:nowrap}
+.pill.active{background:#0369a1;color:#fff;border-color:#0369a1}
+.badge{font-size:10px;padding:3px 10px;border-radius:12px;font-weight:600}
+.stat-card{background:#fff;border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.tab-btn{padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:#e2e8f0;color:#475569;transition:all .15s}
+.tab-btn.active{background:#0369a1;color:#fff}
+.toggle{position:relative;width:48px;height:28px;background:#cbd5e1;border-radius:14px;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle.on{background:#10b981}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on::after{transform:translateX(20px)}
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:55;display:none}
+.bottom-sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-radius:20px 20px 0 0;z-index:56;padding:0 16px 32px;max-height:88vh;overflow-y:auto;display:none}
+.swipe-indicator{width:36px;height:4px;background:#cbd5e1;border-radius:2px;margin:10px auto 4px}
+::-webkit-scrollbar{width:0}
+.live-btn-on{background:linear-gradient(135deg,#10b981,#059669);color:#fff;animation:livePulse 2s infinite}
+.live-btn-off{background:#f1f5f9;color:#64748b}
+.live-btn-disabled{background:#f1f5f9;color:#cbd5e1;cursor:not-allowed}
+.stock-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:10px;font-size:11px;font-weight:600;cursor:pointer}
+.listing-card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:10px}
+.tag-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:8px;font-size:10px;font-weight:600;background:#fef3c7;color:#92400e;margin:2px}
+.review-card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:10px}
+.star-row{display:flex;gap:2px;align-items:center}
+.star-row i{font-size:12px;color:#f59e0b}
+.beach-option{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;transition:all .15s;margin-bottom:8px}
+.beach-option.selected{border-color:#0369a1;background:#e0f2fe}
+.cat-card{padding:14px 10px;border-radius:14px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;text-align:center;transition:all .15s}
+.cat-card.selected{border-color:#0369a1;background:#e0f2fe}
+.badge-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#fff}
+</style>
+<script src="vendor-config.js"></script>
+</head>
+<body>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <span id="clock">06:30</span>
+  <div class="flex items-center gap-1">
+    <i class="fas fa-store text-primary text-xs"></i>
+    <span class="text-primary font-bold text-xs">DenizBul</span>
+    <span class="text-accent font-bold text-xs">Satici</span>
+  </div>
+  <div class="flex items-center gap-1.5 text-gray-400">
+    <i class="fas fa-signal text-[10px]"></i>
+    <i class="fas fa-wifi text-[10px]"></i>
+    <i class="fas fa-battery-three-quarters text-[10px]"></i>
+  </div>
+</div>
+
+<!-- ================================================================
+     PAGE: DASHBOARD
+     ================================================================ -->
+<section id="page-dashboard" class="page active">
+<div class="px-4 pt-3">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <div class="text-lg font-bold">Merhaba, Mehmet Usta</div>
+      <div class="text-xs text-gray-500" id="dash-sub">Bugun satisa hazir misiniz? <i class="fas fa-fish text-primary"></i></div>
+    </div>
+    <div class="w-10 h-10 bg-gradient-to-br from-primary to-sky-400 rounded-full flex items-center justify-center cursor-pointer" onclick="navigateTo('profile')">
+      <span class="text-white font-bold text-sm">MU</span>
+    </div>
+  </div>
+
+  <!-- Konum Durum Banner -->
+  <div id="dash-loc-banner" class="rounded-2xl p-3 mb-4 flex items-center gap-3 cursor-pointer card-hover" onclick="navigateTo('location')">
+    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" id="dash-loc-icon-wrap">
+      <i class="fas fa-location-crosshairs" id="dash-loc-icon"></i>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="text-xs font-bold" id="dash-loc-title">Konum Dogrulanmadi</div>
+      <div class="text-[10px]" id="dash-loc-sub">İlan acmak icin konumunuzu dogrulayin</div>
+    </div>
+    <i class="fas fa-chevron-right text-xs opacity-50"></i>
+  </div>
+
+  <!-- Live Toggle Card -->
+  <div class="card mb-4">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <div class="font-bold text-base" id="live-status-text">Canli Satisa Gec</div>
+        <div class="text-xs text-gray-400" id="live-status-sub">Satis saatleri: 05:00 – 23:00</div>
+      </div>
+      <div id="live-badge-wrap"></div>
+    </div>
+    <button id="live-toggle-btn" onclick="toggleLive()" class="w-full py-3.5 rounded-2xl font-bold text-sm transition-all live-btn-off">
+      <i class="fas fa-broadcast-tower mr-2"></i>Canli Satis Baslat
+    </button>
+    <div id="live-time-warning" class="mt-2 text-xs text-center text-danger hidden">
+      <i class="fas fa-clock mr-1"></i>Canli satis <span id="live-warning-msg"></span> saatleri arasinda aktif olabilir.
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="grid grid-cols-3 gap-3 mb-4">
+    <div class="stat-card">
+      <div class="w-9 h-9 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-1"><i class="fas fa-tag text-orange-500"></i></div>
+      <div class="text-xl font-bold text-orange-500" id="dash-listing-count">3</div>
+      <div class="text-[10px] text-gray-500">Aktif Ilan</div>
+    </div>
+    <div class="stat-card">
+      <div class="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center mx-auto mb-1"><i class="fas fa-coins text-accent"></i></div>
+      <div class="text-xl font-bold text-accent">340<span class="text-[10px]">TL</span></div>
+      <div class="text-[10px] text-gray-500">Bugun Kazanc</div>
+    </div>
+    <div class="stat-card">
+      <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-1"><i class="fas fa-wallet text-primary"></i></div>
+      <div class="text-xl font-bold text-primary" id="dash-balance">80<span class="text-[10px]">TL</span></div>
+      <div class="text-[10px] text-gray-500">Bakiye</div>
+    </div>
+  </div>
+
+  <!-- Rozet -->
+  <div class="card mb-4 flex items-center gap-3 card-hover cursor-pointer" onclick="navigateTo('reviews')">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" id="dash-badge-icon" style="background:#dbeafe">✓</div>
+    <div class="flex-1 min-w-0">
+      <div class="font-semibold text-sm" id="dash-badge-label">Guvenilir Satici</div>
+      <div class="text-[10px] text-gray-400 truncate" id="dash-badge-progress"></div>
+    </div>
+    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+  </div>
+
+  <!-- Haftalık Grafik -->
+  <div class="card mb-4">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-bold text-sm">Bu Hafta</h2>
+      <button class="text-xs text-primary font-medium" onclick="navigateTo('earnings')">Detay <i class="fas fa-arrow-right ml-0.5"></i></button>
+    </div>
+    <div class="flex items-end gap-1.5 h-24">
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary/20 rounded-t-lg" style="height:40px"></div><span class="text-[9px] text-gray-400">Pzt</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary/30 rounded-t-lg" style="height:55px"></div><span class="text-[9px] text-gray-400">Sal</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary/20 rounded-t-lg" style="height:30px"></div><span class="text-[9px] text-gray-400">Car</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary/40 rounded-t-lg" style="height:65px"></div><span class="text-[9px] text-gray-400">Per</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary/60 rounded-t-lg" style="height:80px"></div><span class="text-[9px] text-gray-400">Cum</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-accent rounded-t-lg" style="height:90px"></div><span class="text-[9px] text-gray-400">Cmt</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary rounded-t-lg" style="height:55px"></div><span class="text-[9px] font-bold text-primary">Paz</span></div>
+    </div>
+    <div class="text-center mt-3">
+      <span class="text-lg font-bold text-primary">2,380 TL</span>
+      <span class="text-xs text-gray-400"> bu hafta kazanc</span>
+      <span class="text-[10px] text-danger ml-2">– 260 TL ilan gideri</span>
+    </div>
+  </div>
+
+  <!-- Son Yorumlar -->
+  <div class="mb-4">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-bold text-sm">Son Yorumlar</h2>
+      <button class="text-xs text-primary font-medium" onclick="navigateTo('reviews')">Tumu <i class="fas fa-arrow-right ml-0.5"></i></button>
+    </div>
+    <div id="dash-reviews-preview"></div>
+  </div>
+
+</div>
+</section>
+
+<!-- ================================================================
+     PAGE: LISTINGS
+     ================================================================ -->
+<section id="page-listings" class="page">
+<div class="px-4 pt-3">
+
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-lg font-bold">Ilanlarim</h1>
+    <button onclick="navigateTo('new-listing')" class="bg-primary text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm">
+      <i class="fas fa-plus mr-1"></i>Yeni Ilan
+    </button>
+  </div>
+
+  <!-- Bakiye Uyarısı -->
+  <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-4 flex items-center gap-3">
+    <i class="fas fa-coins text-accent"></i>
+    <div class="flex-1">
+      <div class="text-xs font-bold text-amber-800">Bakiye: <span id="listings-balance">80</span> TL</div>
+      <div class="text-[10px] text-amber-600"><span id="listings-balance-count">4</span> ilan hakki kaldi</div>
+    </div>
+    <button onclick="openBalanceSheet()" class="text-xs font-bold text-accent whitespace-nowrap">Bakiye Yukle</button>
+  </div>
+
+  <div id="listings-container"></div>
+
+</div>
+</section>
+
+<!-- ================================================================
+     PAGE: NEW LISTING
+     ================================================================ -->
+<section id="page-new-listing" class="page">
+<div class="px-4 pt-3">
+
+  <div class="flex items-center gap-3 mb-4">
+    <button onclick="navigateTo('listings')" class="w-9 h-9 bg-white rounded-full shadow-sm flex items-center justify-center">
+      <i class="fas fa-arrow-left text-gray-500 text-sm"></i>
+    </button>
+    <h1 class="text-lg font-bold">Yeni Ilan</h1>
+  </div>
+
+  <!-- Konum doğrulama uyarısı (dinamik gösterilir) -->
+  <div id="nl-loc-guard" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
+    <div class="flex items-center gap-3 mb-3">
+      <i class="fas fa-map-marker-alt text-amber-500 text-lg"></i>
+      <div>
+        <div class="text-sm font-bold text-amber-800">Konum Dogrulanmadi</div>
+        <div class="text-xs text-amber-700 mt-0.5">İlan acmadan once GPS konumunuzu dogrulamaniz gerekiyor.</div>
+      </div>
+    </div>
+    <button onclick="navigateTo('location')" class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold text-sm">
+      <i class="fas fa-satellite-dish mr-2"></i>Konuma Git ve Dogrula
+    </button>
+  </div>
+
+  <!-- Form içeriği (konum doğrulandıktan sonra aktif) -->
+  <div id="nl-form-body">
+
+  <div class="mb-4">
+    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Urun Adi</label>
+    <input type="text" id="nl-name" placeholder="orn. Jig Set 20gr, Canli Solucan..." maxlength="60">
+  </div>
+
+  <div class="mb-4">
+    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Kategori</label>
+    <div class="grid grid-cols-2 gap-3" id="nl-category-grid"></div>
+  </div>
+
+  <div class="mb-4">
+    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Fiyat (TL)</label>
+    <div class="relative">
+      <input type="number" id="nl-price" placeholder="0" min="1" max="9999" class="pr-12">
+      <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-gray-400 pointer-events-none">TL</span>
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Stok Durumu</label>
+    <div class="flex flex-wrap gap-2" id="nl-stock-pills"></div>
+  </div>
+
+  <div class="mb-4">
+    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">
+      Pazarlama Etiketi <span class="text-gray-400 font-normal normal-case">(opsiyonel, birden fazla secebilirsiniz)</span>
+    </label>
+    <div class="flex flex-wrap gap-2" id="nl-tag-pills"></div>
+  </div>
+
+  <div class="mb-4">
+    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">
+      Aciklama <span class="text-gray-400 font-normal normal-case">(opsiyonel)</span>
+    </label>
+    <textarea id="nl-desc" rows="3" placeholder="Urun hakkinda kisaca bilgi verin..." style="resize:none"></textarea>
+  </div>
+
+  <!-- Ücret Kutusu -->
+  <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
+    <div class="flex items-center justify-between mb-1">
+      <div class="flex items-center gap-2"><i class="fas fa-receipt text-primary text-sm"></i><span class="text-sm font-bold">Ilan Ucreti</span></div>
+      <span class="text-lg font-bold text-primary" id="nl-fee-display">20 TL</span>
+    </div>
+    <div class="text-[10px] text-gray-500">Mevcut bakiyenizden dusulecek &bull; Kalan: <span id="nl-balance-after" class="font-bold text-primary">60 TL</span></div>
+  </div>
+
+  <!-- Doğrulanmış konum göstergesi -->
+  <div id="nl-loc-badge" class="hidden bg-green-50 border border-green-200 rounded-2xl p-3 mb-4 flex items-center gap-3">
+    <i class="fas fa-shield-check text-success"></i>
+    <div class="flex-1 text-xs">
+      <span class="font-bold text-green-800">Konum: </span>
+      <span class="text-green-700" id="nl-loc-badge-text">—</span>
+    </div>
+    <span class="text-[10px] text-green-600" id="nl-loc-badge-time">—</span>
+  </div>
+
+  <button onclick="createListing()" class="w-full bg-primary text-white py-4 rounded-2xl font-bold text-sm shadow-md shadow-primary/20 mb-4">
+    <i class="fas fa-tag mr-2"></i>Ilan Olustur (20 TL)
+  </button>
+
+  </div><!-- /nl-form-body -->
+
+</div>
+</section>
+
+<!-- ================================================================
+     PAGE: LOCATION
+     ================================================================ -->
+<section id="page-location" class="page">
+<div class="px-4 pt-3">
+
+  <h1 class="text-lg font-bold mb-1">Konum Dogrulama</h1>
+  <p class="text-xs text-gray-500 mb-4">İlan acmak icin GPS konumunuzun bir sahile eslestirilmesi gerekir. Bu dogrulama bugun gecerlidir.</p>
+
+  <!-- Doğrulanmış konum kartı (kilitli durum) -->
+  <div id="loc-verified-card" class="card mb-4 hidden">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-shield-check text-success"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-bold text-success">Konum Dogrulandi</span>
+          <span class="badge bg-green-100 text-green-700">Bugun Kilitli</span>
+        </div>
+        <div class="font-semibold text-sm mt-0.5" id="loc-beach-name">—</div>
+      </div>
+    </div>
+    <div class="grid grid-cols-3 gap-2 text-center mb-3">
+      <div class="bg-gray-50 rounded-xl py-2">
+        <div class="text-xs font-bold text-gray-700" id="loc-accuracy-val">—</div>
+        <div class="text-[10px] text-gray-400">GPS Dogruluk</div>
+      </div>
+      <div class="bg-gray-50 rounded-xl py-2">
+        <div class="text-xs font-bold text-gray-700" id="loc-distance-val">—</div>
+        <div class="text-[10px] text-gray-400">Sahile Mesafe</div>
+      </div>
+      <div class="bg-gray-50 rounded-xl py-2">
+        <div class="text-xs font-bold text-gray-700" id="loc-verified-at">—</div>
+        <div class="text-[10px] text-gray-400">Onay Saati</div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Detayli Konum Aciklamasi</label>
+      <textarea id="location-detail-text" rows="2" placeholder="orn. 3. kamelya yaninda..." style="resize:none"></textarea>
+      <button onclick="saveLocationDetail()" class="mt-2 text-xs text-primary font-semibold hover:underline">Aciklamayi Kaydet</button>
+    </div>
+    <div class="bg-blue-50 rounded-xl p-3 text-[10px] text-primary">
+      <i class="fas fa-lock mr-1"></i>Bugun baska bir konuma gecemezsiniz. Gece yarisi sifirlanir.
+    </div>
+  </div>
+
+  <!-- GPS doğrulama akışı -->
+  <div id="loc-verify-flow" class="card mb-4">
+
+    <!-- Adım 0: başlamadı -->
+    <div id="loc-step-idle">
+      <div class="text-center py-6">
+        <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-location-crosshairs text-primary text-2xl"></i>
+        </div>
+        <div class="font-bold text-sm mb-1">GPS Konumunuzu Dogrulayin</div>
+        <div class="text-xs text-gray-500 mb-4">Sahilde bulundugunuzu dogrulamak icin konum izni gereklidir.</div>
+        <button onclick="startLocationVerify()" class="w-full bg-primary text-white py-3.5 rounded-2xl font-bold text-sm shadow-md shadow-primary/20">
+          <i class="fas fa-satellite-dish mr-2"></i>GPS ile Konum Al
+        </button>
+      </div>
+    </div>
+
+    <!-- Adım 1: GPS alınıyor -->
+    <div id="loc-step-loading" class="hidden">
+      <div class="text-center py-8">
+        <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3 relative">
+          <i class="fas fa-location-crosshairs text-primary text-2xl animate-pulse"></i>
+        </div>
+        <div class="font-bold text-sm mb-1">GPS Konumu Aliniyor...</div>
+        <div class="text-xs text-gray-500">Lutfen bekleyin, bu 10-20 saniye surebilir.</div>
+      </div>
+    </div>
+
+    <!-- Adım 2: eşleşme bulundu, onay bekliyor -->
+    <div id="loc-step-confirm" class="hidden">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-check text-success text-sm"></i>
+        </div>
+        <div>
+          <div class="text-xs text-gray-400">Yakin sahil bulundu</div>
+          <div class="font-bold text-sm" id="loc-matched-beach">—</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mb-4">
+        <div class="bg-gray-50 rounded-xl p-2 text-center">
+          <div class="text-xs font-bold" id="loc-confirm-accuracy">—</div>
+          <div class="text-[10px] text-gray-400">GPS Dogrulugu</div>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-2 text-center">
+          <div class="text-xs font-bold text-success" id="loc-confirm-distance">—</div>
+          <div class="text-[10px] text-gray-400">Sahile Mesafe</div>
+        </div>
+      </div>
+      <button onclick="confirmLocation()" class="w-full bg-success text-white py-3.5 rounded-2xl font-bold text-sm mb-2">
+        <i class="fas fa-check-circle mr-2"></i>Konumu Onayla ve Kilitle
+      </button>
+      <button onclick="retryLocation()" class="w-full border py-3 rounded-2xl text-sm font-medium text-gray-600">
+        <i class="fas fa-rotate-right mr-1"></i>Tekrar Dene
+      </button>
+    </div>
+
+    <!-- Adım 3: eşleşme yok -->
+    <div id="loc-step-nomatch" class="hidden">
+      <div class="text-center py-4">
+        <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-location-xmark text-danger text-xl"></i>
+        </div>
+        <div class="font-bold text-sm mb-1 text-danger">Sahil Bulunamadi</div>
+        <div class="text-xs text-gray-500 mb-1" id="loc-nomatch-reason">GPS konumunuz tanimli bir sahile yakin degil.</div>
+        <div class="text-[10px] text-gray-400 mb-4" id="loc-nomatch-nearest"></div>
+        <button onclick="retryLocation()" class="w-full bg-primary text-white py-3.5 rounded-2xl font-bold text-sm mb-2">
+          <i class="fas fa-rotate-right mr-2"></i>Tekrar Dene
+        </button>
+      </div>
+    </div>
+
+    <!-- Adım 4: izin reddedildi -->
+    <div id="loc-step-denied" class="hidden">
+      <div class="text-center py-4">
+        <div class="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-ban text-amber-500 text-xl"></i>
+        </div>
+        <div class="font-bold text-sm mb-1">Konum Izni Gerekli</div>
+        <div class="text-xs text-gray-500 mb-4">Tarayici ayarlarindan konum iznini acip sayfayi yenileyin.</div>
+        <button onclick="retryLocation()" class="w-full border py-3 rounded-2xl text-sm font-medium">Tekrar Dene</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Güven skoru uyarısı -->
+  <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-start gap-3">
+    <i class="fas fa-exclamation-triangle text-accent mt-0.5 flex-shrink-0"></i>
+    <div>
+      <div class="text-xs font-bold text-amber-800">Konum Dogrulugu Onemli</div>
+      <p class="text-[10px] text-amber-700 mt-0.5">
+        Musteriler "Saticiyi bulamadim" bildirimi gonderebilir.
+        <span id="warn-count" class="font-bold">0</span> bildirim aldınız.
+        <span id="warn-threshold-msg"></span>
+      </p>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ================================================================
+     PAGE: EARNINGS
+     ================================================================ -->
+<section id="page-earnings" class="page">
+<div class="px-4 pt-3">
+
+  <div class="flex items-center gap-3 mb-4">
+    <button onclick="navigateTo('dashboard')" class="w-9 h-9 bg-white rounded-full shadow-sm flex items-center justify-center">
+      <i class="fas fa-arrow-left text-gray-500 text-sm"></i>
+    </button>
+    <h1 class="text-lg font-bold">Kazancim</h1>
+  </div>
+
+  <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+    <button class="tab-btn active flex-shrink-0" onclick="setEarnPeriod(this,'week')">Bu Hafta</button>
+    <button class="tab-btn flex-shrink-0" onclick="setEarnPeriod(this,'month')">Bu Ay</button>
+    <button class="tab-btn flex-shrink-0" onclick="setEarnPeriod(this,'year')">Bu Yil</button>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3 mb-4">
+    <div class="card"><div class="text-[10px] text-gray-400 mb-1">Brut Kazanc</div><div class="text-xl font-bold text-primary" id="earn-gross">2,640 TL</div></div>
+    <div class="card"><div class="text-[10px] text-gray-400 mb-1">Ilan Gideri</div><div class="text-xl font-bold text-danger" id="earn-fee">– 260 TL</div></div>
+    <div class="card"><div class="text-[10px] text-gray-400 mb-1">Net Kazanc</div><div class="text-xl font-bold text-success" id="earn-net">2,380 TL</div></div>
+    <div class="card"><div class="text-[10px] text-gray-400 mb-1">Ilan Adedi</div><div class="text-xl font-bold text-gray-700" id="earn-count">13 ilan</div></div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="font-bold text-sm mb-3">Gunluk Dagilim</div>
+    <div class="flex items-end gap-1.5 h-28">
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary/20 rounded-t-lg" style="height:40px"></div><span class="text-[9px] text-gray-400">Pzt</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary/35 rounded-t-lg" style="height:55px"></div><span class="text-[9px] text-gray-400">Sal</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary/20 rounded-t-lg" style="height:30px"></div><span class="text-[9px] text-gray-400">Car</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary/45 rounded-t-lg" style="height:65px"></div><span class="text-[9px] text-gray-400">Per</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary/60 rounded-t-lg" style="height:80px"></div><span class="text-[9px] text-gray-400">Cum</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-accent rounded-t-lg" style="height:90px"></div><span class="text-[9px] text-gray-400">Cmt</span></div>
+      <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-primary rounded-t-lg" style="height:55px"></div><span class="text-[9px] font-bold text-primary">Paz</span></div>
+    </div>
+  </div>
+
+  <!-- Bakiye -->
+  <div class="card mb-4">
+    <div class="flex items-center justify-between mb-2">
+      <div class="font-bold text-sm">Bakiye</div>
+      <div class="text-xl font-bold text-primary" id="earn-balance">80 TL</div>
+    </div>
+    <div class="text-xs text-gray-500 mb-3">Her ilan <span class="font-bold text-primary" id="earn-base-fee">20</span> TL &bull; Rozet indiriminiz: <span id="earn-discount">%10</span></div>
+    <button onclick="openBalanceSheet()" class="w-full bg-accent/10 text-accent py-2.5 rounded-xl font-bold text-sm">
+      <i class="fas fa-plus-circle mr-1"></i>Bakiye Yukle
+    </button>
+  </div>
+
+  <!-- İşlem Geçmişi -->
+  <div class="card mb-4">
+    <div class="font-bold text-sm mb-3">Islem Gecmisi</div>
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-tag text-danger text-xs"></i></div>
+          <div><div class="text-xs font-medium">Ilan: Jig Set 20gr</div><div class="text-[10px] text-gray-400">Bugun 06:15</div></div>
+        </div>
+        <span class="text-xs font-bold text-danger">– 20 TL</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-tag text-danger text-xs"></i></div>
+          <div><div class="text-xs font-medium">Ilan: Canli Solucan</div><div class="text-[10px] text-gray-400">Bugun 06:10</div></div>
+        </div>
+        <span class="text-xs font-bold text-danger">– 20 TL</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-plus text-success text-xs"></i></div>
+          <div><div class="text-xs font-medium">Bakiye Yukleme — 10'lu Paket</div><div class="text-[10px] text-gray-400">Dun 21:30</div></div>
+        </div>
+        <span class="text-xs font-bold text-success">+ 170 TL</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ================================================================
+     PAGE: REVIEWS
+     ================================================================ -->
+<section id="page-reviews" class="page">
+<div class="px-4 pt-3">
+
+  <div class="flex items-center gap-3 mb-4">
+    <button onclick="navigateTo('dashboard')" class="w-9 h-9 bg-white rounded-full shadow-sm flex items-center justify-center">
+      <i class="fas fa-arrow-left text-gray-500 text-sm"></i>
+    </button>
+    <h1 class="text-lg font-bold">Yorumlarim</h1>
+  </div>
+
+  <!-- Genel Puan Özeti -->
+  <div class="card mb-4 bg-gradient-to-r from-primary to-sky-500 text-white">
+    <div class="flex items-center gap-4">
+      <div class="text-center flex-shrink-0">
+        <div class="text-4xl font-black">4.6</div>
+        <div class="flex gap-0.5 justify-center mt-1">
+          <i class="fas fa-star text-accent text-sm"></i><i class="fas fa-star text-accent text-sm"></i>
+          <i class="fas fa-star text-accent text-sm"></i><i class="fas fa-star text-accent text-sm"></i>
+          <i class="fas fa-star-half-alt text-accent text-sm"></i>
+        </div>
+        <div class="text-xs opacity-75 mt-1">12 yorum</div>
+      </div>
+      <div class="flex-1 space-y-1.5" id="review-category-bars"></div>
+    </div>
+  </div>
+
+  <!-- Sadece Admin Yanıtlar Notu -->
+  <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-start gap-2">
+    <i class="fas fa-shield-alt text-primary mt-0.5 text-sm flex-shrink-0"></i>
+    <p class="text-[11px] text-blue-800">Yorumlara sadece <strong>DenizBul ekibi</strong> cevap verebilir. Bu sayede platform guvenilirligini koruyoruz.</p>
+  </div>
+
+  <div id="reviews-container"></div>
+
+</div>
+</section>
+
+<!-- ================================================================
+     PAGE: PROFILE
+     ================================================================ -->
+<section id="page-profile" class="page">
+<div class="px-4 pt-3">
+  <h1 class="text-lg font-bold mb-4">Profilim</h1>
+
+  <div class="card mb-4 text-center">
+    <div class="w-20 h-20 bg-gradient-to-br from-primary to-sky-400 rounded-full flex items-center justify-center mx-auto mb-3">
+      <span class="text-white font-black text-2xl">MU</span>
+    </div>
+    <div class="font-bold text-lg">Mehmet Usta</div>
+    <div class="text-xs text-gray-500 mb-3">mehmet.usta@denizbul.tr</div>
+    <div id="profile-badge-row" class="flex justify-center"></div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-3 mb-4">
+    <div class="stat-card"><div class="text-xl font-bold text-primary">12</div><div class="text-[10px] text-gray-500">Toplam Yorum</div></div>
+    <div class="stat-card"><div class="text-xl font-bold text-accent">4.6★</div><div class="text-[10px] text-gray-500">Ort. Puan</div></div>
+    <div class="stat-card"><div class="text-xl font-bold text-success">89</div><div class="text-[10px] text-gray-500">Toplam Ilan</div></div>
+  </div>
+
+  <div class="card mb-4 space-y-1">
+    <button onclick="navigateTo('earnings')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-left">
+      <div class="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-coins text-accent"></i></div>
+      <div class="flex-1 text-sm font-medium">Kazancim &amp; Bakiye</div>
+      <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+    </button>
+    <button onclick="navigateTo('reviews')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-left">
+      <div class="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-star text-amber-500"></i></div>
+      <div class="flex-1 text-sm font-medium">Yorumlarim</div>
+      <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+    </button>
+    <button onclick="navigateTo('location')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-left">
+      <div class="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-map-marker-alt text-success"></i></div>
+      <div class="flex-1 text-sm font-medium">Konum Ayarlari</div>
+      <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+    </button>
+  </div>
+
+  <div class="card mb-4 bg-gradient-to-r from-primary to-sky-500 text-white">
+    <div class="font-bold text-sm mb-1">Aktif Paket Yok</div>
+    <div class="text-xs opacity-80 mb-3">Paket alarak ilan basi maliyetinizi dusturun</div>
+    <button onclick="openBalanceSheet()" class="bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold">Paketlere Bak</button>
+  </div>
+
+</div>
+</section>
+
+<!-- ================================================================
+     BOTTOM NAV
+     ================================================================ -->
+<nav class="bottom-nav" id="main-nav">
+  <a href="#dashboard" class="active" data-nav="dashboard"><i class="fas fa-home"></i>Ana Sayfa</a>
+  <a href="#listings" data-nav="listings"><i class="fas fa-tag"></i>Ilanlarim</a>
+  <a href="#new-listing" data-nav="new-listing" style="margin-top:-20px">
+    <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-accent rounded-2xl flex items-center justify-center shadow-lg shadow-accent/30">
+      <i class="fas fa-plus text-white text-lg"></i>
+    </div>
+  </a>
+  <a href="#location" data-nav="location"><i class="fas fa-map-marker-alt"></i>Konumum</a>
+  <a href="#profile" data-nav="profile"><i class="fas fa-user"></i>Profil</a>
+</nav>
+
+<!-- ================================================================
+     OVERLAYS & SHEETS
+     ================================================================ -->
+<div class="sheet-overlay" id="sheet-overlay" onclick="closeAllSheets()"></div>
+
+<!-- Bakiye / Paket Sheet -->
+<div class="bottom-sheet" id="balance-sheet">
+  <div class="swipe-indicator"></div>
+  <h3 class="font-bold text-base mb-1 mt-2">Bakiye Yukle</h3>
+  <p class="text-xs text-gray-500 mb-4">Daha fazla ilan hakki icin paket sec. Rozet indiriminiz otomatik uygulanir.</p>
+  <div id="balance-package-list" class="space-y-3 mb-4"></div>
+  <div class="bg-blue-50 rounded-xl p-3">
+    <p class="text-[11px] text-blue-700"><i class="fas fa-info-circle mr-1"></i>Mevcut rozet seviyenize gore ek indirim uygulanir.</p>
+  </div>
+</div>
+
+<!-- Stok Guncelle Sheet -->
+<div class="bottom-sheet" id="stock-sheet">
+  <div class="swipe-indicator"></div>
+  <h3 class="font-bold text-base mb-1 mt-2">Stok Durumu</h3>
+  <p class="text-xs text-gray-500 mb-4" id="stock-sheet-product-name"></p>
+  <div id="stock-sheet-options" class="space-y-2 mb-4"></div>
+</div>
+
+<!-- ================================================================
+     TOAST
+     ================================================================ -->
+<div id="toast" style="position:fixed;bottom:96px;left:50%;transform:translateX(-50%);z-index:99;background:#1e293b;color:#fff;font-size:12px;padding:10px 18px;border-radius:14px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;max-width:380px;white-space:nowrap">
+  <i id="toast-icon" class="fas fa-check-circle" style="color:#10b981;font-size:14px;flex-shrink:0"></i>
+  <span id="toast-text"></span>
+</div>
+
+<!-- ================================================================
+     JAVASCRIPT
+     ================================================================ -->
+<script>
+/* ── STATE ── */
+const allPages     = ['dashboard','listings','new-listing','location','earnings','reviews','profile'];
+const hideNavPages = ['new-listing','earnings','reviews'];
+
+const state = {
+  isLive: false,
+  balance: 80,
+  selectedBeach: 'konyaalti',
+  selectedCategory: null,
+  selectedStock: null,
+  selectedTags: [],
+  editingListingId: null,
+  warnCount: 0,
+  reviewCount: 12,
+  avgRating: 4.6,
+};
+
+/* ── MOCK DATA ── */
+const mockListings = [
+  { id:'l1', name:'Jig Set 20gr',         category:'rod',       price:45, stock:'critical', tags:['last2','ending'],  active:true },
+  { id:'l2', name:'Canli Solucan (50gr)', category:'bait',      price:15, stock:'plenty',   tags:['fresh'],           active:true },
+  { id:'l3', name:'Firdondü Seti 20lu',  category:'accessory', price:30, stock:'low',      tags:[],                  active:true },
+];
+
+const mockReviews = [
+  { id:'r1', author:'Ali Demir',    initials:'AD', bg:'#dbeafe', fg:'#1d4ed8', date:'2 gun once',   rating:5, text:'Jig setleri cok kaliteliydi, fiyatlar da uygundu. Kesinlikle tavsiye ederim!', cats:{product_quality:5,price_performance:5,location_accuracy:5,vendor_attitude:5}, adminReply:'Guzel yorumunuz icin tesekkurler! Mehmet ustanin urunlerine olan guveni paylasiyoruz.' },
+  { id:'r2', author:'Sevgi Yilmaz', initials:'SY', bg:'#dcfce7', fg:'#166534', date:'4 gun once',   rating:4, text:'Canli yem tazeligi iyiydi ama yerini bulmak biraz zor oldu.', cats:{product_quality:4,price_performance:4,location_accuracy:3,vendor_attitude:5}, adminReply:null },
+  { id:'r3', author:'Kemal Arslan', initials:'KA', bg:'#fef3c7', fg:'#92400e', date:'1 hafta once', rating:5, text:'Baslangic paketi tam benim icindi. Her sey dahildi. Harika!', cats:{product_quality:5,price_performance:5,location_accuracy:5,vendor_attitude:5}, adminReply:'Tesekkurler! Baslangic paketi en cok tercih edilen urunlerimizden biri.' },
+  { id:'r4', author:'Hande Kaya',   initials:'HK', bg:'#fce7f3', fg:'#9d174d', date:'2 hafta once', rating:4, text:'Urunler iyiydi, biraz erken kapandi ama genel olarak memnunum.', cats:{product_quality:4,price_performance:4,location_accuracy:4,vendor_attitude:4}, adminReply:null },
+];
+
+/* ── ROUTER ── */
+function navigateTo(p){ window.location.hash = '#' + p; }
+
+function handleRoute(){
+  const h = window.location.hash.replace('#','') || 'dashboard';
+  allPages.forEach(p=>{
+    const el = document.getElementById('page-'+p);
+    if(!el) return;
+    el.classList.remove('active');
+    if(p===h) el.classList.add('active','fade-in');
+  });
+  const nav = document.getElementById('main-nav');
+  if(nav) nav.style.display = hideNavPages.includes(h) ? 'none' : 'flex';
+  document.querySelectorAll('.bottom-nav a').forEach(a => a.classList.toggle('active', a.dataset.nav===h));
+  window.scrollTo(0,0);
+  if(h==='dashboard')   renderDashboard();
+  if(h==='listings')    renderListings();
+  if(h==='new-listing') initNewListingForm();
+  if(h==='location')    renderLocation();
+  if(h==='earnings')    renderEarnings();
+  if(h==='reviews')     renderReviews();
+  if(h==='profile')     renderProfile();
+}
+
+window.addEventListener('hashchange', handleRoute);
+window.addEventListener('load', ()=>{ handleRoute(); startClock(); });
+
+/* ── CLOCK ── */
+function startClock(){
+  function tick(){
+    const n = new Date();
+    document.getElementById('clock').textContent =
+      String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 30000);
+}
+
+/* ── LIVE HOURS ── */
+function isWithinLiveHours(){
+  const h = new Date().getHours();
+  return h >= VENDOR_CONFIG.liveHours.start && h < VENDOR_CONFIG.liveHours.end;
+}
+
+function toggleLive(){
+  if(!state.isLive && !getTodayLoc()){
+    showToast('Once konumunuzu dogrulayin!','warning');
+    navigateTo('location');
+    return;
+  }
+  if(!state.isLive && !isWithinLiveHours()){
+    showToast('Canli satis sadece ' + VENDOR_CONFIG.liveHours.start + ':00 – ' + VENDOR_CONFIG.liveHours.end + ':00 saatleri arasinda aktif olabilir.','warning');
+    return;
+  }
+  state.isLive = !state.isLive;
+  renderLiveToggle();
+  showToast(state.isLive ? 'Canli satisa gectiniz! Musteriler sizi gorebilir.' : 'Canli satis durduruldu.', state.isLive?'success':'info');
+}
+
+function renderLiveToggle(){
+  const btn  = document.getElementById('live-toggle-btn');
+  const txt  = document.getElementById('live-status-text');
+  const sub  = document.getElementById('live-status-sub');
+  const warn = document.getElementById('live-time-warning');
+  if(!btn) return;
+  const ok = isWithinLiveHours();
+  if(state.isLive){
+    btn.className = 'w-full py-3.5 rounded-2xl font-bold text-sm transition-all live-btn-on';
+    btn.innerHTML = '<i class="fas fa-stop-circle mr-2"></i>Canli Satisi Durdur';
+    txt.textContent = 'Canli Satis Aktif';
+    sub.textContent = 'Musteriler sizi gorebilir';
+    warn.classList.add('hidden');
+  } else {
+    btn.className = 'w-full py-3.5 rounded-2xl font-bold text-sm transition-all ' + (ok ? 'live-btn-off' : 'live-btn-disabled');
+    btn.innerHTML = '<i class="fas fa-broadcast-tower mr-2"></i>Canli Satis Baslat';
+    txt.textContent = ok ? 'Canli Satisa Gec' : 'Satis Saati Disi';
+    sub.textContent = 'Satis saatleri: ' + VENDOR_CONFIG.liveHours.start + ':00 – ' + VENDOR_CONFIG.liveHours.end + ':00';
+    if(!ok){
+      warn.classList.remove('hidden');
+      document.getElementById('live-warning-msg').textContent =
+        VENDOR_CONFIG.liveHours.start + ':00 – ' + VENDOR_CONFIG.liveHours.end + ':00';
+    } else {
+      warn.classList.add('hidden');
+    }
+  }
+}
+
+/* ── BADGE LOGIC (VENDOR_CONFIG.badges) ── */
+function getCurrentBadge(reviewCount, avgRating){
+  return [...VENDOR_CONFIG.badges].reverse().find(b => reviewCount >= b.minReviews && avgRating >= b.minRating) || VENDOR_CONFIG.badges[0];
+}
+function getNextBadge(currentId){
+  const idx = VENDOR_CONFIG.badges.findIndex(b => b.id === currentId);
+  return (idx >= 0 && idx < VENDOR_CONFIG.badges.length - 1) ? VENDOR_CONFIG.badges[idx+1] : null;
+}
+function badgeChipHTML(badge){
+  return `<span class="badge-chip" style="background:${badge.color}">${badge.icon} ${badge.label}</span>`;
+}
+
+/* ── RENDER DASHBOARD ── */
+function renderDashboard(){
+  renderLocBanner();
+  renderLiveToggle();
+  const badge = getCurrentBadge(state.reviewCount, state.avgRating);
+  const next  = getNextBadge(badge.id);
+  const iconEl  = document.getElementById('dash-badge-icon');
+  const labelEl = document.getElementById('dash-badge-label');
+  const progEl  = document.getElementById('dash-badge-progress');
+  const wrapEl  = document.getElementById('live-badge-wrap');
+  if(iconEl){ iconEl.style.background = badge.color + '25'; iconEl.textContent = badge.icon || '○'; }
+  if(labelEl) labelEl.textContent = badge.label;
+  if(progEl){
+    progEl.textContent = next
+      ? state.reviewCount + ' yorum • Ort: ' + state.avgRating + '★ — Sonraki: ' + next.label + ' (' + (next.minReviews - state.reviewCount) + ' yorum kaldi)'
+      : state.reviewCount + ' yorum • Ort: ' + state.avgRating + '★ — En yuksek seviye!';
+  }
+  if(wrapEl) wrapEl.innerHTML = badgeChipHTML(badge);
+
+  // Dashboard reviews preview (first 2)
+  const previewEl = document.getElementById('dash-reviews-preview');
+  if(previewEl) previewEl.innerHTML = mockReviews.slice(0,2).map(r => reviewCardHTML(r, true)).join('');
+}
+
+/* ── RENDER LISTINGS ── */
+function renderListings(){
+  const container = document.getElementById('listings-container');
+  if(!container) return;
+  const balEl  = document.getElementById('listings-balance');
+  const cntEl  = document.getElementById('listings-balance-count');
+  const fee    = VENDOR_CONFIG.listing.baseFee;
+  if(balEl) balEl.textContent = state.balance;
+  if(cntEl) cntEl.textContent = Math.floor(state.balance / fee);
+
+  container.innerHTML = mockListings.length === 0
+    ? `<div class="text-center py-12 text-gray-400"><i class="fas fa-tag text-4xl mb-3"></i><div class="font-medium">Henuz ilan yok</div><div class="text-xs mt-1">Yeni Ilan butonuna tikla</div></div>`
+    : mockListings.map(l => {
+        const stock = VENDOR_CONFIG.stockStatuses.find(s => s.id === l.stock) || VENDOR_CONFIG.stockStatuses[0];
+        const cat   = VENDOR_CONFIG.productCategories.find(c => c.id === l.category);
+        const tagsHTML = l.tags.map(tid => {
+          const t = VENDOR_CONFIG.marketingTags.find(m => m.id === tid);
+          return t ? `<span class="tag-chip">${t.icon} ${t.label}</span>` : '';
+        }).join('');
+        return `
+        <div class="listing-card" style="opacity:${l.active?1:.55}">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex-1 min-w-0 mr-3">
+              <div class="text-[10px] text-gray-400 mb-0.5">${cat ? cat.label : ''}</div>
+              <div class="font-semibold text-sm">${l.name}</div>
+              <div class="text-lg font-bold text-primary mt-0.5">${l.price} TL</div>
+            </div>
+            <div class="toggle ${l.active?'on':''}" onclick="toggleListingActive('${l.id}')"></div>
+          </div>
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <button onclick="openStockSheet('${l.id}')" class="stock-pill" style="background:${stock.color}18;color:${stock.color}">
+              <span style="width:7px;height:7px;border-radius:50%;background:${stock.color};display:inline-block;flex-shrink:0"></span>
+              ${stock.label}
+              <i class="fas fa-chevron-down text-[9px]"></i>
+            </button>
+            <div>${tagsHTML}</div>
+          </div>
+        </div>`;
+      }).join('');
+}
+
+function toggleListingActive(id){
+  const l = mockListings.find(x => x.id === id);
+  if(!l) return;
+  l.active = !l.active;
+  renderListings();
+  showToast(l.active ? l.name + ' aktif edildi.' : l.name + ' durduruldu.');
+}
+
+/* ── INIT NEW LISTING FORM ── */
+function initNewListingForm(){
+  renderNewListingGuard();
+  state.selectedCategory = null;
+  state.selectedStock    = null;
+  state.selectedTags     = [];
+  ['nl-name','nl-desc'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const priceEl = document.getElementById('nl-price'); if(priceEl) priceEl.value='';
+
+  const catGrid = document.getElementById('nl-category-grid');
+  if(catGrid) catGrid.innerHTML = VENDOR_CONFIG.productCategories.map(c =>
+    `<div class="cat-card" data-cat="${c.id}" onclick="selectCategory('${c.id}')">
+       <i class="${c.icon} text-primary text-2xl mb-2 block"></i>
+       <div class="text-xs font-semibold">${c.label}</div>
+     </div>`
+  ).join('');
+
+  const stockPills = document.getElementById('nl-stock-pills');
+  if(stockPills) stockPills.innerHTML = VENDOR_CONFIG.stockStatuses
+    .filter(s => s.id !== 'sold_out')
+    .map(s => `<button class="pill" data-stock="${s.id}" onclick="selectStock('${s.id}')">${s.label}</button>`)
+    .join('');
+
+  const tagPills = document.getElementById('nl-tag-pills');
+  if(tagPills) tagPills.innerHTML = VENDOR_CONFIG.marketingTags
+    .map(t => `<button class="pill" data-tag="${t.id}" onclick="toggleTag('${t.id}')">${t.icon} ${t.label}</button>`)
+    .join('');
+
+  updateFeeDisplay();
+}
+
+function selectCategory(id){
+  state.selectedCategory = id;
+  document.querySelectorAll('#nl-category-grid .cat-card').forEach(el => el.classList.toggle('selected', el.dataset.cat===id));
+}
+function selectStock(id){
+  state.selectedStock = id;
+  document.querySelectorAll('#nl-stock-pills .pill').forEach(el => el.classList.toggle('active', el.dataset.stock===id));
+}
+function toggleTag(id){
+  const idx = state.selectedTags.indexOf(id);
+  if(idx > -1) state.selectedTags.splice(idx,1); else state.selectedTags.push(id);
+  document.querySelectorAll('#nl-tag-pills .pill').forEach(el => el.classList.toggle('active', state.selectedTags.includes(el.dataset.tag)));
+}
+function updateFeeDisplay(){
+  const fee = VENDOR_CONFIG.listing.baseFee;
+  const feeEl = document.getElementById('nl-fee-display');
+  const balEl = document.getElementById('nl-balance-after');
+  if(feeEl) feeEl.textContent = fee + ' TL';
+  if(balEl) balEl.textContent = (state.balance - fee) + ' TL';
+}
+function createListing(){
+  // Konum doğrulanmamışsa engelle
+  const loc = getTodayLoc();
+  if(!loc){ showToast('Once konumunuzu dogrulayin!','warning'); navigateTo('location'); return; }
+
+  const name  = (document.getElementById('nl-name').value||'').trim();
+  const price = parseFloat(document.getElementById('nl-price').value);
+  if(!name)                      { showToast('Urun adi zorunludur.','warning'); return; }
+  if(!state.selectedCategory)    { showToast('Kategori secin.','warning'); return; }
+  if(!price || price <= 0)       { showToast('Gecerli bir fiyat girin.','warning'); return; }
+  if(!state.selectedStock)       { showToast('Stok durumu secin.','warning'); return; }
+  const fee = VENDOR_CONFIG.listing.baseFee;
+  if(state.balance < fee)        { showToast('Yetersiz bakiye! Lutfen bakiye yukleyin.','warning'); return; }
+  state.balance -= fee;
+  state.selectedBeach = loc.beachId;
+  mockListings.push({ id:'l'+Date.now(), name, category:state.selectedCategory, price, stock:state.selectedStock, tags:[...state.selectedTags], beach:loc.beachId, beachLabel:loc.beachLabel, active:true });
+  showToast('Ilan olusturuldu! ' + fee + ' TL bakiyenizden dusuldu.');
+  navigateTo('listings');
+}
+
+/* ══════════════════════════════════════════════════
+   KONUM DOĞRULAMA SİSTEMİ
+══════════════════════════════════════════════════ */
+
+/* Haversine mesafe hesabı (metre) */
+function haversineM(lat1,lng1,lat2,lng2){
+  const R=6371000,toR=Math.PI/180;
+  const dLat=(lat2-lat1)*toR,dLng=(lng2-lng1)*toR;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*toR)*Math.cos(lat2*toR)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+/* Bugünün ISO tarihi */
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+/* Bugün doğrulanmış konum var mı? */
+function getTodayLoc(){
+  const loc=S.get('vendor_location_today',null);
+  return (loc && loc.date===todayStr()) ? loc : null;
+}
+
+/* GPS al → sahil eşleştir → onay adımına geç */
+function startLocationVerify(){
+  if(!navigator.geolocation){
+    showLocStep('denied');
+    return;
+  }
+  showLocStep('loading');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const {latitude:lat,longitude:lng,accuracy} = pos.coords;
+      const cfg = VENDOR_CONFIG.locationVerification;
+
+      // Doğruluk yeterli mi?
+      if(accuracy > cfg.requiredAccuracyM){
+        showLocStep('nomatch');
+        document.getElementById('loc-nomatch-reason').textContent =
+          'GPS dogrulugu yetersiz (±' + Math.round(accuracy) + 'm). Acik havaya cikip tekrar deneyin.';
+        document.getElementById('loc-nomatch-nearest').textContent = '';
+        return;
+      }
+
+      // En yakın sahili bul
+      let best=null, bestDist=Infinity;
+      VENDOR_CONFIG.beaches.forEach(b=>{
+        const d=haversineM(lat,lng,b.lat,b.lng);
+        if(d<bestDist){ bestDist=d; best=b; }
+      });
+
+      if(best && bestDist<=best.radiusM){
+        // Eşleşme bulundu
+        window._pendingLoc={lat,lng,accuracy:Math.round(accuracy),beach:best,distM:Math.round(bestDist)};
+        document.getElementById('loc-matched-beach').textContent  = best.label;
+        document.getElementById('loc-confirm-accuracy').textContent = '±'+Math.round(accuracy)+'m';
+        document.getElementById('loc-confirm-distance').textContent = Math.round(bestDist)+'m';
+        showLocStep('confirm');
+      } else {
+        // Eşleşme yok
+        showLocStep('nomatch');
+        document.getElementById('loc-nomatch-reason').textContent =
+          'GPS konumunuz tanimli bir sahile yakin degil.';
+        document.getElementById('loc-nomatch-nearest').textContent = best
+          ? 'En yakin sahil: '+best.label+' ('+Math.round(bestDist)+'m uzakta, esik: '+best.radiusM+'m)'
+          : '';
+      }
+    },
+    err => {
+      showLocStep(err.code===1 ? 'denied' : 'nomatch');
+      if(err.code!==1){
+        document.getElementById('loc-nomatch-reason').textContent='GPS alinamadi. Tekrar deneyin.';
+        document.getElementById('loc-nomatch-nearest').textContent='';
+      }
+    },
+    { enableHighAccuracy:true, timeout:20000, maximumAge:0 }
+  );
+}
+
+/* Kullanıcı "Onayla" dedi → localStorage'a kaydet */
+function confirmLocation(){
+  const p=window._pendingLoc;
+  if(!p) return;
+  const n=new Date();
+  const loc={
+    date:       todayStr(),
+    beachId:    p.beach.id,
+    beachLabel: p.beach.label,
+    lat:        p.lat,
+    lng:        p.lng,
+    accuracy:   p.accuracy,
+    distM:      p.distM,
+    verifiedAt: String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0'),
+  };
+  S.set('vendor_location_today', loc);
+  state.selectedBeach = p.beach.id;
+  window._pendingLoc = null;
+  renderLocation();
+  showToast('Konum dogrulandi: '+p.beach.label,'success');
+}
+
+/* Tekrar dene → başa al */
+function retryLocation(){
+  showLocStep('idle');
+}
+
+/* Adım göster/gizle yardımcısı */
+function showLocStep(step){
+  ['idle','loading','confirm','nomatch','denied'].forEach(s=>{
+    const el=document.getElementById('loc-step-'+s);
+    if(el) el.classList.toggle('hidden', s!==step);
+  });
+}
+
+/* Konum sayfası render */
+function renderLocation(){
+  const loc=getTodayLoc();
+  const verifiedCard=document.getElementById('loc-verified-card');
+  const verifyFlow=document.getElementById('loc-verify-flow');
+  const warnEl=document.getElementById('warn-count');
+  const threshEl=document.getElementById('warn-threshold-msg');
+
+  if(loc){
+    // Doğrulanmış → kartı göster, akışı gizle
+    verifiedCard.classList.remove('hidden');
+    verifyFlow.classList.add('hidden');
+    document.getElementById('loc-beach-name').textContent  = loc.beachLabel;
+    document.getElementById('loc-accuracy-val').textContent = '±'+loc.accuracy+'m';
+    document.getElementById('loc-distance-val').textContent = loc.distM+'m';
+    document.getElementById('loc-verified-at').textContent  = loc.verifiedAt;
+  } else {
+    verifiedCard.classList.add('hidden');
+    verifyFlow.classList.remove('hidden');
+    showLocStep('idle');
+  }
+
+  if(warnEl) warnEl.textContent = state.warnCount;
+  if(threshEl) threshEl.textContent =
+    state.warnCount >= VENDOR_CONFIG.trustScore.suspendAt
+      ? 'Hesabiniz inceleme altinda.'
+      : state.warnCount >= VENDOR_CONFIG.trustScore.warnAt
+        ? VENDOR_CONFIG.trustScore.suspendAt+' bildirimde gecici askiya alinirsiniz.'
+        : VENDOR_CONFIG.trustScore.warnAt+' bildirimde uyari, '+VENDOR_CONFIG.trustScore.suspendAt+"'te askiya alinirsiniz.";
+}
+
+function saveLocationDetail(){
+  const detail=(document.getElementById('location-detail-text').value||'').trim();
+  const loc=getTodayLoc();
+  if(!loc) return;
+  loc.detail=detail;
+  S.set('vendor_location_today',loc);
+  showToast('Aciklama kaydedildi.');
+}
+
+/* Dashboard konum banner */
+function renderLocBanner(){
+  const loc=getTodayLoc();
+  const banner=document.getElementById('dash-loc-banner');
+  const iconWrap=document.getElementById('dash-loc-icon-wrap');
+  const icon=document.getElementById('dash-loc-icon');
+  const title=document.getElementById('dash-loc-title');
+  const sub=document.getElementById('dash-loc-sub');
+  if(!banner) return;
+  if(loc){
+    banner.className='rounded-2xl p-3 mb-4 flex items-center gap-3 cursor-pointer card-hover bg-green-50 border border-green-200';
+    iconWrap.className='w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0';
+    icon.className='fas fa-shield-check text-success';
+    title.className='text-xs font-bold text-green-800';
+    title.textContent='Konum Dogrulandi — '+loc.beachLabel;
+    sub.className='text-[10px] text-green-600';
+    sub.textContent=loc.verifiedAt+' · ±'+loc.accuracy+'m · '+loc.distM+'m sahile';
+  } else {
+    banner.className='rounded-2xl p-3 mb-4 flex items-center gap-3 cursor-pointer card-hover bg-amber-50 border border-amber-200';
+    iconWrap.className='w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0';
+    icon.className='fas fa-location-crosshairs text-amber-500';
+    title.className='text-xs font-bold text-amber-800';
+    title.textContent='Konum Dogrulanmadi';
+    sub.className='text-[10px] text-amber-600';
+    sub.textContent='İlan acmak icin konumunuzu dogrulayin →';
+  }
+}
+
+/* Yeni ilan sayfası koruma render */
+function renderNewListingGuard(){
+  const loc=getTodayLoc();
+  const guard=document.getElementById('nl-loc-guard');
+  const formBody=document.getElementById('nl-form-body');
+  const badge=document.getElementById('nl-loc-badge');
+  const badgeText=document.getElementById('nl-loc-badge-text');
+  const badgeTime=document.getElementById('nl-loc-badge-time');
+  if(loc){
+    guard.classList.add('hidden');
+    formBody.classList.remove('hidden');
+    badge.classList.remove('hidden');
+    if(badgeText) badgeText.textContent=loc.beachLabel;
+    if(badgeTime) badgeTime.textContent=loc.verifiedAt+" dogrulandi";
+  } else {
+    guard.classList.remove('hidden');
+    formBody.classList.add('hidden');
+    badge.classList.add('hidden');
+  }
+}
+
+/* ── RENDER EARNINGS ── */
+function renderEarnings(){
+  const badge   = getCurrentBadge(state.reviewCount, state.avgRating);
+  const discEl  = document.getElementById('earn-discount');
+  const balEl2  = document.getElementById('earn-balance');
+  const feeEl2  = document.getElementById('earn-base-fee');
+  if(discEl)  discEl.textContent = '%' + badge.discountPct;
+  if(balEl2)  balEl2.textContent = state.balance + ' TL';
+  if(feeEl2)  feeEl2.textContent = VENDOR_CONFIG.listing.baseFee;
+}
+function setEarnPeriod(btn, period){
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const data = {
+    week:  { gross:'2,640 TL', fee:'– 260 TL', net:'2,380 TL', count:'13 ilan' },
+    month: { gross:'9,800 TL', fee:'– 980 TL', net:'8,820 TL', count:'49 ilan' },
+    year:  { gross:'87,200 TL',fee:'– 8,720 TL',net:'78,480 TL',count:'436 ilan'},
+  };
+  const d = data[period];
+  ['earn-gross','earn-fee','earn-net','earn-count'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = [d.gross,d.fee,d.net,d.count][i];
+  });
+}
+
+/* ── REVIEWS ── */
+function reviewCardHTML(r, compact){
+  const stars = Array.from({length:5},(_,i) =>
+    `<i class="${i < Math.round(r.rating) ? 'fas' : 'far'} fa-star"></i>`).join('');
+  const adminHTML = r.adminReply
+    ? `<div class="mt-2 pt-2 border-t border-gray-100 bg-blue-50 rounded-xl p-2">
+         <div class="flex items-center gap-1 mb-1">
+           <i class="fas fa-shield-alt text-primary text-[10px]"></i>
+           <span class="text-[10px] font-bold text-primary">DenizBul Ekibi</span>
+         </div>
+         <p class="text-[10px] text-gray-600">${r.adminReply}</p>
+       </div>` : '';
+  return `
+  <div class="review-card">
+    <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background:${r.bg}">
+          <span class="font-bold text-xs" style="color:${r.fg}">${r.initials}</span>
+        </div>
+        <div>
+          <div class="font-medium text-sm">${r.author}</div>
+          <div class="text-[10px] text-gray-400">${r.date}</div>
+        </div>
+      </div>
+      <div class="star-row">${stars}<span class="text-xs ml-1 font-bold">${r.rating.toFixed(1)}</span></div>
+    </div>
+    <p class="text-xs text-gray-600">${r.text}</p>
+    ${adminHTML}
+  </div>`;
+}
+
+function renderReviews(){
+  // Category bars
+  const barsEl = document.getElementById('review-category-bars');
+  if(barsEl){
+    const avgs = { product_quality:4.6, price_performance:4.4, location_accuracy:4.8, vendor_attitude:4.5 };
+    barsEl.innerHTML = VENDOR_CONFIG.reviewCategories.map(cat => {
+      const val = avgs[cat.id] || 4.0;
+      return `<div class="flex items-center gap-2 text-xs">
+        <span class="opacity-80" style="min-width:88px">${cat.label}</span>
+        <div class="flex-1 bg-white/20 rounded-full h-1.5"><div class="bg-accent h-1.5 rounded-full" style="width:${(val/5)*100}%"></div></div>
+        <span class="font-bold">${val.toFixed(1)}</span>
+      </div>`;
+    }).join('');
+  }
+  const container = document.getElementById('reviews-container');
+  if(container) container.innerHTML = mockReviews.map(r => reviewCardHTML(r, false)).join('');
+}
+
+/* ── RENDER PROFILE ── */
+function renderProfile(){
+  const badge = getCurrentBadge(state.reviewCount, state.avgRating);
+  const row   = document.getElementById('profile-badge-row');
+  if(row) row.innerHTML = badgeChipHTML(badge);
+}
+
+/* ── STOCK SHEET ── */
+function openStockSheet(id){
+  state.editingListingId = id;
+  const l = mockListings.find(x => x.id === id);
+  if(!l) return;
+  const nameEl = document.getElementById('stock-sheet-product-name');
+  if(nameEl) nameEl.textContent = l.name;
+  const optsEl = document.getElementById('stock-sheet-options');
+  if(optsEl) optsEl.innerHTML = VENDOR_CONFIG.stockStatuses.map(s =>
+    `<button onclick="setStock('${s.id}')" class="w-full flex items-center gap-3 p-3 rounded-xl border ${l.stock===s.id?'border-primary bg-blue-50':'border-gray-200'} text-left">
+       <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0;display:inline-block"></span>
+       <span class="text-sm font-medium flex-1">${s.label}</span>
+       ${l.stock===s.id ? '<i class="fas fa-check text-primary text-xs"></i>' : ''}
+     </button>`
+  ).join('');
+  openSheet('stock-sheet');
+}
+function setStock(stockId){
+  const l = mockListings.find(x => x.id === state.editingListingId);
+  if(l) l.stock = stockId;
+  closeAllSheets(); renderListings();
+  showToast('Stok durumu guncellendi.');
+}
+
+/* ── BALANCE SHEET ── */
+function openBalanceSheet(){
+  const listEl = document.getElementById('balance-package-list');
+  if(listEl) listEl.innerHTML = VENDOR_CONFIG.packages.map(pkg =>
+    `<button onclick="buyPackage('${pkg.id}')" class="w-full text-left p-4 rounded-2xl border border-gray-200 hover:border-primary transition-colors active:bg-gray-50">
+       <div class="flex items-center justify-between">
+         <div>
+           <div class="font-bold text-sm">${pkg.label}</div>
+           <div class="text-[10px] text-gray-400">${pkg.count} ilan hakki &bull; Ilan basi ${pkg.pricePerUnit} TL</div>
+         </div>
+         <div class="text-right">
+           <div class="text-lg font-black text-primary">${pkg.price} TL</div>
+           ${pkg.discount > 0 ? `<div class="text-[10px] font-bold text-success">%${pkg.discount} tasarruf</div>` : ''}
+         </div>
+       </div>
+     </button>`
+  ).join('');
+  openSheet('balance-sheet');
+}
+function buyPackage(id){
+  const pkg = VENDOR_CONFIG.packages.find(p => p.id === id);
+  if(!pkg) return;
+  state.balance += pkg.price;
+  closeAllSheets();
+  showToast(pkg.label + ' yuklendi! ' + pkg.count + ' ilan hakki eklendi.');
+  // refresh balance display wherever visible
+  const dBal = document.getElementById('dash-balance');
+  if(dBal) dBal.innerHTML = state.balance + '<span class="text-[10px]">TL</span>';
+}
+
+/* ── SHEET HELPERS ── */
+function openSheet(id){
+  document.getElementById('sheet-overlay').style.display = 'block';
+  const s = document.getElementById(id);
+  s.style.display = 'block';
+  s.classList.add('slide-up');
+}
+function closeAllSheets(){
+  document.getElementById('sheet-overlay').style.display = 'none';
+  document.querySelectorAll('.bottom-sheet').forEach(s => { s.style.display='none'; s.classList.remove('slide-up'); });
+}
+
+/* ── TOAST ── */
+function showToast(msg, type='success'){
+  const t    = document.getElementById('toast');
+  const icon = document.getElementById('toast-icon');
+  document.getElementById('toast-text').textContent = msg;
+  const styles = {
+    success: { cls:'fas fa-check-circle', color:'#10b981' },
+    warning: { cls:'fas fa-exclamation-triangle', color:'#f59e0b' },
+    info:    { cls:'fas fa-info-circle', color:'#0369a1' },
+  };
+  const s = styles[type] || styles.success;
+  if(icon){ icon.className = s.cls; icon.style.color = s.color; }
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(8px)';
+  }, 3200);
+}
+</script>
+</body>
+</html>
