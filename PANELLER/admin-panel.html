@@ -1681,9 +1681,9 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         <div class="bg-red-50 rounded-xl p-3">
           <div class="flex items-center justify-between mb-2">
             <label class="text-xs font-semibold text-red-800">Sorun enjeksiyon oranı</label>
-            <span id="sim-v-problemRate" class="text-xs font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-lg">60%</span>
+            <span id="sim-v-problemRate" class="text-xs font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-lg">0%</span>
           </div>
-          <input type="range" id="sim-r-problemRate" min="0" max="100" value="60" class="sim-range w-full accent-red-500"
+          <input type="range" id="sim-r-problemRate" min="0" max="100" value="0" class="sim-range w-full accent-red-500"
             oninput="simSyncPct('problemRate',this.value)">
           <div class="flex justify-between text-[9px] text-red-300 mt-0.5"><span>Temiz veri</span><span>Tam kaos</span></div>
         </div>
@@ -4076,7 +4076,7 @@ const SIM_PROBLEMS=[
 ];
 
 /* ── SİMÜLASYON KONFİGÜRASYON PANELİ ── */
-const SIM_CFG_DEFAULTS={captains:20,customers:150,vendors:10,shops:5,toursPerCaptain:8,fillRate:60,reviewRate:40,pastDays:60,futureDays:30,problemRate:60};
+const SIM_CFG_DEFAULTS={captains:20,customers:150,vendors:10,shops:5,toursPerCaptain:8,fillRate:60,reviewRate:40,pastDays:60,futureDays:30,problemRate:0};
 const SIM_PRESETS={
   minimal: {captains:3,customers:20,vendors:3,shops:2,toursPerCaptain:4,fillRate:50,reviewRate:20,pastDays:30,futureDays:14,problemRate:0},
   balanced:{captains:15,customers:150,vendors:10,shops:5,toursPerCaptain:8,fillRate:60,reviewRate:40,pastDays:60,futureDays:30,problemRate:40},
@@ -4323,6 +4323,7 @@ async function runRealisticSimulation(cfg){
   // 6. Rezervasyonlar
   setP(55,'Rezervasyonlar üretiliyor…'); await sleep(40);
   const bookings=[]; const complaints=[]; const reviews=[]; let bookingCounter=0;
+  const capUsage=new Map(); // 'tourId||tarihISO' → toplam dolu kişi
   tours.forEach(t=>{
     const maxBk=Math.max(1,Math.floor(t.kapasite*(cfg.fillRate/100)));
     const n=_rand(1,Math.max(1,maxBk));
@@ -4330,7 +4331,12 @@ async function runRealisticSimulation(cfg){
       const cust=_pick(customers);
       if(!t.tarihler||!t.tarihler.length) return;
       const tarihISO=_pick(t.tarihler);
-      const guests=_rand(1,Math.max(1,Math.floor(t.kapasite/3)));
+      const capKey=`${t.id}||${tarihISO}`;
+      const used=capUsage.get(capKey)||0;
+      const remaining=t.kapasite-used;
+      if(remaining<=0) continue;
+      const guests=_rand(1,Math.min(remaining,Math.max(1,Math.floor(t.kapasite/3))));
+      capUsage.set(capKey,used+guests);
       const tarihD=new Date(tarihISO);
       const past=tarihD<now;
       const bk={

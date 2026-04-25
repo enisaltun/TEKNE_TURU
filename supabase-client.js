@@ -142,6 +142,7 @@ function _denormalizeRez(r) {
     hizmetBedeli:  r.hizmet_bedeli,
     kaptanNet:     r.kaptan_net,
     tarih:         r.tur_tarihi,
+    tarihISO:      r.tur_tarihi,
     saat:          r.tur_saati,
     note:          r.musteri_notu,
     redNedeni:     r.red_nedeni,
@@ -1033,12 +1034,21 @@ window._sbSync = async function() {
     if (!rezs.error && rezs.data && rezs.data.length) {
       const existingBks = _ls('db_bookings', []);
       const localMap = new Map(existingBks.map(b => [String(b.id), b]));
+      const syncedTours = _ls('db_tours', []);
+      const tourByTitleCap = new Map(syncedTours.map(t =>
+        [(t.tur_adi || t.ad || '') + '|' + (t.kaptan_email || t.captainEmail || ''), t.id]
+      ));
       _lsSet('db_bookings', rezs.data.map(r => {
         const local = localMap.get(String(r.id)) || {};
         const d = _denormalizeRez(r);
         if (local.adminReply)   d.adminReply   = local.adminReply;
         if (local.adminReplyAt) d.adminReplyAt = local.adminReplyAt;
         if (local.adminNote)    d.adminNote    = local.adminNote;
+        // tourId null ise tur_adi+kaptan_email ile çöz
+        if (!d.tourId && (r.tur_adi || r.kaptan_email)) {
+          const resolved = tourByTitleCap.get((r.tur_adi || '') + '|' + (r.kaptan_email || ''));
+          if (resolved) d.tourId = resolved;
+        }
         return d;
       }));
     }
