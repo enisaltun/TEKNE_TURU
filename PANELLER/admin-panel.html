@@ -4024,15 +4024,36 @@ function seedTestUser(){
   renderUsers?.();renderDashboard();
   showToast('Test kullanıcı oluşturuldu (kullanıcı: 1 / şifre: 1)','success');
 }
-function factoryReset(){
-  if(!confirm('TÜM VERİ SİLİNECEK:\n• Kullanıcılar\n• Kaptanlar\n• Turlar\n• Rezervasyonlar\n• Mesajlar / Şikayetler\n• Ödemeler / Ayarlar\n\nBu işlem GERİ ALINAMAZ.\n\nDevam?')) return;
-  if(!confirm('SON UYARI — localStorage tamamen temizlenecek. Emin misiniz?')) return;
+async function factoryReset(){
+  if(!confirm('TÜM VERİ SİLİNECEK:\n• Kullanıcılar, Kaptanlar, Turlar\n• Rezervasyonlar, Ödemeler, Yorumlar\n• Mesajlar, Satıcılar, Mağazalar\n\n⚠ Supabase dahil her şey sıfırlanacak.\nBu işlem GERİ ALINAMAZ.\n\nDevam?')) return;
+  if(!confirm('SON UYARI — Supabase + localStorage tamamen temizlenecek. Emin misiniz?')) return;
+
+  showToast('Sıfırlanıyor…','info');
+
+  // Supabase'i temizle (remote modda)
+  if(typeof window.clearSupabaseAll === 'function'){
+    try{
+      await window.clearSupabaseAll({ onStep: msg => showToast(msg,'info') });
+    } catch(e){
+      console.warn('[Reset] Supabase temizleme hatası:', e);
+    }
+  }
+
+  // localStorage + sessionStorage temizle
   try{ localStorage.clear(); sessionStorage.clear(); }catch(e){ console.warn(e); }
-  /* Boş key yaz — getAllUsers() DEMO_USERS'a düşmemesi için key'in var olması gerekiyor */
+
+  // Boş key yaz — getAllUsers() DEMO_USERS'a düşmesin
   localStorage.setItem('db_users','[]');
   localStorage.setItem('cu_users','[]');
-  showToast('Sistem sıfırlandı. Yenileniyor…','success');
-  setTimeout(()=>location.reload(), 900);
+  localStorage.setItem('db_captains','[]');
+  localStorage.setItem('db_tours','[]');
+  localStorage.setItem('db_bookings','[]');
+  localStorage.setItem('db_reviews','[]');
+  localStorage.setItem('db_vendor_listings','[]');
+  localStorage.setItem('db_shop_listings','[]');
+
+  showToast('Sistem tamamen sıfırlandı. Yenileniyor…','success');
+  setTimeout(()=>location.reload(), 1200);
 }
 
 const SIM_POOLS = {

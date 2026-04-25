@@ -1067,6 +1067,41 @@ window._sbSync = async function() {
 };
 
 // ================================================================
+// clearSupabaseAll — tüm Supabase tablolarını sıfırla, test hesaplarını geri yaz
+// Admin fabrika resetinden çağrılır
+// ================================================================
+window.clearSupabaseAll = async function(opts = {}) {
+  if (DB_MODE !== 'remote' || !_sb) return { ok: false, reason: 'remote_only' };
+  const onStep = opts.onStep || (() => {});
+  onStep('Rezervasyonlar siliniyor…');
+  await _sb.from('rezervasyonlar').delete().neq('id', '__none__');
+  onStep('Ödemeler siliniyor…');
+  await _sb.from('odemeler').delete().neq('id', '__none__');
+  onStep('Yorumlar siliniyor…');
+  await _sb.from('yorumlar').delete().neq('id', _uuid());
+  onStep('Mesajlar siliniyor…');
+  await _sb.from('mesajlar').delete().neq('id', _uuid());
+  onStep('Satıcı ilanları siliniyor…');
+  await _sb.from('satici_ilanlari').delete().neq('id', '__none__');
+  onStep('Mağaza ürünleri siliniyor…');
+  await _sb.from('magaza_urunleri').delete().neq('id', '__none__');
+  onStep('Turlar siliniyor…');
+  await _sb.from('turlar').delete().neq('id', _uuid());
+  onStep('Kullanıcılar siliniyor…');
+  await _sb.from('kullanicilar').delete().neq('email', '__none__');
+  // Test hesaplarını geri yaz
+  onStep('Test hesapları yükleniyor…');
+  await _sb.from('kullanicilar').upsert([
+    { email: 'musteri@test.com',  ad: 'Test',     soyad: 'Musteri', sifre: 'test1234', roller: ['customer'],           durum: 'aktif', kayit_kanali: 'web' },
+    { email: 'kaptan@test.com',   ad: 'Test',     soyad: 'Kaptan',  sifre: 'test1234', roller: ['customer','captain'], durum: 'aktif', kayit_kanali: 'web' },
+    { email: 'satici@test.com',   ad: 'Test',     soyad: 'Satici',  sifre: 'test1234', roller: ['customer','vendor'],  durum: 'aktif', kayit_kanali: 'web' },
+    { email: 'admin@test.com',    ad: 'Platform', soyad: 'Admin',   sifre: 'test1234', roller: ['customer','admin'],   durum: 'aktif', kayit_kanali: 'web' },
+  ], { onConflict: 'email' });
+  onStep('Tamamlandı.');
+  return { ok: true };
+};
+
+// ================================================================
 // exportToSupabase — localStorage simülasyon verisini Supabase'e aktar
 // Admin panelden çağrılır: await exportToSupabase({ onProgress })
 // ================================================================
