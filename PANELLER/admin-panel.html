@@ -4388,6 +4388,7 @@ async function runRealisticSimulation(cfg){
   setP(85,'Veritabanı yazılıyor…'); await sleep(40);
   const allUsers=[...captains,...customers,...vendors,...shops];
   localStorage.setItem('db_users',JSON.stringify(allUsers));
+  localStorage.setItem('db_captains',JSON.stringify(captains));
   localStorage.setItem('db_tours',JSON.stringify(tours));
   localStorage.setItem('db_bookings',JSON.stringify(bookings));
   localStorage.setItem('db_complaints',JSON.stringify(complaints));

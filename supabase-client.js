@@ -177,8 +177,9 @@ function _normalizeTur(t) {
     saatler:         t.saatler  || ['09:00'],
     dahil:           t.includes || t.dahil || [],
     haric:           t.haric || '',
-    kalkis_noktasi:  t.kalkis || t.kalkis_noktasi,
+    kalkis_noktasi:  t.kalkis || t.kalkisNoktasi || t.kalkis_noktasi,
     bolge:           t.konum  || t.bolge,
+    tekne_adi:       t.tekneAdi || t.tekne_adi,
     durum:           t.durum  || (t.aktif ? 'aktif' : t.status) || 'bekliyor',
     hero_image:      t.heroImage || t.hero_image,
     puan:            t.puan || 0,
@@ -1143,7 +1144,10 @@ window.exportToSupabase = async function(opts = {}) {
     kisi_sayisi:    +(b.guests || b.kisi_sayisi || 1),
     durum:          b.durum || 'onaylandi',
     toplam_tutar:   safeFlt(b.price || b.toplam_tutar),
-    tur_fiyati:     safeFlt(b.fiyat || b.tur_fiyati),
+    tur_fiyati:     safeFlt(b.fiyat || b.tur_fiyati) || Math.round(safeFlt(b.price || b.toplam_tutar) / +(b.guests || b.kisi_sayisi || 1)),
+    hizmet_bedeli:  safeFlt(b.hizmetBedeli || b.hizmet_bedeli) || Math.round(safeFlt(b.price || b.toplam_tutar) * 0.10),
+    komisyon:       safeFlt(b.komisyon) || Math.round(safeFlt(b.price || b.toplam_tutar) * 0.025),
+    kaptan_net:     safeFlt(b.kaptanNet || b.kaptan_net) || Math.round(safeFlt(b.price || b.toplam_tutar) * 0.875),
     tur_tarihi:     safeDate(b.tarihISO || b.tur_tarihi),
     tur_saati:      b.saat || b.tur_saati || '09:00',
     odeme_yapildi:  b.odemeYapildi || false,
@@ -1161,7 +1165,8 @@ window.exportToSupabase = async function(opts = {}) {
   setP(65, 'Yorumlar yükleniyor…');
   const lsReviews = _ls('db_reviews', []).slice(0, 1000);
   const revPayload = lsReviews.map(r => ({
-    rezervasyon_id: r.bookingId  || r.rezervasyon_id || null,
+    rezervasyon_id: r.bookingId    || r.rezervasyon_id || null,
+    tur_id:         tourIdMap.get((r.tourTitle || r.tur_adi || '') + '|' + (r.captainEmail || r.kaptan_email || '')) || null,
     musteri_email:  r.customerEmail || r.musteri_email || '',
     musteri_adi:    r.customerName  || r.musteri_adi   || '',
     kaptan_email:   r.captainEmail  || r.kaptan_email  || '',
