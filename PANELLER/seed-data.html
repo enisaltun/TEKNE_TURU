@@ -315,6 +315,14 @@ function genCaptains(n=30){
     const kapasite=Math.max(4,Math.round(uzunluk*0.7));
     const tarihMs=Date.now()-rndInt(180,1200)*24*3600000;
     const tarih=new Date(tarihMs).toLocaleDateString('tr-TR');
+    const lisansNo='KEGM-TR-'+String(10000+i).padStart(5,'0');
+    const lisansTipi=['A1','A1','A2','B1'][i%4];
+    const tcNo=String(rndInt(10000000,99999999))+String(rndInt(100,999));
+    const ruhsatNo='RH-'+String(rndInt(10000,99999));
+    const sigortaNo='SG-'+String(rndInt(10000,99999));
+    const mmsi='271'+String(rndInt(100000,999999));
+    const callSign='TC'+String.fromCharCode(65+rndInt(0,25))+String(rndInt(100,999));
+    const aisClass=['A','B','B+'][i%3];
     return{
       id:i+1,
       ad:k.ad, soyad:k.soyad, email,
@@ -326,14 +334,19 @@ function genCaptains(n=30){
       katilimTarihi:new Date(tarihMs).toISOString(),
       tarih,
       bio:`${k.ad} ${k.soyad}, ${bolgeInfo.bolge} bölgesinde ${k.yil} yıllık deneyime sahip lisanslı denizci kaptanıdır.`,
-      tekne:TEKNE_ADLARI[i],
-      tekneTuru,
-      uzunluk,
-      tekneYil:rndInt(2008,2023),
-      lisans:'KEGM-TR-'+String(10000+i).padStart(5,'0'),
-      lisansTarih:new Date(Date.now()-rndInt(365,3650)*24*3600000).toLocaleDateString('tr-TR'),
-      kapasite,
+      tekne:TEKNE_ADLARI[i], tekneAdi:TEKNE_ADLARI[i],
+      tekneTuru, uzunluk, tekneYil:rndInt(2008,2023),
+      kapasite, marina:bolgeInfo.bolge+' Marinası',
       kategoriler:k.kat,
+      // Evrak bilgileri (tamamı dolu — _capHasEvrakEksik: tc+lisans+ruhsat+sigorta)
+      tc:tcNo,
+      lisans:lisansNo, lisansTipi,
+      lisansTarih:new Date(Date.now()+rndInt(180,1095)*24*3600000).toISOString().slice(0,10),
+      ruhsat:ruhsatNo, sigorta:sigortaNo,
+      sigortaTarih:new Date(Date.now()+rndInt(180,730)*24*3600000).toISOString().slice(0,10),
+      // Denizcilik kimlik
+      mmsi, callSign, aisClass,
+      belgeler:{verified:true,tc:true,lisans:true,ruhsat:true,sigorta:true},
       adminNot:k.durum==='bekliyor'?'Belgeler inceleniyor, onay bekleniyor.':''
     };
   });
@@ -867,26 +880,35 @@ function generateMinimalSeedData(){
         const email=`${k.ad.toLowerCase()}.${k.soyad.toLowerCase()}@kaptan.com`;
         const tekneTuru=TEKNE_TURLERI[i%TEKNE_TURLERI.length];
         const uzunluk=UZUNLUKLAR[i%UZUNLUKLAR.length];
-        const kapasite=Math.max(4,Math.round(uzunluk*0.7));
+        const kapasite=Math.max(4,Math.round(uzunluk*0.75));
         const tarihMs=Date.now()-rndInt(30,180)*24*3600000;
+        const lisansNo='KEGM-TR-'+String(10000+i).padStart(5,'0');
+        const lisansTipi=['A1','A1','A2','B1'][i%4];
+        const tcNo=String(rndInt(10000000,99999999))+String(rndInt(100,999));
+        const ruhsatNo='RH-'+String(rndInt(10000,99999));
+        const sigortaNo='SG-'+String(rndInt(10000,99999));
+        const mmsi='271'+String(rndInt(100000,999999));
+        const callSign='TC'+String.fromCharCode(65+rndInt(0,25))+String(rndInt(100,999));
         return{
           id:i+1,
           ad:k.ad, soyad:k.soyad, email,
           telefon:'05'+rndInt(30,59)+''+rndInt(1000000,9999999),
-          bolge:bolgeInfo.bolge,
+          bolge:bolgeInfo.bolge, marina:bolgeInfo.bolge+' Marinası',
           durum:k.durum,
           puan:k.durum==='aktif'?k.puan:0,
           turSayisi:0,
           katilimTarihi:new Date(tarihMs).toISOString(),
           tarih:new Date(tarihMs).toLocaleDateString('tr-TR'),
           bio:`${k.ad} ${k.soyad}, ${bolgeInfo.bolge} bölgesinde ${k.yil} yıllık deneyimli lisanslı kaptandır.`,
-          tekne:TEKNE_ADLARI[i],
-          tekneTuru, uzunluk,
-          tekneYil:rndInt(2010,2023),
-          lisans:'KEGM-TR-'+String(10000+i).padStart(5,'0'),
-          lisansTarih:new Date(Date.now()-rndInt(365,2000)*24*3600000).toLocaleDateString('tr-TR'),
-          kapasite,
+          tekne:TEKNE_ADLARI[i], tekneAdi:TEKNE_ADLARI[i],
+          tekneTuru, uzunluk, kapasite, tekneYil:rndInt(2010,2023),
           kategoriler:k.kat,
+          tc:tcNo, lisans:lisansNo, lisansTipi,
+          lisansTarih:new Date(Date.now()+rndInt(180,1095)*24*3600000).toISOString().slice(0,10),
+          ruhsat:ruhsatNo, sigorta:sigortaNo,
+          sigortaTarih:new Date(Date.now()+rndInt(180,730)*24*3600000).toISOString().slice(0,10),
+          mmsi, callSign, aisClass:['A','B','B+'][i%3],
+          belgeler:{verified:true,tc:true,lisans:true,ruhsat:true,sigorta:true},
           adminNot:k.durum==='bekliyor'?'Belgeler inceleniyor.':''
         };
       });
@@ -956,20 +978,29 @@ function generateScenarioData(){
         const uzunluk=UZUNLUKLAR[i%UZUNLUKLAR.length];
         const kapasite=Math.max(6,Math.round(uzunluk*0.8));
         const tarihMs=Date.now()-(180+i*12)*24*3600000;
+        const lisansNo='KEGM-TR-'+String(20001+i).padStart(5,'0');
+        const tcNo=String(rndInt(10000000,99999999))+String(rndInt(100,999));
+        const mmsi='271'+String(rndInt(100000,999999));
+        const callSign='TC'+String.fromCharCode(65+rndInt(0,25))+String(rndInt(100,999));
         return{
           id:i+1, ad:k.ad, soyad:k.soyad, email,
           telefon:'0530'+String(1000000+i*314159).slice(0,7),
-          bolge:bolgeInfo.bolge, durum:k.durum,
+          bolge:bolgeInfo.bolge, marina:bolgeInfo.bolge+' Marinası', durum:k.durum,
           puan:k.durum==='aktif'?k.puan:0,
           turSayisi:k.durum==='aktif'?10+i*7:0,
           katilimTarihi:new Date(tarihMs).toISOString(),
           tarih:new Date(tarihMs).toLocaleDateString('tr-TR'),
           bio:`${k.ad} ${k.soyad}, ${bolgeInfo.bolge} bölgesinde ${k.yil} yıllık deneyimli lisanslı kaptandır.`,
-          tekne:TEKNE_ADLARI[i], tekneTuru:TEKNE_TURLERI[i%TEKNE_TURLERI.length],
-          uzunluk, tekneYil:2008+(i%14),
-          lisans:'KEGM-TR-'+String(20001+i).padStart(5,'0'),
-          lisansTarih:new Date(Date.now()-(400+i*30)*24*3600000).toLocaleDateString('tr-TR'),
-          kapasite, kategoriler:k.kat,
+          tekne:TEKNE_ADLARI[i], tekneAdi:TEKNE_ADLARI[i],
+          tekneTuru:TEKNE_TURLERI[i%TEKNE_TURLERI.length],
+          uzunluk, tekneYil:2008+(i%14), kapasite, kategoriler:k.kat,
+          tc:tcNo, lisans:lisansNo, lisansTipi:['A1','A1','A2','B1'][i%4],
+          lisansTarih:new Date(Date.now()+rndInt(180,1095)*24*3600000).toISOString().slice(0,10),
+          ruhsat:'RH-'+String(rndInt(10000,99999)),
+          sigorta:'SG-'+String(rndInt(10000,99999)),
+          sigortaTarih:new Date(Date.now()+rndInt(180,730)*24*3600000).toISOString().slice(0,10),
+          mmsi, callSign, aisClass:['A','B','B+'][i%3],
+          belgeler:{verified:true,tc:true,lisans:true,ruhsat:true,sigorta:true},
           adminNot:k.durum==='bekliyor'?'Belgeler inceleniyor, onay bekleniyor.':''
         };
       });

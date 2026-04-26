@@ -4709,16 +4709,50 @@ async function runRealisticSimulation(cfg){
   // 1. Kaptanlar
   setP(5,'Kaptanlar üretiliyor…'); await sleep(40);
   const captains=[];
+  const SIM_LISANS_TIPLERI=['A1','A1','A2','B1'];
   for(let i=0;i<cfg.captains;i++){
     const ad=_pick(SIM_POOLS.isim), soyad=_pick(SIM_POOLS.soyisim), bolge=_pick(SIM_POOLS.bolge);
-    const tekne={ad:_pick(SIM_POOLS.tekneAdi)+' '+(i+1),tipi:_pick(SIM_POOLS.tekneTip),kapasite:_rand(6,24),yapimYili:_rand(2000,2022),uzunluk:_rand(8,24)};
+    const uzunluk=_rand(9,22);
+    const tekneKapasite=Math.max(4,Math.round(uzunluk*0.75));
+    const tekne={ad:_pick(SIM_POOLS.tekneAdi)+' '+(i+1),tipi:_pick(SIM_POOLS.tekneTip),kapasite:tekneKapasite,yapimYili:_rand(2005,2023),uzunluk};
+    const kategoriler=_pickN(SIM_POOLS.kategori,_rand(2,4));
+    const puan=parseFloat((4+Math.random()).toFixed(1));
+    const yil=_rand(3,25);
+    const lisansNo=`KEGM-TR-${String(10000+i).padStart(5,'0')}`;
+    const lisansTipi=_pick(SIM_LISANS_TIPLERI);
+    const lisansTarih=new Date(Date.now()+_rand(180,1095)*86400000).toISOString().slice(0,10);
+    const ruhsatNo=`RH-${_rand(10000,99999)}`;
+    const sigortaNo=`SG-${_rand(10000,99999)}`;
+    const tcNo=`${_rand(10000000,99999999)}${_rand(100,999)}`;
+    const mmsi=`271${String(_rand(100000,999999))}`;
+    const callSign=`TC${String.fromCharCode(65+_rand(0,25))}${_rand(100,999)}`;
+    const aisClass=_pick(['A','B','B+']);
     captains.push({
       id:1000+i, email:`kaptan${i+1}@denizbul.tr`, ad, soyad,
+      telefon:`05${_rand(30,59)}${_rand(1000000,9999999)}`,
       phone:`05${_rand(30,59)}${_rand(1000000,9999999)}`,
       password:'demo1234', roles:['customer','captain'], durum:'aktif',
+      puan, turSayisi:_rand(15,300),
+      // Tekne bilgileri (doğrudan alanlar — renderCaptains bu alanları okur)
+      tekne:tekne.ad, tekneAdi:tekne.ad, tekneTuru:tekne.tipi,
+      uzunluk:tekne.uzunluk, kapasite:tekne.kapasite, tekneYil:tekne.yapimYili,
+      bolge, marina:`${bolge} Marinası`,
+      // Evrak alanları (tamamı dolu — _capHasEvrakEksik kontrolü: tc+lisans+ruhsat+sigorta)
+      tc:tcNo, lisans:lisansNo, lisansTipi, lisansTarih,
+      ruhsat:ruhsatNo, sigorta:sigortaNo,
+      sigortaTarih:new Date(Date.now()+_rand(180,730)*86400000).toISOString().slice(0,10),
+      // Denizcilik kimlik bilgileri
+      mmsi, callSign, aisClass,
+      // Profil
+      bio:`${ad} ${soyad}, ${bolge} bölgesinde ${yil} yıllık deneyimli lisanslı kaptandır.`,
+      belgeler:{verified:true,tc:true,lisans:true,ruhsat:true,sigorta:true},
       createdAt:new Date(Date.now()-_rand(30,365)*86400000).toISOString(),
-      captainData:{tekne,bolge,kategoriler:_pickN(SIM_POOLS.kategori,_rand(2,4)),onayDurumu:'aktif',redSebep:'',yil:_rand(3,25),puan:parseFloat((4+Math.random()).toFixed(1)),captainIdLegacy:1000+i},
-      captainProfile:{tekne,bolge,kategoriler:_pickN(SIM_POOLS.kategori,_rand(2,4)),onayDurumu:'aktif',yil:_rand(3,25),puan:parseFloat((4+Math.random()).toFixed(1)),captainIdLegacy:1000+i}
+      katilimTarihi:new Date(Date.now()-_rand(30,365)*86400000).toISOString(),
+      // Nested profil (kaptan-app uyumu)
+      captainData:{tekne,bolge,kategoriler,onayDurumu:'aktif',redSebep:'',yil,puan,captainIdLegacy:1000+i,
+        lisans:lisansNo,lisansTipi,lisansTarih,mmsi,callSign,aisClass},
+      captainProfile:{tekne,bolge,kategoriler,onayDurumu:'aktif',yil,puan,captainIdLegacy:1000+i,
+        lisans:lisansNo,lisansTipi,lisansTarih,mmsi,callSign,aisClass}
     });
   }
 
