@@ -900,16 +900,37 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
 
     <!-- TAB: ŞİKAYETLER -->
     <div id="tab-complaints" style="display:none">
-      <div class="flex gap-3 mb-4 items-center flex-wrap">
-        <select id="comp-filter-oncelik" onchange="renderComplaints()" class="border rounded-lg px-3 py-2 text-sm">
-          <option value="">Tüm Öncelikler</option><option value="yuksek">Yüksek</option><option value="orta">Orta</option><option value="dusuk">Düşük</option>
-        </select>
-        <select id="comp-filter-durum" onchange="renderComplaints()" class="border rounded-lg px-3 py-2 text-sm">
-          <option value="">Tüm Durumlar</option><option value="yeni">Yeni</option><option value="inceleniyor">İnceleniyor</option><option value="cozuldu">Çözüldü</option>
-        </select>
-        <button onclick="document.getElementById('comp-filter-oncelik').value='';document.getElementById('comp-filter-durum').value='';renderComplaints()" class="border px-3 py-2 rounded-lg text-xs text-gray-500 hover:bg-gray-50 flex items-center gap-1"><i class="fas fa-times"></i>Temizle</button>
-        <span class="ml-auto text-xs text-gray-400 font-medium" id="comp-row-count"></span>
+      <!-- İstatistik Kartları -->
+      <div class="grid grid-cols-4 gap-3 mb-4">
+        <div class="stat-card"><div class="stat-icon bg-gray-100 text-gray-500"><i class="fas fa-flag"></i></div><div><div class="text-xl font-bold" id="comp-stat-total">0</div><div class="text-xs text-gray-500">Toplam</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-blue-100 text-blue-600"><i class="fas fa-star"></i></div><div><div class="text-xl font-bold text-blue-600" id="comp-stat-yeni">0</div><div class="text-xs text-gray-500">Yeni</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-amber-100 text-amber-600"><i class="fas fa-search"></i></div><div><div class="text-xl font-bold text-amber-600" id="comp-stat-inceleniyor">0</div><div class="text-xs text-gray-500">İnceleniyor</div></div></div>
+        <div class="stat-card"><div class="stat-icon bg-green-100 text-success"><i class="fas fa-check-circle"></i></div><div><div class="text-xl font-bold text-success" id="comp-stat-cozuldu">0</div><div class="text-xs text-gray-500">Çözüldü</div></div></div>
       </div>
+      <!-- Filtreler -->
+      <div class="card mb-4 !py-3">
+        <div class="flex flex-wrap gap-3 items-center">
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+            <input type="text" id="comp-search" placeholder="Müşteri, konu veya kaptan ara..." oninput="renderComplaints()" class="pl-8 pr-4 py-2 border rounded-lg text-sm w-64">
+          </div>
+          <select id="comp-filter-oncelik" onchange="renderComplaints()" class="border rounded-lg px-3 py-2 text-sm">
+            <option value="">Tüm Öncelikler</option><option value="yuksek">Yüksek</option><option value="orta">Orta</option><option value="dusuk">Düşük</option>
+          </select>
+          <select id="comp-filter-durum" onchange="renderComplaints()" class="border rounded-lg px-3 py-2 text-sm">
+            <option value="">Tüm Durumlar</option><option value="yeni">Yeni</option><option value="inceleniyor">İnceleniyor</option><option value="cozuldu">Çözüldü</option>
+          </select>
+          <select id="comp-sort" onchange="renderComplaints()" class="border rounded-lg px-3 py-2 text-sm">
+            <option value="tarih-desc">↓ Tarih (Yeni önce)</option>
+            <option value="tarih-asc">↑ Tarih (Eski önce)</option>
+            <option value="oncelik-desc">↓ Öncelik (Yüksek önce)</option>
+            <option value="durum">Duruma Göre</option>
+          </select>
+          <button onclick="clearCompFilters()" class="border px-3 py-2 rounded-lg text-xs text-gray-500 hover:bg-gray-50 flex items-center gap-1"><i class="fas fa-times"></i>Temizle</button>
+          <span class="ml-auto text-xs text-gray-400 font-medium" id="comp-row-count"></span>
+        </div>
+      </div>
+      <!-- Tablo -->
       <div class="card">
         <div class="table-container">
           <table>
@@ -2528,6 +2549,66 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
     <div class="flex gap-3 p-5 border-t">
       <button onclick="closeTourEdit()" class="flex-1 border py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50">Vazgec</button>
       <button onclick="saveTourEdit()" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-medium hover:bg-primaryDark">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ŞİKAYET DETAY MODALİ ===== -->
+<div id="complaint-detail-modal" style="display:none" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onclick="if(event.target===this)closeComplaintModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4" style="max-height:88vh;overflow-y:auto">
+    <!-- Modal Başlık -->
+    <div class="flex items-start justify-between p-5 pb-4 border-b sticky top-0 bg-white rounded-t-2xl z-10">
+      <div>
+        <div class="text-[11px] text-gray-400 font-mono mb-0.5" id="cdm-id">—</div>
+        <h2 class="font-bold text-base text-gray-800" id="cdm-konu">Şikayet Detayı</h2>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap justify-end">
+        <span id="cdm-oncelik-badge"></span>
+        <span id="cdm-durum-badge"></span>
+        <button onclick="closeComplaintModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 ml-1"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+    <div class="p-5 space-y-4">
+      <!-- Müşteri & Kaptan/Tur -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-blue-50 rounded-xl p-3">
+          <div class="text-[10px] font-semibold text-blue-400 uppercase tracking-wide mb-1.5"><i class="fas fa-user mr-1"></i>Müşteri</div>
+          <div class="font-semibold text-sm text-gray-800" id="cdm-musteri-isim">—</div>
+          <div class="text-[11px] text-gray-500 mt-0.5" id="cdm-musteri-email">—</div>
+        </div>
+        <div class="bg-primary/5 rounded-xl p-3">
+          <div class="text-[10px] font-semibold text-primary/60 uppercase tracking-wide mb-1.5"><i class="fas fa-ship mr-1"></i>Kaptan / Tur</div>
+          <div class="font-semibold text-sm text-gray-800" id="cdm-kaptan-isim">—</div>
+          <div class="text-[11px] text-gray-500 mt-0.5" id="cdm-tur-adi">—</div>
+        </div>
+      </div>
+      <!-- Meta Bilgiler -->
+      <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 bg-gray-50 rounded-xl p-3">
+        <span><i class="fas fa-calendar mr-1 text-gray-400"></i>Şikayet Tarihi: <strong id="cdm-tarih">—</strong></span>
+        <span><i class="fas fa-hashtag mr-1 text-gray-400"></i>Rezervasyon: <span id="cdm-rez-id" class="font-mono text-[11px]">—</span></span>
+      </div>
+      <!-- Açıklama -->
+      <div>
+        <div class="text-xs font-semibold text-gray-500 mb-2"><i class="fas fa-comment-alt mr-1"></i>Şikayet Açıklaması</div>
+        <div class="bg-gray-50 rounded-xl p-3 text-sm text-gray-700 leading-relaxed" id="cdm-aciklama">—</div>
+      </div>
+      <!-- Mesaj Thread -->
+      <div id="cdm-mesajlar-section" style="display:none">
+        <div class="text-xs font-semibold text-gray-500 mb-2"><i class="fas fa-comments mr-1"></i>Mesaj Geçmişi</div>
+        <div class="space-y-2 max-h-44 overflow-y-auto bg-gray-50 rounded-xl p-3" id="cdm-mesajlar-body"></div>
+      </div>
+      <!-- Admin Notu -->
+      <div>
+        <div class="text-xs font-semibold text-gray-500 mb-2"><i class="fas fa-lock mr-1 text-gray-400"></i>Dahili Not <span class="text-gray-400 font-normal">(sadece admin görür)</span></div>
+        <textarea id="cdm-admin-not" rows="2" placeholder="Şikayet hakkında dahili not ekleyin..." class="w-full border rounded-xl px-3 py-2 text-sm resize-none" style="outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#0369a1'" onblur="this.style.borderColor=''"></textarea>
+      </div>
+      <!-- Aksiyon Butonları -->
+      <div class="flex gap-2 flex-wrap pt-3 border-t">
+        <button id="cdm-btn-incele" onclick="reviewComplaintModal()" class="bg-amber-100 text-amber-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-200 flex items-center gap-1.5"><i class="fas fa-search"></i>İncelemeye Al</button>
+        <button id="cdm-btn-coz" onclick="resolveComplaintModal()" class="bg-green-100 text-green-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-200 flex items-center gap-1.5"><i class="fas fa-check"></i>Çözüldü İşaretle</button>
+        <button onclick="saveComplaintNote()" class="border px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 flex items-center gap-1.5 text-gray-600"><i class="fas fa-save"></i>Notu Kaydet</button>
+        <button onclick="deleteComplaintModal()" class="ml-auto border border-red-200 text-danger px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-50 flex items-center gap-1.5"><i class="fas fa-trash"></i>Sil</button>
+      </div>
     </div>
   </div>
 </div>
@@ -5464,7 +5545,33 @@ function quickApproveBooking(id){
   showToast('Rezervasyon onaylandı','success');
 }
 
-function renderComplaints(){
+let _currentComplaintId=null;
+
+/* ── Şikayet veri normalizasyonu: email→isim haritası ── */
+function _buildNameMap(){
+  const m={};
+  lsGet('db_users',[]).forEach(u=>{if(u.email)m[u.email]=[u.ad,u.soyad].filter(Boolean).join(' ')||u.email;});
+  lsGet('cu_users',[]).forEach(u=>{if(u.email&&!m[u.email])m[u.email]=[u.ad,u.soyad].filter(Boolean).join(' ')||u.email;});
+  lsGet('db_captains',[]).forEach(u=>{if(u.email&&!m[u.email])m[u.email]=[u.ad,u.soyad].filter(Boolean).join(' ')||u.email;});
+  lsGet('db_bookings',[]).forEach(b=>{
+    if(b.customerEmail&&b.customerName&&!m[b.customerEmail])m[b.customerEmail]=b.customerName;
+    if(b.captainEmail&&b.captainName&&!m[b.captainEmail])m[b.captainEmail]=b.captainName;
+  });
+  return m;
+}
+
+function _normalizeComplaint(c,nameMap){
+  const durum=c.durum==='acik'?'yeni':c.durum||'yeni';
+  const oncelik=c.oncelik||(durum==='yeni'?'orta':durum==='inceleniyor'?'orta':'dusuk');
+  let tarih=c.tarih;
+  if(!tarih&&c.createdAt){try{tarih=new Date(c.createdAt).toLocaleDateString('tr-TR');}catch(e){tarih='—';}}
+  tarih=tarih||'—';
+  const customerName=c.customerName||nameMap[c.customerEmail]||c.customerEmail||'Müşteri';
+  const captainName=c.captainName||nameMap[c.captainEmail]||c.captainEmail||'Kaptan';
+  return{...c,durum,oncelik,tarih,customerName,captainName};
+}
+
+function _ensureComplaints(){
   let complaints=lsGet('db_complaints',[]);
   if(!complaints.length){
     const bookings=lsGet('db_bookings',[]).filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi').slice(0,8);
@@ -5472,50 +5579,217 @@ function renderComplaints(){
     complaints=bookings.map((b,i)=>({
       id:'SIK-'+(1000+i),
       customerName:b.customerName||'Müşteri',
+      customerEmail:b.customerEmail||'',
       konu:konular[i%konular.length],
       captainName:b.captainName||'Kaptan',
+      captainEmail:b.captainEmail||'',
       tourTitle:b.tourTitle||'Tur',
-      tarih:b.tarih||'—',
+      rezervasyonId:b.id||'',
+      tarih:b.tarih||new Date().toLocaleDateString('tr-TR'),
       oncelik:['yuksek','orta','orta','dusuk'][i%4],
       durum:['yeni','inceleniyor','cozuldu','yeni'][i%4],
-      aciklama:'Müşteri tarafından iletilen şikayet detayı.'
+      aciklama:'Müşteri tarafından iletilen şikayet detayı. Lütfen kaptanla iletişime geçilerek durum açıklığa kavuşturulmalıdır.',
+      mesajlar:[],
+      adminNot:''
     }));
     localStorage.setItem('db_complaints',JSON.stringify(complaints));
   }
+  return complaints;
+}
+
+function renderComplaints(){
+  const raw=_ensureComplaints();
+  const nameMap=_buildNameMap();
+  const complaints=raw.map(c=>_normalizeComplaint(c,nameMap));
+
+  /* --- İstatistik kartları --- */
+  const stats={total:complaints.length,yeni:0,inceleniyor:0,cozuldu:0};
+  complaints.forEach(c=>{if(stats[c.durum]!==undefined)stats[c.durum]++;});
+  const sEl=id=>document.getElementById(id);
+  if(sEl('comp-stat-total'))sEl('comp-stat-total').textContent=stats.total;
+  if(sEl('comp-stat-yeni'))sEl('comp-stat-yeni').textContent=stats.yeni;
+  if(sEl('comp-stat-inceleniyor'))sEl('comp-stat-inceleniyor').textContent=stats.inceleniyor;
+  if(sEl('comp-stat-cozuldu'))sEl('comp-stat-cozuldu').textContent=stats.cozuldu;
+  const badge=document.getElementById('tb-badge-complaints');
+  if(badge)badge.textContent=stats.total;
+
+  /* --- Filtre + arama + sıralama --- */
   const fO=document.getElementById('comp-filter-oncelik')?.value||'';
   const fD=document.getElementById('comp-filter-durum')?.value||'';
+  const q=(document.getElementById('comp-search')?.value||'').toLowerCase().trim();
+  const sort=document.getElementById('comp-sort')?.value||'tarih-desc';
+
   let filtered=[...complaints];
   if(fO)filtered=filtered.filter(c=>c.oncelik===fO);
   if(fD)filtered=filtered.filter(c=>c.durum===fD);
+  if(q)filtered=filtered.filter(c=>[c.customerName,c.captainName,c.konu,c.tourTitle,c.id].join(' ').toLowerCase().includes(q));
+
+  const oncelikOrder={yuksek:0,orta:1,dusuk:2};
+  const durumOrder={yeni:0,inceleniyor:1,cozuldu:2};
+  if(sort==='tarih-desc')filtered.sort((a,b)=>b.tarih.localeCompare(a.tarih));
+  else if(sort==='tarih-asc')filtered.sort((a,b)=>a.tarih.localeCompare(b.tarih));
+  else if(sort==='oncelik-desc')filtered.sort((a,b)=>(oncelikOrder[a.oncelik]??9)-(oncelikOrder[b.oncelik]??9));
+  else if(sort==='durum')filtered.sort((a,b)=>(durumOrder[a.durum]??9)-(durumOrder[b.durum]??9));
+
   const countEl=document.getElementById('comp-row-count');
   if(countEl)countEl.textContent=filtered.length+' şikayet';
-  const badge=document.getElementById('tb-badge-complaints');
-  if(badge)badge.textContent=complaints.length;
-  const oncelikB={yuksek:'<span class="badge bg-red-100 text-danger"><i class="fas fa-arrow-up mr-0.5 text-[9px]"></i>Yüksek</span>',orta:'<span class="badge bg-amber-100 text-amber-700">Orta</span>',dusuk:'<span class="badge bg-gray-100 text-gray-500"><i class="fas fa-arrow-down mr-0.5 text-[9px]"></i>Düşük</span>'};
-  const durumB={yeni:'<span class="badge bg-blue-100 text-blue-700"><i class="fas fa-star mr-0.5 text-[9px]"></i>Yeni</span>',inceleniyor:'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-search mr-0.5 text-[9px]"></i>İnceleniyor</span>',cozuldu:'<span class="badge bg-green-100 text-green-700"><i class="fas fa-check mr-0.5 text-[9px]"></i>Çözüldü</span>'};
+
+  const oncelikB={
+    yuksek:'<span class="badge bg-red-100 text-danger"><i class="fas fa-arrow-up mr-0.5 text-[9px]"></i>Yüksek</span>',
+    orta:'<span class="badge bg-amber-100 text-amber-700">Orta</span>',
+    dusuk:'<span class="badge bg-gray-100 text-gray-500"><i class="fas fa-arrow-down mr-0.5 text-[9px]"></i>Düşük</span>'
+  };
+  const durumB={
+    yeni:'<span class="badge bg-blue-100 text-blue-700"><i class="fas fa-star mr-0.5 text-[9px]"></i>Yeni</span>',
+    inceleniyor:'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-search mr-0.5 text-[9px]"></i>İnceleniyor</span>',
+    cozuldu:'<span class="badge bg-green-100 text-green-700"><i class="fas fa-check mr-0.5 text-[9px]"></i>Çözüldü</span>'
+  };
+
   const tbody=document.getElementById('complaints-tbody');
   if(!tbody)return;
-  if(!filtered.length){tbody.innerHTML='<tr><td colspan="8" class="text-center text-gray-400 py-8 text-xs">Şikayet bulunamadı</td></tr>';return;}
-  tbody.innerHTML=filtered.map(c=>`
-    <tr class="hover:bg-gray-50">
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="8" class="text-center text-gray-400 py-8 text-xs">Filtrelerle eşleşen şikayet bulunamadı</td></tr>';return;}
+
+  tbody.innerHTML=filtered.map(c=>{
+    const acts=[];
+    if(c.durum==='yeni')acts.push(`<button onclick="event.stopPropagation();reviewComplaint('${c.id}')" class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[11px] hover:bg-amber-200"><i class="fas fa-search mr-0.5"></i>İncele</button>`);
+    if(c.durum!=='cozuldu')acts.push(`<button onclick="event.stopPropagation();resolveComplaint('${c.id}')" class="bg-green-100 text-green-700 px-2 py-1 rounded text-[11px] hover:bg-green-200">Çözüldü</button>`);
+    acts.push(`<button onclick="event.stopPropagation();openComplaintDetail('${c.id}')" class="border px-2 py-1 rounded text-[11px] text-primary hover:bg-blue-50"><i class="fas fa-eye mr-0.5"></i>Detay</button>`);
+    const rowOpacity=c.durum==='cozuldu'?'opacity-60':'';
+    return`<tr class="${rowOpacity} cursor-pointer hover:bg-blue-50/30 transition-colors" onclick="openComplaintDetail('${c.id}')">
       <td class="font-mono text-[10px] text-gray-500">${c.id}</td>
-      <td><div class="font-semibold text-xs">${c.customerName}</div></td>
-      <td><div class="font-medium text-xs">${c.konu}</div><div class="text-[10px] text-gray-400 truncate max-w-[200px]">${c.aciklama||''}</div></td>
-      <td class="text-xs"><div class="font-medium">${c.captainName}</div><div class="text-[10px] text-gray-400">${c.tourTitle}</div></td>
-      <td class="text-xs text-gray-500">${c.tarih||'—'}</td>
-      <td>${oncelikB[c.oncelik]||''}</td>
-      <td>${durumB[c.durum]||''}</td>
-      <td><div class="flex gap-1">${c.durum!=='cozuldu'?`<button onclick="resolveComplaint('${c.id}')" class="bg-green-100 text-green-700 px-2 py-1 rounded text-[11px] hover:bg-green-200">Çözüldü</button>`:''}<button class="border px-2 py-1 rounded text-[11px] text-gray-500 hover:bg-gray-50">Görüntüle</button></div></td>
-    </tr>`).join('');
+      <td><div class="font-semibold text-xs">${c.customerName}</div>${c.customerEmail?`<div class="text-[10px] text-gray-400">${c.customerEmail}</div>`:''}</td>
+      <td><div class="font-medium text-xs">${c.konu||'—'}</div><div class="text-[10px] text-gray-400 truncate max-w-[180px]">${c.aciklama||''}</div></td>
+      <td class="text-xs"><div class="font-medium">${c.captainName}</div><div class="text-[10px] text-gray-400 truncate max-w-[120px]">${c.tourTitle||'—'}</div></td>
+      <td class="text-xs text-gray-500 whitespace-nowrap">${c.tarih}</td>
+      <td>${oncelikB[c.oncelik]||'<span class="text-gray-400 text-xs">—</span>'}</td>
+      <td>${durumB[c.durum]||'<span class="text-gray-400 text-xs">—</span>'}</td>
+      <td onclick="event.stopPropagation()"><div class="flex gap-1 flex-nowrap">${acts.join('')}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function clearCompFilters(){
+  ['comp-filter-oncelik','comp-filter-durum','comp-search','comp-sort'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value=el.tagName==='SELECT'&&id==='comp-sort'?'tarih-desc':'';
+  });
+  renderComplaints();
+}
+
+function reviewComplaint(id){
+  const raw=lsGet('db_complaints',[]);
+  const c=raw.find(x=>x.id===id);
+  if(!c)return;
+  c.durum='inceleniyor';
+  c.incelemeTarihi=new Date().toISOString();
+  localStorage.setItem('db_complaints',JSON.stringify(raw));
+  renderComplaints();
+  showToast('Şikayet incelemeye alındı','success');
 }
 
 function resolveComplaint(id){
-  const complaints=lsGet('db_complaints',[]);
-  const c=complaints.find(x=>x.id===id);
-  if(c)c.durum='cozuldu';
-  localStorage.setItem('db_complaints',JSON.stringify(complaints));
+  const raw=lsGet('db_complaints',[]);
+  const c=raw.find(x=>x.id===id);
+  if(!c)return;
+  c.durum='cozuldu';
+  c.cozumTarihi=new Date().toISOString();
+  localStorage.setItem('db_complaints',JSON.stringify(raw));
   renderComplaints();
   showToast('Şikayet çözüldü olarak işaretlendi','success');
+}
+
+function deleteComplaint(id){
+  let raw=lsGet('db_complaints',[]);
+  raw=raw.filter(x=>x.id!==id);
+  localStorage.setItem('db_complaints',JSON.stringify(raw));
+  renderComplaints();
+  showToast('Şikayet silindi','success');
+}
+
+function openComplaintDetail(id){
+  const raw=lsGet('db_complaints',[]);
+  const rawC=raw.find(x=>x.id===id);
+  if(!rawC)return;
+  const nameMap=_buildNameMap();
+  const c=_normalizeComplaint(rawC,nameMap);
+  _currentComplaintId=id;
+
+  const el=n=>document.getElementById('cdm-'+n);
+  if(el('id'))el('id').textContent='#'+c.id;
+  if(el('konu'))el('konu').textContent=c.konu||'—';
+
+  const oncelikCls={yuksek:'bg-red-100 text-danger',orta:'bg-amber-100 text-amber-700',dusuk:'bg-gray-100 text-gray-500'};
+  const durumCls={yeni:'bg-blue-100 text-blue-700',inceleniyor:'bg-amber-100 text-amber-700',cozuldu:'bg-green-100 text-green-700'};
+  const durumLbl={yeni:'Yeni',inceleniyor:'İnceleniyor',cozuldu:'Çözüldü'};
+  const oncelikLbl={yuksek:'Yüksek Öncelik',orta:'Orta Öncelik',dusuk:'Düşük Öncelik'};
+  if(el('oncelik-badge')){el('oncelik-badge').textContent=oncelikLbl[c.oncelik]||c.oncelik;el('oncelik-badge').className='badge '+(oncelikCls[c.oncelik]||'bg-gray-100 text-gray-500');}
+  if(el('durum-badge')){el('durum-badge').textContent=durumLbl[c.durum]||c.durum;el('durum-badge').className='badge '+(durumCls[c.durum]||'bg-gray-100 text-gray-500');}
+
+  if(el('musteri-isim'))el('musteri-isim').textContent=c.customerName;
+  if(el('musteri-email'))el('musteri-email').textContent=c.customerEmail||'—';
+  if(el('kaptan-isim'))el('kaptan-isim').textContent=c.captainName;
+  if(el('tur-adi'))el('tur-adi').textContent=c.tourTitle||'—';
+  if(el('tarih'))el('tarih').textContent=c.tarih;
+  if(el('rez-id'))el('rez-id').textContent=c.rezervasyonId?'#'+(c.rezervasyonId||'').slice(-8):'—';
+  if(el('aciklama'))el('aciklama').textContent=c.aciklama||'Açıklama girilmemiş.';
+  if(el('admin-not'))el('admin-not').value=c.adminNot||'';
+
+  /* İncele / Çözüldü butonları */
+  const btnIncele=el('btn-incele');
+  const btnCoz=el('btn-coz');
+  if(btnIncele)btnIncele.style.display=c.durum==='yeni'?'':'none';
+  if(btnCoz)btnCoz.style.display=c.durum!=='cozuldu'?'':'none';
+
+  /* Mesajlar */
+  const msgs=c.mesajlar||[];
+  const secMsg=el('mesajlar-section');
+  const bodyMsg=el('mesajlar-body');
+  if(secMsg)secMsg.style.display=msgs.length?'':'none';
+  if(bodyMsg&&msgs.length){
+    bodyMsg.innerHTML=msgs.map(m=>`<div class="flex gap-2 ${m.kimden==='admin'?'justify-end':''}">
+      <div class="max-w-[80%] rounded-xl px-3 py-2 text-xs ${m.kimden==='admin'?'bg-primary text-white':'bg-gray-100 text-gray-700'}">
+        <div class="font-semibold mb-0.5 opacity-80">${m.kimden==='admin'?'Admin':c.customerName}</div>
+        ${m.metin}
+        <div class="text-[9px] opacity-60 mt-0.5">${m.tarih||''}</div>
+      </div>
+    </div>`).join('');
+  }
+
+  document.getElementById('complaint-detail-modal').style.display='flex';
+}
+
+function closeComplaintModal(){
+  document.getElementById('complaint-detail-modal').style.display='none';
+  _currentComplaintId=null;
+}
+
+function reviewComplaintModal(){
+  if(!_currentComplaintId)return;
+  reviewComplaint(_currentComplaintId);
+  openComplaintDetail(_currentComplaintId);
+}
+
+function resolveComplaintModal(){
+  if(!_currentComplaintId)return;
+  resolveComplaint(_currentComplaintId);
+  openComplaintDetail(_currentComplaintId);
+}
+
+function deleteComplaintModal(){
+  if(!_currentComplaintId)return;
+  if(!confirm('Bu şikayeti silmek istediğinizden emin misiniz?'))return;
+  deleteComplaint(_currentComplaintId);
+  closeComplaintModal();
+}
+
+function saveComplaintNote(){
+  if(!_currentComplaintId)return;
+  const raw=lsGet('db_complaints',[]);
+  const c=raw.find(x=>x.id===_currentComplaintId);
+  if(!c)return;
+  c.adminNot=document.getElementById('cdm-admin-not')?.value||'';
+  localStorage.setItem('db_complaints',JSON.stringify(raw));
+  showToast('Not kaydedildi','success');
 }
 
 let _tdmId=null;

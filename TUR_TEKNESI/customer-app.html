@@ -47,6 +47,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 .date-btn.sel{border-color:#0369a1;background:#e0f2fe}
 .time-btn{padding:8px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;cursor:pointer;transition:all .15s;background:#fff}
 .time-btn.sel{border-color:#0369a1;background:#e0f2fe;color:#0369a1;font-weight:600}
+.next-date-tag{display:inline-flex;align-items:center;gap:2px;font-size:9px;background:rgba(3,105,161,0.88);color:#fff;padding:2px 8px;border-radius:20px;font-weight:600;backdrop-filter:blur(2px)}
 </style>
 </head>
 <body>
@@ -205,7 +206,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
     <div class="h-64 relative" id="detail-hero">
       <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
     </div>
-    <button onclick="history.back()" class="absolute top-3 left-3 w-9 h-9 bg-white/80 backdrop-blur rounded-full flex items-center justify-center"><i class="fas fa-arrow-left text-gray-700 text-sm"></i></button>
+    <button onclick="goBack('search')" class="absolute top-3 left-3 w-9 h-9 bg-white/80 backdrop-blur rounded-full flex items-center justify-center"><i class="fas fa-arrow-left text-gray-700 text-sm"></i></button>
     <button id="btn-fav-detail" class="absolute top-3 right-3 w-9 h-9 bg-white/80 backdrop-blur rounded-full flex items-center justify-center" onclick="toggleDetailFav()"><i class="far fa-heart text-gray-700 text-sm"></i></button>
   </div>
   <div class="px-4 pt-4 pb-28">
@@ -237,7 +238,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 <section id="page-captain-profile" class="page">
   <div class="px-4 pt-2">
     <div class="flex items-center gap-3 mb-4">
-      <button onclick="navigateTo('detail')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+      <button onclick="goBack('detail')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
       <span class="font-semibold text-sm">Kaptan Profili</span>
     </div>
     <div class="text-center mb-4">
@@ -266,7 +267,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 <section id="page-booking" class="page">
   <div class="px-4 pt-2">
     <div class="flex items-center gap-3 mb-4">
-      <button onclick="navigateTo('detail')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+      <button onclick="goBack('detail')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
       <span class="font-semibold text-sm">Rezervasyon</span>
     </div>
     <div class="card p-3 flex items-center gap-3 mb-4" id="booking-tour-card">
@@ -316,7 +317,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 <section id="page-payment" class="page">
   <div class="px-4 pt-2">
     <div class="flex items-center gap-3 mb-4">
-      <button onclick="navigateTo('booking')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+      <button onclick="goBack('booking')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
       <span class="font-semibold text-sm">Odeme</span>
       <div class="ml-auto flex gap-1"><div class="w-8 h-1 bg-primary rounded-full"></div><div class="w-8 h-1 bg-primary rounded-full"></div><div class="w-8 h-1 bg-gray-200 rounded-full"></div></div>
     </div>
@@ -347,7 +348,10 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 
 <!-- ================================================================ PAGE 7: ONAY -->
 <section id="page-confirmation" class="page">
-  <div class="px-4 pt-8 text-center">
+  <div class="px-4 pt-4">
+    <button onclick="navigateTo('home')" class="flex items-center gap-2 text-gray-400 text-sm mb-4"><i class="fas fa-arrow-left"></i> Ana Sayfa</button>
+  </div>
+  <div class="px-4 pb-8 text-center">
     <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-check text-success text-3xl"></i></div>
     <h1 class="text-xl font-bold mb-1">Rezervasyon Alindi!</h1>
     <p class="text-sm text-gray-500 mb-6">Kaptan onayladiginda bildirim gelecek</p>
@@ -431,7 +435,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
   <div class="px-4 pt-2">
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-3">
-        <button onclick="navigateTo('home')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+        <button onclick="goBack('home')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
         <span class="font-semibold">Bildirimler</span>
       </div>
       <button onclick="markAllRead()" class="text-xs text-primary font-medium">Tümünü Oku</button>
@@ -479,7 +483,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 <section id="page-live-sale" class="page">
   <div class="px-4 pt-3 pb-2">
     <div class="flex items-center gap-3 mb-3">
-      <button onclick="history.back()" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
+      <button onclick="goBack('home')" class="text-gray-400"><i class="fas fa-arrow-left text-lg"></i></button>
       <div class="flex-1">
         <div class="flex items-center gap-2">
           <h1 class="font-bold text-base">Canli Satis</h1>
@@ -609,8 +613,19 @@ let selTour=null, selDate=null, selTime=null, guestVal=2;
 let curChatId=null, curTab='up', catFilter='';
 const tourMap={};
 
+/* ── NAV HISTORY (geri buton icin) ── */
+const _navHistory=['home'];
+function navigateTo(p){
+  const curr=window.location.hash.replace('#','')||'home';
+  if(curr!==p)_navHistory.push(curr);
+  window.location.hash='#'+p;
+}
+function goBack(fallback='home'){
+  const prev=_navHistory.length>1?_navHistory.pop():fallback;
+  window.location.hash='#'+(prev||fallback);
+}
+
 /* ── ROUTER ── */
-function navigateTo(p){window.location.hash='#'+p;}
 function handleRoute(){
   const h=window.location.hash.replace('#','')||'home';
   ALL_PAGES.forEach(p=>{const el=document.getElementById('page-'+p);if(el){el.classList.toggle('active',p===h);if(p===h)el.classList.add('fade-in');}});
@@ -635,6 +650,26 @@ window.addEventListener('load',()=>{rebuildTourMap();handleRoute();updateClock()
 
 function updateClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});setTimeout(updateClock,30000);}
 
+/* ── TUR TARİH YARDIMCILARI ── */
+function nextTourDate(t){
+  const arr=t.tarihler;if(!arr||!arr.length)return null;
+  const today=new Date();today.setHours(0,0,0,0);
+  const upcoming=arr.map(d=>new Date(d)).filter(d=>!isNaN(d.getTime())&&d>=today).sort((a,b)=>a-b);
+  return upcoming[0]||null;
+}
+function fmtTurDate(d){
+  if(!d)return null;
+  const M=['Oca','Sub','Mar','Nis','May','Haz','Tem','Agu','Eyl','Eki','Kas','Ara'];
+  return d.getDate()+' '+M[d.getMonth()];
+}
+function nextDateTag(t){
+  const d=nextTourDate(t);if(!d)return'';
+  const today=new Date();today.setHours(0,0,0,0);
+  const diff=Math.round((d-today)/(1000*60*60*24));
+  const lbl=diff===0?'Bugun':diff===1?'Yarin':fmtTurDate(d);
+  return`<span class="next-date-tag"><i class="fas fa-calendar-day"></i>${lbl}</span>`;
+}
+
 /* ── TOUR DATA ── */
 const SAMPLE=[
   {id:1,name:'Balik Avi Turu',loc:'Kemer',price:1800,rating:4.9,reviews:124,dur:'6 saat',cat:'balik',kapasite:8,saatler:['06:00','07:00'],includes:['Ekipman & Olta','Yem','Can yelegi','Cay/Kahve'],desc:'Antalya Kemer aciklaylarinda profesyonel balik avi. Trolling ve jigging teknikleri.'},
@@ -647,13 +682,24 @@ const SAMPLE=[
 ];
 
 function getDbTours(){
-  return S.get('db_tours',[]).map(t=>{
-    const cat=DB_CAT[t.kategoriler?.[0]||'Tekne Gezisi']||'gezi';
-    return{id:t.id,name:t.title,loc:t.kalkis||'Turkiye',price:t.price||0,rating:4.8,reviews:0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,saatler:t.saatler?.length?t.saatler:['09:00'],includes:t.includes||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,_db:true};
-  });
+  return S.get('db_tours',[])
+    .sort((a,b)=>new Date(b.createdAt||b.created_at||0)-new Date(a.createdAt||a.created_at||0))
+    .map(t=>{
+      const cat=DB_CAT[t.kategoriler?.[0]||'Tekne Gezisi']||'gezi';
+      return{id:t.id,name:t.title||t.tur_adi||'Tur',loc:t.kalkis||t.kalkis_noktasi||'Turkiye',price:t.price||t.fiyat||0,rating:t.puan||4.8,reviews:t.inceleme_sayisi||0,dur:t.sure||'—',cat,kapasite:t.kapasite||8,saatler:t.saatler?.length?t.saatler:['09:00'],tarihler:t.tarihler||[],includes:t.includes||t.dahil||[],desc:t.aciklama||'—',captainName:t.captainName||null,captainEmail:t.captainEmail||null,_db:true};
+    });
 }
 
-function allTours(){return[...getDbTours(),...SAMPLE];}
+function allTours(){
+  const today=new Date();
+  const samplesWithDates=SAMPLE.map((t,i)=>{
+    if(t.tarihler&&t.tarihler.length)return t;
+    const dates=[];
+    for(let j=1;j<=10;j++){const d=new Date(today);d.setDate(today.getDate()+j+i);dates.push(d.toISOString().slice(0,10));}
+    return{...t,tarihler:dates};
+  });
+  return[...getDbTours(),...samplesWithDates];
+}
 
 function rebuildTourMap(){allTours().forEach(t=>{tourMap[t.id]=t;});}
 
@@ -671,6 +717,7 @@ function renderHome(){
       <div class="h-28 bg-gradient-to-br ${m.grad} relative">
         <span class="absolute top-2 left-2 badge bg-white/90 text-${m.color}-700"><i class="fas ${m.icon} mr-0.5"></i>${m.label}</span>
         <button class="absolute top-2 right-2 w-7 h-7 bg-white/80 rounded-full flex items-center justify-center" onclick="event.stopPropagation();toggleFav(${t.id},this)"><i class="${favs.includes(t.id)?'fas text-danger':'far text-gray-500'} fa-heart text-xs"></i></button>
+        <div class="absolute bottom-2 left-2">${nextDateTag(t)}</div>
       </div>
       <div class="p-3">
         <div class="font-semibold text-xs mb-0.5">${t.name}</div>
@@ -685,9 +732,11 @@ function renderHome(){
 
   document.getElementById('popular-tours-app').innerHTML=tours.slice(0,5).map(t=>{
     const m=CM[t.cat]||CM.gezi;
+    const tag=nextDateTag(t);
     return`<div class="card overflow-hidden flex flex-row card-hover" onclick="go(${t.id},'detail')">
       <div class="w-28 h-24 bg-gradient-to-br ${m.grad} flex-shrink-0 relative">
         <span class="absolute top-1.5 left-1.5 text-[8px] bg-white/90 text-${m.color}-700 px-1.5 py-0.5 rounded-full font-bold"><i class="fas ${m.icon}"></i></span>
+        ${tag?`<div class="absolute bottom-1.5 left-1.5">${tag}</div>`:''}
       </div>
       <div class="p-3 flex-1">
         <div class="font-semibold text-sm mb-0.5">${t.name}${t._db?'<span class="ml-1 text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Yeni</span>':''}</div>
@@ -731,8 +780,8 @@ function applyFilters(){
   const favs=S.get('cu_favs',[]);
   const list=allTours().filter(t=>{
     const mCat=!catFilter||t.cat===catFilter;
-    const mQ=!q||t.name.toLowerCase().includes(q)||t.loc.toLowerCase().includes(q)||(t.captainName||'').toLowerCase().includes(q);
-    const mP=t.price>=minP&&t.price<=maxP;
+    const mQ=!q||(t.name||'').toLowerCase().includes(q)||(t.loc||'').toLowerCase().includes(q)||(t.captainName||'').toLowerCase().includes(q);
+    const mP=(t.price||0)>=minP&&(t.price||0)<=maxP;
     return mCat&&mQ&&mP;
   });
   const el=document.getElementById('search-results-app');
@@ -743,11 +792,15 @@ function applyFilters(){
   el.innerHTML=list.map(t=>{
     const m=CM[t.cat]||CM.gezi;
     const isFav=favs.includes(t.id);
+    const isInstant=t.cat==='balik'||t.cat==='gezi';
     return`<div class="card overflow-hidden card-hover" onclick="go(${t.id},'detail')">
       <div class="h-40 bg-gradient-to-br ${m.grad} relative">
         <span class="absolute top-2 left-2 badge bg-white/90 text-${m.color}-700"><i class="fas ${m.icon} mr-0.5"></i>${m.label}</span>
         <button class="absolute top-2 right-2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center" onclick="event.stopPropagation();toggleFav(${t.id},this)"><i class="${isFav?'fas text-danger':'far text-gray-500'} fa-heart"></i></button>
-        ${t.cat==='balik'||t.cat==='gezi'?'<span class="absolute bottom-2 left-2 text-[9px] bg-green-500 text-white px-2 py-0.5 rounded-full font-medium"><i class="fas fa-bolt mr-0.5"></i>Aninda</span>':''}
+        <div class="absolute bottom-2 left-2 flex items-center gap-1.5">
+          ${isInstant?'<span class="text-[9px] bg-green-500 text-white px-2 py-0.5 rounded-full font-medium"><i class="fas fa-bolt mr-0.5"></i>Aninda</span>':''}
+          ${nextDateTag(t)}
+        </div>
       </div>
       <div class="p-3">
         <div class="font-semibold text-sm mb-0.5">${t.name}${t._db?'<span class="ml-1 text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Kaptan Listesi</span>':''}</div>
