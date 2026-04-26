@@ -11,10 +11,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *{font-family:'Inter',sans-serif;box-sizing:border-box;margin:0;padding:0}
 body{min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#0369a1 50%,#075985 100%);display:flex;align-items:center;justify-content:center;padding:16px}
-.card{background:#fff;border-radius:20px;padding:36px 32px;width:100%;max-width:440px;box-shadow:0 25px 50px rgba(0,0,0,0.3)}
-input{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;background:#f8fafc}
-input:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,161,0.12);background:#fff}
-input.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
+.card{background:#fff;border-radius:20px;padding:36px 32px;width:100%;max-width:480px;box-shadow:0 25px 50px rgba(0,0,0,0.3)}
+input,select{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;background:#f8fafc;color:#1e293b}
+input:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,161,0.12);background:#fff}
+input.error,select.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
 .btn-primary{width:100%;padding:13px;background:#0369a1;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s,transform .1s}
 .btn-primary:hover{background:#075985}
 .btn-primary:active{transform:scale(.98)}
@@ -35,6 +35,13 @@ input.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
 .success-card{text-align:center;padding:40px 20px;display:none}
 @keyframes pop{0%{transform:scale(.5);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
 .pop{animation:pop .5s ease forwards}
+/* Role selection cards */
+.role-card{border:2px solid #e2e8f0;border-radius:16px;padding:20px 16px;cursor:pointer;transition:all .2s;text-align:center;background:#f8fafc}
+.role-card:hover{border-color:#0369a1;background:#eff6ff;transform:translateY(-2px);box-shadow:0 8px 20px rgba(3,105,161,0.12)}
+.role-card.selected{border-color:#0369a1;background:#eff6ff}
+/* Section divider */
+.section-label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;margin-top:4px;padding-left:2px}
+.required-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-weight:600;margin-left:6px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -71,53 +78,94 @@ input.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
         </div>
         <div class="err-msg" id="l-pass-err">Şifre alanı boş bırakılamaz.</div>
       </div>
-
       <div class="flex items-center justify-between text-xs">
         <label class="flex items-center gap-2 cursor-pointer select-none">
           <input type="checkbox" id="l-remember" class="!w-auto accent-primary"> Beni hatırla
         </label>
         <button type="button" onclick="switchTab('forgot')" class="text-primary hover:underline font-medium">Şifremi unuttum</button>
       </div>
-
       <div id="login-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
         <i class="fas fa-exclamation-circle"></i><span></span>
       </div>
-
       <button type="submit" class="btn-primary mt-2" id="login-btn">
         <span id="login-btn-text">Giriş Yap</span>
         <i class="fas fa-spinner fa-spin hidden" id="login-spin"></i>
       </button>
     </div>
-
     <div class="divider text-xs text-gray-400">veya</div>
     <button type="button" onclick="guestLogin()" class="social-btn text-gray-600">
       <i class="fas fa-user-circle text-gray-400"></i> Misafir olarak devam et
     </button>
   </form>
 
-  <!-- ── REGISTER FORM ── -->
-  <form id="register-form" onsubmit="doRegister(event)" novalidate style="display:none">
+  <!-- ── ADIM 1: ROL SEÇİMİ ── -->
+  <div id="role-select" style="display:none">
+    <div class="text-center mb-6">
+      <p class="font-bold text-gray-800 text-base">Nasıl katılmak istiyorsunuz?</p>
+      <p class="text-xs text-gray-500 mt-1">Hesap türünüzü seçin, size özel kayıt formunu açalım.</p>
+    </div>
+    <div class="grid grid-cols-3 gap-3 mb-6">
+      <div class="role-card" onclick="selectRole('musteri')">
+        <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-user text-primary text-xl"></i>
+        </div>
+        <div class="font-bold text-sm text-gray-800 mb-1">Müşteri</div>
+        <div class="text-[10px] text-gray-500 leading-relaxed">Tur ara, rezervasyon yap</div>
+      </div>
+      <div class="role-card" onclick="selectRole('kaptan')">
+        <div class="w-12 h-12 bg-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-anchor text-cyan-600 text-xl"></i>
+        </div>
+        <div class="font-bold text-sm text-gray-800 mb-1">Kaptan</div>
+        <div class="text-[10px] text-gray-500 leading-relaxed">Tekne turu yayınla</div>
+      </div>
+      <div class="role-card" onclick="selectRole('satici')">
+        <div class="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-store text-accent text-xl"></i>
+        </div>
+        <div class="font-bold text-sm text-gray-800 mb-1">Satıcı</div>
+        <div class="text-[10px] text-gray-500 leading-relaxed">Ürün ve ekipman sat</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ADIM 2A: MÜŞTERİ KAYIT FORMU ── -->
+  <form id="register-form-musteri" onsubmit="doRegister(event,'musteri')" novalidate style="display:none">
+    <div class="flex items-center gap-2 mb-5">
+      <button type="button" onclick="backToRoleSelect()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0">
+        <i class="fas fa-arrow-left text-sm"></i>
+      </button>
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center">
+          <i class="fas fa-user text-primary text-sm"></i>
+        </div>
+        <div>
+          <div class="font-bold text-sm text-gray-800">Müşteri Hesabı</div>
+          <div class="text-[10px] text-gray-400">Turları keşfet ve rezervasyon yap</div>
+        </div>
+      </div>
+    </div>
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1.5">Ad Soyad</label>
-          <input type="text" id="r-name" placeholder="Zeynep Arslan" autocomplete="name">
-          <div class="err-msg" id="r-name-err">En az 3 karakter giriniz.</div>
+          <input type="text" id="rm-name" placeholder="Zeynep Arslan" autocomplete="name">
+          <div class="err-msg" id="rm-name-err">En az 3 karakter giriniz.</div>
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1.5">Telefon</label>
-          <input type="tel" id="r-phone" placeholder="05XX XXX XX XX" autocomplete="tel">
-          <div class="err-msg" id="r-phone-err">Geçerli bir telefon giriniz.</div>
+          <input type="tel" id="rm-phone" placeholder="05XX XXX XX XX" autocomplete="tel">
+          <div class="err-msg" id="rm-phone-err">Geçerli bir telefon giriniz.</div>
         </div>
       </div>
       <div>
         <label class="block text-xs font-semibold text-gray-600 mb-1.5">E-posta Adresi</label>
-        <input type="email" id="r-email" placeholder="ornek@email.com" autocomplete="email">
-        <div class="err-msg" id="r-email-err">Geçerli bir e-posta giriniz.</div>
+        <input type="email" id="rm-email" placeholder="ornek@email.com" autocomplete="email">
+        <div class="err-msg" id="rm-email-err">Geçerli bir e-posta giriniz.</div>
       </div>
       <div>
         <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şehir</label>
-        <select id="r-city" class="w-full px-3 py-3 border-[1.5px] border-gray-200 rounded-xl text-sm outline-none focus:border-primary bg-gray-50 focus:bg-white transition">
+        <select id="rm-city">
           <option value="">Şehir seçin...</option>
           <option>Antalya</option><option>İstanbul</option><option>Bodrum</option>
           <option>Fethiye</option><option>Marmaris</option><option>Kaş</option>
@@ -128,36 +176,292 @@ input.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
       <div>
         <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şifre</label>
         <div class="field-wrap">
-          <input type="password" id="r-pass" placeholder="En az 8 karakter" autocomplete="new-password" oninput="checkStrength(this.value)">
-          <button type="button" class="toggle-pw" onclick="togglePw('r-pass',this)"><i class="fas fa-eye-slash text-sm"></i></button>
+          <input type="password" id="rm-pass" placeholder="En az 8 karakter" autocomplete="new-password" oninput="checkStrength(this.value,'m')">
+          <button type="button" class="toggle-pw" onclick="togglePw('rm-pass',this)"><i class="fas fa-eye-slash text-sm"></i></button>
         </div>
-        <div id="strength-wrap" class="hidden">
-          <div class="strength-bar" id="strength-bar"></div>
-          <div class="text-[10px] text-gray-500 mt-1" id="strength-text"></div>
+        <div id="strength-wrap-m" class="hidden">
+          <div class="strength-bar" id="strength-bar-m"></div>
+          <div class="text-[10px] text-gray-500 mt-1" id="strength-text-m"></div>
         </div>
-        <div class="err-msg" id="r-pass-err">En az 8 karakter giriniz.</div>
+        <div class="err-msg" id="rm-pass-err">En az 8 karakter giriniz.</div>
       </div>
       <div>
         <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şifre Tekrar</label>
         <div class="field-wrap">
-          <input type="password" id="r-pass2" placeholder="Şifreyi tekrarlayın" autocomplete="new-password">
-          <button type="button" class="toggle-pw" onclick="togglePw('r-pass2',this)"><i class="fas fa-eye-slash text-sm"></i></button>
+          <input type="password" id="rm-pass2" placeholder="Şifreyi tekrarlayın" autocomplete="new-password">
+          <button type="button" class="toggle-pw" onclick="togglePw('rm-pass2',this)"><i class="fas fa-eye-slash text-sm"></i></button>
         </div>
-        <div class="err-msg" id="r-pass2-err">Şifreler eşleşmiyor.</div>
+        <div class="err-msg" id="rm-pass2-err">Şifreler eşleşmiyor.</div>
       </div>
       <label class="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
-        <input type="checkbox" id="r-terms" class="!w-auto mt-0.5 accent-primary">
+        <input type="checkbox" id="rm-terms" class="!w-auto mt-0.5 accent-primary">
         <span><b>Kullanım koşullarını</b> ve <b>gizlilik politikasını</b> okudum, kabul ediyorum.</span>
       </label>
-      <div class="err-msg show" id="r-terms-err" style="display:none">Devam etmek için koşulları kabul etmelisiniz.</div>
-
-      <div id="register-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
+      <div class="err-msg" id="rm-terms-err">Devam etmek için koşulları kabul etmelisiniz.</div>
+      <div id="register-error-musteri" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
         <i class="fas fa-exclamation-circle"></i><span></span>
       </div>
+      <button type="submit" class="btn-primary" id="register-btn-musteri">
+        <span id="register-btn-text-musteri">Müşteri Hesabı Oluştur</span>
+        <i class="fas fa-spinner fa-spin hidden" id="register-spin-musteri"></i>
+      </button>
+    </div>
+  </form>
 
-      <button type="submit" class="btn-primary" id="register-btn">
-        <span id="register-btn-text">Hesap Oluştur</span>
-        <i class="fas fa-spinner fa-spin hidden" id="register-spin"></i>
+  <!-- ── ADIM 2B: KAPTAN KAYIT FORMU ── -->
+  <form id="register-form-kaptan" onsubmit="doRegister(event,'kaptan')" novalidate style="display:none">
+    <div class="flex items-center gap-2 mb-5">
+      <button type="button" onclick="backToRoleSelect()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0">
+        <i class="fas fa-arrow-left text-sm"></i>
+      </button>
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-cyan-100 rounded-xl flex items-center justify-center">
+          <i class="fas fa-anchor text-cyan-600 text-sm"></i>
+        </div>
+        <div>
+          <div class="font-bold text-sm text-gray-800">Kaptan Hesabı</div>
+          <div class="text-[10px] text-gray-400">Tekne bilgileri ve denizcilik kimliği gereklidir</div>
+        </div>
+      </div>
+    </div>
+    <div class="space-y-4 overflow-y-auto" style="max-height:65vh;padding-right:2px">
+
+      <!-- KİŞİSEL BİLGİLER -->
+      <div class="section-label"><i class="fas fa-user mr-1 text-gray-300"></i>Kişisel Bilgiler</div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Ad Soyad</label>
+          <input type="text" id="rk-name" placeholder="Ahmet Yılmaz" autocomplete="name">
+          <div class="err-msg" id="rk-name-err">En az 3 karakter giriniz.</div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Telefon</label>
+          <input type="tel" id="rk-phone" placeholder="05XX XXX XX XX" autocomplete="tel">
+          <div class="err-msg" id="rk-phone-err">Geçerli bir telefon giriniz.</div>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">E-posta Adresi</label>
+        <input type="email" id="rk-email" placeholder="kaptan@email.com" autocomplete="email">
+        <div class="err-msg" id="rk-email-err">Geçerli bir e-posta giriniz.</div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Bölge / Liman</label>
+        <select id="rk-city">
+          <option value="">Liman / Bölge seçin...</option>
+          <option>Antalya Yat Limanı</option><option>İstanbul Kalamış Marina</option>
+          <option>Bodrum Milta Marina</option><option>Fethiye Marina</option>
+          <option>Marmaris Yat Limanı</option><option>Kaş Marina</option>
+          <option>Kemer Marina</option><option>Çeşme Marina</option>
+          <option>İzmir Alsancak Limanı</option><option>Alanya Marina</option>
+          <option>Side Marina</option><option>Diğer</option>
+        </select>
+      </div>
+
+      <!-- TEKNE BİLGİLERİ -->
+      <div class="section-label mt-2"><i class="fas fa-ship mr-1 text-gray-300"></i>Tekne Bilgileri</div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tekne Adı</label>
+          <input type="text" id="rk-tekne" placeholder="Mavi Rüzgar">
+          <div class="err-msg" id="rk-tekne-err">Tekne adı zorunludur.</div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tekne Türü</label>
+          <select id="rk-tekne-turu">
+            <option value="">Seçin...</option>
+            <option>Motor Tekne</option><option>Yelkenli</option><option>Katamaran</option>
+            <option>Gulet</option><option>RIB / Şişme Bot</option><option>Diğer</option>
+          </select>
+          <div class="err-msg" id="rk-tekne-turu-err">Tekne türü seçiniz.</div>
+        </div>
+      </div>
+
+      <!-- DENİZCİLİK KİMLİK BİLGİLERİ — ZORUNLU -->
+      <div class="section-label mt-2">
+        <i class="fas fa-broadcast-tower mr-1 text-gray-300"></i>Denizcilik Kimlik Bilgileri
+        <span class="required-badge"><i class="fas fa-lock mr-0.5"></i>Zorunlu</span>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-800 flex gap-2">
+        <i class="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
+        <span>MMSI, Call Sign ve AIS bilgileri <strong>güvenlik doğrulaması</strong> için zorunludur. Yanlış bilgi girişi hesap askıya alınmasına neden olur.</span>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+            MMSI Numarası
+            <span class="font-normal text-gray-400 ml-1">9 haneli</span>
+          </label>
+          <input type="text" id="rk-mmsi" placeholder="271XXXXXX" maxlength="9" inputmode="numeric"
+            oninput="this.value=this.value.replace(/\D/g,'').slice(0,9)">
+          <div class="err-msg" id="rk-mmsi-err">MMSI 9 haneli sayı olmalıdır.</div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+            Call Sign
+            <span class="font-normal text-gray-400 ml-1">Çağrı işareti</span>
+          </label>
+          <input type="text" id="rk-callsign" placeholder="TA1234" maxlength="7"
+            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,7)">
+          <div class="err-msg" id="rk-callsign-err">Geçerli bir çağrı işareti giriniz (3-7 karakter).</div>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">AIS Transponder Sınıfı</label>
+        <select id="rk-ais">
+          <option value="">AIS sınıfını seçin...</option>
+          <option value="A">Class A — Ticari / büyük tekneler (SOLAS zorunlu)</option>
+          <option value="B">Class B — Gezi / küçük tekneler (gönüllü)</option>
+          <option value="B+">Class B+ — Gelişmiş küçük tekne transponder</option>
+        </select>
+        <div class="err-msg" id="rk-ais-err">AIS transponder sınıfı seçiniz.</div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+          IMO Numarası
+          <span class="font-normal text-gray-400 ml-1">(varsa — 7 haneli)</span>
+        </label>
+        <input type="text" id="rk-imo" placeholder="1234567" maxlength="7" inputmode="numeric"
+          oninput="this.value=this.value.replace(/\D/g,'').slice(0,7)">
+        <div class="err-msg" id="rk-imo-err">IMO numarası 7 haneli olmalıdır.</div>
+      </div>
+
+      <!-- ŞİFRE -->
+      <div class="section-label mt-2"><i class="fas fa-lock mr-1 text-gray-300"></i>Hesap Güvenliği</div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şifre</label>
+        <div class="field-wrap">
+          <input type="password" id="rk-pass" placeholder="En az 8 karakter" autocomplete="new-password" oninput="checkStrength(this.value,'k')">
+          <button type="button" class="toggle-pw" onclick="togglePw('rk-pass',this)"><i class="fas fa-eye-slash text-sm"></i></button>
+        </div>
+        <div id="strength-wrap-k" class="hidden">
+          <div class="strength-bar" id="strength-bar-k"></div>
+          <div class="text-[10px] text-gray-500 mt-1" id="strength-text-k"></div>
+        </div>
+        <div class="err-msg" id="rk-pass-err">En az 8 karakter giriniz.</div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şifre Tekrar</label>
+        <div class="field-wrap">
+          <input type="password" id="rk-pass2" placeholder="Şifreyi tekrarlayın" autocomplete="new-password">
+          <button type="button" class="toggle-pw" onclick="togglePw('rk-pass2',this)"><i class="fas fa-eye-slash text-sm"></i></button>
+        </div>
+        <div class="err-msg" id="rk-pass2-err">Şifreler eşleşmiyor.</div>
+      </div>
+      <label class="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
+        <input type="checkbox" id="rk-terms" class="!w-auto mt-0.5 accent-primary">
+        <span><b>Kullanım koşullarını</b>, <b>kaptan sözleşmesini</b> ve <b>gizlilik politikasını</b> okudum, kabul ediyorum.</span>
+      </label>
+      <div class="err-msg" id="rk-terms-err">Devam etmek için koşulları kabul etmelisiniz.</div>
+      <div id="register-error-kaptan" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
+        <i class="fas fa-exclamation-circle"></i><span></span>
+      </div>
+      <button type="submit" class="btn-primary" id="register-btn-kaptan">
+        <span id="register-btn-text-kaptan">Kaptan Hesabı Oluştur</span>
+        <i class="fas fa-spinner fa-spin hidden" id="register-spin-kaptan"></i>
+      </button>
+    </div>
+  </form>
+
+  <!-- ── ADIM 2C: SATICI KAYIT FORMU ── -->
+  <form id="register-form-satici" onsubmit="doRegister(event,'satici')" novalidate style="display:none">
+    <div class="flex items-center gap-2 mb-5">
+      <button type="button" onclick="backToRoleSelect()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0">
+        <i class="fas fa-arrow-left text-sm"></i>
+      </button>
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center">
+          <i class="fas fa-store text-accent text-sm"></i>
+        </div>
+        <div>
+          <div class="font-bold text-sm text-gray-800">Satıcı Hesabı</div>
+          <div class="text-[10px] text-gray-400">Denizcilik ürün ve ekipmanı sat</div>
+        </div>
+      </div>
+    </div>
+    <div class="space-y-4">
+      <div class="section-label"><i class="fas fa-user mr-1 text-gray-300"></i>Kişisel Bilgiler</div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Ad Soyad</label>
+          <input type="text" id="rs-name" placeholder="Ali Kaya" autocomplete="name">
+          <div class="err-msg" id="rs-name-err">En az 3 karakter giriniz.</div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Telefon</label>
+          <input type="tel" id="rs-phone" placeholder="05XX XXX XX XX" autocomplete="tel">
+          <div class="err-msg" id="rs-phone-err">Geçerli bir telefon giriniz.</div>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">E-posta Adresi</label>
+        <input type="email" id="rs-email" placeholder="magaza@email.com" autocomplete="email">
+        <div class="err-msg" id="rs-email-err">Geçerli bir e-posta giriniz.</div>
+      </div>
+      <div class="section-label mt-1"><i class="fas fa-store mr-1 text-gray-300"></i>İşletme Bilgileri</div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">İşletme / Mağaza Adı</label>
+        <input type="text" id="rs-isletme" placeholder="Deniz Ekipman A.Ş.">
+        <div class="err-msg" id="rs-isletme-err">İşletme adı zorunludur.</div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Ürün Kategorisi</label>
+          <select id="rs-kategori">
+            <option value="">Seçin...</option>
+            <option>Balıkçı Ekipmanları</option><option>Tekne Aksesuarları</option>
+            <option>Güvenlik Ekipmanları</option><option>Navigasyon Aletleri</option>
+            <option>Giyim & Kişisel Ekipman</option><option>Diğer</option>
+          </select>
+          <div class="err-msg" id="rs-kategori-err">Kategori seçiniz.</div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şehir</label>
+          <select id="rs-city">
+            <option value="">Şehir seçin...</option>
+            <option>Antalya</option><option>İstanbul</option><option>Bodrum</option>
+            <option>Fethiye</option><option>Marmaris</option><option>Kaş</option>
+            <option>Kemer</option><option>Çeşme</option><option>İzmir</option>
+            <option>Alanya</option><option>Side</option><option>Diğer</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Vergi Numarası <span class="font-normal text-gray-400">(isteğe bağlı)</span></label>
+        <input type="text" id="rs-vergino" placeholder="1234567890" maxlength="11" inputmode="numeric">
+      </div>
+      <div class="section-label mt-1"><i class="fas fa-lock mr-1 text-gray-300"></i>Hesap Güvenliği</div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şifre</label>
+        <div class="field-wrap">
+          <input type="password" id="rs-pass" placeholder="En az 8 karakter" autocomplete="new-password" oninput="checkStrength(this.value,'s')">
+          <button type="button" class="toggle-pw" onclick="togglePw('rs-pass',this)"><i class="fas fa-eye-slash text-sm"></i></button>
+        </div>
+        <div id="strength-wrap-s" class="hidden">
+          <div class="strength-bar" id="strength-bar-s"></div>
+          <div class="text-[10px] text-gray-500 mt-1" id="strength-text-s"></div>
+        </div>
+        <div class="err-msg" id="rs-pass-err">En az 8 karakter giriniz.</div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Şifre Tekrar</label>
+        <div class="field-wrap">
+          <input type="password" id="rs-pass2" placeholder="Şifreyi tekrarlayın" autocomplete="new-password">
+          <button type="button" class="toggle-pw" onclick="togglePw('rs-pass2',this)"><i class="fas fa-eye-slash text-sm"></i></button>
+        </div>
+        <div class="err-msg" id="rs-pass2-err">Şifreler eşleşmiyor.</div>
+      </div>
+      <label class="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
+        <input type="checkbox" id="rs-terms" class="!w-auto mt-0.5 accent-primary">
+        <span><b>Kullanım koşullarını</b>, <b>satıcı sözleşmesini</b> ve <b>gizlilik politikasını</b> okudum, kabul ediyorum.</span>
+      </label>
+      <div class="err-msg" id="rs-terms-err">Devam etmek için koşulları kabul etmelisiniz.</div>
+      <div id="register-error-satici" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
+        <i class="fas fa-exclamation-circle"></i><span></span>
+      </div>
+      <button type="submit" class="btn-primary" id="register-btn-satici">
+        <span id="register-btn-text-satici">Satıcı Hesabı Oluştur</span>
+        <i class="fas fa-spinner fa-spin hidden" id="register-spin-satici"></i>
       </button>
     </div>
   </form>
@@ -189,40 +493,32 @@ input.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
     <button onclick="redirectAfterLogin()" class="btn-primary">Uygulamaya Git <i class="fas fa-arrow-right ml-2"></i></button>
   </div>
 
-  <p class="text-xs text-center text-gray-400 mt-6">
-    Kaptan mısınız? <a href="captain-app.html" class="text-primary font-medium hover:underline">Kaptan panelini kullanın</a>
-  </p>
 </div>
 
 <script>
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
 function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
 
-// ── Redirect destination ──────────────────────────────────────────────────
-const redirectTo = (()=>{
-  const p = new URLSearchParams(location.search);
-  return p.get('redirect') || 'customer-app.html';
+const redirectTo=(()=>{
+  const p=new URLSearchParams(location.search);
+  return p.get('redirect')||'customer-app.html';
 })();
 
-// Check if already logged in
-const existing = lsGet('auth_user');
-if(existing && existing.id){ window.location.href = redirectTo; }
+const existing=lsGet('auth_user');
+if(existing&&existing.id){window.location.href=redirectTo;}
 
-// ── Tab switching ─────────────────────────────────────────────────────────
+const ALL_PANELS=['login-form','role-select','register-form-musteri','register-form-kaptan','register-form-satici','forgot-form'];
+
 function switchTab(tab){
-  ['login-form','register-form','forgot-form'].forEach(id=>{
-    document.getElementById(id).style.display='none';
-  });
+  ALL_PANELS.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   document.getElementById('success-card').style.display='none';
   document.getElementById('tab-row').style.display='flex';
-
-  document.getElementById('tab-login')?.classList.toggle('active', tab==='login');
-  document.getElementById('tab-register')?.classList.toggle('active', tab==='register');
-
+  document.getElementById('tab-login')?.classList.toggle('active',tab==='login');
+  document.getElementById('tab-register')?.classList.toggle('active',tab==='register');
   if(tab==='login'){
     document.getElementById('login-form').style.display='block';
   } else if(tab==='register'){
-    document.getElementById('register-form').style.display='block';
+    document.getElementById('role-select').style.display='block';
   } else if(tab==='forgot'){
     document.getElementById('forgot-form').style.display='block';
     document.getElementById('tab-row').style.display='none';
@@ -230,207 +526,270 @@ function switchTab(tab){
   clearErrors();
 }
 
+function selectRole(role){
+  ALL_PANELS.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  document.getElementById('register-form-'+role).style.display='block';
+}
+
+function backToRoleSelect(){
+  ALL_PANELS.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  document.getElementById('role-select').style.display='block';
+  clearErrors();
+}
+
 function clearErrors(){
-  document.querySelectorAll('.err-msg').forEach(e=>e.classList.remove('show'));
-  document.querySelectorAll('input.error').forEach(e=>e.classList.remove('error'));
-  ['login-error','register-error'].forEach(id=>{
+  document.querySelectorAll('.err-msg').forEach(e=>{e.style.display='none';e.classList.remove('show');});
+  document.querySelectorAll('input.error,select.error').forEach(e=>e.classList.remove('error'));
+  ['login-error','register-error-musteri','register-error-kaptan','register-error-satici'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.classList.add('hidden');
   });
 }
 
-function showErr(inputId, errId){
+function showErr(inputId,errId){
   const inp=document.getElementById(inputId);
   const err=document.getElementById(errId);
   if(inp)inp.classList.add('error');
   if(err)err.style.display='block';
 }
 
-function togglePw(inputId, btn){
+function togglePw(inputId,btn){
   const inp=document.getElementById(inputId);
   const isText=inp.type==='text';
   inp.type=isText?'password':'text';
   btn.querySelector('i').className='fas '+(isText?'fa-eye-slash':'fa-eye')+' text-sm';
 }
 
-// ── Password strength ─────────────────────────────────────────────────────
-function checkStrength(val){
-  const wrap=document.getElementById('strength-wrap');
-  const bar=document.getElementById('strength-bar');
-  const txt=document.getElementById('strength-text');
+function checkStrength(val,suffix){
+  const wrap=document.getElementById('strength-wrap-'+suffix);
+  const bar=document.getElementById('strength-bar-'+suffix);
+  const txt=document.getElementById('strength-text-'+suffix);
   if(!val){wrap.classList.add('hidden');return;}
   wrap.classList.remove('hidden');
   let score=0;
-  if(val.length>=8)score++;
-  if(val.length>=12)score++;
-  if(/[A-Z]/.test(val))score++;
-  if(/[0-9]/.test(val))score++;
+  if(val.length>=8)score++;if(val.length>=12)score++;
+  if(/[A-Z]/.test(val))score++;if(/[0-9]/.test(val))score++;
   if(/[^A-Za-z0-9]/.test(val))score++;
   const levels=[
-    {w:'20%',bg:'bg-red-400',label:'Çok Zayıf'},
-    {w:'40%',bg:'bg-orange-400',label:'Zayıf'},
-    {w:'60%',bg:'bg-yellow-400',label:'Orta'},
-    {w:'80%',bg:'bg-blue-400',label:'Güçlü'},
+    {w:'20%',bg:'bg-red-400',label:'Çok Zayıf'},{w:'40%',bg:'bg-orange-400',label:'Zayıf'},
+    {w:'60%',bg:'bg-yellow-400',label:'Orta'},{w:'80%',bg:'bg-blue-400',label:'Güçlü'},
     {w:'100%',bg:'bg-success',label:'Çok Güçlü'},
   ];
   const l=levels[Math.min(score,4)];
-  bar.style.width=l.w;
-  bar.className='strength-bar '+l.bg;
-  txt.textContent=l.label;
+  bar.style.width=l.w;bar.className='strength-bar '+l.bg;txt.textContent=l.label;
 }
 
-// ── LOGIN ─────────────────────────────────────────────────────────────────
+/* ── LOGIN ── */
 function doLogin(e){
-  e.preventDefault();
-  clearErrors();
+  e.preventDefault();clearErrors();
   const email=document.getElementById('l-email').value.trim();
   const pass=document.getElementById('l-pass').value;
   let ok=true;
   if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){showErr('l-email','l-email-err');ok=false;}
   if(!pass){showErr('l-pass','l-pass-err');ok=false;}
   if(!ok)return;
-
   setLoading('login-btn','login-btn-text','login-spin',true);
   setTimeout(()=>{
-    const users=lsGet('cu_users',[]);
+    const users=[...lsGet('cu_users',[]),...lsGet('db_captains',[]).map(c=>({...c,roller:['kaptan']}))];
     const user=users.find(u=>u.email===email&&u.password===pass);
     setLoading('login-btn','login-btn-text','login-spin',false);
-    if(!user){
-      showLoginError('E-posta veya şifre hatalı. Hesabınız yok mu? Kayıt olun.');
-      return;
-    }
-    if(user.durum==='engellendi'){
-      showLoginError('Bu hesap engellenmiştir. Destek için iletişime geçin.');
-      return;
-    }
-    // Update last login
+    if(!user){showLoginError('E-posta veya şifre hatalı.');return;}
+    if(user.durum==='engellendi'){showLoginError('Bu hesap engellenmiştir.');return;}
     user.sonGiris=new Date().toISOString();
-    lsSet('cu_users',users);
-    // Store session
-    const session={id:user.id,name:user.name,email:user.email,sehir:user.sehir||'',phone:user.phone||'',sonGiris:user.sonGiris,plan:user.plan||'free'};
+    const session={id:user.id,name:user.name||user.ad+' '+(user.soyad||''),email:user.email,roller:user.roller||['musteri'],sonGiris:user.sonGiris,plan:user.plan||'free'};
     lsSet('auth_user',session);
     localStorage.setItem('cu_session','active');
-    lsSet('cu_profile',{name:user.name,email:user.email,phone:user.phone||''});
-    showSuccess('Hoş Geldiniz, '+user.name.split(' ')[0]+'!','Giriş başarılı. Yönlendiriliyorsunuz...');
+    showSuccess('Hoş Geldiniz, '+(session.name||'').split(' ')[0]+'!','Giriş başarılı. Yönlendiriliyorsunuz...');
   },600);
 }
 
 function showLoginError(msg){
   const el=document.getElementById('login-error');
-  if(!el)return;
-  el.querySelector('span').textContent=msg;
-  el.classList.remove('hidden');
+  el.querySelector('span').textContent=msg;el.classList.remove('hidden');
 }
 
-// ── REGISTER ─────────────────────────────────────────────────────────────
-function doRegister(e){
-  e.preventDefault();
-  clearErrors();
-  const name=document.getElementById('r-name').value.trim();
-  const phone=document.getElementById('r-phone').value.trim();
-  const email=document.getElementById('r-email').value.trim();
-  const city=document.getElementById('r-city').value;
-  const pass=document.getElementById('r-pass').value;
-  const pass2=document.getElementById('r-pass2').value;
-  const terms=document.getElementById('r-terms').checked;
+/* ── REGISTER (tüm roller) ── */
+function doRegister(e,role){
+  e.preventDefault();clearErrors();
+  if(role==='musteri')doRegisterMusteri();
+  else if(role==='kaptan')doRegisterKaptan();
+  else if(role==='satici')doRegisterSatici();
+}
+
+function doRegisterMusteri(){
+  const name=document.getElementById('rm-name').value.trim();
+  const phone=document.getElementById('rm-phone').value.trim();
+  const email=document.getElementById('rm-email').value.trim();
+  const city=document.getElementById('rm-city').value;
+  const pass=document.getElementById('rm-pass').value;
+  const pass2=document.getElementById('rm-pass2').value;
+  const terms=document.getElementById('rm-terms').checked;
   let ok=true;
-
-  if(!name||name.length<3){showErr('r-name','r-name-err');ok=false;}
-  if(!phone||!/^0[5][0-9]{9}$/.test(phone.replace(/\s/g,''))){showErr('r-phone','r-phone-err');ok=false;}
-  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){showErr('r-email','r-email-err');ok=false;}
-  if(!pass||pass.length<8){showErr('r-pass','r-pass-err');ok=false;}
-  if(pass!==pass2){showErr('r-pass2','r-pass2-err');ok=false;}
-  if(!terms){document.getElementById('r-terms-err').style.display='block';ok=false;}
+  if(!name||name.length<3){showErr('rm-name','rm-name-err');ok=false;}
+  if(!phone||!/^0[5][0-9]{9}$/.test(phone.replace(/\s/g,''))){showErr('rm-phone','rm-phone-err');ok=false;}
+  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){showErr('rm-email','rm-email-err');ok=false;}
+  if(!pass||pass.length<8){showErr('rm-pass','rm-pass-err');ok=false;}
+  if(pass!==pass2){showErr('rm-pass2','rm-pass2-err');ok=false;}
+  if(!terms){document.getElementById('rm-terms-err').style.display='block';ok=false;}
   if(!ok)return;
-
-  setLoading('register-btn','register-btn-text','register-spin',true);
+  setLoading('register-btn-musteri','register-btn-text-musteri','register-spin-musteri',true);
   setTimeout(()=>{
     const users=lsGet('cu_users',[]);
     if(users.find(u=>u.email===email)){
-      setLoading('register-btn','register-btn-text','register-spin',false);
-      showRegisterError('Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.');
-      return;
+      setLoading('register-btn-musteri','register-btn-text-musteri','register-spin-musteri',false);
+      showRegisterError('musteri','Bu e-posta zaten kayıtlı. Giriş yapmayı deneyin.');return;
     }
-    const newUser={
-      id:'usr_'+Date.now(),
-      name,
-      email,
-      phone:phone.replace(/\s/g,''),
-      sehir:city||'',
-      password:pass,
-      kayitKanali:'mobil_app',
-      turSayisi:0,
-      toplamHarcama:0,
-      createdAt:new Date().toISOString(),
-      sonGiris:new Date().toISOString(),
-      emailOnaylandi:false,
-      durum:'aktif',
-      plan:'free'
-    };
-    users.push(newUser);
-    lsSet('cu_users',users);
-    const session={id:newUser.id,name:newUser.name,email:newUser.email,sehir:newUser.sehir,phone:newUser.phone,sonGiris:newUser.sonGiris,plan:'free'};
-    lsSet('auth_user',session);
-    localStorage.setItem('cu_session','active');
-    lsSet('cu_profile',{name:newUser.name,email:newUser.email,phone:newUser.phone||''});
-    setLoading('register-btn','register-btn-text','register-spin',false);
+    const u={id:'usr_'+Date.now(),name,email,phone:phone.replace(/\s/g,''),sehir:city||'',password:pass,roller:['musteri'],createdAt:new Date().toISOString(),sonGiris:new Date().toISOString(),durum:'aktif',plan:'free'};
+    users.push(u);lsSet('cu_users',users);
+    _saveSession(u,'customer-app.html');
+    setLoading('register-btn-musteri','register-btn-text-musteri','register-spin-musteri',false);
     showSuccess('Hesabınız Oluşturuldu!','Merhaba '+name.split(' ')[0]+', DenizBul\'a hoş geldiniz!');
   },700);
 }
 
-function showRegisterError(msg){
-  const el=document.getElementById('register-error');
-  if(!el)return;
-  el.querySelector('span').textContent=msg;
-  el.classList.remove('hidden');
+function doRegisterKaptan(){
+  const name=document.getElementById('rk-name').value.trim();
+  const phone=document.getElementById('rk-phone').value.trim();
+  const email=document.getElementById('rk-email').value.trim();
+  const city=document.getElementById('rk-city').value;
+  const tekne=document.getElementById('rk-tekne').value.trim();
+  const tekneTuru=document.getElementById('rk-tekne-turu').value;
+  const mmsi=document.getElementById('rk-mmsi').value.trim();
+  const callsign=document.getElementById('rk-callsign').value.trim();
+  const ais=document.getElementById('rk-ais').value;
+  const imo=document.getElementById('rk-imo').value.trim();
+  const pass=document.getElementById('rk-pass').value;
+  const pass2=document.getElementById('rk-pass2').value;
+  const terms=document.getElementById('rk-terms').checked;
+  let ok=true;
+  if(!name||name.length<3){showErr('rk-name','rk-name-err');ok=false;}
+  if(!phone||!/^0[5][0-9]{9}$/.test(phone.replace(/\s/g,''))){showErr('rk-phone','rk-phone-err');ok=false;}
+  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){showErr('rk-email','rk-email-err');ok=false;}
+  if(!tekne){showErr('rk-tekne','rk-tekne-err');ok=false;}
+  if(!tekneTuru){showErr('rk-tekne-turu','rk-tekne-turu-err');ok=false;}
+  // Denizcilik kimlik — zorunlu
+  if(!mmsi||!/^\d{9}$/.test(mmsi)){showErr('rk-mmsi','rk-mmsi-err');ok=false;}
+  if(!callsign||callsign.length<3||callsign.length>7){showErr('rk-callsign','rk-callsign-err');ok=false;}
+  if(!ais){showErr('rk-ais','rk-ais-err');ok=false;}
+  // IMO isteğe bağlı ama girilmişse 7 hane olmalı
+  if(imo&&!/^\d{7}$/.test(imo)){showErr('rk-imo','rk-imo-err');ok=false;}
+  if(!pass||pass.length<8){showErr('rk-pass','rk-pass-err');ok=false;}
+  if(pass!==pass2){showErr('rk-pass2','rk-pass2-err');ok=false;}
+  if(!terms){document.getElementById('rk-terms-err').style.display='block';ok=false;}
+  if(!ok)return;
+  setLoading('register-btn-kaptan','register-btn-text-kaptan','register-spin-kaptan',true);
+  setTimeout(()=>{
+    const captains=lsGet('db_captains',[]);
+    if(captains.find(c=>c.email===email)){
+      setLoading('register-btn-kaptan','register-btn-text-kaptan','register-spin-kaptan',false);
+      showRegisterError('kaptan','Bu e-posta zaten kayıtlı.');return;
+    }
+    const u={
+      id:'kpt_'+Date.now(),name,email,phone:phone.replace(/\s/g,''),
+      marina:city||'',tekne,tekneTuru,
+      mmsi,callsign,aisClass:ais,imo:imo||'',
+      password:pass,roller:['kaptan'],
+      durum:'bekliyor_onay',
+      createdAt:new Date().toISOString(),sonGiris:new Date().toISOString(),plan:'free'
+    };
+    captains.push(u);lsSet('db_captains',captains);
+    _saveSession(u,'PANELLER/captain-app.html');
+    setLoading('register-btn-kaptan','register-btn-text-kaptan','register-spin-kaptan',false);
+    showSuccess('Kaptan Başvurunuz Alındı!','Merhaba '+name.split(' ')[0]+', hesabınız inceleme aşamasında. Onaylandıktan sonra tur yayınlayabilirsiniz.');
+  },800);
 }
 
-// ── GUEST LOGIN ───────────────────────────────────────────────────────────
+function doRegisterSatici(){
+  const name=document.getElementById('rs-name').value.trim();
+  const phone=document.getElementById('rs-phone').value.trim();
+  const email=document.getElementById('rs-email').value.trim();
+  const isletme=document.getElementById('rs-isletme').value.trim();
+  const kategori=document.getElementById('rs-kategori').value;
+  const city=document.getElementById('rs-city').value;
+  const vergino=document.getElementById('rs-vergino').value.trim();
+  const pass=document.getElementById('rs-pass').value;
+  const pass2=document.getElementById('rs-pass2').value;
+  const terms=document.getElementById('rs-terms').checked;
+  let ok=true;
+  if(!name||name.length<3){showErr('rs-name','rs-name-err');ok=false;}
+  if(!phone||!/^0[5][0-9]{9}$/.test(phone.replace(/\s/g,''))){showErr('rs-phone','rs-phone-err');ok=false;}
+  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){showErr('rs-email','rs-email-err');ok=false;}
+  if(!isletme){showErr('rs-isletme','rs-isletme-err');ok=false;}
+  if(!kategori){showErr('rs-kategori','rs-kategori-err');ok=false;}
+  if(!pass||pass.length<8){showErr('rs-pass','rs-pass-err');ok=false;}
+  if(pass!==pass2){showErr('rs-pass2','rs-pass2-err');ok=false;}
+  if(!terms){document.getElementById('rs-terms-err').style.display='block';ok=false;}
+  if(!ok)return;
+  setLoading('register-btn-satici','register-btn-text-satici','register-spin-satici',true);
+  setTimeout(()=>{
+    const sellers=lsGet('db_sellers',[]);
+    if(sellers.find(s=>s.email===email)){
+      setLoading('register-btn-satici','register-btn-text-satici','register-spin-satici',false);
+      showRegisterError('satici','Bu e-posta zaten kayıtlı.');return;
+    }
+    const u={id:'sel_'+Date.now(),name,email,phone:phone.replace(/\s/g,''),isletme,kategori,sehir:city||'',vergino:vergino||'',password:pass,roller:['satici'],durum:'bekliyor_onay',createdAt:new Date().toISOString(),sonGiris:new Date().toISOString(),plan:'free'};
+    sellers.push(u);lsSet('db_sellers',sellers);
+    _saveSession(u,'PANELLER/magaza-panel.html');
+    setLoading('register-btn-satici','register-btn-text-satici','register-spin-satici',false);
+    showSuccess('Satıcı Başvurunuz Alındı!','Merhaba '+name.split(' ')[0]+', mağazanız inceleme aşamasında. Onaylandıktan sonra ürün yayınlayabilirsiniz.');
+  },700);
+}
+
+function showRegisterError(role,msg){
+  const el=document.getElementById('register-error-'+role);
+  if(!el)return;
+  el.querySelector('span').textContent=msg;el.classList.remove('hidden');
+}
+
+function _saveSession(u,dest){
+  const session={id:u.id,name:u.name,email:u.email,roller:u.roller||['musteri'],sonGiris:u.sonGiris,plan:u.plan||'free',_redirect:dest};
+  lsSet('auth_user',session);localStorage.setItem('cu_session','active');
+  lsSet('cu_profile',{name:u.name,email:u.email,phone:u.phone||''});
+}
+
+/* ── GUEST LOGIN ── */
 function guestLogin(){
-  const session={id:'guest_'+Date.now(),name:'Misafir',email:'',sehir:'',phone:'',sonGiris:new Date().toISOString(),isGuest:true};
-  lsSet('auth_user',session);
-  localStorage.setItem('cu_session','active');
+  const session={id:'guest_'+Date.now(),name:'Misafir',email:'',roller:['misafir'],sonGiris:new Date().toISOString(),isGuest:true};
+  lsSet('auth_user',session);localStorage.setItem('cu_session','active');
   lsSet('cu_profile',{name:'Misafir',email:'',phone:''});
   window.location.href=redirectTo;
 }
 
-// ── FORGOT PASSWORD ───────────────────────────────────────────────────────
+/* ── FORGOT PASSWORD ── */
 function doForgot(){
   const email=document.getElementById('f-email').value.trim();
   const msg=document.getElementById('forgot-msg');
   if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){
     msg.className='text-xs text-center py-2 px-3 rounded-lg bg-red-50 text-red-700';
-    msg.textContent='Geçerli bir e-posta adresi giriniz.';
-    msg.classList.remove('hidden');
-    return;
+    msg.textContent='Geçerli bir e-posta adresi giriniz.';msg.classList.remove('hidden');return;
   }
   msg.className='text-xs text-center py-2 px-3 rounded-lg bg-green-50 text-green-700';
-  msg.textContent='✓ Sıfırlama bağlantısı '+email+' adresine gönderildi. (Demo: Gerçek gönderim yapılmaz)';
+  msg.textContent='✓ Sıfırlama bağlantısı '+email+' adresine gönderildi.';
   msg.classList.remove('hidden');
 }
 
-// ── SUCCESS ───────────────────────────────────────────────────────────────
+/* ── SUCCESS ── */
 function showSuccess(title,msg){
-  ['login-form','register-form','forgot-form'].forEach(id=>{
-    document.getElementById(id).style.display='none';
-  });
+  ALL_PANELS.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   document.getElementById('tab-row').style.display='none';
   document.getElementById('success-title').textContent=title;
   document.getElementById('success-msg').textContent=msg;
-  const sc=document.getElementById('success-card');
-  sc.style.display='block';
-  setTimeout(redirectAfterLogin,2200);
+  const sc=document.getElementById('success-card');sc.style.display='block';
+  setTimeout(redirectAfterLogin,2800);
 }
 
-function redirectAfterLogin(){window.location.href=redirectTo;}
+function redirectAfterLogin(){
+  const session=lsGet('auth_user');
+  const dest=session?._redirect||redirectTo;
+  window.location.href=dest;
+}
 
-// ── LOADING STATE ─────────────────────────────────────────────────────────
 function setLoading(btnId,txtId,spinId,loading){
   const btn=document.getElementById(btnId);
   const txt=document.getElementById(txtId);
   const spin=document.getElementById(spinId);
   if(!btn)return;
   btn.disabled=loading;
-  if(txt)txt.textContent=loading?'Lütfen bekleyin...':btnId.includes('login')?'Giriş Yap':'Hesap Oluştur';
+  if(txt)txt.textContent=loading?'Lütfen bekleyin...':txt.dataset.orig||txt.textContent;
   if(spin)spin.classList.toggle('hidden',!loading);
 }
 </script>
