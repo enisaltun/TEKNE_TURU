@@ -185,10 +185,10 @@
       <span class="text-gray-400 text-xs">UI Prototype v1.0.0</span>
     </div>
     <div class="flex gap-5 text-xs text-gray-400">
-      <a href="customer-app.html" class="hover:text-primary transition">Müşteri</a>
-      <a href="captain-app.html" class="hover:text-sky-600 transition">Kaptan</a>
-      <a href="admin-panel.html" class="hover:text-purple-600 transition">Admin</a>
-      <a href="customer-site.html" class="hover:text-gray-600 transition">Web Sitesi</a>
+      <a href="PANELLER/customer-app.html" class="hover:text-primary transition">Müşteri</a>
+      <a href="PANELLER/captain-app.html" class="hover:text-sky-600 transition">Kaptan</a>
+      <a href="PANELLER/admin-panel.html" class="hover:text-purple-600 transition">Admin</a>
+      <a href="PANELLER/customer-site.html" class="hover:text-gray-600 transition">Web Sitesi</a>
     </div>
   </div>
 </div>
@@ -210,7 +210,7 @@ const PANELS=[
     accentColor:'#38bdf8',
   },
   {
-    key:'customer_app', file:'customer-app.html', group:'panel', maintKey:'customer_app',
+    key:'customer_app', file:'PANELLER/customer-app.html', group:'panel', maintKey:'customer_app',
     label:'Müşteri App', icon:'fa-mobile-alt',
     iconBg:'#dbeafe', iconColor:'#0369a1',
     desc:'Tur keşfet, rezervasyon yap, kaptan ile mesajlaş.',
@@ -218,7 +218,7 @@ const PANELS=[
     accentColor:'#0369a1', maintMsg:'Müşteri uygulaması geçici olarak devre dışı.',
   },
   {
-    key:'captain_app', file:'captain-app.html', group:'panel', maintKey:'captain_app',
+    key:'captain_app', file:'PANELLER/captain-app.html', group:'panel', maintKey:'captain_app',
     label:'Kaptan Uygulaması', icon:'fa-anchor',
     iconBg:'#e0f2fe', iconColor:'#0284c7',
     desc:'Tur oluştur, rezervasyonları yönet, kazancını takip et.',
@@ -226,7 +226,7 @@ const PANELS=[
     accentColor:'#0284c7', maintMsg:'Kaptan uygulaması geçici olarak devre dışı.',
   },
   {
-    key:'admin_panel', file:'admin-panel.html', group:'panel', maintKey:null,
+    key:'admin_panel', file:'PANELLER/admin-panel.html', group:'panel', maintKey:null,
     label:'Admin Panel', icon:'fa-chart-pie',
     iconBg:'#f3e8ff', iconColor:'#7c3aed',
     desc:'Tüm platformu yönet: kaptanlar, turlar, finans.',
@@ -234,7 +234,7 @@ const PANELS=[
     accentColor:'#7c3aed',
   },
   {
-    key:'customer_site', file:'customer-site.html', group:'panel', maintKey:'customer_site',
+    key:'customer_site', file:'PANELLER/customer-site.html', group:'panel', maintKey:'customer_site',
     label:'Web Sitesi', icon:'fa-globe',
     iconBg:'#d1fae5', iconColor:'#059669',
     desc:'Müşteri odaklı tanıtım & keşfet sayfası.',
@@ -242,7 +242,7 @@ const PANELS=[
     accentColor:'#059669', maintMsg:'Web sitesi geçici olarak devre dışı.',
   },
   {
-    key:'magaza_panel', file:'magaza-panel.html', group:'panel', maintKey:'web_shop',
+    key:'magaza_panel', file:'PANELLER/magaza-panel.html', group:'panel', maintKey:'web_shop',
     label:'Mağaza Paneli', icon:'fa-store',
     iconBg:'#fef3c7', iconColor:'#d97706',
     desc:'Satıcı marketplace yönetimi: ürünler, siparişler, komisyon.',
@@ -250,7 +250,7 @@ const PANELS=[
     accentColor:'#d97706', maintMsg:'Mağaza geçici olarak kapalı.',
   },
   {
-    key:'seed_data', file:'seed-data.html', group:'panel', maintKey:null,
+    key:'seed_data', file:'PANELLER/seed-data.html', group:'panel', maintKey:null,
     label:'Seed Data', icon:'fa-database',
     iconBg:'#ffedd5', iconColor:'#ea580c',
     desc:'30 kaptan, 45 tur, 250 müşteri ve ~400 rezervasyon üret.',
@@ -260,15 +260,15 @@ const PANELS=[
 ];
 
 const MARINES=[
-  {key:'marine_gelgit',   file:'marine-gelgit.html',   label:'Gelgit',       icon:'fa-water',            iconBg:'#dbeafe', iconColor:'#1d4ed8', desc:'Med-cezir verileri'},
-  {key:'marine_ruzgar',   file:'marine-ruzgar.html',   label:'Rüzgar',       icon:'fa-wind',             iconBg:'#e0f2fe', iconColor:'#0284c7', desc:'Beaufort, hız, yön'},
-  {key:'marine_hava',     file:'marine-hava.html',     label:'Hava Durumu',  icon:'fa-cloud-sun',        iconBg:'#fef3c7', iconColor:'#d97706', desc:'5 günlük tahmin'},
-  {key:'marine_derinlik', file:'marine-derinlik.html', label:'Derinlik',     icon:'fa-map',              iconBg:'#ede9fe', iconColor:'#6d28d9', desc:'Batimetri, seyir'},
-  {key:'marine_ay',       file:'marine-ay.html',       label:'Ay Takvimi',   icon:'fa-moon',             iconBg:'#f1f5f9', iconColor:'#475569', desc:'Ay evreleri, balık avı'},
-  {key:'marine_gunes',    file:'marine-gunes.html',    label:'Güneş',        icon:'fa-sun',              iconBg:'#ffedd5', iconColor:'#ea580c', desc:'Doğuş/batış, altın saat'},
-  {key:'marine_solunar',  file:'marine-solunar.html',  label:'Solunar',      icon:'fa-fish',             iconBg:'#ccfbf1', iconColor:'#0d9488', desc:'Balık aktivitesi'},
-  {key:'marine_sicaklik', file:'marine-sicaklik.html', label:'Su Sıcaklığı', icon:'fa-thermometer-half', iconBg:'#cffafe', iconColor:'#0891b2', desc:'Yüzey & mevsimsel'},
-  {key:'marine_ay_konum', file:'marine-ay-konum.html', label:'Ay Konumu',    icon:'fa-satellite',        iconBg:'#f5f3ff', iconColor:'#7c3aed', desc:'Canlı faz & yükseklik'},
+  {key:'marine_gelgit',   file:'deniz_bilim/marine-gelgit.html',   label:'Gelgit',       icon:'fa-water',            iconBg:'#dbeafe', iconColor:'#1d4ed8', desc:'Med-cezir verileri'},
+  {key:'marine_ruzgar',   file:'deniz_bilim/marine-ruzgar.html',   label:'Rüzgar',       icon:'fa-wind',             iconBg:'#e0f2fe', iconColor:'#0284c7', desc:'Beaufort, hız, yön'},
+  {key:'marine_hava',     file:'deniz_bilim/marine-hava.html',     label:'Hava Durumu',  icon:'fa-cloud-sun',        iconBg:'#fef3c7', iconColor:'#d97706', desc:'5 günlük tahmin'},
+  {key:'marine_derinlik', file:'deniz_bilim/marine-derinlik.html', label:'Derinlik',     icon:'fa-map',              iconBg:'#ede9fe', iconColor:'#6d28d9', desc:'Batimetri, seyir'},
+  {key:'marine_ay',       file:'deniz_bilim/marine-ay.html',       label:'Ay Takvimi',   icon:'fa-moon',             iconBg:'#f1f5f9', iconColor:'#475569', desc:'Ay evreleri, balık avı'},
+  {key:'marine_gunes',    file:'deniz_bilim/marine-gunes.html',    label:'Güneş',        icon:'fa-sun',              iconBg:'#ffedd5', iconColor:'#ea580c', desc:'Doğuş/batış, altın saat'},
+  {key:'marine_solunar',  file:'deniz_bilim/marine-solunar.html',  label:'Solunar',      icon:'fa-fish',             iconBg:'#ccfbf1', iconColor:'#0d9488', desc:'Balık aktivitesi'},
+  {key:'marine_sicaklik', file:'deniz_bilim/marine-sicaklik.html', label:'Su Sıcaklığı', icon:'fa-thermometer-half', iconBg:'#cffafe', iconColor:'#0891b2', desc:'Yüzey & mevsimsel'},
+  {key:'marine_ay_konum', file:'deniz_bilim/marine-ay-konum.html', label:'Ay Konumu',    icon:'fa-satellite',        iconBg:'#f5f3ff', iconColor:'#7c3aed', desc:'Canlı faz & yükseklik'},
 ];
 
 const ALL=[...PANELS,...MARINES];

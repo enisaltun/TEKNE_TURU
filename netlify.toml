@@ -9,4 +9,33 @@
     X-Content-Type-Options = "nosniff"
     Access-Control-Allow-Origin = "*"
 
-# PANELLER/ doğrudan erişilebilir — redirect yok, static dosyalar
+# Eski kök URL'lerden PANELLER/ altına kalıcı yönlendirme
+[[redirects]]
+  from = "/customer-app.html"
+  to   = "/PANELLER/customer-app.html"
+  status = 301
+
+[[redirects]]
+  from = "/captain-app.html"
+  to   = "/PANELLER/captain-app.html"
+  status = 301
+
+[[redirects]]
+  from = "/admin-panel.html"
+  to   = "/PANELLER/admin-panel.html"
+  status = 301
+
+[[redirects]]
+  from = "/customer-site.html"
+  to   = "/PANELLER/customer-site.html"
+  status = 301
+
+[[redirects]]
+  from = "/magaza-panel.html"
+  to   = "/PANELLER/magaza-panel.html"
+  status = 301
+
+[[redirects]]
+  from = "/seed-data.html"
+  to   = "/PANELLER/seed-data.html"
+  status = 301
