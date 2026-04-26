@@ -3735,6 +3735,8 @@ function runIntegrityPass(opts={}){
     if(b.odemeYapildi===true && !b.odemeRef){b.odemeYapildi=false;report.payment_clamp++;}
     // B14: tamamlandi ama ödenmemiş → not düş (hard kapat değil, flag)
     if(b.durum==='tamamlandi' && b.odemeYapildi===false){b._paymentWarning='completed-but-unpaid';}
+    // B15: price=0 veya undefined → amount||turFiyat'tan backfill
+    if(!(+b.price>0)){const fallback=+(b.amount||0)||+(b.turFiyat||0);if(fallback>0){b.price=fallback;report.price_backfill=(report.price_backfill||0)+1;}}
   });
   lsSet('db_bookings',bookings);
   // B11: Unknown customer → users upsert
@@ -4168,6 +4170,7 @@ function runHealthScan(){
     if((!b.guests || b.guests<=0) && !['iptal','reddedildi'].includes(b.durum))push('invalid_guests',{id:b.id,guests:b.guests});
     if(b.odemeYapildi===true && !b.odemeRef)push('paid_no_ref',{id:b.id});
     if(b.odemeYapildi===false && b.durum==='tamamlandi')push('completed_unpaid',{id:b.id});
+    if(!(+b.price>0) && !['iptal','reddedildi'].includes(b.durum))push('price_zero',{id:b.id,durum:b.durum,amount:b.amount,turFiyat:b.turFiyat});
     if(b.binisYapildi && b.durum==='reddedildi')push('rejected_yet_boarded',{id:b.id});
     if(b.binisYapildi && b.durum==='onaylandi')push('boarded_not_completed',{id:b.id});
     const t=tourById.get(String(b.tourId));
@@ -4268,7 +4271,8 @@ const SH_LABELS={
   admin_approval_timeout:{label:'Admin Onay Timeout',icon:'fa-hourglass-end',color:'red',desc:'48+ saattir bekleyen tur'},
   national_mourning_tours:{label:'Ulusal Yas Çakışma',icon:'fa-calendar-xmark',color:'red',desc:'Yas tarihine denk gelen aktif tur'},
   dangling_payment_ref:{label:'Kayıp Ödeme Kaydı',icon:'fa-money-bill-wave',color:'red',desc:'odemeRef var ama payments tablosunda eşleşme yok'},
-  refund_exceeds_payment:{label:'Fazla İade Tutarı',icon:'fa-scale-unbalanced',color:'red',desc:'iadeTutari orijinal ödemeden fazla'}
+  refund_exceeds_payment:{label:'Fazla İade Tutarı',icon:'fa-scale-unbalanced',color:'red',desc:'iadeTutari orijinal ödemeden fazla'},
+  price_zero:{label:'Sıfır Fiyatlı Rezervasyon',icon:'fa-0',color:'red',desc:'Aktif rezervasyonda price=0 veya tanımsız'}
 };
 
 function renderSystemHealth(){
@@ -4304,6 +4308,7 @@ function shScan(){
     past_date_active:     {label:'Otomatik Geçiş',  safe:true,  fn:()=>shFixCategory('past_date_active')},
     paid_no_ref:          {label:'Ref Temizle',      safe:true,  fn:()=>shFixCategory('paid_no_ref')},
     duplicate_booking_id: {label:'ID Düzelt',        safe:true,  fn:()=>shFixCategory('duplicate_booking_id')},
+    price_zero:           {label:'Fiyat Backfill',   safe:true,  fn:()=>shFixCategory('price_zero')},
   };
   cats.innerHTML=Object.entries(findings).sort(([,a],[,b])=>b.length-a.length).map(([k,items])=>{
     const L=SH_LABELS[k]||{label:k,icon:'fa-circle-exclamation',color:'orange',desc:''};
@@ -4436,6 +4441,14 @@ function shFixCategory(cat){
   else if(cat==='duplicate_booking_id'){
     const seen=new Set();
     bookings.forEach(b=>{if(seen.has(b.id)){b.id=b.id+'_fix'+Math.floor(Math.random()*10000);fixed++;}seen.add(b.id);});
+    lsSet('db_bookings',bookings);
+  }
+  else if(cat==='price_zero'){
+    bookings.forEach(b=>{
+      if(+b.price>0||['iptal','reddedildi'].includes(b.durum))return;
+      const fallback=+(b.amount||0)||+(b.turFiyat||0);
+      if(fallback>0){b.price=fallback;fixed++;}
+    });
     lsSet('db_bookings',bookings);
   }
   else{
@@ -6069,8 +6082,10 @@ function openTourDetailModal(id){
   const t=lsGet('db_tours',[]).find(x=>String(x.id)===String(id));
   if(!t)return;
   const bookings=lsGet('db_bookings',[]).filter(b=>String(b.tourId)===String(id));
-  const activeBookings=bookings.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi');
-  const activeKisi=activeBookings.reduce((s,b)=>s+(b.guests||1),0);
+  const _now=new Date();_now.setHours(0,0,0,0);
+  // Gelecek tarihli bekliyor+onaylandi → kapasite/doluluk için (geçmiş tamamlandi sayılmaz)
+  const activeBookings=bookings.filter(b=>['bekliyor','onaylandi'].includes(b.durum)&&(!b.tarihISO||new Date(b.tarihISO)>=_now));
+  const activeKisi=activeBookings.reduce((s,b)=>s+(+b.guests||1),0);
   const d=t.durum||(t.aktif===true?'aktif':'bekliyor');
   const statusMap={
     aktif:'<span class="badge bg-green-100 text-green-700">Aktif</span>',

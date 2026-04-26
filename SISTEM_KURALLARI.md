@@ -32,6 +32,7 @@ Geçerli kategoriler: Balik Avi, Tekne Gezisi, Yuzme Turu, Gunbatimi Turu, Mavi 
 | tourId | string/number | Geçerli bir tur kaydına işaret etmeli |
 | tarihISO | string | ISO format, tur tarihler[] içinde olmalı |
 | tarih | string | DD.MM.YYYY format, tarihISO ile tutarlı olmalı |
+| price | number | **Zorunlu** — toplam rezervasyon tutarı (fiyat × guests). 0, negatif, undefined geçersiz |
 | guests | number | 1 ≤ guests ≤ tur.kapasite |
 | durum | string | Sadece: bekliyor / onaylandi / tamamlandi / iptal / reddedildi |
 | odemeYapildi | boolean | true ise odemeRef zorunlu |
@@ -217,6 +218,7 @@ Simülasyon veri üretirken şu kurallara uymalı:
 - `guests ≤ 0` olan rezervasyon oluşturmak
 - `tourId: null` olan rezervasyon oluşturmak
 - Geçersiz email (format dışı veya boş) ile rezervasyon oluşturmak
+- `price: 0`, `price: undefined` veya `price: null` ile rezervasyon kaydetmek — `price = fiyat × guests` her zaman pozitif olmalı
 
 ---
 

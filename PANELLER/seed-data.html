@@ -498,8 +498,7 @@ function genBookings(tours,customers,rezHedef=400){
   const now=new Date();
   let bkId=1710000000000;
 
-  const tourActiveGuests={};
-  tours.forEach(t=>{ tourActiveGuests[t.id]=0; });
+  const tourDateGuests=new Map(); // key: 'tourId||tarihISO' → toplam aktif kişi (per-date kapasite takibi)
 
   // Müşteri harcama/tur sayısı takibi
   const customerStats={};
@@ -528,19 +527,25 @@ function genBookings(tours,customers,rezHedef=400){
     for(let i=0;i<hedef;i++){
       let durum=pickDurum();
       const isActive=durum!=='iptal'&&durum!=='reddedildi';
-      const maxGuests=isActive?Math.min(4,maxKap-tourActiveGuests[tour.id]):4;
 
-      if(isActive&&maxGuests<=0){ durum=Math.random()<0.5?'iptal':'reddedildi'; }
-      const guests=rndInt(1,Math.max(1,isActive?maxGuests:4));
-      if(isActive) tourActiveGuests[tour.id]+=guests;
-
+      // Tarihi önce belirle — per-date kapasite kontrolü için
       let daysOffset;
       if(durum==='tamamlandi') daysOffset=rndInt(-120,-7);
       else if(durum==='onaylandi') daysOffset=rndInt(3,90);
       else if(durum==='bekliyor') daysOffset=rndInt(2,60);
       else daysOffset=rndInt(-90,30);
-
+      const _dObj=new Date(now);_dObj.setDate(_dObj.getDate()+daysOffset);
+      const tarihISO=_dObj.toISOString().slice(0,10);
       const tarih=fmtDate(daysOffset);
+
+      // Per-date kapasite kontrolü (SISTEM_KURALLARI s.7)
+      const capKey=`${tour.id}||${tarihISO}`;
+      const usedOnDate=isActive?(tourDateGuests.get(capKey)||0):0;
+      const remainingOnDate=isActive?Math.max(0,maxKap-usedOnDate):maxKap;
+      if(isActive&&remainingOnDate<=0){ durum=Math.random()<0.5?'iptal':'reddedildi'; }
+      const maxGuests=isActive?Math.min(4,remainingOnDate):4;
+      const guests=rndInt(1,Math.max(1,isActive?maxGuests:4));
+      if(isActive&&durum!=='iptal'&&durum!=='reddedildi') tourDateGuests.set(capKey,(tourDateGuests.get(capKey)||0)+guests);
       const saat=rnd(tour.saatler||['09:00']);
       const customer=customers[rndInt(0,customers.length-1)];
       const perPerson=tour.fiyat||tour.price||0; // fiyat artık kişi başı fiyat
@@ -569,9 +574,9 @@ function genBookings(tours,customers,rezHedef=400){
         customerName:customer.name,
         customerEmail:customer.email,
         customerPhone:customer.phone,
-        guests, durum, amount,
+        guests, durum, price:turFiyat, amount,
         turFiyat, hizmetBedeli, komisyon, kaptanNet,
-        tarih, saat,
+        tarih, tarihISO, saat,
         note:rnd(MUSTERI_NOTLARI),
         loc:tour.kalkis||tour.konum||'',
         // Ödeme alanları
@@ -1098,7 +1103,7 @@ function generateScenarioData(){
         const t=scenTours[ti%scenTours.length];
         const c=scenCusts[ci%scenCusts.length];
         const odemeYapildi=durum==='tamamlandi'||durum==='onaylandi';
-        const perP=Math.round((t.price||0)/Math.max(1,t.kapasite||8));
+        const perP=t.fiyat||t.price||0; // kişi başı — fiyat===price (SISTEM_KURALLARI s.4)
         const turFiyatScen=perP*guests;
         const hizmet=Math.round(turFiyatScen*0.1);
         const amount=turFiyatScen+hizmet;
@@ -1111,12 +1116,14 @@ function generateScenarioData(){
         const kartTuru=(yontem==='Kredi Karti'||yontem==='Banka Karti')?rnd(KART_TURLERI):null;
         const kartSon4=kartTuru?String(1000+(ci*317)%9000):null;
         const banka=yontem==='Banka Havalesi'?rnd(BANKALAR):null;
+        const _dScen=new Date(now2);_dScen.setDate(_dScen.getDate()+dOff);
         return{
           id:'BK'+id, tourId:t.id, tourTitle:t.title,
           captainEmail:t.captainEmail, captainName:t.captainName,
           customerName:c.name, customerEmail:c.email, customerPhone:c.phone,
-          guests, durum, amount, turFiyat:turFiyatScen, hizmetBedeli:hizmet, komisyon, kaptanNet,
-          tarih:fmtD(dOff), saat:t.saatler[0]||'09:00', note,
+          guests, durum, price:turFiyatScen, amount,
+          turFiyat:turFiyatScen, hizmetBedeli:hizmet, komisyon, kaptanNet,
+          tarih:fmtD(dOff), tarihISO:_dScen.toISOString().slice(0,10), saat:t.saatler[0]||'09:00', note,
           loc:t.kalkis||t.konum||'',
           odemeYapildi, odemeYontemi:yontem, odemeRef:payRef, odemeZamani:payTime,
           kartTuru, kartSon4, banka,
