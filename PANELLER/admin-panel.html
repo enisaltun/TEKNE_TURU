@@ -3681,8 +3681,16 @@ function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
 function trToISO(tr){const m=/^(\d{2})\.(\d{2})\.(\d{4})$/.exec(tr||'');return m?`${m[3]}-${m[2]}-${m[1]}`:null;}
 function isoToTr(iso){if(!iso)return null;const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);return m?`${m[3]}.${m[2]}.${m[1]}`:null;}
 function normalizeBookingDates(b){
-  if(b.tarihISO && !b.tarih) b.tarih=isoToTr(b.tarihISO);
-  if(b.tarih && !b.tarihISO) b.tarihISO=trToISO(b.tarih);
+  // tarih yanlışlıkla ISO formatında kaydedilmişse (YYYY-MM-DD) düzelt
+  if(b.tarih && /^\d{4}-\d{2}-\d{2}$/.test(b.tarih)){
+    if(!b.tarihISO) b.tarihISO=b.tarih;
+    b.tarih=isoToTr(b.tarih)||b.tarih;
+  }
+  if(b.tarihISO && !b.tarih) b.tarih=isoToTr(b.tarihISO)||b.tarihISO;
+  if(b.tarih && !b.tarihISO){
+    const iso=trToISO(b.tarih);
+    if(iso) b.tarihISO=iso;
+  }
   return b;
 }
 function uniqueBookingId(){return 'BK'+Date.now()+Math.floor(Math.random()*10000);}
@@ -3700,10 +3708,10 @@ function runIntegrityPass(opts={}){
     // B7: Duplicate id → append suffix
     if(seenIds.has(b.id)){b.id=b.id+'_dup'+Math.floor(Math.random()*10000);report.dedup_ids++;}
     seenIds.add(b.id);
-    // B1: tarih ↔ tarihISO
+    // B1: tarih ↔ tarihISO — normalizeBookingDates zaten ISO-in-tarih durumunu da işler
+    const _prevISO=b.tarihISO;
     normalizeBookingDates(b);
-    if(b.tarihISO && !b.tarih){b.tarih=isoToTr(b.tarihISO);}
-    if(!b.tarihISO && b.tarih){const iso=trToISO(b.tarih);if(iso){b.tarihISO=iso;report.backfilled_tarihISO++;}}
+    if(!_prevISO && b.tarihISO) report.backfilled_tarihISO++;
     // B8: captain türet
     const t=tourById.get(String(b.tourId));
     if(t){
@@ -3949,6 +3957,13 @@ function validateBooking(data){
 
 /* Kanonik rezervasyon oluşturma — tek yazma noktası, tüm yan etkilerle birlikte */
 function createBookingCanonical(data){
+  // Write-time hard guards (sistem kuralı: bu geçişler yasak)
+  if(!data.tourId) return {ok:false,errors:['tourId zorunludur']};
+  if(!(+data.guests>=1)) return {ok:false,errors:['guests en az 1 olmalıdır']};
+  if(!data.tarihISO && !data.tarih) return {ok:false,errors:['Rezervasyon tarihi zorunludur']};
+  if(!data.customerEmail||!/^[^@]+@[^@]+\.[^@]+$/.test(data.customerEmail)) return {ok:false,errors:['Geçerli müşteri e-postası zorunludur']};
+  // tarih normalizasyonu — write anında her zaman senkron olsun
+  data=normalizeBookingDates({...data});
   const errors=validateBooking(data);
   if(errors.length)return {ok:false,errors};
   const tours=lsGet('db_tours',[]);
@@ -4276,6 +4291,20 @@ function shScan(){
     cats.innerHTML='<div class="bg-green-50 border border-green-200 rounded-xl p-8 text-center text-green-700"><i class="fas fa-check-circle text-4xl mb-3"></i><div class="font-bold text-lg">Tüm kontroller temiz!</div><div class="text-sm mt-1 text-green-600">Sistem verileri tutarlı.</div></div>';
     return;
   }
+  /* Kategori başına tek-tıkla onarım tanımları */
+  const CAT_FIX={
+    missing_tarihISO:     {label:'tarihISO Backfill',safe:true,  fn:()=>shFixCategory('missing_tarihISO')},
+    orphan_booking:       {label:'Yetim → İptal',   safe:false, fn:()=>shFixCategory('orphan_booking')},
+    booking_on_cancelled_tour:{label:'Cascade İptal',safe:false, fn:()=>shFixCategory('booking_on_cancelled_tour')},
+    invalid_guests:       {label:'Geçersiz → İptal', safe:false, fn:()=>shFixCategory('invalid_guests')},
+    overcapacity:         {label:'Kapasite Trim',    safe:false, fn:()=>shFixCategory('overcapacity')},
+    unknown_customer:     {label:'Kullanıcı Upsert', safe:true,  fn:()=>shFixCategory('unknown_customer')},
+    tarihISO_mismatch:    {label:'Tarih Senkronize',safe:true,  fn:()=>shFixCategory('tarihISO_mismatch')},
+    captain_mismatch:     {label:'Kaptan Düzelt',   safe:true,  fn:()=>shFixCategory('captain_mismatch')},
+    past_date_active:     {label:'Otomatik Geçiş',  safe:true,  fn:()=>shFixCategory('past_date_active')},
+    paid_no_ref:          {label:'Ref Temizle',      safe:true,  fn:()=>shFixCategory('paid_no_ref')},
+    duplicate_booking_id: {label:'ID Düzelt',        safe:true,  fn:()=>shFixCategory('duplicate_booking_id')},
+  };
   cats.innerHTML=Object.entries(findings).sort(([,a],[,b])=>b.length-a.length).map(([k,items])=>{
     const L=SH_LABELS[k]||{label:k,icon:'fa-circle-exclamation',color:'orange',desc:''};
     const bar=L.color==='red'?'bg-red-500':'bg-orange-400';
@@ -4283,13 +4312,18 @@ function shScan(){
     const bg=L.color==='red'?'bg-red-50':'bg-orange-50';
     const samples=items.slice(0,5).map(x=>`<div class="text-[11px] text-gray-500 font-mono truncate">${JSON.stringify(x)}</div>`).join('');
     const more=items.length>5?`<div class="text-[11px] text-gray-400 mt-1">+${items.length-5} daha…</div>`:'';
+    const fix=CAT_FIX[k];
+    const fixBtn=fix?`<button onclick="event.stopPropagation();${fix.safe?'':'if(!confirm(\''+fix.label+' uygulanacak. Devam?\'))return;'}shFixCategory('${k}')" class="text-xs px-3 py-1.5 rounded-lg font-medium border ${fix.safe?'border-blue-300 text-blue-700 hover:bg-blue-50':'border-red-300 text-red-700 hover:bg-red-50'} flex items-center gap-1.5 flex-shrink-0"><i class="fas fa-wrench text-[10px]"></i>${fix.label}</button>`:'';
     return `<details class="${bg} border rounded-xl overflow-hidden">
-      <summary class="flex items-center justify-between p-4 cursor-pointer">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 ${bar} text-white rounded-lg flex items-center justify-center"><i class="fas ${L.icon}"></i></div>
-          <div><div class="font-bold text-sm ${txt}">${L.label}</div><div class="text-xs text-gray-500">${L.desc}</div></div>
+      <summary class="flex items-center justify-between p-4 cursor-pointer gap-3">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div class="w-10 h-10 ${bar} text-white rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas ${L.icon}"></i></div>
+          <div class="min-w-0"><div class="font-bold text-sm ${txt}">${L.label}</div><div class="text-xs text-gray-500 truncate">${L.desc}</div></div>
         </div>
-        <div class="font-bold text-2xl ${txt}">${items.length}</div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          ${fixBtn}
+          <div class="font-bold text-2xl ${txt} w-10 text-right">${items.length}</div>
+        </div>
       </summary>
       <div class="px-4 pb-4 pt-1 border-t border-white/50">${samples}${more}</div>
     </details>`;
@@ -4299,15 +4333,120 @@ function shScan(){
 function shRunFix(aggressive){
   const msg=aggressive
     ? 'AGRESİF düzeltme çalıştırılacak — geri alınamaz değişiklikler:\n\n• Yetim rezervasyon → iptal\n• İptal tura bağlı rezervasyon → iptal\n• Geçersiz misafir → iptal\n• tarihISO yeniden türet\n• Tur tarihinde olmayan rezervasyon → iptal\n• Kapasite aşımı → en yeniler iptal\n\n+ tüm güvenli düzeltmeler\n\nDevam?'
-    : 'Güvenli düzeltme çalıştırılacak:\n\n• tarihISO backfill\n• Duplicate ID düzeltme\n• Past-date auto-transition\n• Biniş→tamamlandı güncellemesi\n• Kaptan email türetme\n• Bilinmeyen müşteri upsert\n• Ödeme invariant\n\nDevam?';
+    : 'Güvenli düzeltme çalıştırılacak:\n\n• tarihISO backfill (ISO-in-tarih dahil)\n• Duplicate ID düzeltme\n• Past-date auto-transition\n• Biniş→tamamlandı güncellemesi\n• Kaptan email türetme\n• Bilinmeyen müşteri upsert\n• Ödeme invariant\n\nDevam?';
   if(!confirm(msg))return;
   const rep=runIntegrityPass(aggressive?{aggressive:true}:{});
+  _shShowReport(rep);
+  shScan();
+  showToast('Otomatik düzeltme tamamlandı','success');
+}
+
+function _shShowReport(rep){
   const el=document.getElementById('sh-last-fix');
   const items=Object.entries(rep).filter(([,v])=>v>0).map(([k,v])=>`<span class="inline-block bg-white border rounded-full px-3 py-1 mr-1 mb-1"><b class="text-primary">${v}</b> ${k}</span>`).join('')||'<span class="text-gray-400">Düzeltilecek kayıt bulunamadı.</span>';
   el.innerHTML=`<div class="font-bold text-gray-700 mb-2"><i class="fas fa-wrench text-success mr-1"></i>Son düzeltme</div>${items}`;
   el.style.display='';
+}
+
+/* Kategori bazlı tek-tıkla onarım */
+function shFixCategory(cat){
+  const bookings=lsGet('db_bookings',[]);
+  const tours=lsGet('db_tours',[]);
+  const users=lsGet('db_users',[]);
+  const tourById=new Map(tours.map(t=>[String(t.id),t]));
+  let fixed=0;
+  const now=new Date().toISOString();
+  const today=new Date();today.setHours(0,0,0,0);
+
+  if(cat==='missing_tarihISO'||cat==='tarihISO_mismatch'){
+    bookings.forEach(b=>{const prev=b.tarihISO;normalizeBookingDates(b);if(b.tarihISO!==prev)fixed++;});
+    lsSet('db_bookings',bookings);
+  }
+  else if(cat==='orphan_booking'){
+    bookings.forEach(b=>{
+      if(!tourById.has(String(b.tourId))&&['bekliyor','onaylandi'].includes(b.durum)){
+        b.durum='iptal';b.iptalNedeni='Tur bulunamadı (orphan)';b.iptalTarihi=now;fixed++;
+      }
+    });
+    lsSet('db_bookings',bookings);
+  }
+  else if(cat==='booking_on_cancelled_tour'){
+    bookings.forEach(b=>{
+      const t=tourById.get(String(b.tourId));
+      if(t&&['iptal','reddedildi'].includes(t.durum)&&!['iptal','reddedildi'].includes(b.durum)){
+        b.durum='iptal';b.iptalNedeni='Tur iptal/reddedildi (cascade)';b.iptalTarihi=now;
+        if(b.odemeYapildi){b.refundStatus='approved';b.iadeTutari=+b.price||0;b.refundNot='Otomatik — tur iptali';}
+        fixed++;
+      }
+    });
+    lsSet('db_bookings',bookings);
+  }
+  else if(cat==='invalid_guests'){
+    bookings.forEach(b=>{
+      if((+b.guests||0)<=0&&!['iptal','reddedildi'].includes(b.durum)){
+        b.durum='iptal';b.iptalNedeni='Geçersiz kişi sayısı';b.iptalTarihi=now;fixed++;
+      }
+    });
+    lsSet('db_bookings',bookings);
+  }
+  else if(cat==='overcapacity'){
+    const byKey=new Map();
+    bookings.filter(b=>['bekliyor','onaylandi'].includes(b.durum)).sort((a,b)=>b.createdAt>a.createdAt?1:-1).forEach(b=>{
+      const t=tourById.get(String(b.tourId));if(!t)return;
+      const key=`${b.tourId}||${b.tarihISO||b.tarih}`;
+      if(!byKey.has(key))byKey.set(key,{cap:+t.kapasite||0,dolu:0});
+      const s=byKey.get(key);
+      if(s.dolu+(+b.guests||0)>s.cap){b.durum='iptal';b.iptalNedeni='Kapasite aşımı — otomatik trim';b.iptalTarihi=now;fixed++;}
+      else{s.dolu+=(+b.guests||0);}
+    });
+    lsSet('db_bookings',bookings);
+  }
+  else if(cat==='unknown_customer'){
+    const userEmails=new Set(users.map(u=>(u.email||'').toLowerCase()));
+    bookings.forEach(b=>{
+      const em=(b.customerEmail||'').toLowerCase();
+      if(!em||!/^[^@]+@[^@]+\.[^@]+$/.test(em))return;
+      if(!userEmails.has(em)){
+        const [ad,...rest]=(b.customerName||'Müşteri').split(' ');
+        users.push({id:'usr_fix_'+Date.now()+fixed,email:b.customerEmail,ad:ad||'Müşteri',soyad:rest.join(' ')||'',roles:['customer'],status:'active',createdAt:now,kaynak:'health-fix'});
+        userEmails.add(em);fixed++;
+      }
+    });
+    lsSet('db_users',users);
+  }
+  else if(cat==='captain_mismatch'){
+    bookings.forEach(b=>{const t=tourById.get(String(b.tourId));if(t&&t.captainEmail&&b.captainEmail!==t.captainEmail){b.captainEmail=t.captainEmail;if(t.captainName)b.captainName=t.captainName;fixed++;}});
+    lsSet('db_bookings',bookings);
+  }
+  else if(cat==='past_date_active'){
+    bookings.forEach(b=>{
+      if(!b.tarihISO||!['bekliyor','onaylandi'].includes(b.durum))return;
+      if(new Date(b.tarihISO)<today){
+        if(b.durum==='onaylandi'){b.durum='tamamlandi';b.autoTransition='past_date_completed';}
+        else{b.durum='iptal';b.autoTransition='past_date_expired';}
+        fixed++;
+      }
+    });
+    lsSet('db_bookings',bookings);
+  }
+  else if(cat==='paid_no_ref'){
+    bookings.forEach(b=>{if(b.odemeYapildi===true&&!b.odemeRef){b.odemeYapildi=false;fixed++;}});
+    lsSet('db_bookings',bookings);
+  }
+  else if(cat==='duplicate_booking_id'){
+    const seen=new Set();
+    bookings.forEach(b=>{if(seen.has(b.id)){b.id=b.id+'_fix'+Math.floor(Math.random()*10000);fixed++;}seen.add(b.id);});
+    lsSet('db_bookings',bookings);
+  }
+  else{
+    // Bilinmeyen kategori — tam integrity pass
+    runIntegrityPass({aggressive:true,silent:true});
+    fixed=-1;
+  }
+
+  const msg=fixed>=0?`${fixed} kayıt düzeltildi`:'Integrity pass tamamlandı';
+  showToast(msg,'success');
   shScan();
-  showToast('Otomatik düzeltme tamamlandı','success');
 }
 
 /* Admin açılışta bir kere çalıştır */

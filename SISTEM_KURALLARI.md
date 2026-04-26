@@ -213,7 +213,61 @@ Simülasyon veri üretirken şu kurallara uymalı:
 - `iptal` veya `reddedildi` turda aktif rezervasyon bırakma
 - Tur durum geçişleri kuralları dışında (state machine'e uyulmalı)
 - Ödeme kaydı olmadan `odemeYapildi:true` yazma
+- `tarih` alanına ISO format (YYYY-MM-DD) yazmak — `tarih` her zaman DD.MM.YYYY formatında olmalı
+- `guests ≤ 0` olan rezervasyon oluşturmak
+- `tourId: null` olan rezervasyon oluşturmak
+- Geçersiz email (format dışı veya boş) ile rezervasyon oluşturmak
 
 ---
 
-*Son güncelleme: 2026-04-26 | Kural sayısı: 11 bölüm*
+## 12. Write-Time Validation Kuralları
+
+`createBookingCanonical()` çağrılmadan önce aşağıdaki koşullar sağlanmalıdır:
+
+| Alan | Kural | Hata Mesajı |
+|---|---|---|
+| `tourId` | Mevcut bir tura referans etmeli, null olamaz | tourId zorunludur |
+| `guests` | `>= 1` tamsayı | guests en az 1 olmalıdır |
+| `tarihISO` veya `tarih` | En az biri mevcut olmalı | Rezervasyon tarihi zorunludur |
+| `customerEmail` | RFC-uyumlu email formatı | Geçerli müşteri e-postası zorunludur |
+| `tarih` format | `DD.MM.YYYY` — asla `YYYY-MM-DD` değil | normalizeBookingDates() otomatik düzeltir |
+
+`createBookingCanonical()` bu kural ihlallerini `{ok:false, errors:[...]}` ile reddeder ve hiçbir veri yazmaz.
+
+---
+
+## 13. Veri Oluşturma (Simülasyon / Seed) Kuralları
+
+Simülasyon veya seed sistemleri veri üretirken:
+
+1. `tarihISO` — her zaman `YYYY-MM-DD` formatında olmalı
+2. `tarih` — her zaman `DD.MM.YYYY` formatında olmalı (asla ISO formatında `tarih` yazılmamalı)
+3. `guests` — her zaman `>= 1` pozitif tamsayı olmalı
+4. `tourId` — her zaman mevcut bir turdaki ID'yi göstermeli (null kabul edilmez)
+5. `customerEmail` — geçerli email formatında olmalı (minimum `x@y.z`)
+6. `tourId` → tur `durum:'aktif'` değilse booking oluşturulmamalı
+7. Kapasite kontrolü: `toplam_aktif_guests ≤ tur.kapasite` aşılmamalı
+
+Bu kural ihlalleri `runHealthScan()` tarafından tespit edilir. Her kategori için `shFixCategory(cat)` ile tek-tıkla onarım uygulanabilir.
+
+---
+
+## 14. Otomatik Onarım Hiyerarşisi
+
+Sağlık taraması sonuçlarına göre onarım önceliği:
+
+| Öncelik | Kategori | Yöntem | Geri Alınabilir |
+|---|---|---|---|
+| 1 | `missing_tarihISO` | tarihISO Backfill (safe) | Evet |
+| 1 | `tarihISO_mismatch` | Tarih Senkronize (safe) | Evet |
+| 1 | `captain_mismatch` | Kaptan Düzelt (safe) | Evet |
+| 2 | `unknown_customer` | Kullanıcı Upsert (safe) | Evet |
+| 2 | `past_date_active` | Otomatik Geçiş (safe) | Evet |
+| 3 | `booking_on_cancelled_tour` | Cascade İptal (aggressive) | Hayır |
+| 3 | `orphan_booking` | Yetim → İptal (aggressive) | Hayır |
+| 3 | `invalid_guests` | Geçersiz → İptal (aggressive) | Hayır |
+| 4 | `overcapacity` | Kapasite Trim (aggressive) | Hayır |
+
+---
+
+*Son güncelleme: 2026-04-26 | Kural sayısı: 14 bölüm*
