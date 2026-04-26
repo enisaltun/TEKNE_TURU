@@ -2891,11 +2891,14 @@ async function doBooking(){
   if(!_activeDates(t).length){showToast('Bu tur icin kaptan henuz tarih belirlemedi','danger');_paySetLoading(false);return;}
   if(!selDate){showToast('Lutfen bir tarih secin','danger');_paySetLoading(false);return;}
   const guestN=+guestVal||0;
-  if(guestN<=0||guestN>30){showToast('Geçersiz kişi sayısı','danger');_paySetLoading(false);return;}
+  const turKapasite=+(t.kapasite||8);
+  if(guestN<=0||guestN>turKapasite){showToast(`Kişi sayısı 1 ile ${turKapasite} arasında olmalı`,'danger');_paySetLoading(false);return;}
   // Kapasite kontrolü öncesi güncel veriyi çek
   if(window._sbSync)await window._sbSync();
   const tarihISO=_trToISO(selDate);
-  const rezerveKisi=S.get('db_bookings',[]).filter(b=>String(b.tourId)===String(t.id)&&((b.tarihISO&&tarihISO&&b.tarihISO===tarihISO)||b.tarih===selDate)&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(b.guests||1),0);
+  // Seçilen tarih tur programında yoksa engelle (tarihler dizisi ile doğrula)
+  if(tarihISO&&t.tarihler?.length&&!t.tarihler.includes(tarihISO)){showToast('Seçilen tarih bu turun programında yok','danger');_paySetLoading(false);return;}
+  const rezerveKisi=S.get('db_bookings',[]).filter(b=>String(b.tourId)===String(t.id)&&((b.tarihISO&&tarihISO&&b.tarihISO===tarihISO)||b.tarih===selDate)&&b.durum!=='iptal'&&b.durum!=='reddedildi').reduce((s,b)=>s+(+b.guests||0),0);
   const kalanKisi=Math.max(0,(t.kapasite||8)-rezerveKisi);
   if(kalanKisi<=0){showCapWarning(t.kapasite,rezerveKisi,0,0);_paySetLoading(false);return;}
   if(guestN>kalanKisi){showCapWarning(t.kapasite,rezerveKisi,kalanKisi,guestN);_paySetLoading(false);return;}
@@ -2907,26 +2910,51 @@ async function doBooking(){
   const profile=S.get('cu_profile',{name:'Misafir'});
   const customerEmail=profile.email||null;
   if(customerEmail)_upsertCustomerToUsers(profile);
+  const odemeRef='PAY-'+Date.now()+'-'+Math.floor(Math.random()*9000+1000);
+  const unitPrice=fee||t.perPerson||Math.round((+(t.fiyat||t.price||0))/(t.kapasite||8));
+  const now_=new Date().toISOString();
   const b={
     id:'BK'+Date.now()+Math.floor(Math.random()*1000),tourId:t.id,tourTitle:t.name||t.ad||t.title,
     captainEmail:t.captainEmail||null,captainName:t.captainName||(t.captainEmail?'Kaptan':'DenizBul'),
     customerName:profile.name||'Misafir',customerEmail,customerPhone:profile.phone||null,
-    guests:guestN,durum:'onaylandi',onayTarihi:new Date().toISOString(),
-    amount:total,ekstraFee:extrasFee||0,ekstralar:secilenEkstralar,
+    guests:guestN,durum:'onaylandi',onayTarihi:now_,
+    amount:total,price:total,unitPrice,ekstraFee:extrasFee||0,ekstralar:secilenEkstralar,
     tarih:selDate||_isoToTr(tarihISO)||new Date().toLocaleDateString('tr-TR'),
     tarihISO:tarihISO||null,
     saat:selTime||'—',note:document.getElementById('booking-note')?.value||'',
     loc:t.loc||t.kalkis||null,
-    odemeYapildi:true,odemeRef:'AUTO-'+Date.now(),kartSon4:null,kartTuru:null,
+    odemeYapildi:true,odemeRef,kartSon4:null,kartTuru:null,
     binisYapildi:false,kayitKanali:'app',
-    createdAt:new Date().toISOString()
+    createdAt:now_,updatedAt:now_,
+    history:[{ts:now_,actor:customerEmail||'musteri',from:null,to:'onaylandi',note:'Anlık rezervasyon — ödeme alındı'}]
   };
   const db=S.get('db_bookings',[]);db.unshift(b);S.set('db_bookings',db);
+  // db_payments kaydı yaz — dangling_payment_ref oluşmasın
+  const payments=S.get('db_payments',[]);
+  payments.unshift({
+    id:odemeRef,ref:odemeRef,bookingId:b.id,
+    tourId:t.id,tourTitle:t.name||t.ad||'',
+    customerEmail:customerEmail||null,captainEmail:t.captainEmail||null,
+    tutar:total,komisyon:Math.round(total*0.025),kaptanNet:Math.round(total*0.875),
+    tarih:now_,durum:'odendi',kayitKanali:'app'
+  });
+  S.set('db_payments',payments);
   const my=S.get('cu_bookings',[]);my.unshift(b.id);S.set('cu_bookings',my);
   /* Bildirim çift tetiklenmesin — yaratım anında seen'e işaretle */
   const _seen=S.get('cu_seen_status',{});_seen[b.id+'_onaylandi']=true;S.set('cu_seen_status',_seen);
   try{if(DB_MODE==='remote')DB.rezervasyonlar.create({...b,turFiyat:t.perPerson||Math.round((t.price||t.fiyat||0)/(t.kapasite||8)),tur_id:t.id,kayitKanali:'mobil_app'}).catch(e=>console.warn('[SB]',e));}catch(e){}
   addNotif('Rezervasyon onaylandi',`${t.name||t.ad} rezervasyonunuz aninda onaylandi. İyi turlar!`,'success');
+  // Kaptana anlık bildirim — ca_notifications (captain-app'in okuduğu key)
+  if(t.captainEmail){
+    const caN=S.get('ca_notifications',[]);
+    caN.unshift({
+      id:Date.now(),
+      title:'Yeni Rezervasyon',
+      body:`${b.customerName||'Müşteri'} — ${t.name||t.ad||'Tur'} · ${b.tarih} · ${b.guests} kişi`,
+      type:'success',ts:Date.now(),read:false,bookingId:b.id
+    });
+    S.set('ca_notifications',caN.slice(0,50));
+  }
   _cuCheckAndNotifyTourFull(t,b.tarih);
   _paySetLoading(false);
   renderConf(b);

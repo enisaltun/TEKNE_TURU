@@ -141,7 +141,7 @@ function _denormalizeRez(r) {
     turFiyat:      r.tur_fiyati,
     hizmetBedeli:  r.hizmet_bedeli,
     kaptanNet:     r.kaptan_net,
-    tarih:         r.tur_tarihi,
+    tarih:         r.tur_tarihi ? new Date(r.tur_tarihi + 'T12:00:00').toLocaleDateString('tr-TR') : null,
     tarihISO:      r.tur_tarihi,
     saat:          r.tur_saati,
     note:          r.musteri_notu,
@@ -1067,7 +1067,7 @@ window._sbSync = async function() {
 };
 
 // ================================================================
-// clearSupabaseAll — tüm Supabase tablolarını sıfırla, test hesaplarını geri yaz
+// clearSupabaseAll — tüm Supabase tablolarını eksiksiz sıfırla (hiçbir veri geri yazılmaz)
 // Admin fabrika resetinden çağrılır
 // ================================================================
 window.clearSupabaseAll = async function(opts = {}) {
@@ -1087,16 +1087,10 @@ window.clearSupabaseAll = async function(opts = {}) {
   await _sb.from('magaza_urunleri').delete().neq('id', '__none__');
   onStep('Turlar siliniyor…');
   await _sb.from('turlar').delete().neq('id', _uuid());
+  onStep('Kaptanlar siliniyor…');
+  try { await _sb.from('kaptanlar').delete().neq('id', _uuid()); } catch(_) {}
   onStep('Kullanıcılar siliniyor…');
   await _sb.from('kullanicilar').delete().neq('email', '__none__');
-  // Test hesaplarını geri yaz
-  onStep('Test hesapları yükleniyor…');
-  await _sb.from('kullanicilar').upsert([
-    { email: 'musteri@test.com',  ad: 'Test',     soyad: 'Musteri', sifre: 'test1234', roller: ['customer'],           durum: 'aktif', kayit_kanali: 'web' },
-    { email: 'kaptan@test.com',   ad: 'Test',     soyad: 'Kaptan',  sifre: 'test1234', roller: ['customer','captain'], durum: 'aktif', kayit_kanali: 'web' },
-    { email: 'satici@test.com',   ad: 'Test',     soyad: 'Satici',  sifre: 'test1234', roller: ['customer','vendor'],  durum: 'aktif', kayit_kanali: 'web' },
-    { email: 'admin@test.com',    ad: 'Platform', soyad: 'Admin',   sifre: 'test1234', roller: ['customer','admin'],   durum: 'aktif', kayit_kanali: 'web' },
-  ], { onConflict: 'email' });
   onStep('Tamamlandı.');
   return { ok: true };
 };

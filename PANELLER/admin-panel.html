@@ -3664,6 +3664,21 @@ function runIntegrityPass(opts={}){
     }
   });
   lsSet('db_users',users);
+  // P15: dangling_payment_ref → synthetic ödeme kaydı oluştur
+  report.synthetic_payments=0;
+  const _pay=lsGet('db_payments',[]);
+  const _paySet=new Set(_pay.map(p=>p.ref||p.odemeRef||p.id).filter(Boolean));
+  bookings.forEach(b=>{
+    if(b.odemeYapildi&&b.odemeRef&&!_paySet.has(b.odemeRef)){
+      _pay.push({id:b.odemeRef,ref:b.odemeRef,bookingId:b.id,tourId:b.tourId,
+        tourTitle:b.tourTitle||'',customerEmail:b.customerEmail,captainEmail:b.captainEmail,
+        tutar:+b.price||0,komisyon:Math.round((+b.price||0)*0.025),
+        kaptanNet:Math.round((+b.price||0)*0.875),
+        tarih:b.createdAt||new Date().toISOString(),durum:'odendi',kayitKanali:'integrity-pass-synthetic'});
+      _paySet.add(b.odemeRef);report.synthetic_payments++;
+    }
+  });
+  if(report.synthetic_payments>0)lsSet('db_payments',_pay);
   // ADMIN ONAY TIMEOUT: 48h+ bekleyen turları otomatik reddet (non-destructive)
   report.admin_timeout_rejected=0;
   tours.forEach(t=>{
@@ -3681,17 +3696,19 @@ function runIntegrityPass(opts={}){
   // AGRESİF: opt-in — admin Fix butonundan çalışır
   if(opts.aggressive){
     report.cancelled_cascaded=0;report.orphan_cancelled=0;report.invalid_guests_cancelled=0;report.tarihISO_rederive=0;report.overcap_trimmed=0;report.tarih_not_in_tour_cascaded=0;
+    // Kapasite sıfır/negatif → 8 (overcap fix'ten ÖNCE — sıra kritik)
+    tours.forEach(t=>{if(!(+t.kapasite>0))t.kapasite=8;});
     bookings.forEach(b=>{
       const t=tourById.get(String(b.tourId));
       if(!t){if(['bekliyor','onaylandi'].includes(b.durum)){b.durum='iptal';b.iptalNedeni='Tur bulunamadı (orphan)';b.iptalTarihi=new Date().toISOString();report.orphan_cancelled++;}return;}
-      if(t.durum==='iptal' && !['iptal','reddedildi'].includes(b.durum)){b.durum='iptal';b.iptalNedeni=b.iptalNedeni||'Tur iptal edildi';b.iptalTarihi=new Date().toISOString();report.cancelled_cascaded++;}
+      if(['iptal','reddedildi'].includes(t.durum) && !['iptal','reddedildi'].includes(b.durum)){b.durum='iptal';b.iptalNedeni=b.iptalNedeni||'Tur iptal/reddedildi';b.iptalTarihi=new Date().toISOString();report.cancelled_cascaded++;}
       if((+b.guests||0)<=0 && !['iptal','reddedildi'].includes(b.durum)){b.durum='iptal';b.iptalNedeni='Geçersiz kişi sayısı';b.iptalTarihi=new Date().toISOString();report.invalid_guests_cancelled++;}
       if(b.tarihISO && b.tarih){const tr=isoToTr(b.tarihISO);if(tr!==b.tarih){const reISO=trToISO(b.tarih);if(reISO){b.tarihISO=reISO;report.tarihISO_rederive++;}}}
       if(t.tarihler?.length && b.tarihISO && !t.tarihler.includes(b.tarihISO) && ['bekliyor','onaylandi'].includes(b.durum)){b.durum='iptal';b.iptalNedeni='Tarih artık tur programında yok';b.iptalTarihi=new Date().toISOString();report.tarih_not_in_tour_cascaded++;}
     });
     // Aşırı doluluk: en yeni aktif bookingleri iptal et, kapasiteye düşene kadar
     const byKey=new Map();
-    bookings.filter(b=>['bekliyor','onaylandi','tamamlandi'].includes(b.durum)).forEach(b=>{
+    bookings.filter(b=>['bekliyor','onaylandi'].includes(b.durum)).forEach(b=>{
       const key=`${b.tourId}||${b.tarihISO||b.tarih}`;
       if(!byKey.has(key))byKey.set(key,[]);
       byKey.get(key).push(b);
@@ -3712,9 +3729,228 @@ function runIntegrityPass(opts={}){
       }
     });
     lsSet('db_bookings',bookings);
+
+    // ── YENİ: rezervasyon ek düzeltmeleri ──
+    report.noshow_marked=0; report.weather_refund_set=0; report.mucbir_refund_set=0;
+    bookings.forEach(b=>{
+      // No-show: tamamlandı ama biniş kaydı yok → kayıt tutulmadı olarak işaretle
+      if(b.durum==='tamamlandi' && b.binisYapildi===false && b.tarihISO && new Date(b.tarihISO)<today){
+        b.binisYapildi=true; b.noShowKayit=true; report.noshow_marked++;
+      }
+      // Hava iptali: iade durumu atanmamış → onaylı say
+      if(b.iptalKategori==='hava' && b.refundStatus!=='paid' && b.refundStatus!=='approved'){
+        b.refundStatus='approved'; report.weather_refund_set++;
+      }
+      // Mücbir: iade durumu hiç set edilmemiş → onaylı say
+      if(b.iptalKategori==='mucbir' && !b.refundStatus){
+        b.refundStatus='approved'; report.mucbir_refund_set++;
+      }
+    });
+    lsSet('db_bookings',bookings);
+
+    // ── YENİ: tur düzeltmeleri ──
+    report.price_clamped=0; report.tour_fields_fixed=0; report.kat_fixed=0; report.desc_filled=0;
+    const VALID_KAT=new Set(['Balik Avi','Tekne Gezisi','Yuzme Turu','Gunbatimi Turu','Mavi Tur','Dalis Turu','Snorkeling','Ozel Etkinlik','Kurumsal']);
+    tours.forEach(t=>{
+      // Geçersiz fiyat: 1 TL altı (0, negatif, 0.01 gibi kırık değerler) → 500; absürt yüksek → 500000
+      const f=+t.fiyat;
+      if(f<1){t.fiyat=500;t.price=500;report.price_clamped++;}
+      else if(f>500000){t.fiyat=500000;t.price=500000;report.price_clamped++;}
+      // fiyat↔price senkronizasyonu — her zaman aynı olmalı (birinden düzeltme yapıldıysa diğeri de güncellenir)
+      if(t.price!==t.fiyat){t.price=t.fiyat;}
+      // Bozuk kapasite ve süre
+      if(!(+t.kapasite>0)){t.kapasite=8;report.tour_fields_fixed++;}
+      if(!t.sure||!String(t.sure||'').trim()||/^\s*0+\s*$/.test(String(t.sure))){t.sure='4 saat';report.tour_fields_fixed++;}
+      // Geçersiz/tanımsız kategori
+      if(t.kategoriler?.length && t.kategoriler.some(k=>!VALID_KAT.has(k))){
+        t.kategoriler=t.kategoriler.filter(k=>VALID_KAT.has(k));
+        if(!t.kategoriler.length)t.kategoriler=['Tekne Gezisi'];
+        report.kat_fixed++;
+      }
+      // Boş veya whitespace-only açıklama
+      if(!t.aciklama||!String(t.aciklama).trim()){
+        t.aciklama='Detaylar için kaptanla iletişime geçin.'; report.desc_filled++;
+      }
+      // Boş ad VEYA şüpheli/sahte içerik → yayına alınamaz, iptal et
+      if(!t.ad||String(t.ad).trim().length<3||/^(asdf|test|deneme|xxx|asd|qwer)\b/i.test(String(t.ad).trim())){
+        t.durum='iptal';t.iptalNedeni='Eksik veri — tur adı geçersiz';t.iptalTarihi=new Date().toISOString();report.tour_fields_fixed++;
+      }
+      // Boş tarihler: önce mevcut rezervasyonların tarihlerini topla, bulamazsan gelecek tarih üret
+      else if(!(t.tarihler?.length>0)){
+        const fromBookings=[...new Set(bookings.filter(b=>String(b.tourId)===String(t.id)&&b.tarihISO).map(b=>b.tarihISO))].sort();
+        if(fromBookings.length>0){t.tarihler=fromBookings;}
+        else{const _b=new Date();_b.setHours(0,0,0,0);t.tarihler=[7,14,21].map(d=>{const x=new Date(_b);x.setDate(x.getDate()+d);return x.toISOString().slice(0,10);}); }
+        report.tour_fields_fixed++;
+      }
+    });
+    lsSet('db_tours',tours);
+    // STEP 4b: İkinci cascade — STEP 4'te adı eksip iptal edilen turların rezervasyonlarını kapat
+    // (tourById referansları STEP 4 mutasyonlarını yansıtır — ek get gerekmez)
+    let sc=0;
+    bookings.forEach(b=>{
+      if(['iptal','reddedildi'].includes(b.durum))return;
+      const t2=tourById.get(String(b.tourId));
+      if(t2&&['iptal','reddedildi'].includes(t2.durum)){b.durum='iptal';b.iptalNedeni=b.iptalNedeni||'Tur iptal/reddedildi';b.iptalTarihi=new Date().toISOString();sc++;}
+    });
+    if(sc>0)lsSet('db_bookings',bookings);
+    report.second_cascade=sc;
+    // Ulusal yas tarihleri: tur tarihlerinden kaldır + ilgili bookingleri iptal et
+    const _mourning=new Set(getNationalMourningDates());
+    if(_mourning.size>0){
+      report.mourning_removed=0;
+      tours.forEach(t=>{
+        if(!t.tarihler?.length||['iptal','reddedildi'].includes(t.durum))return;
+        const before=t.tarihler.length;
+        t.tarihler=t.tarihler.filter(d=>!_mourning.has(d));
+        report.mourning_removed+=(before-t.tarihler.length);
+      });
+      let mc=0;
+      bookings.forEach(b=>{
+        if(['iptal','reddedildi'].includes(b.durum))return;
+        if(b.tarihISO&&_mourning.has(b.tarihISO)){
+          b.durum='iptal';b.iptalNedeni='Ulusal yas günü';b.iptalTarihi=new Date().toISOString();b.iptalKategori='mucbir';mc++;
+        }
+      });
+      if(report.mourning_removed>0)lsSet('db_tours',tours);
+      if(mc>0){lsSet('db_bookings',bookings);}
+      report.mourning_bookings_cancelled=mc;
+    }
   }
   if(opts.silent!==true)console.log('[integrity]',report);
   return report;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DOĞRULAMA PİRAMİDİ — Tüm yazma noktaları bu fonksiyonları kullanır.
+   Birden fazla yerden aynı veriyi farklı şekilde yazmak tutarsızlık üretir.
+   ══════════════════════════════════════════════════════════════════ */
+
+const VALID_KAT_SET=new Set(['Balik Avi','Tekne Gezisi','Yuzme Turu','Gunbatimi Turu','Mavi Tur','Dalis Turu','Snorkeling','Ozel Etkinlik','Kurumsal']);
+
+/* Tur doğrulama: hata mesajları dizisi döner (boş = geçerli) */
+function validateTour(t){
+  const errors=[];
+  if(!t.ad||String(t.ad).trim().length<3)errors.push('Tur adı en az 3 karakter olmalı');
+  const f=+t.fiyat;
+  if(!(f>0))errors.push('Fiyat sıfır veya negatif olamaz');
+  else if(f>500000)errors.push('Fiyat 500.000 TL üzerinde olamaz');
+  if(!(+t.kapasite>0))errors.push('Kapasite en az 1 olmalı');
+  else if(+t.kapasite>500)errors.push('Kapasite 500 üzerinde geçersiz');
+  if(!t.sure||String(t.sure).trim()==='0'||String(t.sure).trim()==='')errors.push('Tur süresi belirtilmeli');
+  if(!t.tarihler?.length)errors.push('En az bir tur tarihi eklenmeli');
+  if(t.kategoriler?.length&&t.kategoriler.some(k=>!VALID_KAT_SET.has(k)))errors.push('Geçersiz tur kategorisi içeriyor');
+  if(!t.captainEmail)errors.push('Tur bir kaptana atanmış olmalı');
+  return errors;
+}
+
+/* Rezervasyon doğrulama: hata mesajları dizisi döner (boş = geçerli) */
+function validateBooking(data){
+  const errors=[];
+  const tours=lsGet('db_tours',[]);
+  const t=tours.find(x=>String(x.id)===String(data.tourId));
+  if(!t){errors.push('Tur bulunamadı');return errors;}
+  if(t.durum!=='aktif')errors.push(`Tur rezervasyona kapalı (${t.durum})`);
+  if(!data.tarihISO)errors.push('Rezervasyon tarihi seçilmedi');
+  else if(t.tarihler?.length&&!t.tarihler.includes(data.tarihISO))errors.push('Seçilen tarih tur programında yok');
+  const guests=+data.guests;
+  if(!(guests>0))errors.push('Geçerli kişi sayısı girilmeli (en az 1)');
+  else if(guests>+t.kapasite)errors.push(`Bu tur en fazla ${t.kapasite} kişilik`);
+  if(!data.customerEmail)errors.push('Müşteri e-posta adresi eksik');
+  // Kapasite: mevcut aktif rezervasyonları say
+  if(data.tarihISO&&guests>0){
+    const bookings=lsGet('db_bookings',[]);
+    const dolu=bookings.filter(b=>String(b.tourId)===String(data.tourId)&&b.tarihISO===data.tarihISO&&['bekliyor','onaylandi'].includes(b.durum)&&b.id!==data.id).reduce((s,b)=>s+(+b.guests||0),0);
+    const kalan=Math.max(0,(+t.kapasite||0)-dolu);
+    if(guests>kalan)errors.push(`Bu tarihte yeterli yer yok — ${kalan} yer kaldı (${dolu}/${t.kapasite} dolu)`);
+  }
+  return errors;
+}
+
+/* Kanonik rezervasyon oluşturma — tek yazma noktası, tüm yan etkilerle birlikte */
+function createBookingCanonical(data){
+  const errors=validateBooking(data);
+  if(errors.length)return {ok:false,errors};
+  const tours=lsGet('db_tours',[]);
+  const t=tours.find(x=>String(x.id)===String(data.tourId));
+  const now=new Date().toISOString();
+  const booking={
+    id:data.id||('BK'+Date.now()),
+    tourId:String(data.tourId),
+    tourTitle:t.ad||t.title||'',
+    captainEmail:t.captainEmail||'',
+    captainName:t.captainName||'',
+    customerEmail:data.customerEmail,
+    customerName:data.customerName||'',
+    customerPhone:data.customerPhone||'',
+    guests:+data.guests,
+    tarihISO:data.tarihISO,
+    tarih:isoToTr?.(data.tarihISO)||data.tarihISO,
+    saat:data.saat||t.saat||'',
+    price:+(data.price||t.fiyat||0)*+data.guests,
+    unitPrice:+(data.price||t.fiyat||0),
+    durum:'bekliyor',
+    odemeYapildi:false,
+    odemeRef:null,
+    binisYapildi:false,
+    createdAt:now,
+    updatedAt:now,
+    history:[{ts:now,actor:data.actor||'system',from:null,to:'bekliyor',note:'Rezervasyon oluşturuldu'}]
+  };
+  const bookings=lsGet('db_bookings',[]);
+  bookings.push(booking);
+  lsSet('db_bookings',bookings);
+  notifyCaptainOfBookingStatus(booking,'bekliyor');
+  notifyCustomerOfBookingChange(booking,'bekliyor','Rezervasyonunuz alındı, kaptan onayı bekleniyor.');
+  return {ok:true,booking};
+}
+
+/* Kanonik rezervasyon iptali — tek yazma noktası, refund state machine dahil */
+function cancelBookingCanonical(bookingId, reason, kategori, actorEmail){
+  const bookings=lsGet('db_bookings',[]);
+  const b=bookings.find(x=>x.id===bookingId||x.id===String(bookingId));
+  if(!b)return {ok:false,reason:'not_found'};
+  if(['iptal','reddedildi'].includes(b.durum))return {ok:false,reason:'already_cancelled'};
+  const prev=b.durum;
+  b.durum='iptal';
+  b.iptalNedeni=reason||'İptal edildi';
+  b.iptalKategori=kategori||'diger';
+  b.iptalTarihi=new Date().toISOString();
+  b.history=b.history||[];
+  b.history.push({ts:new Date().toISOString(),actor:actorEmail||'system',from:prev,to:'iptal',note:reason||''});
+  if(b.odemeYapildi){
+    setRefundState(b,'pending',`${reason||'İptal'} — otomatik iade talebi`);
+    b.refundTalebTarihi=new Date().toISOString();
+    b.iadeTutari=computeCaymaCeza(b.tarihISO,b.unitPrice||b.price)?.iade||+b.price||0;
+  }
+  lsSet('db_bookings',bookings);
+  notifyCaptainOfBookingStatus(b,'iptal');
+  notifyCustomerOfBookingChange(b,'iptal',reason);
+  return {ok:true,booking:b};
+}
+
+/* Müşteri bildirim yardımcısı — customer-app'in okuduğu cu_notifs key'ine yazar */
+function notifyCustomerOfBookingChange(b, durum, note){
+  if(!b?.customerEmail)return;
+  const msgs={
+    bekliyor:'Rezervasyonunuz alındı — kaptan onayı bekleniyor.',
+    onaylandi:'Rezervasyonunuz onaylandı. İyi seyahatler!',
+    reddedildi:'Rezervasyonunuz reddedildi.',
+    iptal:'Rezervasyonunuz iptal edildi.'+(note?' Neden: '+note:''),
+    tamamlandi:'Tur tamamlandı. Yorumunuzu bekliyoruz!'
+  };
+  const types={bekliyor:'info',onaylandi:'success',reddedildi:'danger',iptal:'danger',tamamlandi:'success'};
+  const notifs=lsGet('cu_notifs',[]);
+  notifs.unshift({
+    id:'CN'+Date.now(),
+    title:(b.tourTitle||'Rezervasyon')+' — '+({bekliyor:'Bekleniyor',onaylandi:'Onaylandı',reddedildi:'Reddedildi',iptal:'İptal Edildi',tamamlandi:'Tamamlandı'}[durum]||durum),
+    body:msgs[durum]||note||'Rezervasyon güncellendi',
+    type:types[durum]||'info',
+    read:false,
+    ts:new Date().toISOString(),
+    bookingId:b.id,
+    email:b.customerEmail
+  });
+  lsSet('cu_notifs',notifs.slice(0,500));
 }
 
 /* ── İPTAL SEBEP TAKSONOMİSİ (canonical enum) ── */
@@ -3832,20 +4068,20 @@ function runHealthScan(){
     if(b.customerEmail && !userByEmail.has(b.customerEmail.toLowerCase()))push('unknown_customer',{id:b.id,email:b.customerEmail});
     if(b.tarihISO){const d=new Date(b.tarihISO);if(d<today && ['bekliyor','onaylandi'].includes(b.durum))push('past_date_active',{id:b.id,tarih:b.tarihISO,durum:b.durum});}
     if(!b.tarihISO && ['bekliyor','onaylandi','tamamlandi'].includes(b.durum))push('missing_tarihISO',{id:b.id,tarih:b.tarih});
-    if(b.tarihISO && b.tarih){const tr=new Date(b.tarihISO).toLocaleDateString('tr-TR');if(tr!==b.tarih)push('tarihISO_mismatch',{id:b.id,tarih:b.tarih,tarihISO:b.tarihISO});}
-    if(!b.guests || b.guests<=0)push('invalid_guests',{id:b.id,guests:b.guests});
+    if(b.tarihISO && b.tarih){const tr=isoToTr(b.tarihISO);if(tr&&tr!==b.tarih)push('tarihISO_mismatch',{id:b.id,tarih:b.tarih,tarihISO:b.tarihISO});}
+    if((!b.guests || b.guests<=0) && !['iptal','reddedildi'].includes(b.durum))push('invalid_guests',{id:b.id,guests:b.guests});
     if(b.odemeYapildi===true && !b.odemeRef)push('paid_no_ref',{id:b.id});
     if(b.odemeYapildi===false && b.durum==='tamamlandi')push('completed_unpaid',{id:b.id});
     if(b.binisYapildi && b.durum==='reddedildi')push('rejected_yet_boarded',{id:b.id});
     if(b.binisYapildi && b.durum==='onaylandi')push('boarded_not_completed',{id:b.id});
     const t=tourById.get(String(b.tourId));
     if(t && t.captainEmail && b.captainEmail && t.captainEmail!==b.captainEmail)push('captain_mismatch',{id:b.id,tour:t.captainEmail,booking:b.captainEmail});
-    if(t && t.tarihler?.length && b.tarihISO && !t.tarihler.includes(b.tarihISO))push('tarih_not_in_tour',{id:b.id,tarih:b.tarihISO});
+    if(t && t.tarihler?.length && b.tarihISO && !t.tarihler.includes(b.tarihISO) && ['bekliyor','onaylandi'].includes(b.durum))push('tarih_not_in_tour',{id:b.id,tarih:b.tarihISO});
     if(t && t.durum==='bekliyor' && ['bekliyor','onaylandi','tamamlandi'].includes(b.durum))push('booking_on_unapproved_tour',{id:b.id,tour:t.ad||t.title});
-    if(t && t.durum==='iptal' && !['iptal','reddedildi'].includes(b.durum))push('booking_on_cancelled_tour',{id:b.id,tour:t.ad||t.title});
+    if(t && ['iptal','reddedildi'].includes(t.durum) && !['iptal','reddedildi'].includes(b.durum))push('booking_on_cancelled_tour',{id:b.id,tour:t.ad||t.title});
   });
   const cap=new Map();
-  bookings.filter(b=>['bekliyor','onaylandi','tamamlandi'].includes(b.durum)).forEach(b=>{
+  bookings.filter(b=>['bekliyor','onaylandi'].includes(b.durum)).forEach(b=>{
     const key=`${b.tourId}||${b.tarihISO||b.tarih}`;
     if(!cap.has(key))cap.set(key,{total:0,bids:[]});
     const c=cap.get(key);c.total+=(+b.guests||0);c.bids.push(b.id);
@@ -3859,12 +4095,16 @@ function runHealthScan(){
   const KNOWN_KAT=new Set(['Balik Avi','Tekne Gezisi','Yuzme Turu','Gunbatimi Turu','Mavi Tur','Dalis Turu','Snorkeling','Ozel Etkinlik','Kurumsal']);
   tours.forEach(t=>{
     const f=+t.fiyat; const p=+t.price;
-    if(!(f>0)||f>500000||(p!==undefined&&!(p>0))||(p>500000))push('price_invalid',{id:t.id,ad:t.ad,fiyat:t.fiyat,price:t.price});
-    const bad=(!t.ad||String(t.ad).trim().length<3) || !t.sure || String(t.sure).trim()==='0'
+    if(f<1||f>500000||(+p<1)||(+p>500000))push('price_invalid',{id:t.id,ad:t.ad,fiyat:t.fiyat,price:t.price});
+    const bad=(!t.ad||String(t.ad).trim().length<3) || !t.sure || !String(t.sure||'').trim() || String(t.sure).trim()==='0'
       || !(+t.kapasite>0) || !(t.tarihler?.length>0);
-    if(bad)push('malformed_tour',{id:t.id,ad:t.ad,sure:t.sure,kapasite:t.kapasite,tarihler:t.tarihler?.length||0});
-    if(t.aciklama===''||(t.kategoriler?.length && t.kategoriler.some(k=>!KNOWN_KAT.has(k))))
-      push('wrong_tour_info',{id:t.id,ad:t.ad,aciklama:t.aciklama?.slice?.(0,30),kat:t.kategoriler});
+    if(bad && !['iptal','reddedildi'].includes(t.durum))push('malformed_tour',{id:t.id,ad:t.ad,sure:t.sure,kapasite:t.kapasite,tarihler:t.tarihler?.length||0});
+    const _suspAd=/^(asdf|test|deneme|xxx|asd|qwer)\b/i.test(String(t.ad||'').trim());
+    if(!['iptal','reddedildi'].includes(t.durum) && (
+      !String(t.aciklama||'').trim() ||
+      (t.kategoriler?.length && t.kategoriler.some(k=>!KNOWN_KAT.has(k))) ||
+      _suspAd
+    )) push('wrong_tour_info',{id:t.id,ad:t.ad,aciklama:t.aciklama?.slice?.(0,30),kat:t.kategoriler});
     if(t.durum==='bekliyor' && t.createdAt){
       const age=(Date.now()-new Date(t.createdAt).getTime())/3600000;
       if(age>48)push('admin_approval_timeout',{id:t.id,ad:t.ad,bekleme_saat:Math.floor(age)});
@@ -3889,6 +4129,16 @@ function runHealthScan(){
     if(c.resolved===true || c.durum==='kapali')return;
     const age=c.createdAt?(Date.now()-new Date(c.createdAt).getTime())/86400000:0;
     if(age>3)push('dispute_open',{id:c.id,konu:c.konu,gun:Math.floor(age),booking:c.bookingId});
+  });
+  /* ── FİNANSAL TUTARLILIK KONTROLLERI ── */
+  const payments=lsGet('db_payments',[]);
+  const payRefSet=new Set(payments.map(p=>p.ref||p.odemeRef||p.id).filter(Boolean));
+  bookings.forEach(b=>{
+    if(b.odemeYapildi&&b.odemeRef&&!payRefSet.has(b.odemeRef))push('dangling_payment_ref',{id:b.id,ref:b.odemeRef,tutar:b.price});
+  });
+  // İade fazlası: iadeTutari > orijinal ödeme
+  bookings.forEach(b=>{
+    if(b.iadeTutari>0 && b.price>0 && +b.iadeTutari>+b.price*1.01)push('refund_exceeds_payment',{id:b.id,iade:b.iadeTutari,odeme:b.price});
   });
   return findings;
 }
@@ -3920,13 +4170,16 @@ const SH_LABELS={
   no_show_uncompensated:{label:'No-show Çözümsüz',icon:'fa-user-slash',color:'orange',desc:'Tarih geçti, tamamlandı ama binis yok'},
   dispute_open:{label:'Açık Şikayet (72h+)',icon:'fa-comments',color:'red',desc:'3+ gündür çözülmemiş şikayet'},
   admin_approval_timeout:{label:'Admin Onay Timeout',icon:'fa-hourglass-end',color:'red',desc:'48+ saattir bekleyen tur'},
-  national_mourning_tours:{label:'Ulusal Yas Çakışma',icon:'fa-calendar-xmark',color:'red',desc:'Yas tarihine denk gelen aktif tur'}
+  national_mourning_tours:{label:'Ulusal Yas Çakışma',icon:'fa-calendar-xmark',color:'red',desc:'Yas tarihine denk gelen aktif tur'},
+  dangling_payment_ref:{label:'Kayıp Ödeme Kaydı',icon:'fa-money-bill-wave',color:'red',desc:'odemeRef var ama payments tablosunda eşleşme yok'},
+  refund_exceeds_payment:{label:'Fazla İade Tutarı',icon:'fa-scale-unbalanced',color:'red',desc:'iadeTutari orijinal ödemeden fazla'}
 };
 
 function renderSystemHealth(){
   shScan();
 }
 function shScan(){
+  runIntegrityPass({silent:true});
   const findings=runHealthScan();
   const sum=document.getElementById('sh-summary');
   const cats=document.getElementById('sh-categories');
@@ -4039,18 +4292,19 @@ async function factoryReset(){
     }
   }
 
-  // localStorage + sessionStorage temizle
+  // localStorage + sessionStorage tamamen temizle
   try{ localStorage.clear(); sessionStorage.clear(); }catch(e){ console.warn(e); }
 
-  // Boş key yaz — getAllUsers() DEMO_USERS'a düşmesin
-  localStorage.setItem('db_users','[]');
-  localStorage.setItem('cu_users','[]');
-  localStorage.setItem('db_captains','[]');
-  localStorage.setItem('db_tours','[]');
-  localStorage.setItem('db_bookings','[]');
-  localStorage.setItem('db_reviews','[]');
-  localStorage.setItem('db_vendor_listings','[]');
-  localStorage.setItem('db_shop_listings','[]');
+  // Boş key yaz — getAllUsers() DEMO_USERS'a düşmesin + tüm listeler temiz başlasın
+  const _emptyKeys=[
+    'db_users','cu_users','db_captains','db_tours','cp_tours',
+    'db_bookings','db_reviews','db_payments','db_vendor_listings',
+    'db_shop_listings','db_messages','cp_messages','db_complaints','db_mourning',
+  ];
+  _emptyKeys.forEach(k=>localStorage.setItem(k,'[]'));
+  // Tekil ayarları da temizle
+  ['page_settings','module_settings','admin_notifs','cu_notifications','cu_notifs',
+   'ca_notifications','db_users_migrated_v1','session_user'].forEach(k=>localStorage.removeItem(k));
 
   showToast('Sistem tamamen sıfırlandı. Yenileniyor…','success');
   setTimeout(()=>location.reload(), 1200);
@@ -4424,6 +4678,19 @@ async function runRealisticSimulation(cfg){
   localStorage.setItem('db_shop_listings',JSON.stringify(shopListings));
   localStorage.setItem('cu_users',JSON.stringify(customers.map(c=>({email:c.email,ad:c.ad,soyad:c.soyad,phone:c.phone,password:c.password,createdAt:c.createdAt}))));
   localStorage.setItem('cp_tours',JSON.stringify(tours));
+  // Generate payment records for all paid bookings
+  const simPayments=bookings.filter(b=>b.odemeYapildi&&b.odemeRef).map(b=>({
+    id:b.odemeRef,ref:b.odemeRef,bookingId:b.id,tourId:b.tourId,
+    tourTitle:b.tourTitle||'',customerEmail:b.customerEmail,captainEmail:b.captainEmail,
+    tutar:+b.price||0,komisyon:Math.round((+b.price||0)*0.025),
+    kaptanNet:Math.round((+b.price||0)*0.875),
+    tarih:b.createdAt||new Date().toISOString(),durum:'odendi',kayitKanali:'sim'
+  }));
+  localStorage.setItem('db_payments',JSON.stringify(simPayments));
+
+  // 8.5. Veri bütünlüğü otomatik düzelt — enjeksiyon kaynaklı tutarsızlıkları gider
+  setP(90,'Veri bütünlüğü sağlanıyor…'); await sleep(20);
+  runIntegrityPass({aggressive:true,silent:true});
 
   // 9. Sistem Sağlığı taraması
   setP(95,'Sistem Sağlığı taranıyor…'); await sleep(40);
@@ -5852,6 +6119,7 @@ function cancelTourCascade(tourId, reason, kategori){
         b.iadeTutari=+b.price||0;
       }
       notifyCaptainOfBookingStatus(b,'iptal');
+      notifyCustomerOfBookingChange(b,'iptal',reason||'Tur iptal edildi');
       n++;
     }
   });
@@ -8836,10 +9104,14 @@ function setResDurum(durum){
   const b=all.find(x=>x.id===activeResId);
   if(!b)return;
   if(durum==='onaylandi'&&!checkCapacity(activeResId,all))return;
+  const prevDurum=b.durum;
   b.durum=durum;
   if(durum==='onaylandi')b.onayTarihi=new Date().toISOString();
+  b.history=b.history||[];
+  b.history.push({ts:new Date().toISOString(),actor:'admin',from:prevDurum,to:durum,note:'Admin durum değişikliği'});
   localStorage.setItem('db_bookings',JSON.stringify(all));
   notifyCaptainOfBookingStatus(b,durum);
+  notifyCustomerOfBookingChange(b,durum);
   if(durum==='onaylandi')_adminCheckTourFull(b.tourId,all);
   openResDetail(activeResId);
   renderReservations();
@@ -8908,18 +9180,16 @@ function adminCancelRes(){
 
   lsSet('db_bookings',all);
 
-  /* Müşteri bildirimi */
-  const cuNotifs=lsGet('cu_notifications',[]);
+  /* Müşteri bildirimi — cu_notifs (customer-app'in okuduğu key) */
+  const cuNotifs=lsGet('cu_notifs',[]);
   cuNotifs.unshift({
     id:'NOTIF'+Date.now(),
-    type:'booking_iptal',
     title:'Rezervasyonunuz İptal Edildi',
-    body:`${b.tourTitle||'Turunuz'} rezervasyonu admin tarafından iptal edildi. ${b.iadeTutari.toLocaleString('tr-TR')} TL tam iade işleme alındı.`,
-    bookingId:b.id,
-    ts:Date.now(),
-    read:false
+    body:`${b.tourTitle||'Turunuz'} rezervasyonu admin tarafından iptal edildi. ${(b.iadeTutari||0).toLocaleString('tr-TR')} TL tam iade işleme alındı.`,
+    type:'danger',bookingId:b.id,
+    ts:new Date().toISOString(),read:false
   });
-  lsSet('cu_notifications',cuNotifs);
+  lsSet('cu_notifs',cuNotifs.slice(0,500));
 
   /* Admin bildirim kaydı */
   const adminNotifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');

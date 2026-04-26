@@ -2322,8 +2322,10 @@ function doTourCancel(){
   // Aktif rezervasyonları iptal et ve müşterilere bildirim/mesaj gönder
   const bookings=S.get('db_bookings',[]);
   const msgs=S.get('db_messages',{});
-  const cuNotifs=S.get('cu_notifications',[]);
+  const cuNotifs=S.get('cu_notifs',[]);
   let etkilenen=0;
+  const cap=getActiveCaptain();
+  const capAd=cap?(cap.ad||'Kaptan'):'Kaptan';
   bookings.forEach(b=>{
     if(String(b.tourId)===String(id)&&['bekliyor','onaylandi'].includes(b.durum||'')){
       b.durum='iptal';
@@ -2333,30 +2335,21 @@ function doTourCancel(){
       if(b.odemeYapildi){
         b.refundStatus='pending';
         b.refundTalebTarihi=new Date().toISOString();
-        b.iadeTutari=+b.price||0;
+        b.iadeTutari=+(b.unitPrice||b.price)||0;
         b.refundHistory=[...(b.refundHistory||[]),{from:null,to:'pending',ts:new Date().toISOString(),note:'Kaptan tur iptali'}];
       }
-      // Müşteriye mesaj gönder (db_messages'e kaptan adına)
-      const cap=getActiveCaptain();
-      const capAd=cap?(cap.ad||'Kaptan'):'Kaptan';
+      // Müşteriye mesaj gönder
       if(!msgs[b.id])msgs[b.id]=[];
       msgs[b.id].push({
         text:`Merhaba, maalesef "${t.ad||t.title}" turumuz ${reason.toLowerCase()} nedeniyle iptal edilmek zorunda kalındı. Anlayışınız için teşekkür ederiz. İade işleminiz en kısa sürede gerçekleştirilecektir. — ${capAd}`,
-        byCaptan:true,
-        ts:Date.now(),
-        readByCustomer:false,
-        readByCaptain:true,
-        sysMsg:true
+        byCaptan:true,ts:Date.now(),readByCustomer:false,readByCaptain:true,sysMsg:true
       });
-      // Müşteriye bildirim
+      // Müşteriye bildirim — cu_notifs (customer-app'in okuduğu key)
       cuNotifs.unshift({
         id:Date.now()+Math.random(),
         title:'Tur İptal Edildi',
-        desc:`"${t.ad||t.title}" turu kaptan tarafından iptal edildi: ${reason}`,
-        type:'danger',
-        ts:new Date().toISOString(),
-        read:false,
-        targetUserId:b.userId||null
+        body:`"${t.ad||t.title}" turu kaptan tarafından iptal edildi. Neden: ${reason}`,
+        type:'danger',ts:new Date().toISOString(),read:false,bookingId:b.id
       });
       etkilenen++;
     }
@@ -2365,7 +2358,7 @@ function doTourCancel(){
   S.set('db_tours',tours);
   S.set('db_bookings',bookings);
   S.set('db_messages',msgs);
-  S.set('cu_notifications',cuNotifs);
+  S.set('cu_notifs',cuNotifs.slice(0,500));
   // Admin bildirimi
   const adminNotifs=S.get('admin_notifs',[]);
   adminNotifs.unshift({id:Date.now(),type:'tour_iptal',tourId:id,tourTitle:t.ad||t.title,reason,etkilenen,ts:new Date().toISOString(),read:false});
@@ -3152,7 +3145,7 @@ function publishTour(){
   }
   const priceVal_=+(document.getElementById('tour-price-input')?.value||0);
   if(cap.kapasite>0&&capacity>cap.kapasite){showToast(`Tekne kapasitesi aşılamaz — teknenizin kapasitesi ${cap.kapasite} kişi`,'danger');return;}
-  if(priceVal_>100000){showToast('Fiyat 100.000 TL üstünde olamaz — kontrol edin','danger');return;}
+  if(priceVal_>500000){showToast('Fiyat 500.000 TL üstünde olamaz — kontrol edin','danger');return;}
   const today=new Date();today.setHours(0,0,0,0);
   if(wizardDates.some(d=>new Date(d)<today)){showToast('Geçmiş tarih seçilemez','danger');return;}
   const cats=[...document.querySelectorAll('.cat-pill.selected')].map(el=>el.textContent.trim());
@@ -3368,6 +3361,10 @@ function captainAccept(id){
   b.onayTarihi=new Date().toISOString();
   S.set('db_bookings',db);
   try{if(DB_MODE==='remote')DB.rezervasyonlar.updateDurum(b.id,'onaylandi').catch(e=>console.warn('[SB]',e));}catch(e){}
+  // Müşteriye gerçek bildirim — cu_notifs
+  const _cn1=S.get('cu_notifs',[]);
+  _cn1.unshift({id:Date.now(),title:`${b.tourTitle||'Tur'} — Rezervasyon Onaylandı`,body:'Rezervasyonunuz kaptan tarafından onaylandı. İyi seyahatler!',type:'success',read:false,ts:new Date().toISOString(),bookingId:b.id});
+  S.set('cu_notifs',_cn1.slice(0,500));
   _checkAndNotifyTourFull(b.tourId);
   renderBookings();renderDashboard();showToast('Rezervasyon kabul edildi! Musteri bilgilendirildi.');
 }
@@ -3473,6 +3470,10 @@ function doReject(){
     b.redTarihi=new Date().toISOString();
     S.set('db_bookings',db);
     try{if(DB_MODE==='remote')DB.rezervasyonlar.updateDurum(b.id,'reddedildi',reason).catch(e=>console.warn('[SB]',e));}catch(e){}
+    // Müşteriye gerçek bildirim — cu_notifs
+    const _cn2=S.get('cu_notifs',[]);
+    _cn2.unshift({id:Date.now(),title:`${b.tourTitle||'Tur'} — Rezervasyon Reddedildi`,body:`Rezervasyonunuz reddedildi. Neden: ${reason}`,type:'danger',read:false,ts:new Date().toISOString(),bookingId:b.id});
+    S.set('cu_notifs',_cn2.slice(0,500));
   }
   closeRejectModal();
   renderBookings();
