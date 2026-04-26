@@ -258,6 +258,20 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         </table>
       </div>
     </div>
+
+    <!-- Fleet Merge Requests -->
+    <div class="card mt-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-semibold text-sm"><i class="fas fa-link text-purple-600 mr-1"></i>Tekne Birleştirme Talepleri</h3>
+        <div class="flex items-center gap-2">
+          <span class="badge bg-purple-100 text-purple-700" id="dash-fmr-badge">0 aktif</span>
+          <button onclick="openFMRWizard()" class="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-medium hover:bg-primaryDark flex items-center gap-1"><i class="fas fa-plus text-[10px]"></i>Yeni Talep</button>
+        </div>
+      </div>
+      <div id="dash-fmr-list" class="space-y-2">
+        <div class="text-center text-gray-400 py-6 text-xs">Tekne birleştirme talebi yok</div>
+      </div>
+    </div>
   </section>
 
   <!-- ======================================= -->
@@ -2628,6 +2642,61 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   </div>
 </div>
 
+<!-- ===== FLEET MERGE WIZARD MODAL ===== -->
+<div id="fmr-wizard-modal" style="display:none" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+    <div class="bg-gradient-to-r from-primaryDark to-primary p-4 flex items-center justify-between">
+      <div>
+        <h3 class="text-white font-bold text-base"><i class="fas fa-ship mr-2"></i>Tekne Birleştirme Talebi</h3>
+        <p class="text-white/70 text-xs mt-0.5" id="fmr-step-label">Adım 1 / 3 — Kaynak Tur Seç</p>
+      </div>
+      <button onclick="closeFMRWizard()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white"><i class="fas fa-times text-sm"></i></button>
+    </div>
+    <div class="flex border-b">
+      <div class="flex-1 py-2 text-center text-xs font-semibold border-b-2 border-primary" id="fmr-stp-1" style="color:#0369a1">1. Kaynak Tur</div>
+      <div class="flex-1 py-2 text-center text-xs text-gray-400" id="fmr-stp-2">2. Hedef Tur</div>
+      <div class="flex-1 py-2 text-center text-xs text-gray-400" id="fmr-stp-3">3. Onayla</div>
+    </div>
+    <div id="fmr-step1" class="p-5 space-y-3 max-h-72 overflow-y-auto">
+      <p class="text-xs text-gray-500">Birleştirilecek turu seçin (düşük doluluklu aktif turlar).</p>
+      <div id="fmr-source-list" class="space-y-2"></div>
+    </div>
+    <div id="fmr-step2" style="display:none" class="p-5 space-y-3 max-h-72 overflow-y-auto">
+      <p class="text-xs text-gray-500">Rezervasyonların aktarılacağı hedef turu seçin.</p>
+      <div id="fmr-target-list" class="space-y-2"></div>
+    </div>
+    <div id="fmr-step3" style="display:none" class="p-5 space-y-4">
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3 text-xs">
+        <div class="flex items-start gap-3">
+          <i class="fas fa-arrow-right text-primary mt-0.5 w-4 text-center"></i>
+          <div><div class="font-semibold text-gray-700 mb-0.5">Kaynak Tur</div><div id="fmr-confirm-src" class="text-gray-600">—</div></div>
+        </div>
+        <div class="flex items-start gap-3">
+          <i class="fas fa-bullseye text-success mt-0.5 w-4 text-center"></i>
+          <div><div class="font-semibold text-gray-700 mb-0.5">Hedef Tur</div><div id="fmr-confirm-tgt" class="text-gray-600">—</div></div>
+        </div>
+        <div class="flex items-start gap-3">
+          <i class="fas fa-users text-accent mt-0.5 w-4 text-center"></i>
+          <div><div class="font-semibold text-gray-700 mb-0.5">Aktarılacak</div><div id="fmr-confirm-stats" class="text-gray-600">—</div></div>
+        </div>
+        <div id="fmr-confirm-warning" class="hidden bg-red-50 border border-red-200 rounded-lg p-2 text-danger font-semibold text-[11px]"></div>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-500 block mb-1">Admin Notu (kaptanlara iletilir)</label>
+        <textarea id="fmr-admin-notes" rows="2" placeholder="Birleştirme gerekçesi..." class="w-full border rounded-xl px-3 py-2 text-xs resize-none focus:border-primary outline-none"></textarea>
+      </div>
+      <p class="text-[10px] text-gray-400"><i class="fas fa-info-circle mr-1"></i>Talep oluşturulur, her iki kaptana bildirim gönderilir. İstediğiniz zaman anında uygulayabilirsiniz.</p>
+    </div>
+    <div class="border-t px-5 py-3 flex justify-between items-center bg-gray-50">
+      <button onclick="fmrWizardBack()" id="fmr-btn-back" style="display:none" class="border px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-100"><i class="fas fa-chevron-left mr-1"></i>Geri</button>
+      <div class="flex-1"></div>
+      <button onclick="fmrWizardNext()" id="fmr-btn-next" disabled class="bg-primary text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-primaryDark disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+        <span id="fmr-btn-next-label">İleri</span><i class="fas fa-chevron-right text-xs"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== KAPTAN DETAY MODAL ===== -->
 <!-- KAPTAN DETAY — SAĞ DRAWER -->
 <div id="captain-detail-modal" style="display:none" class="fixed inset-0 z-50 flex">
@@ -2761,6 +2830,20 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         <div id="cdm-kat-section">
           <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Tur Kategorileri</div>
           <div class="flex flex-wrap gap-1.5" id="cdm-kategoriler"></div>
+        </div>
+
+        <!-- FLEET BİRLEŞTİRME GEÇMİŞİ -->
+        <div id="cdm-fleet-section" style="display:none">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide"><i class="fas fa-link mr-1 text-purple-500"></i>Birleştirme Geçmişi</span>
+            <span class="text-[10px] text-gray-400" id="cdm-fleet-count"></span>
+          </div>
+          <div class="border rounded-xl overflow-hidden">
+            <table class="w-full text-xs">
+              <thead><tr class="bg-gray-50 border-b"><th class="px-3 py-2 text-left font-semibold text-gray-400">Kaynak Tur</th><th class="px-3 py-2 text-left font-semibold text-gray-400">Hedef Tur</th><th class="px-3 py-2 text-center font-semibold text-gray-400">Kişi</th><th class="px-3 py-2 text-center font-semibold text-gray-400">Durum</th></tr></thead>
+              <tbody id="cdm-fleet-list"><tr><td colspan="4" class="text-center py-4 text-gray-400">Birleştirme kaydı yok</td></tr></tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Admin Notu -->
@@ -3676,6 +3759,109 @@ const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kull
 
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+
+/* ══════════════════════════════════════════════
+   FLEET MERGE REQUEST (FMR) — veri katmanı
+   localStorage key: db_fleet_merge_requests
+   ══════════════════════════════════════════════ */
+function getFMRs(){return lsGet('db_fleet_merge_requests',[]);}
+function saveFMRs(arr){lsSet('db_fleet_merge_requests',arr);}
+
+function createFMR(sourceTourId,targetTourId,opts={}){
+  const tours=lsGet('db_tours',[]);
+  const src=tours.find(t=>String(t.id)===String(sourceTourId));
+  const tgt=tours.find(t=>String(t.id)===String(targetTourId));
+  if(!src||!tgt)return null;
+  const fmr={
+    id:Date.now(),
+    createdAt:new Date().toISOString(),
+    durum:'onay_bekleniyor',
+    sourceTourId:String(sourceTourId),
+    sourceTourTitle:src.title||src.ad||'—',
+    sourceCaptainEmail:src.captainEmail,
+    sourceCaptainName:src.captainName||src.captainEmail||'—',
+    targetTourId:String(targetTourId),
+    targetTourTitle:tgt.title||tgt.ad||'—',
+    targetCaptainEmail:tgt.captainEmail,
+    targetCaptainName:tgt.captainName||tgt.captainEmail||'—',
+    adminNotes:opts.adminNotes||'',
+    notifSent:false,
+    history:[{ts:new Date().toISOString(),action:'olusturuldu',by:'admin'}],
+  };
+  const arr=getFMRs();arr.unshift(fmr);saveFMRs(arr);
+  return fmr;
+}
+
+function updateFMR(id,updates){
+  const arr=getFMRs();
+  const idx=arr.findIndex(x=>String(x.id)===String(id));
+  if(idx<0)return null;
+  const by=updates._by||'admin';delete updates._by;
+  arr[idx]={...arr[idx],...updates};
+  if(updates.durum){arr[idx].history=[...(arr[idx].history||[]),{ts:new Date().toISOString(),action:updates.durum,by}];}
+  saveFMRs(arr);return arr[idx];
+}
+
+function sendFMRNotifications(fmr){
+  /* Kaptanlara onay isteği bildirimi gönder */
+  pushCaptainNotification(fmr.sourceCaptainEmail,{
+    title:'Tekne Birleştirme Talebi',
+    body:`"${fmr.sourceTourTitle}" turunuzun rezervasyonları "${fmr.targetTourTitle}" turuna aktarılmak isteniyor. Kabul veya reddedebilirsiniz.`,
+    type:'fleet_merge_request',
+    fmrId:String(fmr.id),
+    role:'source',
+  });
+  pushCaptainNotification(fmr.targetCaptainEmail,{
+    title:'Tekne Birleştirme Talebi',
+    body:`"${fmr.sourceTourTitle}" turundan rezervasyonlar teknenize aktarılmak isteniyor. Kabul veya reddedebilirsiniz.`,
+    type:'fleet_merge_request',
+    fmrId:String(fmr.id),
+    role:'target',
+  });
+  updateFMR(fmr.id,{notifSent:true});
+}
+
+function processFMR(id){
+  /* Atomik transfer: 5 adım */
+  const arr=getFMRs();
+  const fmr=arr.find(x=>String(x.id)===String(id));
+  if(!fmr||!['onay_bekleniyor','her_ikisi_kabul'].includes(fmr.durum))return{ok:false,msg:'FMR geçerli durumda değil'};
+  const tours=lsGet('db_tours',[]);
+  const bookings=lsGet('db_bookings',[]);
+  const src=tours.find(t=>String(t.id)===fmr.sourceTourId);
+  const tgt=tours.find(t=>String(t.id)===fmr.targetTourId);
+  if(!src||!tgt)return{ok:false,msg:'Tur bulunamadı'};
+  const activeB=bookings.filter(b=>String(b.tourId)===fmr.sourceTourId&&['bekliyor','onaylandi'].includes(b.durum));
+  const totalGuests=activeB.reduce((s,b)=>s+(b.guests||1),0);
+  const curGuests=bookings.filter(b=>String(b.tourId)===fmr.targetTourId&&['bekliyor','onaylandi'].includes(b.durum)).reduce((s,b)=>s+(b.guests||1),0);
+  if(totalGuests+curGuests>(tgt.kapasite||0))return{ok:false,msg:`Hedef kapasite yetersiz (${tgt.kapasite} kişi, ${curGuests+totalGuests} gerekli)`};
+  /* Adım 1: bookingleri taşı */
+  activeB.forEach(b=>{b.tourId=fmr.targetTourId;b.tourTitle=fmr.targetTourTitle;b.transferredFrom=fmr.sourceTourId;b.transferFMRId=String(id);});
+  lsSet('db_bookings',bookings);
+  /* Adım 2: kaynak turu pasifleştir */
+  src.durum='pasif';src.aktif=false;src.mergedIntoTourId=fmr.targetTourId;src.updatedAt=new Date().toISOString();
+  lsSet('db_tours',tours);
+  /* Adım 3: FMR'ı tamamla */
+  updateFMR(id,{durum:'tamamlandi',completedAt:new Date().toISOString(),transferredCount:activeB.length});
+  /* Adım 4: bildirimler */
+  pushCaptainNotification(fmr.sourceCaptainEmail,{title:'Birleştirme Tamamlandı',body:`"${fmr.sourceTourTitle}" rezervasyonları (${activeB.length} kişi) "${fmr.targetTourTitle}" turuna aktarıldı.`,type:'info'});
+  pushCaptainNotification(fmr.targetCaptainEmail,{title:'Yeni Rezervasyonlar Geldi',body:`"${fmr.sourceTourTitle}" turundan ${activeB.length} rezervasyon teknenize aktarıldı.`,type:'success'});
+  return{ok:true,transferred:activeB.length};
+}
+
+function cancelFMR(id,sebep){
+  updateFMR(id,{durum:'iptal_edildi',cancelReason:sebep||'',cancelledAt:new Date().toISOString()});
+}
+
+function rejectFMR(id,tip){
+  /* tip: 'red_eksik_cikacak' | 'red_iptal_istedi' */
+  const t=tip||'red_eksik_cikacak';
+  const fmr=updateFMR(id,{durum:t,rejectedAt:new Date().toISOString()});
+  if(fmr){
+    const msg=t==='red_iptal_istedi'?'Kaptan birleştirmeyi reddetti ve rezervasyonunu iptal etmek istiyor.':'Kaptan birleştirmeyi reddetti, eksik dolulukla çıkmayı tercih ediyor.';
+    showToast(msg,'warning');
+  }
+}
 
 /* ── INTEGRITY HELPERS (B1,B5,B7,B8,B9,B11,B12,B14) ── */
 function trToISO(tr){const m=/^(\d{2})\.(\d{2})\.(\d{4})$/.exec(tr||'');return m?`${m[3]}-${m[2]}-${m[1]}`:null;}
@@ -5420,7 +5606,168 @@ function renderDashboard(){
       }).join('');
     }
   }
+
+  /* ── Fleet Merge Requests widget ── */
+  const fmrs=getFMRs();
+  const activeFMRs=fmrs.filter(f=>['onay_bekleniyor'].includes(f.durum));
+  const fmrBadge=document.getElementById('dash-fmr-badge');
+  if(fmrBadge)fmrBadge.textContent=activeFMRs.length+' aktif';
+  const fmrList=document.getElementById('dash-fmr-list');
+  if(fmrList){
+    const recent=fmrs.slice(0,5);
+    if(!recent.length){
+      fmrList.innerHTML='<div class="text-center text-gray-400 py-6 text-xs">Tekne birleştirme talebi yok</div>';
+    } else {
+      const durumCfg={
+        onay_bekleniyor:{cls:'bg-amber-100 text-amber-700',label:'Bekliyor'},
+        her_ikisi_kabul:{cls:'bg-blue-100 text-primary',label:'Hazır — Uygula'},
+        tamamlandi:{cls:'bg-green-100 text-green-700',label:'Tamamlandı'},
+        iptal_edildi:{cls:'bg-gray-100 text-gray-500',label:'İptal'},
+        red_eksik_cikacak:{cls:'bg-orange-100 text-orange-700',label:'Red: Eksik Çıkar'},
+        red_iptal_istedi:{cls:'bg-red-100 text-danger',label:'Red: İptal İste'},
+      };
+      fmrList.innerHTML=recent.map(f=>{
+        const cfg=durumCfg[f.durum]||{cls:'bg-gray-100 text-gray-500',label:f.durum};
+        const dt=f.createdAt?new Date(f.createdAt).toLocaleDateString('tr-TR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
+        const canApply=['onay_bekleniyor','her_ikisi_kabul'].includes(f.durum);
+        const actions=canApply?`
+          <button onclick="adminProcessFMR('${f.id}')" class="text-[10px] bg-success text-white px-2 py-1 rounded font-medium hover:bg-green-600">Uygula</button>
+          <button onclick="adminCancelFMR('${f.id}')" class="text-[10px] text-danger hover:underline ml-1">İptal</button>`:'';
+        return`<div class="flex items-center gap-3 p-3 border rounded-xl hover:bg-gray-50 text-xs">
+          <div class="flex-1 min-w-0">
+            <div class="font-medium truncate">${f.sourceTourTitle} <i class="fas fa-arrow-right text-gray-400 mx-1"></i> ${f.targetTourTitle}</div>
+            <div class="text-gray-400 text-[10px] mt-0.5">${f.sourceCaptainName} → ${f.targetCaptainName} &bull; ${dt}</div>
+          </div>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            <span class="badge ${cfg.cls} text-[10px]">${cfg.label}</span>
+            ${actions}
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
 }
+
+/* ══ FMR WIZARD & ADMIN ACTIONS ══ */
+let _fmrStep=1,_fmrSrcId=null,_fmrTgtId=null;
+
+function openFMRWizard(preselectedSrcId){
+  _fmrStep=preselectedSrcId?2:1;_fmrSrcId=preselectedSrcId||null;_fmrTgtId=null;
+  document.getElementById('fmr-wizard-modal').style.display='flex';
+  _fmrRenderStep();
+}
+function closeFMRWizard(){document.getElementById('fmr-wizard-modal').style.display='none';}
+
+function _fmrRenderStep(){
+  const tours=lsGet('db_tours',[]);
+  const bookings=lsGet('db_bookings',[]);
+  [1,2,3].forEach(i=>document.getElementById('fmr-step'+i).style.display=i===_fmrStep?'':'none');
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById('fmr-stp-'+i);
+    if(el){el.style.color=i===_fmrStep?'#0369a1':'';el.style.borderBottom=i===_fmrStep?'2px solid #0369a1':'';}
+  });
+  const stepLabels=['Adım 1 / 3 — Kaynak Tur Seç','Adım 2 / 3 — Hedef Tur Seç','Adım 3 / 3 — Onayla'];
+  const lbl=document.getElementById('fmr-step-label');if(lbl)lbl.textContent=stepLabels[_fmrStep-1];
+  const btnBack=document.getElementById('fmr-btn-back');if(btnBack)btnBack.style.display=_fmrStep>1?'':'none';
+  const btnNext=document.getElementById('fmr-btn-next');
+  const btnLabel=document.getElementById('fmr-btn-next-label');
+
+  if(_fmrStep===1){
+    if(btnNext)btnNext.disabled=!_fmrSrcId;
+    if(btnLabel)btnLabel.textContent='İleri';
+    const aktifTours=tours.filter(t=>t.durum==='aktif');
+    const srcList=document.getElementById('fmr-source-list');
+    if(srcList){
+      srcList.innerHTML=aktifTours.map(t=>{
+        const tRez=bookings.filter(b=>String(b.tourId)===String(t.id)&&['bekliyor','onaylandi'].includes(b.durum));
+        const kisi=tRez.reduce((s,b)=>s+(b.guests||1),0);
+        const kap=t.kapasite||0;const pct=kap?Math.round(kisi/kap*100):0;
+        const sel=String(_fmrSrcId)===String(t.id);
+        return`<div onclick="_fmrSelectSrc('${t.id}')" class="border rounded-xl p-3 cursor-pointer transition-all ${sel?'border-primary bg-blue-50':'hover:bg-gray-50'} text-xs">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold">${t.title||t.ad||'—'}</span>
+            <span class="${pct>=70?'text-success':'text-amber-600'} font-bold">${pct}% dolu</span>
+          </div>
+          <div class="text-gray-400 mt-0.5">${t.captainName||t.captainEmail||'—'} &bull; ${kisi}/${kap} kişi</div>
+          ${sel?'<div class="mt-1.5 text-primary font-semibold"><i class="fas fa-check-circle mr-1"></i>Seçildi</div>':''}
+        </div>`;
+      }).join('')||'<div class="text-gray-400 text-xs text-center py-4">Aktif tur yok</div>';
+    }
+  } else if(_fmrStep===2){
+    if(btnNext)btnNext.disabled=!_fmrTgtId;
+    if(btnLabel)btnLabel.textContent='İleri';
+    const src=tours.find(t=>String(t.id)===String(_fmrSrcId));
+    const aktifTours=tours.filter(t=>t.durum==='aktif'&&String(t.id)!==String(_fmrSrcId));
+    const tgtList=document.getElementById('fmr-target-list');
+    if(tgtList){
+      tgtList.innerHTML=aktifTours.map(t=>{
+        const tRez=bookings.filter(b=>String(b.tourId)===String(t.id)&&['bekliyor','onaylandi'].includes(b.durum));
+        const kisi=tRez.reduce((s,b)=>s+(b.guests||1),0);
+        const kap=t.kapasite||0;const bos=kap-kisi;const pct=kap?Math.round(kisi/kap*100):0;
+        const sel=String(_fmrTgtId)===String(t.id);
+        return`<div onclick="_fmrSelectTgt('${t.id}')" class="border rounded-xl p-3 cursor-pointer transition-all ${sel?'border-success bg-green-50':'hover:bg-gray-50'} text-xs">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold">${t.title||t.ad||'—'}</span>
+            <span class="text-success font-bold">${bos} boş yer</span>
+          </div>
+          <div class="text-gray-400 mt-0.5">${t.captainName||t.captainEmail||'—'} &bull; ${kisi}/${kap} kişi</div>
+          ${sel?'<div class="mt-1.5 text-success font-semibold"><i class="fas fa-check-circle mr-1"></i>Seçildi</div>':''}
+        </div>`;
+      }).join('')||'<div class="text-gray-400 text-xs text-center py-4">Uygun hedef tur yok</div>';
+    }
+  } else {
+    if(btnNext)btnNext.disabled=false;
+    if(btnLabel)btnLabel.textContent='Talep Oluştur';
+    const src=tours.find(t=>String(t.id)===String(_fmrSrcId));
+    const tgt=tours.find(t=>String(t.id)===String(_fmrTgtId));
+    const srcB=bookings.filter(b=>String(b.tourId)===String(_fmrSrcId)&&['bekliyor','onaylandi'].includes(b.durum));
+    const tgtB=bookings.filter(b=>String(b.tourId)===String(_fmrTgtId)&&['bekliyor','onaylandi'].includes(b.durum));
+    const srcGuests=srcB.reduce((s,b)=>s+(b.guests||1),0);
+    const tgtGuests=tgtB.reduce((s,b)=>s+(b.guests||1),0);
+    const tgtKap=tgt?.kapasite||0;
+    const willFit=srcGuests+tgtGuests<=tgtKap;
+    const srcEl=document.getElementById('fmr-confirm-src');
+    const tgtEl=document.getElementById('fmr-confirm-tgt');
+    const statsEl=document.getElementById('fmr-confirm-stats');
+    const warnEl=document.getElementById('fmr-confirm-warning');
+    if(srcEl)srcEl.textContent=(src?.title||src?.ad||'—')+' — '+(src?.captainName||src?.captainEmail||'—');
+    if(tgtEl)tgtEl.textContent=(tgt?.title||tgt?.ad||'—')+' — '+(tgt?.captainName||tgt?.captainEmail||'—');
+    if(statsEl)statsEl.textContent=srcB.length+' rezervasyon, '+srcGuests+' kişi aktarılacak';
+    if(warnEl){
+      if(!willFit){warnEl.textContent='Uyarı: Hedef kapasite yetersiz! ('+tgtGuests+' mevcut + '+srcGuests+' gelecek = '+(tgtGuests+srcGuests)+' > '+tgtKap+')';warnEl.classList.remove('hidden');}
+      else{warnEl.classList.add('hidden');}
+      if(btnNext)btnNext.disabled=!willFit;
+    }
+  }
+}
+
+function _fmrSelectSrc(id){_fmrSrcId=id;_fmrRenderStep();}
+function _fmrSelectTgt(id){_fmrTgtId=id;_fmrRenderStep();}
+
+function fmrWizardNext(){
+  if(_fmrStep<3){_fmrStep++;_fmrRenderStep();}
+  else {
+    const notes=document.getElementById('fmr-admin-notes')?.value||'';
+    const fmr=createFMR(_fmrSrcId,_fmrTgtId,{adminNotes:notes});
+    if(fmr){
+      sendFMRNotifications(fmr);
+      closeFMRWizard();
+      renderDashboard();
+      showToast('Tekne birleştirme talebi oluşturuldu. Her iki kaptana bildirim gönderildi.','success');
+    } else {
+      showToast('Talep oluşturulamadı','danger');
+    }
+  }
+}
+function fmrWizardBack(){if(_fmrStep>1){_fmrStep--;_fmrRenderStep();}}
+
+function adminProcessFMR(id){
+  if(!confirm('Bu birleştirme işlemini uygulamak istediğinizden emin misiniz? Kaynak turdaki aktif rezervasyonlar hedef tura taşınacak.'))return;
+  const res=processFMR(id);
+  if(res.ok){renderDashboard();showToast(res.transferred+' rezervasyon başarıyla aktarıldı.','success');}
+  else{showToast('Hata: '+res.msg,'danger');}
+}
+function adminCancelFMR(id){cancelFMR(id,'Admin tarafından iptal edildi');renderDashboard();showToast('Birleştirme talebi iptal edildi','info');}
 
 /* ── TOURS & BOOKINGS ── */
 // Track open captain groups
@@ -5585,6 +5932,8 @@ function renderToursBookings(){
           <span style="font-size:12px;font-weight:700;color:#0369a1;min-width:70px;text-align:right">${(t.fiyat||t.price||0).toLocaleString('tr-TR')} TL</span>
           <div style="display:flex;gap:6px;flex-shrink:0">${tActions}</div>
           ${tKalan!==null?`<span style="font-size:11px;padding:4px 10px;border-radius:8px;font-weight:600;flex-shrink:0;background:${tKalan===0?'#fee2e2':tKalan<=2?'#fef3c7':'#f0fdf4'};color:${tKalan===0?'#dc2626':tKalan<=2?'#d97706':'#15803d'}">${tKalan===0?'Dolu':tKalan+' yer'}</span>`:''}
+          ${(d==='aktif'&&t.minKapasite&&tKisi<t.minKapasite)?`<span title="Minimum kapasite ${t.minKapasite} kişi — mevcut ${tKisi} kişi" style="font-size:10px;padding:3px 8px;border-radius:8px;font-weight:600;flex-shrink:0;background:#fce7f3;color:#be185d;display:flex;align-items:center;gap:4px"><i class="fas fa-exclamation-triangle" style="font-size:9px"></i>Min.Kap.</span>`:''}
+          ${(d==='aktif'&&tKap>0&&tKisi>0&&tKisi/tKap<0.5)?`<button onclick="event.stopPropagation();openFMRWizard('${t.id}')" title="Tekne Birleştirme Talebi Oluştur" style="display:flex;align-items:center;gap:4px;background:#ede9fe;color:#7c3aed;border:none;padding:4px 10px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;flex-shrink:0"><i class="fas fa-link" style="font-size:9px"></i>Birleştir</button>`:''}
           ${tBkgs.length?`<button onclick="event.stopPropagation();toggleTourReservations(${t.id})" style="display:flex;align-items:center;gap:4px;background:#eff6ff;color:#1d4ed8;border:none;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0">
             <i class="fas fa-users" style="font-size:10px"></i>${tActiveBkgs.length} Rez / ${tKisi} kisi
             <i id="tour-rez-icon-${t.id}" class="fas fa-chevron-down" style="font-size:9px;transition:transform .2s"></i>
@@ -8764,6 +9113,30 @@ function openCaptainDetailModal(id){
       <div class="text-gray-600">${comp.aciklama||''}</div>
       <div class="text-gray-400 mt-1">${comp.customerName||'Müşteri'}</div>
     </div>`).join('');
+  }
+
+  /* ── 8. Fleet Merge Geçmişi ── */
+  const allFMRs=getFMRs();
+  const captainFMRs=allFMRs.filter(f=>f.sourceCaptainEmail===c.email||f.targetCaptainEmail===c.email);
+  const fleetSec=document.getElementById('cdm-fleet-section');
+  const fleetList=document.getElementById('cdm-fleet-list');
+  const fleetCount=document.getElementById('cdm-fleet-count');
+  if(fleetSec){fleetSec.style.display=captainFMRs.length?'':'none';}
+  if(fleetCount)fleetCount.textContent=captainFMRs.length+' kayıt';
+  if(fleetList&&captainFMRs.length){
+    const fDurum={
+      onay_bekleniyor:'<span class="badge bg-amber-100 text-amber-700 text-[10px]">Bekliyor</span>',
+      tamamlandi:'<span class="badge bg-green-100 text-green-700 text-[10px]">Tamam</span>',
+      iptal_edildi:'<span class="badge bg-gray-100 text-gray-500 text-[10px]">İptal</span>',
+      red_eksik_cikacak:'<span class="badge bg-red-100 text-danger text-[10px]">Red</span>',
+      red_iptal_istedi:'<span class="badge bg-red-100 text-danger text-[10px]">Red</span>',
+    };
+    fleetList.innerHTML=captainFMRs.map(f=>`<tr class="hover:bg-gray-50">
+      <td class="px-3 py-2 text-xs truncate max-w-[120px]">${f.sourceTourTitle}</td>
+      <td class="px-3 py-2 text-xs truncate max-w-[120px]">${f.targetTourTitle}</td>
+      <td class="px-3 py-2 text-xs text-center">${f.transferredCount||'—'}</td>
+      <td class="px-3 py-2 text-center">${fDurum[f.durum]||'<span class="badge bg-gray-100 text-gray-500 text-[10px]">'+f.durum+'</span>'}</td>
+    </tr>`).join('');
   }
 
   /* ── Tekne Bilgileri ── */

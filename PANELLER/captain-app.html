@@ -4057,23 +4057,63 @@ function renderNotifications(){
   const notifs=S.get('ca_notifications',[]);
   const el=document.getElementById('ca-notif-list');
   if(!el)return;
-  const icons={success:{i:'fa-check-circle',bg:'bg-green-100',col:'text-success'},info:{i:'fa-info-circle',bg:'bg-blue-100',col:'text-primary'},danger:{i:'fa-exclamation-circle',bg:'bg-red-100',col:'text-danger'},warning:{i:'fa-exclamation-triangle',bg:'bg-amber-100',col:'text-amber-600'}};
-  if(!notifs.length){el.innerHTML='';return;}
+  const icons={success:{i:'fa-check-circle',bg:'bg-green-100',col:'text-success'},info:{i:'fa-info-circle',bg:'bg-blue-100',col:'text-primary'},danger:{i:'fa-exclamation-circle',bg:'bg-red-100',col:'text-danger'},warning:{i:'fa-exclamation-triangle',bg:'bg-amber-100',col:'text-amber-600'},fleet_merge_request:{i:'fa-link',bg:'bg-purple-100',col:'text-purple-600'}};
+  if(!notifs.length){el.innerHTML='<div class="text-center text-gray-400 py-8 text-sm">Bildirim yok</div>';return;}
   el.innerHTML=notifs.map(n=>{
     const ic=icons[n.type]||icons.info;
     const age=Math.floor((Date.now()-n.ts)/60000);
     const ageLbl=age<1?'az once':age<60?age+' dk once':age<1440?Math.floor(age/60)+' saat once':Math.floor(age/1440)+' gun once';
-    return `<div class="card ${n.read?'opacity-60':'border-l-4 border-primary'}">
+    const isFMR=n.type==='fleet_merge_request'&&n.fmrId&&!n.fmrResponded;
+    const fmrActions=isFMR?`
+      <div class="flex gap-2 mt-3">
+        <button onclick="respondFleetMerge('${n.fmrId}','${n.id}','kabul')" class="flex-1 bg-success text-white py-2 rounded-xl text-xs font-semibold hover:bg-green-600 flex items-center justify-center gap-1.5"><i class="fas fa-check"></i>Kabul Et</button>
+        <button onclick="respondFleetMerge('${n.fmrId}','${n.id}','red_eksik_cikacak')" class="flex-1 border border-amber-300 text-amber-700 py-2 rounded-xl text-xs font-semibold hover:bg-amber-50 flex items-center justify-center gap-1.5"><i class="fas fa-ship"></i>Eksik Çıkarım</button>
+        <button onclick="respondFleetMerge('${n.fmrId}','${n.id}','red_iptal_istedi')" class="flex-1 border border-red-300 text-danger py-2 rounded-xl text-xs font-semibold hover:bg-red-50 flex items-center justify-center gap-1.5"><i class="fas fa-times"></i>İptal İste</button>
+      </div>
+      <p class="text-[10px] text-gray-400 mt-1.5"><i class="fas fa-info-circle mr-1"></i>Eksik Çıkarım: rezervasyonsuz tura çıkmayı kabul edersiniz. İptal İste: rezervasyonlarınızın iade edilmesini istersiniz.</p>`:'';
+    const respondedBadge=n.fmrResponded?`<span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full ml-1">${n.fmrResponded==='kabul'?'✓ Kabul edildi':'✗ Reddedildi'}</span>`:'';
+    return `<div class="card ${n.read&&!isFMR?'opacity-60':'border-l-4 '+(isFMR?'border-purple-400':'border-primary')}">
       <div class="flex items-start gap-3">
         <div class="w-10 h-10 ${ic.bg} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas ${ic.i} ${ic.col}"></i></div>
         <div class="flex-1">
-          <div class="text-sm font-medium">${n.title}</div>
-          <div class="text-xs text-gray-500">${n.body}</div>
+          <div class="text-sm font-semibold">${n.title}${respondedBadge}</div>
+          <div class="text-xs text-gray-500 mt-0.5">${n.body}</div>
           <div class="text-[10px] text-gray-400 mt-1">${ageLbl}</div>
+          ${fmrActions}
         </div>
       </div>
     </div>`;
   }).join('');
+}
+
+function respondFleetMerge(fmrId, notifId, action){
+  /* Kaptan FMR'a cevap verdi — localStorage'daki FMR durumunu güncelle
+     Not: admin-panel.html farklı dosya olduğu için doğrudan processFMR çağıramayız.
+     Bunun yerine ortak localStorage'a cevap yazıyoruz. Admin panel renderDashboard'da bunu görecek. */
+  const fmrs=S.get('db_fleet_merge_requests',[]);
+  const idx=fmrs.findIndex(f=>String(f.id)===String(fmrId));
+  const cap=getCaptain();
+  if(idx<0){alert('Birleştirme talebi bulunamadı. Lütfen admin ile iletişime geçin.');return;}
+  const fmr=fmrs[idx];
+  const isSource=fmr.sourceCaptainEmail===cap?.email;
+  /* Kabul: admin hala onaylayacak; Red: FMR'ı reddet */
+  if(action==='kabul'){
+    const captainKey=isSource?'sourceCaptainResponse':'targetCaptainResponse';
+    fmrs[idx]={...fmr,[captainKey]:'kabul',[captainKey+'At']:new Date().toISOString()};
+    /* Her iki kaptan da kabul ettiyse status'u güncelle */
+    const bothOk=fmrs[idx].sourceCaptainResponse==='kabul'&&fmrs[idx].targetCaptainResponse==='kabul';
+    if(bothOk)fmrs[idx].durum='her_ikisi_kabul';
+  } else {
+    fmrs[idx]={...fmr,durum:action,rejectedCaptainEmail:cap?.email,rejectedAt:new Date().toISOString()};
+  }
+  S.set('db_fleet_merge_requests',fmrs);
+  /* Bildirim güncelle */
+  const notifs=S.get('ca_notifications',[]);
+  const nIdx=notifs.findIndex(n=>String(n.id)===String(notifId));
+  if(nIdx>=0){notifs[nIdx].fmrResponded=action;notifs[nIdx].read=true;S.set('ca_notifications',notifs);}
+  renderNotifications();
+  const msg=action==='kabul'?'Birleştirme talebini kabul ettiniz. Admin onayı bekleniyor.':action==='red_eksik_cikacak'?'Eksik dolulukla tura çıkacağınız bildirildi.':'İptal talebiniz admin\'e iletildi.';
+  alert(msg);
 }
 function clearNotifications(){
   const notifs=S.get('ca_notifications',[]);

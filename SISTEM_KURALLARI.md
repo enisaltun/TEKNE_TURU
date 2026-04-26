@@ -272,4 +272,58 @@ Sağlık taraması sonuçlarına göre onarım önceliği:
 
 ---
 
-*Son güncelleme: 2026-04-26 | Kural sayısı: 14 bölüm*
+## 15. Tekne Birleştirme (Fleet Merge) Kuralları
+
+### 15.1 Birleştirme Talebi (FMR — Fleet Merge Request)
+
+`db_fleet_merge_requests` tablosu ile yönetilir.
+
+**Zorunlu Koşullar:**
+- Kaynak tur `durum === 'aktif'` olmalı
+- Hedef tur `durum === 'aktif'` ve gelecek tarihlerde yer olmalı
+- Birleştirme yalnızca **kaptan onayı** sonrası gerçekleşir — admin tek başına transfer yapamaz
+- Kaynak kaptanın yanıt süresi: `sureSaati` saat (varsayılan 24)
+
+**FMR Durum Makinesi:**
+```
+onay_bekleniyor → kabul                 (kaptan onayladı → booking'ler taşınır)
+onay_bekleniyor → red_eksik_cikacak    (kaptan reddetti, eksik rezervasyonla çıkacak)
+onay_bekleniyor → red_iptal_istedi     (kaptan reddetti, tura çıkmak istemiyor)
+onay_bekleniyor → suresi_gecti          (24h yanıt yok → admin eskalasyon)
+kabul           → tamamlandi           (booking transfer atomik tamamlandı)
+herhangi biri   → iptal_edildi         (admin geri aldı, sadece onay_bekleniyor'da)
+```
+
+**YASAK geçişler:**
+- `tamamlandi → herhangi biri` — tamamlanmış transfer geri alınamaz
+- `kabul → red_*` — kaptan yanıtı verildikten sonra değiştirilemez
+
+### 15.2 Transfer Atomik Kuralı
+
+Kabul sonrası şu işlemler **tek transaction olarak** gerçekleşir (hepsi başarılı ya da hiçbiri):
+1. Kaynak booking'ler → `durum: 'iptal'`, `iptalNedeni: 'Fleet birleştirme — transfer edildi'`
+2. Hedef turda yeni booking'ler oluşturulur (`createBookingCanonical`)
+3. FMR `durum: 'tamamlandi'` yapılır
+4. Her iki kaptana + tüm taşınan müşterilere bildirim gönderilir
+5. Kaptan `fleetStats` güncellenir
+
+### 15.3 Minimum Kapasite Kuralı
+
+- `tur.minKapasite` — tura çıkabilmek için gereken minimum aktif rezervasyon kişi sayısı (opsiyonel)
+- Tur tarihine 3 gün kala `aktif_guests < minKapasite` ise → kaptana + admin'e uyarı
+- Tur tarihine 1 gün kala eşik aşılmamışsa → kaptana "Tura çıkacak mısınız?" sorusu
+- Kaptan "Çıkmıyorum" derse → admin onayıyla tur iptal edilir (cascade booking iptal)
+- `minKapasite = 0` veya `null` → eşik kontrolü devre dışı
+
+### 15.4 Kaptan Onay Bildirimi
+
+`ca_notifications` içinde `type: 'fleet_merge_request'` bildirimi şu alanları içerir:
+```js
+{ type:'fleet_merge_request', fmrId, actionDone:false, actionDeadline:ISO }
+```
+- `actionDone: true` olan bildirimler tekrar aksiyon alamaz
+- Süre dolmuş bildirimler UI'da kilitli gösterilir
+
+---
+
+*Son güncelleme: 2026-04-27 | Kural sayısı: 15 bölüm*
