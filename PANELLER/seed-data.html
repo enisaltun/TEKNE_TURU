@@ -233,52 +233,55 @@ const KAPTAN_LISTESI=[
 // ================================================================
 // TUR ŞABLONLARı
 // ================================================================
+// Kapasite limitleri tur kategorisine göre (SIMULASYON_KURALLARI.md bölüm 2)
+const KAT_KAP_MAX={'Balik Avi':12,'Dalis Turu':12,'Snorkeling':16,'Yuzme Turu':18,'Gunbatimi Turu':20,'Tekne Gezisi':20,'Mavi Tur':20,'Ozel Etkinlik':24,'Kurumsal':40};
+
 const TUR_SABLONLARI=[
-  {kat:'Balik Avi',sure:'4 saat',fMin:300,fMax:900,saatler:['06:00','07:00'],
+  {kat:'Balik Avi',sure:'4 saat',fMin:1000,fMax:2000,saatler:['06:00','07:00'],
    adlar:['Sabah Erken Balik Avı','Lufer Sezonu Turu','Capari ile Balik Avı','Derin Su Avı','Zargana Turu','Trolling Macerasi'],
    includes:['Kiralık olta takımı','Yem ve misina','Can yelegi','Su ve meşrubat','Capari seti'],
    aciklama:'Sabahın erken saatlerinde denize açılıp en iyi avlanma noktalarına gidiyoruz. Deneyimli kaptanımız eşliğinde harika bir balıkçılık deneyimi sizi bekliyor.'},
-  {kat:'Balik Avi',sure:'6 saat',fMin:500,fMax:1400,saatler:['06:00','07:00'],
+  {kat:'Balik Avi',sure:'6 saat',fMin:1200,fMax:2500,saatler:['06:00','07:00'],
    adlar:['Yarim Gunluk Balik Avı','Trolling ve Jigging Turu','Palamut Avı Turu'],
    includes:['Olta takımı (kanca+misina+kurşun)','Capari seti','Yem','Can yelegi','Cay ve kahve','Su'],
    aciklama:'Altı saatlik balıkçılık turuyla farklı avlanma tekniklerini deneyimleyin. Trolling ve jigging ile büyük balıkları hedefliyoruz.'},
-  {kat:'Tekne Gezisi',sure:'3 saat',fMin:400,fMax:1000,saatler:['10:00','14:00','16:00'],
+  {kat:'Tekne Gezisi',sure:'3 saat',fMin:800,fMax:1400,saatler:['10:00','14:00','16:00'],
    adlar:['Koy Koy Tekne Gezisi','Mavi Koylar Turu','Kristal Sularda Gezi','Adalar Arasi Gezi'],
    includes:['Can yelegi','Snorkel ekipmani','Su','Soğuk içecek'],
    aciklama:'Bölgenin en güzel koylarını gezerek mavi sularla iç içe olacaksınız. Yüzme molalarıyla dolu eğlenceli bir tur sizi bekliyor.'},
-  {kat:'Tekne Gezisi',sure:'Tam Gun (8 saat)',fMin:800,fMax:2500,saatler:['09:00'],
+  {kat:'Tekne Gezisi',sure:'Tam Gun (8 saat)',fMin:1000,fMax:1800,saatler:['09:00'],
    adlar:['Tam Gun Koy Turu','Mavi Tur Deneyimi','12 Adalara Tam Gun Gezi','Cennet Koylarda Bir Gun'],
    includes:['Can yelegi','Snorkel ekipmani','Ogle yemegi','Su ve meşrubat','Cay ve kahve'],
    aciklama:'Sabahtan akşama kadar bölgenin en güzel koylarını ziyaret ediyoruz. Öğle yemeği teknede hazırlanacak, gün boyunca yüzme molaları yapılacak.'},
-  {kat:'Yuzme Turu',sure:'4 saat',fMin:350,fMax:800,saatler:['10:00','11:00'],
+  {kat:'Yuzme Turu',sure:'4 saat',fMin:700,fMax:1400,saatler:['10:00','11:00'],
    adlar:['Kristal Sular Yuzme Turu','Cennet Koy Yuzme','Berrak Sularda Snorkeling','Mavi Yuzme Macerasi'],
    includes:['Can yelegi','Snorkel ekipmani','Su','Soguk içecek'],
    aciklama:'Kristal berraklığındaki sularda yüzme ve şnorkeling keyfi. Denizin altındaki renkli dünyayı keşfedin.'},
-  {kat:'Gunbatimi Turu',sure:'2 saat',fMin:600,fMax:1500,saatler:['17:00','18:00','19:00'],
+  {kat:'Gunbatimi Turu',sure:'2 saat',fMin:500,fMax:900,saatler:['17:00','18:00','19:00'],
    adlar:['Romantik Gunbatimi Turu','Altin Saat Deniz Gezisi','Gunbatimi Koktey Turu','Sihirli Anlar Turu'],
    includes:['Sampanya veya sarap','Atistirmalik mezeler','Muzik sistemi','Fotografci'],
    aciklama:'Ege\'nin eşsiz günbatımını denizin ortasından izleyin. Şampanya eşliğinde romantik bir atmosfer sizi bekliyor.'},
-  {kat:'Mavi Tur',sure:'2 Gun',fMin:2500,fMax:7000,saatler:['09:00'],
-   adlar:['Klasik 2 Gunluk Mavi Tur','Gulet ile Mavi Macera','Konaklama Dahil Mavi Tur'],
+  {kat:'Mavi Tur',sure:'5 gun',fMin:5000,fMax:12000,saatler:['09:00'],
+   adlar:['Klasik 5 Gunluk Mavi Tur','Gulet ile Mavi Macera','Konaklama Dahil Mavi Tur','Fethiye–Gocek Gulet Turu'],
    includes:['Konaklama (kamara)','Tum ogunler (kahvalti+ogle+aksam)','Snorkel ekipmani','Can yelegi','Transfer hizmeti'],
-   aciklama:'İki günlük mavi tur boyunca birbirinden güzel koylarda demirleyip yüzme, güneşlenme ve eşsiz manzaraların keyfini çıkarın.'},
-  {kat:'Dalis Turu',sure:'5 saat',fMin:700,fMax:2000,saatler:['09:00','10:00'],
+   aciklama:'Beş günlük mavi tur boyunca birbirinden güzel koylarda demirleyip yüzme, güneşlenme ve eşsiz manzaraların keyfini çıkarın.'},
+  {kat:'Dalis Turu',sure:'5 saat',fMin:1500,fMax:2500,saatler:['09:00','10:00'],
    adlar:['Sertifikalı Dalis Turu','Su Alti Kesfet','Tuplü Dalis Macerasi','Mercan Bahcesi Dalis'],
    includes:['Tüm dalış ekipmani','Rehber dalgıç','Can yelegi','Ogle yemegi','Su'],
    aciklama:'Sertifikalı rehber dalgıçlarımız eşliğinde su altı dünyasını keşfedin. Hem yeni başlayanlar hem deneyimliler için uygun.'},
-  {kat:'Snorkeling',sure:'3 saat',fMin:250,fMax:600,saatler:['10:00','11:00','14:00'],
+  {kat:'Snorkeling',sure:'3 saat',fMin:700,fMax:1400,saatler:['10:00','11:00','14:00'],
    adlar:['Snorkeling Keyfi','Mercan Kesfet','Su Alti Safari','Rengarenk Dunya Turu'],
    includes:['Şnorkel ekipmani','Can yelegi','Su','Soguk içecek'],
    aciklama:'Şnorkelle sığ sularda yüzerek renkli balıkları ve mercanları keşfedebilirsiniz. Tüm ekipmanlar dahildir.'},
-  {kat:'Ozel Etkinlik',sure:'4 saat',fMin:2000,fMax:6000,saatler:['11:00','15:00'],
+  {kat:'Ozel Etkinlik',sure:'4 saat',fMin:2000,fMax:8000,saatler:['11:00','15:00'],
    adlar:['Teknede Dogum Gunu Kutlamasi','Yil Donumu Surprizi','Nisan Teklifi Turu','Ozel Kutlama Organizasyonu'],
-   includes:['Zel ikram ve dekorasyon','Pasta ve sampanya','Muzik sistemi','Fotografci','Ozel menu'],
+   includes:['Ozel ikram ve dekorasyon','Pasta ve sampanya','Muzik sistemi','Fotografci','Ozel menu'],
    aciklama:'Doğum günü, yıl dönümü veya özel günlerinizi denizde kutlamak ister misiniz? Her şey sizin için hazırlanacak.'},
-  {kat:'Kurumsal',sure:'6 saat',fMin:5000,fMax:15000,saatler:['09:00','10:00'],
+  {kat:'Kurumsal',sure:'6 saat',fMin:3000,fMax:8000,saatler:['09:00','10:00'],
    adlar:['Kurumsal Team Building','Denizde Toplanti Turu','VIP Kurumsal Gezi','Sirket Piknik Teknesi'],
    includes:['Catering hizmeti','Toplanti ekipmani','Wifi','Fotografci/kameraman','DJ veya canli muzik'],
    aciklama:'Takım ruhunu geliştirmek ve motivasyonu artırmak için denizde kurumsal etkinlik. 20 kişiye kadar gruplar için ideal.'},
-  {kat:'Gunbatimi Turu',sure:'3 saat',fMin:800,fMax:2000,saatler:['17:00','18:00'],
+  {kat:'Gunbatimi Turu',sure:'3 saat',fMin:600,fMax:1000,saatler:['17:00','18:00'],
    adlar:['Gunbatimi Sampanya Turu','Romantik Aksam Deniz Gezisi','VIP Sunset Cruise'],
    includes:['Premium sampanya','Peynir ve meyve tabagi','Canli muzik','Ozel dekor','Fotografci'],
    aciklama:'Sevdiklerinizle birlikte ya da iş arkadaşlarınızla unutulmaz bir günbatımı deneyimi yaşayın.'},
@@ -342,8 +345,8 @@ function genTours(captains,n=45,ciroHedef=0){
   const tours=[];
   let baseId=1710000000000;
   let sablon_idx=0;
-  // priceScale: ciroHedef / (n tur * 2000 TL ortalama rezervasyon değeri)
-  const priceScale=ciroHedef>0?Math.max(0.3,Math.min(8,ciroHedef/(Math.max(1,n)*2000))):1;
+  // priceScale dar tutuldu — gerçek fiyat aralıkları SIMULASYON_KURALLARI.md'den geliyor
+  const priceScale=ciroHedef>0?Math.max(0.5,Math.min(1.5,ciroHedef/(Math.max(1,n)*2000))):1;
 
   // Her aktif kaptana 1-3 tur
   for(let i=0;i<n;i++){
@@ -357,9 +360,9 @@ function genTours(captains,n=45,ciroHedef=0){
     const ad=adlar[Math.floor(i/TUR_SABLONLARI.length)%adlar.length]||adlar[0];
     const imgs=HERO_IMGS[kat]||HERO_IMGS['Tekne Gezisi'];
     const heroImage=imgs[i%imgs.length];
-    // fMin/fMax = kişi başı TL; tekne fiyatı = kişi başı × kapasite
-    const perP=rndInt(Math.max(50,Math.ceil(sab.fMin*priceScale/50)*50), Math.max(100,Math.floor(sab.fMax*priceScale/50)*50));
-    const price=perP*cap.kapasite;
+    // fiyat = kişi başı TL (SISTEM_KURALLARI s.4: fiyat=kişi başı, price===fiyat)
+    const rawPerP=rndInt(Math.ceil(sab.fMin*priceScale/50)*50, Math.floor(sab.fMax*priceScale/50)*50);
+    const price=Math.min(Math.max(rawPerP,sab.fMin), sab.fMax); // priceScale kötü davranışta fMax'ı aşamasın
 
     // Kaptanın seçtiği tur tarihlerini simüle et — gelecek 90 gün içinde rastgele 4-8 tarih
     function genTarihler(){
@@ -386,7 +389,7 @@ function genTours(captains,n=45,ciroHedef=0){
       sure:sab.sure,
       price,
       fiyat:price,
-      kapasite:cap.kapasite,
+      kapasite:Math.min(cap.kapasite, KAT_KAP_MAX[kat]||20),
       tarihler:genTarihler(),   // spesifik tarihler
       gunler:rnd([['Cmt','Paz'],['Cum','Cmt'],['Paz'],['Cmt'],['Cum','Cmt','Paz']]), // haftalık fallback
       saatler:sab.saatler,
@@ -527,7 +530,7 @@ function genBookings(tours,customers,rezHedef=400){
       const tarih=fmtDate(daysOffset);
       const saat=rnd(tour.saatler||['09:00']);
       const customer=customers[rndInt(0,customers.length-1)];
-      const perPerson=Math.round((tour.price||0)/Math.max(1,tour.kapasite||8));
+      const perPerson=tour.fiyat||tour.price||0; // fiyat artık kişi başı fiyat
       const turFiyat=perPerson*guests;
       const hizmetBedeli=Math.round(turFiyat*0.1);
       const amount=turFiyat+hizmetBedeli;
@@ -994,14 +997,14 @@ function generateScenarioData(){
         const sab=TUR_SABLONLARI[si];
         const bolgeInfo=BOLGELER.find(b=>b.bolge===cap.bolge)||BOLGELER[0];
         const imgs=HERO_IMGS[sab.kat]||HERO_IMGS['Tekne Gezisi'];
-        const perPScen=Math.round((sab.fMin+sab.fMax)/2/50)*50;
-        const price=perPScen*cap.kapasite;
+        const perPScen=Math.round((sab.fMin+sab.fMax)/2/50)*50; // kişi başı
+        const price=perPScen;
         const now=new Date();
         const tarihler=days.map(d=>new Date(now.getTime()+d*86400000).toISOString().slice(0,10));
         scenTours.push({
           id:tId++, ad:sab.adlar[ti%sab.adlar.length], title:sab.adlar[ti%sab.adlar.length],
           aciklama:sab.aciklama, kategoriler:[sab.kat], kategori:sab.kat,
-          sure:sab.sure, price, fiyat:price, kapasite:cap.kapasite,
+          sure:sab.sure, price, fiyat:price, kapasite:Math.min(cap.kapasite,KAT_KAP_MAX[sab.kat]||20),
           tarihler, gunler:rnd([['Cmt','Paz'],['Cum','Cmt'],['Paz'],['Cmt'],['Cum','Cmt','Paz']]),
           saatler:sab.saatler, includes:sab.includes,
           dahil:sab.includes.join('\n'), haric:'Ulaşım\nKişisel harcamalar\nEkstra içecek',

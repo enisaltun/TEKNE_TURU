@@ -4543,6 +4543,19 @@ const SIM_POOLS = {
   disputeKonu:['Kaptan kaba davrandı','Tur geç başladı','Tekne temiz değildi','Vaat edilen güzergah izlenmedi','Kapasite aşıldı — sıkışıktık','İade yapılmadı','Yemek kalitesi kötü','Güvenlik ekipmanları eksikti','Saat değişikliği bildirilmedi','Tur erken bitti']
 };
 
+// Tur türüne göre gerçekçi fiyat ve kapasite aralıkları (SIMULASYON_KURALLARI.md bölüm 11)
+const SIM_TUR_PROFIL={
+  'Balik Avi':     {minF:1000,maxF:2500,minKap:4,maxKap:12,sureler:['4 saat','6 saat']},
+  'Tekne Gezisi':  {minF:800, maxF:1800,minKap:6,maxKap:20,sureler:['3 saat','4 saat','6 saat','Tam Gun (8 saat)']},
+  'Yuzme Turu':    {minF:700, maxF:1500,minKap:6,maxKap:18,sureler:['3 saat','4 saat']},
+  'Gunbatimi Turu':{minF:500, maxF:1000,minKap:6,maxKap:20,sureler:['2 saat','3 saat']},
+  'Dalis Turu':    {minF:1500,maxF:2500,minKap:4,maxKap:12,sureler:['4 saat','5 saat','6 saat']},
+  'Snorkeling':    {minF:700, maxF:1400,minKap:6,maxKap:16,sureler:['3 saat','4 saat']},
+  'Mavi Tur':      {minF:5000,maxF:15000,minKap:8,maxKap:20,sureler:['5 gun','6 gun','7 gun']},
+  'Ozel Etkinlik': {minF:2000,maxF:8000,minKap:6,maxKap:24,sureler:['3 saat','4 saat','Tam Gun (8 saat)']},
+  'Kurumsal':      {minF:3000,maxF:10000,minKap:10,maxKap:40,sureler:['4 saat','6 saat','Tam Gun (8 saat)']}
+};
+
 function _rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
 function _pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 function _pickN(arr,n){ const s=[...arr], out=[]; while(n-- && s.length) out.push(s.splice(Math.floor(Math.random()*s.length),1)[0]); return out; }
@@ -4793,16 +4806,19 @@ async function runRealisticSimulation(cfg){
     for(let i=0;i<n;i++){
       const profile=cap.captainData||cap.captainProfile;
       const kat=_pick((profile.kategoriler||SIM_POOLS.kategori));
-      const sure=_pick(SIM_POOLS.sureler);
-      const kapasite=profile.tekne.kapasite;
-      const fiyat=_rand(400,3000);
+      const turProfil=SIM_TUR_PROFIL[kat]||{minF:800,maxF:2000,minKap:6,maxKap:20,sureler:SIM_POOLS.sureler};
+      const kapasite=Math.min(Math.max(turProfil.minKap,profile.tekne.kapasite),turProfil.maxKap);
+      const fiyat=Math.round(_rand(turProfil.minF,turProfil.maxF)/50)*50; // kişi başı TL
+      const sure=_pick(turProfil.sureler);
       const tarihCount=_rand(2,6);
       const tarihler=[];
       for(let k=0;k<tarihCount;k++) tarihler.push(_iso(_randDate(startD,endD)));
+      const TUR_ADI_SABLONLARI={'Balik Avi':[`${profile.bolge} Sabah Balık Avı`,`${profile.bolge} Derin Su Balıkçılığı`,`${profile.bolge} Trolling Turu`],'Tekne Gezisi':[`${profile.bolge} Koy Turu`,`${profile.bolge} 12 Ada Turu`,`${profile.bolge} Kristal Koylar`],'Yuzme Turu':[`${profile.bolge} Yüzme & Snorkel`,`${profile.bolge} Mavi Koylar Yüzme`],'Gunbatimi Turu':[`${profile.bolge} Günbatımı Turu`,`${profile.bolge} Sunset Cruise`],'Dalis Turu':[`${profile.bolge} PADI Dalış Turu`,`${profile.bolge} Tüplü Dalış`],'Snorkeling':[`${profile.bolge} Snorkel Keyfi`,`${profile.bolge} Mercan Keşif`],'Mavi Tur':[`${profile.bolge} Mavi Tur`,`${profile.bolge} Gulet Macerası`],'Ozel Etkinlik':[`${profile.bolge} Özel Organizasyon`,`${profile.bolge} Doğum Günü Teknesi`],'Kurumsal':[`${profile.bolge} Kurumsal Etkinlik`,`${profile.bolge} Team Building`]};
+      const adHavuzu=TUR_ADI_SABLONLARI[kat]||[`${profile.bolge} ${kat} Turu`];
       tours.push({
         id:tourId++,
-        ad:`${_pick(SIM_POOLS.tema)} — ${profile.bolge}`,
-        aciklama:`${profile.tekne.tipi} ile ${profile.bolge} açıklarında ${sure} keyifli tur.`,
+        ad:_pick(adHavuzu),
+        aciklama:`${profile.tekne.tipi} ile ${profile.bolge} açıklarında ${sure} keyifli tur. Rehber kaptan eşliğinde güvenli ve konforlu deneyim.`,
         kategoriler:[kat], kategori:kat, sure, fiyat, price:fiyat, kapasite,
         tarihler:[...new Set(tarihler)].sort(),
         saatler:_pickN(SIM_POOLS.saatler,_rand(1,3)),
