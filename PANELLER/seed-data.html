@@ -80,7 +80,7 @@
   <div class="grid grid-cols-1 gap-3 mb-4">
     <button id="scenarioBtn" onclick="generateScenarioData()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-600/25 hover:bg-indigo-700 transition">
       <i class="fas fa-film mr-2"></i>Senaryolu Gerçekçi Veri Üret
-      <div class="text-xs font-normal opacity-80 mt-0.5">14 kaptan · 24 tur · 30 müşteri · 80 rezervasyon · mesajlar · tam senaryo</div>
+      <div class="text-xs font-normal opacity-80 mt-0.5">14 kaptan · 24 tur · 30 müşteri · 80 rezervasyon · mesajlar · 4 FMR senaryosu · tam senaryo</div>
     </button>
     <div class="grid grid-cols-2 gap-3">
       <button id="seedBtn" onclick="generateSeedData()" class="w-full bg-primary text-white py-3 rounded-2xl font-bold text-sm shadow-lg shadow-primary/25 hover:bg-primary/90 transition">
@@ -235,6 +235,8 @@ const KAPTAN_LISTESI=[
 // ================================================================
 // Kapasite limitleri tur kategorisine göre (SIMULASYON_KURALLARI.md bölüm 2)
 const KAT_KAP_MAX={'Balik Avi':12,'Dalis Turu':12,'Snorkeling':16,'Yuzme Turu':18,'Gunbatimi Turu':20,'Tekne Gezisi':20,'Mavi Tur':20,'Ozel Etkinlik':24,'Kurumsal':40};
+// Minimum kapasite — bu değerin altında dolulukta "Birleştir" uyarısı gösterilir (0 = yok)
+const KAT_MIN_KAP={'Kurumsal':8,'Ozel Etkinlik':3,'Mavi Tur':4};
 
 const TUR_SABLONLARI=[
   {kat:'Balik Avi',sure:'4 saat',fMin:1000,fMax:2000,saatler:['06:00','07:00'],
@@ -403,6 +405,7 @@ function genTours(captains,n=45,ciroHedef=0){
       price,
       fiyat:price,
       kapasite:Math.min(cap.kapasite, KAT_KAP_MAX[kat]||20),
+      minKapasite:KAT_MIN_KAP[kat]||0,
       tarihler:genTarihler(),   // spesifik tarihler
       gunler:rnd([['Cmt','Paz'],['Cum','Cmt'],['Paz'],['Cmt'],['Cum','Cmt','Paz']]), // haftalık fallback
       saatler:sab.saatler,
@@ -713,6 +716,7 @@ function generateSeedData(){
       localStorage.setItem('db_users_seeded_from_cu','1');
       localStorage.setItem('db_bookings',JSON.stringify(bookings));
       localStorage.setItem('db_payments',JSON.stringify(payments));
+      localStorage.setItem('db_fleet_merge_requests',JSON.stringify([]));
       localStorage.setItem('active_captain_id','1');
 
       setProgress(100,'Tamamlandı!');
@@ -818,6 +822,7 @@ function genMinimalTours(captains){
         sure:sab.sure,
         price, fiyat:price,
         kapasite:cap.kapasite,
+        minKapasite:KAT_MIN_KAP[sab.kat]||0,
         tarihler:minTarihler,   // kaptan seçimi — tek gerçek tarih kaynağı
         saatler:sab.saatler,
         includes:sab.includes,
@@ -934,6 +939,7 @@ function generateMinimalSeedData(){
       localStorage.setItem('db_users_seeded_from_cu','1');
       localStorage.setItem('db_bookings',JSON.stringify([]));
       localStorage.setItem('db_payments',JSON.stringify([]));
+      localStorage.setItem('db_fleet_merge_requests',JSON.stringify([]));
       localStorage.setItem('active_captain_id','1');
 
       setProgress(100,'Tamamlandı!');
@@ -1041,6 +1047,7 @@ function generateScenarioData(){
           id:tId++, ad:sab.adlar[ti%sab.adlar.length], title:sab.adlar[ti%sab.adlar.length],
           aciklama:sab.aciklama, kategoriler:[sab.kat], kategori:sab.kat,
           sure:sab.sure, price, fiyat:price, kapasite:Math.min(cap.kapasite,KAT_KAP_MAX[sab.kat]||20),
+          minKapasite:KAT_MIN_KAP[sab.kat]||0,
           tarihler, gunler:rnd([['Cmt','Paz'],['Cum','Cmt'],['Paz'],['Cmt'],['Cum','Cmt','Paz']]),
           saatler:sab.saatler, includes:sab.includes,
           dahil:sab.includes.join('\n'), haric:'Ulaşım\nKişisel harcamalar\nEkstra içecek',
@@ -1286,6 +1293,104 @@ function generateScenarioData(){
       localStorage.setItem('cp_messages',JSON.stringify(cp_msgs));
       localStorage.setItem('cp_profile',JSON.stringify(cp_profile));
       localStorage.setItem('active_captain_id','1');
+
+      /* ── FMR Senaryo: 4 farklı durum ── */
+      // Referans: activeCaps[0]=Mehmet, [1]=Ahmet, [2]=Mustafa, [3]=Hasan, [4]=Ibrahim
+      //           activeCaps[7]=Huseyin, [8]=Murat, [9]=Erkan, [11]=Bulent
+      // scenTours[0]=id 20001(Mehmet), [2]=id 20003(Ahmet), [6]=id 20007(Hasan),
+      //             [8]=id 20009(Ibrahim), [14]=id 20015(Huseyin), [16]=id 20017(Murat),
+      //             [18]=id 20019(Erkan), [22]=id 20023(Bulent)
+      const t0=scenTours[0],t2=scenTours[2],t6=scenTours[6],t8=scenTours[8];
+      const t14=scenTours[14],t16=scenTours[16],t18=scenTours[18],t22=scenTours[22];
+      const c0=activeCaps[0],c1=activeCaps[1],c3=activeCaps[3],c4=activeCaps[4];
+      const c7=activeCaps[7],c8=activeCaps[8],c9=activeCaps[9],c11=activeCaps[11];
+      const scenFMRs=[
+        {
+          id:900001,
+          createdAt:new Date(Date.now()-2*24*3600000).toISOString(),
+          durum:'onay_bekleniyor',
+          sourceTourId:String(t0.id), sourceTourTitle:t0.title,
+          sourceCaptainEmail:c0.email, sourceCaptainName:c0.ad+' '+c0.soyad,
+          targetTourId:String(t2.id), targetTourTitle:t2.title,
+          targetCaptainEmail:c1.email, targetCaptainName:c1.ad+' '+c1.soyad,
+          adminNotes:'Sabah balık avı turu düşük doluluklu. Rezervasyonlar mavi tur teknesine aktarılsın.',
+          notifSent:true,
+          history:[{ts:new Date(Date.now()-2*24*3600000).toISOString(),action:'olusturuldu',by:'admin'}],
+        },
+        {
+          id:900002,
+          createdAt:new Date(Date.now()-1*24*3600000).toISOString(),
+          durum:'her_ikisi_kabul',
+          sourceTourId:String(t14.id), sourceTourTitle:t14.title,
+          sourceCaptainEmail:c7.email, sourceCaptainName:c7.ad+' '+c7.soyad,
+          targetTourId:String(t16.id), targetTourTitle:t16.title,
+          targetCaptainEmail:c8.email, targetCaptainName:c8.ad+' '+c8.soyad,
+          adminNotes:'Az dolmuş balık avı turu günbatımı teknesine aktarılacak. Her iki kaptan onayladı.',
+          notifSent:true,
+          sourceCaptainResponse:'kabul', targetCaptainResponse:'kabul',
+          sourceCaptainResponseAt:new Date(Date.now()-20*3600000).toISOString(),
+          targetCaptainResponseAt:new Date(Date.now()-14*3600000).toISOString(),
+          history:[
+            {ts:new Date(Date.now()-24*3600000).toISOString(),action:'olusturuldu',by:'admin'},
+            {ts:new Date(Date.now()-14*3600000).toISOString(),action:'her_ikisi_kabul',by:'kaptan'},
+          ],
+        },
+        {
+          id:900003,
+          createdAt:new Date(Date.now()-15*24*3600000).toISOString(),
+          durum:'tamamlandi',
+          completedAt:new Date(Date.now()-10*24*3600000).toISOString(),
+          transferredCount:3,
+          sourceTourId:String(t6.id), sourceTourTitle:t6.title,
+          sourceCaptainEmail:c3.email, sourceCaptainName:c3.ad+' '+c3.soyad,
+          targetTourId:String(t8.id), targetTourTitle:t8.title,
+          targetCaptainEmail:c4.email, targetCaptainName:c4.ad+' '+c4.soyad,
+          adminNotes:'Dalis turu az doldu, benzer bölgedeki balık avı turuna 3 rezervasyon aktarıldı.',
+          notifSent:true,
+          history:[
+            {ts:new Date(Date.now()-15*24*3600000).toISOString(),action:'olusturuldu',by:'admin'},
+            {ts:new Date(Date.now()-10*24*3600000).toISOString(),action:'tamamlandi',by:'admin'},
+          ],
+        },
+        {
+          id:900004,
+          createdAt:new Date(Date.now()-5*24*3600000).toISOString(),
+          durum:'red_eksik_cikacak',
+          rejectedAt:new Date(Date.now()-4*24*3600000).toISOString(),
+          rejectedCaptainEmail:c9.email,
+          sourceTourId:String(t18.id), sourceTourTitle:t18.title,
+          sourceCaptainEmail:c9.email, sourceCaptainName:c9.ad+' '+c9.soyad,
+          targetTourId:String(t22.id), targetTourTitle:t22.title,
+          targetCaptainEmail:c11.email, targetCaptainName:c11.ad+' '+c11.soyad,
+          adminNotes:'Kurumsal tur doluluk hedefine ulaşamadı, birleştirme önerildi.',
+          notifSent:true,
+          history:[
+            {ts:new Date(Date.now()-5*24*3600000).toISOString(),action:'olusturuldu',by:'admin'},
+            {ts:new Date(Date.now()-4*24*3600000).toISOString(),action:'red_eksik_cikacak',by:'kaptan'},
+          ],
+        },
+      ];
+      localStorage.setItem('db_fleet_merge_requests',JSON.stringify(scenFMRs));
+
+      /* ── Kaptan bildirimleri: Mehmet (cap1) için FMR aksiyon kartı ── */
+      const now4=Date.now();
+      const scenCaptainNotifs=[
+        {id:now4+1,ts:now4-2*24*3600000,read:false,captainEmail:c0.email,
+          title:'Tekne Birleştirme Talebi',
+          body:'"'+t0.title+'" turunuzun rezervasyonları "'+t2.title+'" turuna aktarılmak isteniyor. Kabul veya reddedebilirsiniz.',
+          type:'fleet_merge_request',fmrId:'900001',role:'source'},
+        {id:now4+2,ts:now4-4*24*3600000,read:false,captainEmail:c0.email,
+          title:'Yeni rezervasyon: Zeynep Arslan',
+          body:'Balık avı turunuza 2 kişilik rezervasyon geldi.',
+          type:'success'},
+        {id:now4+3,ts:now4-6*24*3600000,read:true,captainEmail:c0.email,
+          title:'Tur onaylandı',
+          body:'"'+t0.title+'" yayına alındı ve rezervasyona açıldı.',
+          type:'success'},
+      ];
+      const existingCaN=JSON.parse(localStorage.getItem('ca_notifications')||'[]');
+      localStorage.setItem('ca_notifications',JSON.stringify([...scenCaptainNotifs,...existingCaN].slice(0,50)));
+      localStorage.setItem('cp_notifications',JSON.stringify([...scenCaptainNotifs,...existingCaN].slice(0,50)));
 
       setProgress(100,'Tamamlandı!');
 
