@@ -59,14 +59,12 @@ window._uuid = _uuid;
 function _denormalizeKaptan(k) {
   return {
     ...k,
-    // camelCase alias'lar (eski HTML uyumluluğu)
     ad_soyad:       (k.ad || '') + ' ' + (k.soyad || ''),
     name:           (k.ad || '') + ' ' + (k.soyad || ''),
     tekne:          k.tekne_adi,
     tekneAdi:       k.tekne_adi,
     tekneTuru:      k.tekne_turu,
     tekneYil:       k.tekne_yil,
-    katilimTarihi:  k.katilim_tarihi,
     createdAt:      k.created_at,
     aktif:          k.durum === 'aktif',
     status:         k.durum,
@@ -233,25 +231,40 @@ window.DB = {
       return _ls('db_captains', []);
     },
 
-    // Email ile tek kaptan getir — captain-app/panel: profil yükleme
+    // Email ile tek kaptan getir — captain-app: profil yükleme
     async getByEmail(email) {
       if (DB_MODE === 'remote') {
         const { data, error } = await _sb.from('kaptanlar').select('*').eq('email', email).single();
-        if (error) return _err('kaptanlar.getByEmail', error);
+        if (error) return null;
         return _denormalizeKaptan(data);
       }
       return _ls('db_captains', []).find(c => c.email === email) || null;
     },
 
-    // Yeni kaptan oluştur — captain-panel: kayıt formu
+    // Yeni kaptan oluştur — admin-panel kaptan ekleme, captain-app başvuru
     async create(data) {
       if (DB_MODE === 'remote') {
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(String(data.id || ''));
-        const { id: _dropId, ...rest } = data;
-        const payload = isUuid ? data : rest; // integer id'yi düşür, Supabase UUID atar
+        const payload = {
+          email:        data.email,
+          ad:           data.ad   || (data.name || '').split(' ')[0] || '',
+          soyad:        data.soyad|| (data.name || '').split(' ').slice(1).join(' ') || '',
+          tekne_adi:    data.tekneAdi   || data.tekne_adi   || data.tekne || '',
+          tekne_turu:   data.tekneTuru  || data.tekne_turu  || 'Motor Tekne',
+          tekne_yil:    data.tekneYil   || data.tekne_yil   || '',
+          kapasite:     +(data.kapasite || 8),
+          bolge:        data.bolge  || data.sehir || '',
+          sehir:        data.sehir  || '',
+          marina:       data.marina || '',
+          lisans:       data.lisans || '',
+          lisans_tarih: data.lisansTarih || data.lisans_tarih || null,
+          kategoriler:  data.kategoriler || [],
+          durum:        data.durum || 'bekliyor',
+        };
+        // kullanici_id varsa bağla
+        if (data.kullanici_id) payload.kullanici_id = data.kullanici_id;
         const { data: row, error } = await _sb.from('kaptanlar').insert(payload).select().single();
         if (error) return _err('kaptanlar.create', error);
-        return row;
+        return _denormalizeKaptan(row);
       }
       const list = _ls('db_captains', []);
       const kaptan = { id: Date.now(), ...data, created_at: new Date().toISOString() };
@@ -263,12 +276,24 @@ window.DB = {
     // Kaptan güncelle — admin-panel: onay/düzenleme, captain-app: profil güncelleme
     async update(id, data) {
       if (DB_MODE === 'remote') {
-        const { data: row, error } = await _sb.from('kaptanlar').update(data).eq('id', id).select().single();
+        // camelCase → snake_case dönüşüm
+        const payload = {};
+        if (data.tekneAdi   !== undefined) payload.tekne_adi   = data.tekneAdi;
+        if (data.tekne_adi  !== undefined) payload.tekne_adi   = data.tekne_adi;
+        if (data.tekneTuru  !== undefined) payload.tekne_turu  = data.tekneTuru;
+        if (data.tekne_turu !== undefined) payload.tekne_turu  = data.tekne_turu;
+        if (data.tekneYil   !== undefined) payload.tekne_yil   = data.tekneYil;
+        if (data.lisansTarih!== undefined) payload.lisans_tarih= data.lisansTarih;
+        // Diğer alanları direkt kopyala
+        ['email','ad','soyad','kapasite','bolge','sehir','marina','lisans','kategoriler','durum'].forEach(k => {
+          if (data[k] !== undefined) payload[k] = data[k];
+        });
+        const { data: row, error } = await _sb.from('kaptanlar').update(payload).eq('id', id).select().single();
         if (error) return _err('kaptanlar.update', error);
-        return row;
+        return _denormalizeKaptan(row);
       }
       const list = _ls('db_captains', []);
-      const idx = list.findIndex(c => c.id == id);
+      const idx = list.findIndex(c => String(c.id) === String(id));
       if (idx === -1) return null;
       list[idx] = { ...list[idx], ...data };
       _lsSet('db_captains', list);
@@ -277,7 +302,7 @@ window.DB = {
 
     // Durumu güncelle — admin-panel: onayla/reddet/pasife al
     async updateDurum(id, durum) {
-      return DB.kaptanlar.update(id, { durum, status: durum, aktif: durum === 'aktif' });
+      return DB.kaptanlar.update(id, { durum });
     },
 
     // Kaptan sil — admin-panel
@@ -287,8 +312,7 @@ window.DB = {
         if (error) return _err('kaptanlar.delete', error);
         return true;
       }
-      const list = _ls('db_captains', []).filter(c => c.id != id);
-      _lsSet('db_captains', list);
+      _lsSet('db_captains', _ls('db_captains', []).filter(c => String(c.id) !== String(id)));
       return true;
     },
   },
@@ -789,10 +813,35 @@ window.DB = {
         if (error) return _err('mesajlar.list', error);
         return data;
       }
-      return _ls('db_messages', []);
+      // localStorage: {[bookingId]: mesajlar[]} → düzleştir
+      const obj = _ls('db_messages', {});
+      return Object.values(obj).flat();
     },
 
-    // İki kişi arasındaki konuşma — captain-app/panel: chat ekranı
+    // Rezervasyon ID ile thread getir — customer-app/captain-app: chat ekranı
+    async listByRezervasyonId(rezervasyonId) {
+      if (DB_MODE === 'remote') {
+        const { data, error } = await _sb.from('mesajlar').select('*')
+          .eq('rezervasyon_id', rezervasyonId)
+          .order('created_at', { ascending: true });
+        if (error) return _err('mesajlar.listByRezervasyonId', error);
+        // DB formatını localStorage formatına çevir
+        return data.map(m => ({
+          text:              m.mesaj,
+          byCaptan:          m.gonderen === 'kaptan',
+          byAdmin:           m.gonderen === 'admin',
+          ts:                new Date(m.created_at).getTime(),
+          readByCustomer:    m.okundu_musteri,
+          readByCaptan:      m.okundu_kaptan,
+          id:                m.id,
+          rezervasyon_id:    m.rezervasyon_id,
+        }));
+      }
+      const obj = _ls('db_messages', {});
+      return obj[rezervasyonId] || [];
+    },
+
+    // Email-pair ile thread — geriye uyumluluk (captain-panel)
     async listThread(kaptanEmail, musteriEmail) {
       if (DB_MODE === 'remote') {
         const { data, error } = await _sb.from('mesajlar').select('*')
@@ -801,12 +850,13 @@ window.DB = {
         if (error) return _err('mesajlar.listThread', error);
         return data;
       }
-      return _ls('db_messages', []).filter(m =>
+      const obj = _ls('db_messages', {});
+      return Object.values(obj).flat().filter(m =>
         m.kaptanEmail === kaptanEmail && m.musteriEmail === musteriEmail
       );
     },
 
-    // Kaptanın tüm konuşmaları (son mesaj özeti) — captain-app: mesajlar listesi
+    // Kaptanın tüm konuşmaları — captain-app: mesajlar listesi
     async listByKaptan(email) {
       if (DB_MODE === 'remote') {
         const { data, error } = await _sb.from('mesajlar').select('*')
@@ -814,62 +864,71 @@ window.DB = {
         if (error) return _err('mesajlar.listByKaptan', error);
         return data;
       }
-      return _ls('db_messages', []).filter(m => m.kaptanEmail === email);
+      const obj = _ls('db_messages', {});
+      return Object.values(obj).flat().filter(m => m.kaptanEmail === email || m.byCaptan);
     },
 
-    // Mesaj gönder — captain-app/panel ve customer için
-    async send({ kaptanEmail, musteriEmail, musteriAdi, mesaj, gonderen }) {
+    // Mesaj gönder — rezervasyon_id ile (yeni model) veya email ile (eski model)
+    async send({ rezervasyonId, kaptanEmail, musteriEmail, musteriAdi, mesaj, gonderen }) {
       if (DB_MODE === 'remote') {
-        const { data, error } = await _sb.from('mesajlar').insert({
+        const payload = {
           kaptan_email:  kaptanEmail,
           musteri_email: musteriEmail,
           musteri_adi:   musteriAdi,
           mesaj,
           gonderen,
-          okundu: false,
-        }).select().single();
+          okundu_kaptan:  gonderen === 'kaptan',
+          okundu_musteri: gonderen === 'musteri',
+        };
+        if (rezervasyonId) payload.rezervasyon_id = rezervasyonId;
+        const { data, error } = await _sb.from('mesajlar').insert(payload).select().single();
         if (error) return _err('mesajlar.send', error);
         return data;
       }
-      const msg = {
-        id:           'msg-' + Date.now(),
-        kaptanEmail,
-        musteriEmail,
-        musteriAdi,
-        mesaj,
-        gonderen,
-        okundu:       false,
-        zaman:        new Date().toISOString(),
+      // localStorage: {[bookingId]: mesajlar[]} formatı
+      const localMsg = {
+        text:           mesaj,
+        byCaptan:       gonderen === 'kaptan',
+        byAdmin:        gonderen === 'admin',
+        ts:             Date.now(),
+        readByCustomer: gonderen !== 'kaptan',
+        readByCaptan:   gonderen !== 'musteri',
       };
-      const list = _ls('db_messages', []);
-      list.push(msg);
-      _lsSet('db_messages', list);
-      // captain-panel uyumluluğu için cp_messages'a da yaz
-      if (gonderen === 'kaptan') {
-        const cpMsgs = _ls('cp_messages', []);
-        cpMsgs.push(msg);
-        _lsSet('cp_messages', cpMsgs);
+      if (rezervasyonId) {
+        const obj = _ls('db_messages', {});
+        if (!obj[rezervasyonId]) obj[rezervasyonId] = [];
+        obj[rezervasyonId].push(localMsg);
+        _lsSet('db_messages', obj);
       }
-      return msg;
+      return localMsg;
     },
 
-    // Okundu işaretle — captain-app: mesaj açılınca
-    async markRead(kaptanEmail, musteriEmail) {
+    // Okundu işaretle — rezervasyon bazlı
+    async markReadByMusteri(rezervasyonId) {
       if (DB_MODE === 'remote') {
-        await _sb.from('mesajlar').update({ okundu: true })
-          .eq('kaptan_email', kaptanEmail).eq('musteri_email', musteriEmail).eq('gonderen', 'musteri');
+        await _sb.from('mesajlar').update({ okundu_musteri: true })
+          .eq('rezervasyon_id', rezervasyonId).eq('gonderen', 'kaptan');
         return true;
       }
-      const list = _ls('db_messages', []);
-      list.forEach(m => {
-        if (m.kaptanEmail === kaptanEmail && m.musteriEmail === musteriEmail && m.gonderen === 'musteri')
-          m.okundu = true;
-      });
-      _lsSet('db_messages', list);
+      const obj = _ls('db_messages', {});
+      (obj[rezervasyonId] || []).forEach(m => { if (m.byCaptan) m.readByCustomer = true; });
+      _lsSet('db_messages', obj);
       return true;
     },
 
-    // Gerçek zamanlı mesaj dinleme — Supabase Realtime (sadece remote modda çalışır)
+    async markReadByKaptan(rezervasyonId) {
+      if (DB_MODE === 'remote') {
+        await _sb.from('mesajlar').update({ okundu_kaptan: true })
+          .eq('rezervasyon_id', rezervasyonId).eq('gonderen', 'musteri');
+        return true;
+      }
+      const obj = _ls('db_messages', {});
+      (obj[rezervasyonId] || []).forEach(m => { if (!m.byCaptan && !m.byAdmin) m.readByCaptan = true; });
+      _lsSet('db_messages', obj);
+      return true;
+    },
+
+    // Gerçek zamanlı mesaj dinleme — Supabase Realtime
     subscribe(kaptanEmail, onMessage) {
       if (DB_MODE !== 'remote' || !_sb) return () => {};
       const channel = _sb.channel(`mesajlar:${kaptanEmail}`)
@@ -878,7 +937,18 @@ window.DB = {
           filter: `kaptan_email=eq.${kaptanEmail}`,
         }, payload => onMessage(payload.new))
         .subscribe();
-      return () => _sb.removeChannel(channel); // unsubscribe fonksiyonu döner
+      return () => _sb.removeChannel(channel);
+    },
+
+    subscribeByRezervasyonId(rezervasyonId, onMessage) {
+      if (DB_MODE !== 'remote' || !_sb) return () => {};
+      const channel = _sb.channel(`mesajlar:rez:${rezervasyonId}`)
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'mesajlar',
+          filter: `rezervasyon_id=eq.${rezervasyonId}`,
+        }, payload => onMessage(payload.new))
+        .subscribe();
+      return () => _sb.removeChannel(channel);
     },
   },
 
@@ -1001,12 +1071,14 @@ window.DB = {
 window._sbSync = async function() {
   if (DB_MODE !== 'remote' || !_sb) return;
   try {
-    const [kuls, turs, rezs, odes, yorumlar, saticiIlanlar, magazaUrunler] = await Promise.all([
+    const [kuls, kaptanlarRes, turs, rezs, odes, yorumlar, mesajlarRes, saticiIlanlar, magazaUrunler] = await Promise.all([
       _sb.from('kullanicilar').select('*').order('created_at', { ascending: false }),
+      _sb.from('kaptanlar').select('*').order('created_at', { ascending: false }),
       _sb.from('turlar').select('*').order('created_at', { ascending: false }),
       _sb.from('rezervasyonlar').select('*').order('created_at', { ascending: false }),
       _sb.from('odemeler').select('*').order('created_at', { ascending: false }),
       _sb.from('yorumlar').select('*').order('created_at', { ascending: false }),
+      _sb.from('mesajlar').select('*').order('created_at', { ascending: true }),
       _sb.from('satici_ilanlari').select('*').order('created_at', { ascending: false }),
       _sb.from('magaza_urunleri').select('*').order('created_at', { ascending: false }),
     ]);
@@ -1016,7 +1088,14 @@ window._sbSync = async function() {
       const normalized = kuls.data.map(_sbUserToLocal);
       _lsSet('db_users', normalized);
       _lsSet('cu_users', normalized);
-      // Geriye uyumluluk: kaptan profillerini db_captains'e de yaz
+    }
+
+    // Kaptanlar tablosundan db_captains'e yaz (SSOT: kaptanlar tablosu)
+    if (!kaptanlarRes.error && kaptanlarRes.data && kaptanlarRes.data.length) {
+      _lsSet('db_captains', kaptanlarRes.data.map(_denormalizeKaptan));
+    } else if (!kaptanlarRes.error && kuls.data) {
+      // Kaptanlar tablosu boşsa geriye dönük uyumluluk: kullanicilar'dan türet
+      const normalized = (kuls.data || []).map(_sbUserToLocal);
       const captains = normalized
         .filter(u => (u.roles || []).includes('captain'))
         .map(u => ({ ...u, captainProfile: u.captainData, status: u.durum, aktif: u.durum === 'aktif' }));
@@ -1055,12 +1134,37 @@ window._sbSync = async function() {
 
     if (!odes.error && odes.data && odes.data.length) _lsSet('db_payments', odes.data);
     if (!yorumlar.error && yorumlar.data && yorumlar.data.length) _lsSet('db_reviews', yorumlar.data);
+
+    // Mesajları {[rezervasyon_id]: [{...}]} dict formatına dönüştür (HTML beklentisi)
+    if (!mesajlarRes.error && mesajlarRes.data && mesajlarRes.data.length) {
+      const msgDict = {};
+      for (const m of mesajlarRes.data) {
+        const key = m.rezervasyon_id || 'genel';
+        if (!msgDict[key]) msgDict[key] = [];
+        msgDict[key].push({
+          id:             m.id,
+          rezervasyonId:  m.rezervasyon_id,
+          kaptanEmail:    m.kaptan_email,
+          musteriEmail:   m.musteri_email,
+          musteriAdi:     m.musteri_adi,
+          mesaj:          m.mesaj,
+          gonderen:       m.gonderen,
+          okunduKaptan:   m.okundu_kaptan,
+          okunduMusteri:  m.okundu_musteri,
+          createdAt:      m.created_at,
+          timestamp:      m.created_at,
+        });
+      }
+      _lsSet('db_messages', msgDict);
+    }
+
     if (!saticiIlanlar.error && saticiIlanlar.data && saticiIlanlar.data.length) _lsSet('db_vendor_listings', saticiIlanlar.data);
     if (!magazaUrunler.error && magazaUrunler.data && magazaUrunler.data.length) _lsSet('db_shop_listings', magazaUrunler.data);
 
     console.log('[SB] sync tamamlandi — kullanicilar:', kuls.data?.length,
+      'kaptanlar:', kaptanlarRes.data?.length,
       'turlar:', turs.data?.length, 'rezervasyonlar:', rezs.data?.length,
-      'yorumlar:', yorumlar.data?.length);
+      'mesajlar:', mesajlarRes.data?.length, 'yorumlar:', yorumlar.data?.length);
   } catch(e) {
     console.warn('[SB] sync hatasi', e);
   }
@@ -1145,8 +1249,39 @@ window.exportToSupabase = async function(opts = {}) {
     if (error) console.warn('[Export] kullanicilar:', error.message);
   }
 
-  // 3. Turlar
-  setP(28, 'Turlar yükleniyor…');
+  // 3. Kaptanlar
+  setP(20, 'Kaptanlar yükleniyor…');
+  const lsCaptains = _ls('db_captains', []);
+  const captainsPayload = lsCaptains.map(c => {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(String(c.id || ''));
+    const row = {
+      email:        (c.email || '').toLowerCase(),
+      ad:           c.ad   || (c.name || '').split(' ')[0] || 'Kaptan',
+      soyad:        c.soyad|| (c.name || '').split(' ').slice(1).join(' ') || '',
+      telefon:      c.telefon || c.phone || '',
+      tekne_adi:    c.tekneAdi  || c.tekne_adi  || c.tekne || '',
+      tekne_turu:   c.tekneTuru || c.tekne_turu || '',
+      tekne_yil:    c.tekneYil  || c.tekne_yil  || null,
+      kapasite:     +(c.kapasite || 0),
+      bolge:        c.bolge || '',
+      sehir:        c.sehir || c.city || '',
+      marina:       c.marina || '',
+      lisans:       c.lisans || '',
+      lisans_tarih: safeDate(c.lisansTarih || c.lisans_tarih),
+      kategoriler:  c.kategoriler || c.categories || [],
+      durum:        c.durum || c.status || 'aktif',
+      created_at:   safeTS(c.createdAt || c.created_at) || new Date().toISOString(),
+    };
+    if (isUuid) row.id = c.id;
+    return row;
+  }).filter(c => c.email && c.email.includes('@'));
+  for (const ch of chunkArr(captainsPayload, CHUNK)) {
+    const { error } = await _sb.from('kaptanlar').upsert(ch, { onConflict: 'email' });
+    if (error) console.warn('[Export] kaptanlar:', error.message);
+  }
+
+  // 4. Turlar
+  setP(35, 'Turlar yükleniyor…');
   const lsTours = _ls('db_tours', []);
   const toursPayload = lsTours.map(t => {
     const n = _normalizeTur(t);
@@ -1168,8 +1303,8 @@ window.exportToSupabase = async function(opts = {}) {
     });
   }
 
-  // 4. Rezervasyonlar
-  setP(48, 'Rezervasyonlar yükleniyor…');
+  // 5. Rezervasyonlar
+  setP(52, 'Rezervasyonlar yükleniyor…');
   const lsBks = _ls('db_bookings', []);
   const bkPayload = lsBks.map(b => ({
     id:             String(b.id),
@@ -1200,8 +1335,8 @@ window.exportToSupabase = async function(opts = {}) {
     if (error) console.warn('[Export] rezervasyonlar:', error.message);
   }
 
-  // 5. Yorumlar
-  setP(65, 'Yorumlar yükleniyor…');
+  // 6. Yorumlar
+  setP(68, 'Yorumlar yükleniyor…');
   const lsReviews = _ls('db_reviews', []).slice(0, 1000);
   const revPayload = lsReviews.map(r => ({
     rezervasyon_id: r.bookingId    || r.rezervasyon_id || null,
@@ -1218,8 +1353,8 @@ window.exportToSupabase = async function(opts = {}) {
     if (error) console.warn('[Export] yorumlar:', error.message);
   }
 
-  // 6. Satici ilanlari
-  setP(78, 'Satıcı ilanları yükleniyor…');
+  // 7. Satici ilanlari
+  setP(80, 'Satıcı ilanları yükleniyor…');
   const lsVend = _ls('db_vendor_listings', []);
   for (const ch of chunkArr(lsVend, CHUNK)) {
     const payload = ch.map(v => ({
@@ -1237,8 +1372,8 @@ window.exportToSupabase = async function(opts = {}) {
     if (error) console.warn('[Export] satici_ilanlari:', error.message);
   }
 
-  // 7. Magaza urunleri
-  setP(88, 'Mağaza ürünleri yükleniyor…');
+  // 8. Magaza urunleri
+  setP(90, 'Mağaza ürünleri yükleniyor…');
   const lsShop = _ls('db_shop_listings', []);
   for (const ch of chunkArr(lsShop, CHUNK)) {
     const payload = ch.map(s => ({
@@ -1255,7 +1390,7 @@ window.exportToSupabase = async function(opts = {}) {
     if (error) console.warn('[Export] magaza_urunleri:', error.message);
   }
 
-  // 8. Geri sync (Supabase UUID'leri localStorage'a yaz)
+  // 9. Geri sync (Supabase UUID'leri localStorage'a yaz)
   setP(96, 'Veriler senkronize ediliyor…');
   await window._sbSync();
   setP(100, 'Tamamlandı ✓');
