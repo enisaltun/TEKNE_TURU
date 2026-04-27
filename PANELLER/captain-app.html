@@ -63,6 +63,9 @@ input:focus,textarea:focus,select:focus{border-color:#0369a1;box-shadow:0 0 0 3p
 .baslik-cat-label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px}
 .baslik-selected-banner{background:#e0f2fe;border:1.5px solid #0369a1;border-radius:12px;padding:10px 14px;margin-bottom:12px;display:none}
 @keyframes field-pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.45)}70%{box-shadow:0 0 0 8px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+@keyframes newBookingPulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0);border-color:#e2e8f0}50%{box-shadow:0 0 0 10px rgba(16,185,129,.18);border-color:#10b981}}
+.new-booking-pulse{animation:newBookingPulse 2s ease-in-out infinite;border:2px solid #10b981 !important;position:relative}
+.new-booking-badge{position:absolute;top:-8px;right:-8px;background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:.04em;box-shadow:0 2px 6px rgba(245,158,11,.4);white-space:nowrap;z-index:10}
 .field-error{border-color:#ef4444!important;animation:field-pulse 1s ease 2}
 div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animation:field-pulse 1s ease 2}
 .step-ind-btn{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .15s}
@@ -326,6 +329,19 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
       <button class="tab-btn whitespace-nowrap" onclick="switchTourTab(this,'reddedildi')">Reddedildi (<span id="ca-tab-reddedildi-count">0</span>)</button>
       <button class="tab-btn whitespace-nowrap" onclick="switchTourTab(this,'pasif')">Pasif (<span id="ca-tab-pasif-count">0</span>)</button>
       <button class="tab-btn whitespace-nowrap" onclick="switchTourTab(this,'iptal')" style="color:#ef4444">İptal (<span id="ca-tab-iptal-count">0</span>)</button>
+    </div>
+
+    <!-- Saat Bazlı Filtre (sadece Aktif tabda gösterilir) -->
+    <div id="tours-time-filter" class="mb-3" style="display:none">
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mr-1"><i class="fas fa-clock mr-1"></i>Tura Kalan:</span>
+        <button class="pill active text-xs" onclick="setTourTimeFilter(null,this)">Tümü</button>
+        <button class="pill text-xs" onclick="setTourTimeFilter(6,this)">≤ 6 saat</button>
+        <button class="pill text-xs" onclick="setTourTimeFilter(12,this)">≤ 12 saat</button>
+        <button class="pill text-xs" onclick="setTourTimeFilter(24,this)">≤ 24 saat</button>
+        <button class="pill text-xs" onclick="setTourTimeFilter(48,this)">≤ 48 saat</button>
+        <button class="pill text-xs" onclick="setTourTimeFilter(72,this)">≤ 72 saat</button>
+      </div>
     </div>
 
     <!-- Tour Cards -->
@@ -2164,6 +2180,8 @@ function caGetDurum(t){
   return CA_DURUM_INFO[d]?d:'bekliyor';
 }
 let caCurrentTourTab='aktif';
+let caTimeFilter=null; // null=Tümü, 6/12/24/48/72 = saat limiti
+let _newBkAnimTimer=null; // 20sn timer referansi
 
 function renderMyTours(){
   const tours=getMyTours();
@@ -2175,7 +2193,51 @@ function renderMyTours(){
     const c=document.getElementById('ca-tab-'+k+'-count');
     if(c)c.textContent=byDurum[k].length;
   });
-  const list=byDurum[caCurrentTourTab]||[];
+
+  // Saat filtresi: sadece aktif tabda göster
+  const timeFilterEl=document.getElementById('tours-time-filter');
+  if(timeFilterEl) timeFilterEl.style.display=caCurrentTourTab==='aktif'?'block':'none';
+
+  // Görülmemiş (yeni) rezervasyonlu tur ID seti
+  const allBookings=S.get('db_bookings',[]);
+  // Sayfa içi yeni rezervasyon kontrolü (storage event dışındaki durumlar için)
+  _checkNewBookingNotifs(allBookings);
+  const seenBkIds=new Set(S.get('ca_seen_bookings',[]));
+  const toursWithNewBk=new Set();
+  getMyTours().forEach(t=>{
+    const hasFresh=allBookings.some(b=>String(b.tourId)===String(t.id)&&b.durum==='bekliyor'&&!seenBkIds.has(String(b.id)));
+    if(hasFresh) toursWithNewBk.add(String(t.id));
+  });
+
+  let list=byDurum[caCurrentTourTab]||[];
+
+  // Aktif listede: yeni rezervasyonlular önce, sonra en yakın tarih
+  if(caCurrentTourTab==='aktif'){
+    const now=new Date(); now.setHours(0,0,0,0);
+    list=[...list].sort((a,b)=>{
+      const aNew=toursWithNewBk.has(String(a.id))?0:1;
+      const bNew=toursWithNewBk.has(String(b.id))?0:1;
+      if(aNew!==bNew) return aNew-bNew;
+      const aDate=(a.tarihler||[]).filter(iso=>new Date(iso)>=now).sort()[0]||'9999';
+      const bDate=(b.tarihler||[]).filter(iso=>new Date(iso)>=now).sort()[0]||'9999';
+      return aDate<bDate?-1:aDate>bDate?1:0;
+    });
+
+    // Saat filtresi uygula
+    if(caTimeFilter){
+      const nowMs=Date.now();
+      list=list.filter(t=>{
+        const futDates=(t.tarihler||[]).filter(iso=>new Date(iso)>=new Date(now));
+        if(!futDates.length) return false;
+        const nextISO=futDates.sort()[0];
+        const saat=(t.saatler&&t.saatler[0])||'08:00';
+        const [hh,mm]=saat.split(':').map(Number);
+        const dtMs=new Date(nextISO).setHours(hh,mm,0,0);
+        const diffHr=(dtMs-nowMs)/3600000;
+        return diffHr>=0&&diffHr<=caTimeFilter;
+      });
+    }
+  }
   if(!list.length){
     const emptyMsg=caCurrentTourTab==='aktif'
       ? 'Henuz aktif tur yok.<br><span class="text-primary cursor-pointer underline" onclick="navigateTo(\'create-tour\')">Yeni tur olustur!</span>'
@@ -2250,7 +2312,9 @@ function renderMyTours(){
         <button onclick="deleteTour(${t.id})" class="border py-2 px-3 rounded-xl text-xs text-danger"><i class="fas fa-trash"></i></button>`;
     }
 
-    return`<div class="card card-hover ${cardBorder}">
+    const hasNewBk=toursWithNewBk.has(String(t.id));
+    return`<div class="card card-hover ${cardBorder}${hasNewBk?' new-booking-pulse':''}" data-tour-id="${t.id}" style="overflow:visible">
+      ${hasNewBk?'<span class="new-booking-badge"><i class="fas fa-bell mr-1"></i>YENİ REZERVASYON</span>':''}
       <div class="flex gap-3">
         <div class="w-16 h-16 bg-gradient-to-br ${m.grad} rounded-2xl flex items-center justify-center flex-shrink-0 relative">
           <i class="fas ${m.icon} text-white text-xl"></i>
@@ -2305,6 +2369,27 @@ function renderMyTours(){
       </div>
     </div>`;
   }).join('');
+
+  // 20 saniye animasyon timer — süre dolunca pulse kaldır + seen'e ekle
+  if(_newBkAnimTimer) clearTimeout(_newBkAnimTimer);
+  if(toursWithNewBk.size>0){
+    _newBkAnimTimer=setTimeout(()=>{
+      document.querySelectorAll('.new-booking-pulse').forEach(el=>el.classList.remove('new-booking-pulse'));
+      document.querySelectorAll('.new-booking-badge').forEach(el=>el.remove());
+      // Görüldü olarak işaretle
+      const seen=S.get('ca_seen_bookings',[]);
+      allBookings.filter(b=>toursWithNewBk.has(String(b.tourId))&&b.durum==='bekliyor').forEach(b=>seen.push(String(b.id)));
+      S.set('ca_seen_bookings',[...new Set(seen)].slice(-200));
+      _newBkAnimTimer=null;
+    },20000);
+  }
+}
+
+function setTourTimeFilter(hours,btn){
+  caTimeFilter=hours;
+  document.querySelectorAll('#tours-time-filter .pill').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderMyTours();
 }
 
 function toggleTourStatusApp(id){
@@ -3674,6 +3759,7 @@ function renderCaptainChat(id){
   body.innerHTML='<div class="text-center text-[10px] text-gray-400 mb-2">Konusma</div>'+thread.map(m=>{
     const n=_normMsg(m);
     if(n.isAdmin)return`<div class="flex justify-center my-1"><div class="msg-bubble bg-blue-100 text-blue-800 text-xs text-center"><i class="fas fa-shield-alt mr-1 text-blue-500"></i>DenizBul: ${n.text}</div></div>`;
+    if(m.sysMsg&&m.sysMsgType==='new_booking') return`<div class="flex justify-center my-2"><div class="msg-bubble text-xs text-center" style="background:#f0fdf4;border:1px solid #86efac;color:#166534;white-space:pre-line;max-width:88%"><i class="fas fa-bell mr-1" style="color:#16a34a"></i>${n.text}</div></div>`;
     return`<div class="flex ${n.isKaptan?'justify-end':'justify-start'}"><div class="msg-bubble ${n.isKaptan?'msg-out':'msg-in'}">${n.text}</div></div>`;
   }).join('');
   body.scrollTop=body.scrollHeight;
@@ -4082,7 +4168,19 @@ function changeMonth(d){
   if(_pageCalM>11){_pageCalM=0;_pageCalY++;}
   renderCalendar();
 }
-function switchTourTab(btn,filter){btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(filter){caCurrentTourTab=filter;renderMyTours();}}
+function switchTourTab(btn,filter){
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(filter){
+    caCurrentTourTab=filter;
+    caTimeFilter=null;
+    // Saat filtresi pilleri sıfırla
+    const firstPill=document.querySelector('#tours-time-filter .pill');
+    document.querySelectorAll('#tours-time-filter .pill').forEach(p=>p.classList.remove('active'));
+    if(firstPill) firstPill.classList.add('active');
+    renderMyTours();
+  }
+}
 function switchBookingTab(btn){btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 
 /* ── EARNINGS (static demo) ── */
@@ -4208,12 +4306,29 @@ function _checkNewBookingNotifs(allBk){
   const existingIds=new Set(S.get('ca_notifications',[]).map(n=>n.bookingId).filter(Boolean));
   allBk.filter(b=>b.captainEmail===cpEmail&&b.durum==='bekliyor'&&!existingIds.has(b.id)).forEach(b=>{
     const hasNote=!!(b.note&&b.note.trim());
+    // 1. Bildirim merkezi kaydı
     addNotification(
       hasNote?'⚠ Yeni Rezervasyon — Müşteri Notu Var':'Yeni Rezervasyon Alındı',
       `${b.customerName||'Misafir'} · ${b.tarih||'—'} · ${b.guests||1} kişi`+(hasNote?` · Not: "${b.note}"`:''),
       hasNote?'warning':'info',
       b.id
     );
+    // 2. Chat thread'ine sistem mesajı — kaptan mesajlar sekmesinden görebilir
+    const msgs=S.get('db_messages',{});
+    if(!msgs[b.id]) msgs[b.id]=[];
+    const alreadySysMsg=msgs[b.id].some(m=>m.sysMsg&&m.sysMsgType==='new_booking');
+    if(!alreadySysMsg){
+      msgs[b.id].unshift({
+        text:`📋 Yeni rezervasyon alındı!\n\n👤 ${b.customerName||'Misafir'}\n📅 ${b.tarih||'—'} · ${b.guests||1} kişi\n🚢 ${b.tourTitle||'Tur'}\n\nMüşteriyle iletişime geçmek için mesaj yazabilirsiniz.`,
+        byCaptan:false,
+        sysMsg:true,
+        sysMsgType:'new_booking',
+        ts:Date.now()-1,
+        readByCustomer:true,
+        readByCaptain:false
+      });
+      S.set('db_messages',msgs);
+    }
   });
 }
 function updateNotifDot(){
