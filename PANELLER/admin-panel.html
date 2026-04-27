@@ -6474,7 +6474,7 @@ function toggleTourReservations(tid){
   const el=document.getElementById('tour-rez-'+tid);
   const icon=document.getElementById('tour-rez-icon-'+tid);
   if(!el)return;
-  const open=el.style.display!=='none'&&el.style.display!=='';
+  const open=el.style.display!=='none';
   el.style.display=open?'none':'';
   if(icon)icon.style.transform=open?'rotate(0deg)':'rotate(180deg)';
 }
