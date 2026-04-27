@@ -42,6 +42,18 @@ input.error,select.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,6
 /* Section divider */
 .section-label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;margin-top:4px;padding-left:2px}
 .required-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-weight:600;margin-left:6px;vertical-align:middle}
+/* KVKK Modal */
+.kvkk-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
+.kvkk-overlay.open{display:flex}
+.kvkk-modal{background:#fff;border-radius:20px;width:100%;max-width:520px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,0.3)}
+.kvkk-header{padding:20px 24px 16px;border-bottom:1px solid #f1f5f9;flex-shrink:0}
+.kvkk-body{overflow-y:auto;flex:1;padding:20px 24px;font-size:12px;line-height:1.75;color:#374151}
+.kvkk-footer{padding:16px 24px;border-top:1px solid #f1f5f9;flex-shrink:0;background:#fff}
+.kvkk-body h3{font-size:11px;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.06em;margin:18px 0 7px;padding-top:14px;border-top:1px solid #f1f5f9}
+.kvkk-body h3:first-child{border-top:none;margin-top:0;padding-top:0}
+.kvkk-body p{margin-bottom:6px}
+.kvkk-body ul{padding-left:16px;margin-bottom:6px}
+.kvkk-body ul li{margin-bottom:3px}
 </style>
 </head>
 <body>
@@ -198,6 +210,13 @@ input.error,select.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,6
         <span><b>Kullanım koşullarını</b> ve <b>gizlilik politikasını</b> okudum, kabul ediyorum.</span>
       </label>
       <div class="err-msg" id="rm-terms-err">Devam etmek için koşulları kabul etmelisiniz.</div>
+      <label class="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
+        <input type="checkbox" id="rm-kvkk" class="!w-auto mt-0.5 accent-primary">
+        <span><b>KVKK Aydınlatma Metni</b>'ni okudum, anladım ve kabul ediyorum.
+          <button type="button" onclick="openKvkkModal('rm-kvkk')" class="text-primary underline font-medium hover:text-blue-800 ml-1">Metni Oku →</button>
+        </span>
+      </label>
+      <div class="err-msg" id="rm-kvkk-err">Devam etmek için KVKK Aydınlatma Metni'ni kabul etmelisiniz.</div>
       <div id="register-error-musteri" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
         <i class="fas fa-exclamation-circle"></i><span></span>
       </div>
@@ -353,6 +372,13 @@ input.error,select.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,6
         <span><b>Kullanım koşullarını</b>, <b>kaptan sözleşmesini</b> ve <b>gizlilik politikasını</b> okudum, kabul ediyorum.</span>
       </label>
       <div class="err-msg" id="rk-terms-err">Devam etmek için koşulları kabul etmelisiniz.</div>
+      <label class="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
+        <input type="checkbox" id="rk-kvkk" class="!w-auto mt-0.5 accent-primary">
+        <span><b>KVKK Aydınlatma Metni</b>'ni okudum, anladım ve kabul ediyorum.
+          <button type="button" onclick="openKvkkModal('rk-kvkk')" class="text-primary underline font-medium hover:text-blue-800 ml-1">Metni Oku →</button>
+        </span>
+      </label>
+      <div class="err-msg" id="rk-kvkk-err">Devam etmek için KVKK Aydınlatma Metni'ni kabul etmelisiniz.</div>
       <div id="register-error-kaptan" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
         <i class="fas fa-exclamation-circle"></i><span></span>
       </div>
@@ -456,6 +482,13 @@ input.error,select.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,6
         <span><b>Kullanım koşullarını</b>, <b>satıcı sözleşmesini</b> ve <b>gizlilik politikasını</b> okudum, kabul ediyorum.</span>
       </label>
       <div class="err-msg" id="rs-terms-err">Devam etmek için koşulları kabul etmelisiniz.</div>
+      <label class="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
+        <input type="checkbox" id="rs-kvkk" class="!w-auto mt-0.5 accent-primary">
+        <span><b>KVKK Aydınlatma Metni</b>'ni okudum, anladım ve kabul ediyorum.
+          <button type="button" onclick="openKvkkModal('rs-kvkk')" class="text-primary underline font-medium hover:text-blue-800 ml-1">Metni Oku →</button>
+        </span>
+      </label>
+      <div class="err-msg" id="rs-kvkk-err">Devam etmek için KVKK Aydınlatma Metni'ni kabul etmelisiniz.</div>
       <div id="register-error-satici" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
         <i class="fas fa-exclamation-circle"></i><span></span>
       </div>
@@ -493,6 +526,108 @@ input.error,select.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,6
     <button onclick="redirectAfterLogin()" class="btn-primary">Uygulamaya Git <i class="fas fa-arrow-right ml-2"></i></button>
   </div>
 
+</div>
+
+<!-- ── KVKK MODAL ── -->
+<div class="kvkk-overlay" id="kvkk-overlay" onclick="closeKvkkModal(event)">
+  <div class="kvkk-modal" onclick="event.stopPropagation()">
+    <div class="kvkk-header">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-shield-alt text-primary"></i>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-gray-800">KVKK Aydınlatma Metni</div>
+            <div class="text-[10px] text-gray-400">6698 Sayılı Kişisel Verilerin Korunması Kanunu</div>
+          </div>
+        </div>
+        <button type="button" onclick="closeKvkkModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+    <div class="kvkk-body" id="kvkk-scroll-body" onscroll="_kvkkScrollCheck(this)">
+      <h3>1. Veri Sorumlusu</h3>
+      <p>6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında kişisel verileriniz; veri sorumlusu sıfatıyla <strong>DenizBul.tr Teknoloji Ticaret A.Ş.</strong> ("DenizBul.tr" veya "Şirket") tarafından aşağıda açıklanan amaçlar doğrultusunda işlenmektedir.</p>
+
+      <h3>2. İşlenen Kişisel Veriler</h3>
+      <p>Üyelik türünüze bağlı olarak aşağıdaki kişisel verileriniz işlenmektedir:</p>
+      <ul>
+        <li><strong>Kimlik Bilgileri:</strong> Ad, soyad</li>
+        <li><strong>İletişim Bilgileri:</strong> E-posta adresi, telefon numarası</li>
+        <li><strong>Konum Bilgileri:</strong> Şehir / marina / liman bilgisi</li>
+        <li><strong>Hesap Bilgileri:</strong> Kullanıcı adı, şifrelenmiş parola, kayıt tarihi, son giriş tarihi</li>
+        <li><strong>Kaptan'a özgü:</strong> MMSI numarası, Call Sign, AIS transponder sınıfı, IMO numarası, tekne adı ve türü</li>
+        <li><strong>Satıcı'ya özgü:</strong> İşletme adı, ürün kategorisi, vergi numarası (isteğe bağlı)</li>
+        <li><strong>İşlem Bilgileri:</strong> Rezervasyon kayıtları, ödeme tutarı (kart numarası saklanmaz), değerlendirmeler, mesajlar</li>
+        <li><strong>Teknik Veriler:</strong> IP adresi, tarayıcı bilgisi, oturum verileri</li>
+      </ul>
+
+      <h3>3. Kişisel Verilerin İşlenme Amaçları</h3>
+      <ul>
+        <li>Üyelik hesabının oluşturulması, doğrulanması ve yönetilmesi</li>
+        <li>Tekne turu rezervasyonlarının gerçekleştirilmesi ve takibi</li>
+        <li>Kaptan ve satıcı başvurularının incelenmesi ve onaylanması</li>
+        <li>Ödeme işlemlerinin gerçekleştirilmesi ve güvenliğinin sağlanması</li>
+        <li>Platform güvenliğinin ve doğruluğunun korunması (sahte hesap/işlem tespiti)</li>
+        <li>Yasal yükümlülüklerin yerine getirilmesi (denizcilik mevzuatı dahil)</li>
+        <li>Müşteri hizmetleri ve destek süreçlerinin yürütülmesi</li>
+        <li>Platform hizmetlerinin iyileştirilmesi ve kişiselleştirilmesi</li>
+        <li>Açık rızanız olması halinde: ticari elektronik ileti gönderimi, kampanya bildirimleri</li>
+      </ul>
+
+      <h3>4. Kişisel Verilerin Aktarıldığı Taraflar ve Amaçlar</h3>
+      <p>Kişisel verileriniz aşağıdaki taraflara aktarılabilir:</p>
+      <ul>
+        <li><strong>Ödeme Kuruluşları:</strong> Ödeme işlemlerinin gerçekleştirilmesi amacıyla (yalnızca gerekli veriler)</li>
+        <li><strong>Bulut Altyapı Sağlayıcıları:</strong> Veri depolama ve sistem işletimi amacıyla (Supabase Inc. — GDPR uyumlu)</li>
+        <li><strong>Kaptanlar:</strong> Rezervasyon onayı için müşteri adı ve iletişim bilgileri</li>
+        <li><strong>Yetkili Kamu Kurum ve Kuruluşları:</strong> Yasal yükümlülükler kapsamında talep edilmesi halinde</li>
+        <li><strong>Denetim ve Hukuk Danışmanları:</strong> Hukuki süreçlerin yürütülmesi amacıyla</li>
+      </ul>
+
+      <h3>5. Kişisel Verilerin Toplanma Yöntemi ve Hukuki Sebep</h3>
+      <p>Kişisel verileriniz; platform üzerinden elektronik ortamda, otomatik yollarla toplanmaktadır. İşlemenin hukuki sebepleri şunlardır:</p>
+      <ul>
+        <li>Sözleşmenin kurulması ve ifası (KVKK Md. 5/2-c)</li>
+        <li>Kanuni yükümlülüklerin yerine getirilmesi (KVKK Md. 5/2-ç)</li>
+        <li>Meşru menfaat (KVKK Md. 5/2-f) — güvenlik ve sahtekârlık önleme</li>
+        <li>Açık rıza (KVKK Md. 5/1) — pazarlama ve ticari iletişim için</li>
+      </ul>
+
+      <h3>6. Kişisel Verilerin Saklanma Süresi</h3>
+      <p>Kişisel verileriniz, üyelik hesabınızın aktif olduğu süre boyunca ve akabinde yasal saklama yükümlülükleri kapsamında (ticari kayıtlar için 10 yıl, vergi kayıtları için 5 yıl) saklanır. Hesabınızı silmeniz halinde kişisel verileriniz yasal zorunluluklar dışında silinir veya anonim hale getirilir.</p>
+
+      <h3>7. İlgili Kişinin Hakları (KVKK Madde 11)</h3>
+      <p>KVKK'nın 11. maddesi kapsamında aşağıdaki haklara sahipsiniz:</p>
+      <ul>
+        <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
+        <li>İşlenmişse buna ilişkin bilgi talep etme</li>
+        <li>İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme</li>
+        <li>Yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme</li>
+        <li>Eksik veya yanlış işlenmişse düzeltilmesini isteme</li>
+        <li>KVKK'da öngörülen şartlar çerçevesinde silinmesini veya yok edilmesini isteme</li>
+        <li>İşlemenin otomatik yollarla yapılması halinde aleyhte sonuca itiraz etme</li>
+        <li>Kanuna aykırı işleme nedeniyle zarara uğraması halinde zararın giderilmesini talep etme</li>
+      </ul>
+
+      <h3>8. Başvuru ve İletişim</h3>
+      <p>Yukarıda belirtilen haklarınızı kullanmak için <strong>kvkk@denizbul.tr</strong> adresine e-posta göndererek veya platform üzerindeki "Hesabım → Veri Talebi" bölümünden yazılı başvuruda bulunabilirsiniz. Başvurunuz en geç <strong>30 (otuz) gün</strong> içinde sonuçlandırılacaktır.</p>
+      <p style="margin-top:12px;padding:10px 12px;background:#f0f9ff;border-radius:8px;border-left:3px solid #0369a1;font-size:11px;color:#0369a1">
+        <i class="fas fa-info-circle mr-1"></i>Bu aydınlatma metni en son <strong>Ocak 2026</strong> tarihinde güncellenmiştir. Değişiklikler platform üzerinden duyurulacaktır.
+      </p>
+    </div>
+    <div class="kvkk-footer">
+      <div class="text-[10px] text-gray-400 mb-2.5 text-center flex items-center justify-center gap-1.5" id="kvkk-scroll-hint">
+        <i class="fas fa-arrow-down animate-bounce"></i>Kabul etmek için metni sonuna kadar okuyun
+      </div>
+      <button type="button" id="kvkk-accept-btn" onclick="acceptKvkk()"
+        class="btn-primary" style="opacity:0.4;cursor:not-allowed" disabled>
+        <i class="fas fa-check mr-2"></i>Okudum ve Kabul Ediyorum
+      </button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -578,6 +713,41 @@ function checkStrength(val,suffix){
   bar.style.width=l.w;bar.className='strength-bar '+l.bg;txt.textContent=l.label;
 }
 
+/* ── KVKK MODAL ── */
+let _kvkkTarget=null;
+
+function openKvkkModal(checkboxId){
+  _kvkkTarget=checkboxId;
+  const overlay=document.getElementById('kvkk-overlay');
+  const body=document.getElementById('kvkk-scroll-body');
+  const btn=document.getElementById('kvkk-accept-btn');
+  const hint=document.getElementById('kvkk-scroll-hint');
+  body.scrollTop=0;
+  btn.disabled=true;btn.style.opacity='0.4';btn.style.cursor='not-allowed';
+  hint.style.display='flex';
+  overlay.classList.add('open');
+}
+
+function closeKvkkModal(e){
+  if(e&&e.target!==document.getElementById('kvkk-overlay'))return;
+  document.getElementById('kvkk-overlay').classList.remove('open');
+  _kvkkTarget=null;
+}
+
+function _kvkkScrollCheck(el){
+  const atBottom=el.scrollHeight-el.scrollTop-el.clientHeight<40;
+  const btn=document.getElementById('kvkk-accept-btn');
+  const hint=document.getElementById('kvkk-scroll-hint');
+  btn.disabled=!atBottom;btn.style.opacity=atBottom?'1':'0.4';btn.style.cursor=atBottom?'pointer':'not-allowed';
+  if(atBottom)hint.style.display='none';
+}
+
+function acceptKvkk(){
+  if(_kvkkTarget){const cb=document.getElementById(_kvkkTarget);if(cb)cb.checked=true;}
+  document.getElementById('kvkk-overlay').classList.remove('open');
+  _kvkkTarget=null;
+}
+
 /* ── LOGIN ── */
 function doLogin(e){
   e.preventDefault();clearErrors();
@@ -623,6 +793,7 @@ function doRegisterMusteri(){
   const pass=document.getElementById('rm-pass').value;
   const pass2=document.getElementById('rm-pass2').value;
   const terms=document.getElementById('rm-terms').checked;
+  const kvkk=document.getElementById('rm-kvkk').checked;
   let ok=true;
   if(!name||name.length<3){showErr('rm-name','rm-name-err');ok=false;}
   if(!phone||!/^0[5][0-9]{9}$/.test(phone.replace(/\s/g,''))){showErr('rm-phone','rm-phone-err');ok=false;}
@@ -630,6 +801,7 @@ function doRegisterMusteri(){
   if(!pass||pass.length<8){showErr('rm-pass','rm-pass-err');ok=false;}
   if(pass!==pass2){showErr('rm-pass2','rm-pass2-err');ok=false;}
   if(!terms){document.getElementById('rm-terms-err').style.display='block';ok=false;}
+  if(!kvkk){document.getElementById('rm-kvkk-err').style.display='block';ok=false;}
   if(!ok)return;
   setLoading('register-btn-musteri','register-btn-text-musteri','register-spin-musteri',true);
   setTimeout(()=>{
@@ -638,7 +810,7 @@ function doRegisterMusteri(){
       setLoading('register-btn-musteri','register-btn-text-musteri','register-spin-musteri',false);
       showRegisterError('musteri','Bu e-posta zaten kayıtlı. Giriş yapmayı deneyin.');return;
     }
-    const u={id:'usr_'+Date.now(),name,email,phone:phone.replace(/\s/g,''),sehir:city||'',password:pass,roller:['musteri'],createdAt:new Date().toISOString(),sonGiris:new Date().toISOString(),durum:'aktif',plan:'free'};
+    const u={id:'usr_'+Date.now(),name,email,phone:phone.replace(/\s/g,''),sehir:city||'',password:pass,roller:['musteri'],createdAt:new Date().toISOString(),sonGiris:new Date().toISOString(),durum:'aktif',plan:'free',kvkkOnayi:true,kvkkOnayTarihi:new Date().toISOString()};
     users.push(u);lsSet('cu_users',users);
     _saveSession(u,'customer-app.html');
     setLoading('register-btn-musteri','register-btn-text-musteri','register-spin-musteri',false);
@@ -660,6 +832,7 @@ function doRegisterKaptan(){
   const pass=document.getElementById('rk-pass').value;
   const pass2=document.getElementById('rk-pass2').value;
   const terms=document.getElementById('rk-terms').checked;
+  const kvkk=document.getElementById('rk-kvkk').checked;
   let ok=true;
   if(!name||name.length<3){showErr('rk-name','rk-name-err');ok=false;}
   if(!phone||!/^0[5][0-9]{9}$/.test(phone.replace(/\s/g,''))){showErr('rk-phone','rk-phone-err');ok=false;}
@@ -675,6 +848,7 @@ function doRegisterKaptan(){
   if(!pass||pass.length<8){showErr('rk-pass','rk-pass-err');ok=false;}
   if(pass!==pass2){showErr('rk-pass2','rk-pass2-err');ok=false;}
   if(!terms){document.getElementById('rk-terms-err').style.display='block';ok=false;}
+  if(!kvkk){document.getElementById('rk-kvkk-err').style.display='block';ok=false;}
   if(!ok)return;
   setLoading('register-btn-kaptan','register-btn-text-kaptan','register-spin-kaptan',true);
   setTimeout(()=>{
@@ -689,7 +863,8 @@ function doRegisterKaptan(){
       mmsi,callsign,aisClass:ais,imo:imo||'',
       password:pass,roller:['kaptan'],
       durum:'bekliyor_onay',
-      createdAt:new Date().toISOString(),sonGiris:new Date().toISOString(),plan:'free'
+      createdAt:new Date().toISOString(),sonGiris:new Date().toISOString(),plan:'free',
+      kvkkOnayi:true,kvkkOnayTarihi:new Date().toISOString()
     };
     captains.push(u);lsSet('db_captains',captains);
     _saveSession(u,'PANELLER/captain-app.html');
@@ -709,6 +884,7 @@ function doRegisterSatici(){
   const pass=document.getElementById('rs-pass').value;
   const pass2=document.getElementById('rs-pass2').value;
   const terms=document.getElementById('rs-terms').checked;
+  const kvkk=document.getElementById('rs-kvkk').checked;
   let ok=true;
   if(!name||name.length<3){showErr('rs-name','rs-name-err');ok=false;}
   if(!phone||!/^0[5][0-9]{9}$/.test(phone.replace(/\s/g,''))){showErr('rs-phone','rs-phone-err');ok=false;}
@@ -718,6 +894,7 @@ function doRegisterSatici(){
   if(!pass||pass.length<8){showErr('rs-pass','rs-pass-err');ok=false;}
   if(pass!==pass2){showErr('rs-pass2','rs-pass2-err');ok=false;}
   if(!terms){document.getElementById('rs-terms-err').style.display='block';ok=false;}
+  if(!kvkk){document.getElementById('rs-kvkk-err').style.display='block';ok=false;}
   if(!ok)return;
   setLoading('register-btn-satici','register-btn-text-satici','register-spin-satici',true);
   setTimeout(()=>{
@@ -726,7 +903,7 @@ function doRegisterSatici(){
       setLoading('register-btn-satici','register-btn-text-satici','register-spin-satici',false);
       showRegisterError('satici','Bu e-posta zaten kayıtlı.');return;
     }
-    const u={id:'sel_'+Date.now(),name,email,phone:phone.replace(/\s/g,''),isletme,kategori,sehir:city||'',vergino:vergino||'',password:pass,roller:['satici'],durum:'bekliyor_onay',createdAt:new Date().toISOString(),sonGiris:new Date().toISOString(),plan:'free'};
+    const u={id:'sel_'+Date.now(),name,email,phone:phone.replace(/\s/g,''),isletme,kategori,sehir:city||'',vergino:vergino||'',password:pass,roller:['satici'],durum:'bekliyor_onay',createdAt:new Date().toISOString(),sonGiris:new Date().toISOString(),plan:'free',kvkkOnayi:true,kvkkOnayTarihi:new Date().toISOString()};
     sellers.push(u);lsSet('db_sellers',sellers);
     _saveSession(u,'PANELLER/magaza-panel.html');
     setLoading('register-btn-satici','register-btn-text-satici','register-spin-satici',false);
