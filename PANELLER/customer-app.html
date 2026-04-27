@@ -1015,6 +1015,9 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
       <div id="bdet-status-badge"></div>
     </div>
 
+    <!-- Transfer Sureci Karti (kaptan tur iptali icin dinamik) -->
+    <div id="bdet-transfer-card" style="display:none"></div>
+
     <!-- Booking Info -->
     <div class="card p-4">
       <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Rezervasyon Bilgileri</div>
@@ -2062,6 +2065,8 @@ window.addEventListener('storage',function(e){
   if(e.key==='cu_notifs'){
     updateNotifDot();
     if(h==='notifications')renderNotifs();
+    if(h==='booking-detail')renderBookingDetail();
+    if(h==='my-tours')renderMyTours(curTab);
   }
   // Fix #3: admin kaptan başvuruyu onaylayınca profildeki "Kaptan Paneli" butonu canli belirsin
   if(e.key==='db_users'||e.key==='db_captains'){if(h==='profile'&&typeof renderProfile==='function')renderProfile();}
@@ -3372,6 +3377,16 @@ function renderConf(b){
 /* ── MY TOURS ── */
 function setTab(tab,el){curTab=tab;document.querySelectorAll('#page-my-tours .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderMyTours(tab);}
 
+/* Kaptan tur iptali için cu_notifs'ten transfer durumunu bulur */
+function _getTransferState(bookingId){
+  const notifs=S.get('cu_notifs',[]);
+  const notif=notifs.find(n=>String(n.bookingId)===String(bookingId)&&n.modalType);
+  if(!notif)return null;
+  const havuz=S.get('db_yolcu_havuzu',[]);
+  const entry=notif.havuzId?havuz.find(h=>String(h.id)===String(notif.havuzId)):null;
+  return{entry,notif,state:notif.modalType};
+}
+
 function renderMyTours(tab){
   // Aktif kullanıcının email/telefon kimliği
   const prof=S.get('cu_profile',{});
@@ -3386,9 +3401,15 @@ function renderMyTours(tab){
   };
   const all=S.get('db_bookings',[]).filter(isMine);
   const now=Date.now();
-  const up=all.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi'&&b.durum!=='tamamlandi');
+  // Kaptan tur iptali ile bekleyen çözüm varsa "Yaklasan" sekmesinde tut
+  const _kaptanPending=b=>{
+    if(b.iptalKategori!=='kaptan_tur_iptali')return false;
+    const ts=_getTransferState(b.id);
+    return!ts||ts.state==='arayor'||ts.state==='gun_secenekleri';
+  };
+  const up=all.filter(b=>(b.durum!=='iptal'&&b.durum!=='reddedildi'&&b.durum!=='tamamlandi')||_kaptanPending(b));
   const past=all.filter(b=>b.durum==='tamamlandi');
-  const canc=all.filter(b=>b.durum==='iptal'||b.durum==='reddedildi');
+  const canc=all.filter(b=>(b.durum==='iptal'||b.durum==='reddedildi')&&!_kaptanPending(b));
   document.getElementById('tab-up').textContent=`Yaklasan (${up.length})`;
   document.getElementById('tab-past').textContent=`Gecmis (${past.length})`;
   document.getElementById('tab-cancelled').textContent=`Iptal (${canc.length})`;
@@ -3401,12 +3422,44 @@ function renderMyTours(tab){
   el.innerHTML=list.map(b=>{
     const cat=tourMap[b.tourId]?.cat||'gezi';
     const m=CM[cat]||CM.gezi;
-    const badge=b.durum==='onaylandi'?'<span class="badge bg-green-100 text-success">Onaylandi</span>':b.durum==='tamamlandi'?'<span class="badge bg-gray-100 text-gray-600">Bitti</span>':b.durum==='iptal'||b.durum==='reddedildi'?'<span class="badge bg-red-100 text-danger">Iptal</span>':'<span class="badge bg-amber-100 text-amber-700">Bekliyor</span>';
+    // Badge: kaptan tur iptali durumunda transfer durumunu yansıt
+    let _ts=null;
+    let badge;
+    if(b.durum==='onaylandi') badge='<span class="badge bg-green-100 text-success">Onaylandi</span>';
+    else if(b.durum==='tamamlandi') badge='<span class="badge bg-gray-100 text-gray-600">Bitti</span>';
+    else if((b.durum==='iptal'||b.durum==='reddedildi')&&b.iptalKategori==='kaptan_tur_iptali'){
+      _ts=_getTransferState(b.id);
+      const st=_ts?.state||'arayor';
+      if(st==='gun_secenekleri')badge='<span class="badge" style="background:#dbeafe;color:#1d4ed8;font-weight:700;animation:pulse 2s infinite">Teklif Var!</span>';
+      else if(st==='transfer_tamamlandi')badge='<span class="badge bg-green-100 text-success">Transfer Tamam</span>';
+      else if(st==='iade_bonus')badge='<span class="badge bg-gray-100 text-gray-600">İade Yapıldı</span>';
+      else badge='<span class="badge bg-amber-100 text-amber-700">Aranıyor…</span>';
+    }
+    else if(b.durum==='iptal'||b.durum==='reddedildi') badge='<span class="badge bg-red-100 text-danger">Iptal</span>';
+    else badge='<span class="badge bg-amber-100 text-amber-700">Bekliyor</span>';
+
     const redNeden=b.durum==='reddedildi'&&b.redNedeni
       ?`<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:8px 10px;margin-top:8px;display:flex;gap:6px;align-items:flex-start">
           <i class="fas fa-exclamation-circle" style="color:#ef4444;font-size:11px;margin-top:1px;flex-shrink:0"></i>
           <div style="font-size:11px;color:#b91c1c;line-height:1.5"><span style="font-weight:700">Kaptan açıklaması: </span>${b.redNedeni}</div>
         </div>`:'';
+    // Transfer durumu banner (kaptan tur iptali için)
+    let transferBanner='';
+    if(b.iptalKategori==='kaptan_tur_iptali'){
+      if(!_ts)_ts=_getTransferState(b.id);
+      const st=_ts?.state||'arayor';
+      if(st==='arayor'){
+        transferBanner=`<div style="margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;min-width:8px;background:#f59e0b;border-radius:50%;display:inline-block"></span><span style="font-size:11px;color:#92400e">Alternatif tur aranıyor — detaya dokunun</span></div>`;
+      } else if(st==='gun_secenekleri'){
+        transferBanner=`<div style="margin-top:8px;background:#eff6ff;border:1.5px solid #60a5fa;border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px"><i class="fas fa-calendar-alt" style="color:#2563eb;font-size:13px;flex-shrink:0"></i><span style="font-size:11px;color:#1e40af;font-weight:600">Alternatif tur teklifi var — seçim yapmak için dokunun →</span></div>`;
+      } else if(st==='transfer_tamamlandi'){
+        const newTitle=(_ts?.notif?.body||'').match(/"([^"]+)"/)?.[1]||'yeni tur';
+        transferBanner=`<div style="margin-top:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px"><i class="fas fa-check-circle" style="color:#16a34a;font-size:13px;flex-shrink:0"></i><span style="font-size:11px;color:#14532d">Yeni tura aktarıldınız: <strong>${newTitle}</strong></span></div>`;
+      } else if(st==='iade_bonus'){
+        const kod=_ts?.notif?.bonusKod||'';
+        transferBanner=`<div style="margin-top:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px"><i class="fas fa-gift" style="color:#2563eb;font-size:13px;flex-shrink:0"></i><span style="font-size:11px;color:#1e40af">Tam iade yapıldı${kod?` · Kupon: <strong>${kod}</strong>`:''}</span></div>`;
+      }
+    }
     return`<div class="card p-4 card-hover" onclick="openBookingDetail('${b.id}')">
       <div class="flex items-center gap-3 mb-2">
         <div class="w-12 h-12 bg-gradient-to-br ${m.grad} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas ${m.icon} text-white"></i></div>
@@ -3419,6 +3472,7 @@ function renderMyTours(tab){
         <span><i class="fas fa-users mr-0.5"></i>${b.guests} kisi</span>
       </div>
       ${redNeden}
+      ${transferBanner}
       <div class="flex items-center justify-between mt-2">
         <span class="font-bold text-primary">${(b.amount||0).toLocaleString('tr-TR')} TL</span>
         <div class="flex gap-2">
@@ -3462,6 +3516,9 @@ function renderBookingDetail(){
     reddedildi:'<span style="background:#fee2e2;color:#b91c1c;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600">Reddedildi</span>',
   };
   document.getElementById('bdet-status-badge').innerHTML=statusMap[b.durum]||statusMap.bekliyor;
+
+  /* transfer sureci karti */
+  _renderTransferCard(b);
 
   /* booking info */
   document.getElementById('bdet-date').textContent=b.tarih||'—';
@@ -3527,6 +3584,96 @@ function renderBookingDetail(){
     `<button onclick="go('${b.tourId}','detail')" class="flex-1 border border-primary text-primary py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-ship mr-1"></i>Tur Sayfasi</button>`+
     cancelBtn;
 }
+/* Tur Detay — Transfer Süreci Kartı */
+function _renderTransferCard(b){
+  const card=document.getElementById('bdet-transfer-card');
+  if(!card)return;
+  if(b.iptalKategori!=='kaptan_tur_iptali'){card.style.display='none';return;}
+  const ts=_getTransferState(b.id);
+  const st=ts?.state||'arayor';
+  const n=ts?.notif;
+  const GUNLER=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+  let html='';
+  if(st==='arayor'){
+    html=`<div class="card p-4" style="border-left:4px solid #f59e0b">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-search text-amber-600"></i></div>
+        <div>
+          <div class="text-sm font-semibold text-amber-900">Alternatif Tur Aranıyor</div>
+          <div class="text-xs text-amber-700 mt-0.5">Aynı kalkış noktasından uygun tekne aranıyor.</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-800">
+        <span class="w-2 h-2 min-w-[8px] bg-amber-400 rounded-full" style="animation:pulse 1.5s infinite"></span>
+        Aktif arama devam ediyor — en kısa sürede sonuç bildirilecek
+      </div>
+    </div>`;
+  } else if(st==='gun_secenekleri'&&n?.gunSecenekleri&&!n.transferResponded){
+    const gunHtml=(n.gunSecenekleri||[]).map(g=>{
+      const d=new Date((g.tarih||'')+'T12:00:00');
+      const gunAdi=GUNLER[d.getDay()]||'—';
+      const gun=isNaN(d.getDate())?'?':d.getDate();
+      const ay=isNaN(d.getMonth())?'?':String(d.getMonth()+1).padStart(2,'0');
+      return`<button onclick="_cuAcceptFromDetail('${n.havuzId}','${g.id}','${n.id}')" class="w-full text-left p-2.5 rounded-xl border border-primary/30 bg-white active:bg-primaryLight mb-2 flex items-center gap-3">
+        <div class="w-10 h-10 bg-primaryLight rounded-lg flex items-center justify-center flex-shrink-0 text-center">
+          <div><div class="text-[10px] text-primary font-bold leading-none">${gunAdi}</div><div class="text-sm font-black text-primary leading-tight">${gun}</div><div class="text-[9px] text-primary/70">${ay}</div></div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-semibold text-gray-800 truncate">${g.ad||'Tur'}</div>
+          <div class="text-[10px] text-gray-500 truncate">${g.kalkis||'—'} · Saat ${g.saat||'—'}</div>
+        </div>
+        <i class="fas fa-chevron-right text-primary text-xs flex-shrink-0"></i>
+      </button>`;
+    }).join('');
+    html=`<div class="card p-4" style="border-left:4px solid #3b82f6">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-calendar-alt text-primary"></i></div>
+        <div>
+          <div class="text-sm font-semibold text-primary">Alternatif Tur Teklifi</div>
+          <div class="text-xs text-gray-500 mt-0.5">Aynı kalkış noktasında müsait turlar — bir tarih seçin:</div>
+        </div>
+      </div>
+      ${gunHtml}
+      <button onclick="_cuDeclineFromDetail('${n.havuzId}','${n.id}')" class="w-full text-center text-xs text-danger py-2 border border-danger/30 rounded-xl active:bg-red-50 mt-1">
+        <i class="fas fa-undo mr-1"></i>Hayır, tam iade istiyorum
+      </button>
+    </div>`;
+  } else if(st==='transfer_tamamlandi'){
+    html=`<div class="card p-4" style="border-left:4px solid #10b981">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-check-circle text-success text-lg"></i></div>
+        <div>
+          <div class="text-sm font-semibold text-green-800">Transfer Tamamlandı</div>
+          <div class="text-xs text-gray-500 mt-0.5">${n?.body||'Yeni tura aktarıldınız.'}</div>
+        </div>
+      </div>
+    </div>`;
+  } else if(st==='iade_bonus'){
+    const kod=n?.bonusKod||'';
+    html=`<div class="card p-4" style="border-left:4px solid #0369a1">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-gift text-primary text-lg"></i></div>
+        <div>
+          <div class="text-sm font-semibold text-primary">Tam İade + %20 Bonus</div>
+          <div class="text-xs text-gray-500 mt-0.5">Ödemeniz iade edildi.</div>
+        </div>
+      </div>
+      ${kod?`<div class="bg-primaryLight border border-primary/20 rounded-xl p-2.5 flex items-center justify-between"><div class="text-[11px] text-primary font-semibold">Kupon Kodunuz</div><div class="bg-white border border-primary/30 rounded-lg px-3 py-1 text-xs font-bold text-primary tracking-wider">${kod}</div></div>`:''}
+    </div>`;
+  }
+  if(html){card.style.display='';card.innerHTML=html;}
+  else{card.style.display='none';}
+}
+/* Booking-detail sayfasından teklif kabul — re-render için ayrı wrapper */
+function _cuAcceptFromDetail(havuzId,hedefTourId,notifId){
+  cuAcceptDayOption(havuzId,hedefTourId,notifId);
+  renderBookingDetail();
+}
+function _cuDeclineFromDetail(havuzId,notifId){
+  cuDeclineDayOptions(havuzId,notifId);
+  renderBookingDetail();
+}
+
 /* Tur tarih+saatine 24 saatten az kaldı mı? */
 function _tourUnder24h(b){
   if(!b)return false;
