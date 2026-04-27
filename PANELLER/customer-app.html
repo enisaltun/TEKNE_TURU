@@ -1323,7 +1323,8 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
 <nav class="bottom-nav" id="bottom-nav">
   <a href="#home" data-nav="home"><i class="fas fa-home"></i>Ana Sayfa</a>
   <a href="#search" data-nav="search"><i class="fas fa-search"></i>Ara</a>
-  <a href="#tools" data-nav="tools"><i class="fas fa-water"></i>Araçlar</a>
+  <a href="#favorites" data-nav="favorites"><i class="fas fa-heart"></i>Favoriler</a>
+  <a href="#messages" data-nav="messages" style="position:relative"><i class="fas fa-comment-dots"></i>Mesajlar<span id="nav-msg-badge" style="display:none;position:absolute;top:2px;right:12px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;padding:0 3px;line-height:16px;text-align:center">0</span></a>
   <a href="#my-tours" data-nav="my-tours"><i class="fas fa-calendar"></i>Turlarım</a>
   <a href="#profile" data-nav="profile"><i class="fas fa-user"></i>Profil</a>
 </nav>
@@ -1474,6 +1475,7 @@ function doLogin(){
   if(!user||user.password!==pass){showAuthErr('login','E-posta veya sifre yanlis.');passEl.value='';passEl.focus();return;}
   localStorage.setItem('cu_session','active');
   localStorage.setItem('active_user_email',user.email);
+  localStorage.setItem('auth_user',JSON.stringify({email:user.email,plan:user.plan||'free'}));
   const fullName=((user.ad||'')+' '+(user.soyad||'')).trim();
   S.set('cu_profile',{name:fullName,email:user.email,phone:user.phone||'',roles:user.roles||['customer']});
   enterApp();
@@ -1794,6 +1796,8 @@ function handleRoute(){
   if(h==='tools')    renderTools();
   if(h==='favorites')renderFavorites();
   if(h==='messages') {document.getElementById('msg-list-view').style.display='';document.getElementById('msg-chat-view').style.display='none';renderMsgList();}
+  if(h==='confirmation'){const _cb=S.get('db_bookings',[]);if(_cb.length)renderConf(_cb[_cb.length-1]);}
+  /* captain-apply: statik form, render gerekmez */
   if(h==='notifications') renderNotifs();
   if(h==='profile')  renderProfile();
   if(h==='live-sale') renderLiveSale();
@@ -1846,6 +1850,7 @@ window.addEventListener('storage',function(e){
   }
   if(e.key==='db_messages'){
     if(h==='messages'){renderMsgList();if(curChatId)renderChat(curChatId);}
+    updateMsgBadge();
   }
   // Fix #3: admin kaptan başvuruyu onaylayınca profildeki "Kaptan Paneli" butonu canli belirsin
   if(e.key==='db_users'||e.key==='db_captains'){if(h==='profile'&&typeof renderProfile==='function')renderProfile();}
@@ -1870,6 +1875,8 @@ window.addEventListener('load',async function(){
   handleRoute();
   updateClock();
   pollBookingStatus();
+  updateMsgBadge();
+  updateNotifDot();
 });
 
 function updateClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});setTimeout(updateClock,30000);}
@@ -3357,6 +3364,7 @@ function toggleFav(id,btn){
   S.set('cu_favs',favs);
   btn.innerHTML=`<i class="${add?'fas text-danger':'far text-gray-500'} fa-heart text-xs"></i>`;
   showToast(add?'Favorilere eklendi':'Favorilerden kaldirildi');
+  if(window.location.hash==='#favorites')renderFavorites();
 }
 
 function renderFavorites(){
@@ -3430,6 +3438,7 @@ function renderMsgList(){
   }).join('');
   const badge=document.getElementById('msg-unread');
   if(badge)badge.textContent=unread?`${unread} okunmamis`:'';
+  updateMsgBadge();
 }
 
 function openChat(bookingId){
@@ -3443,6 +3452,7 @@ function openChat(bookingId){
   document.getElementById('msg-list-view').style.display='none';
   document.getElementById('msg-chat-view').style.display='flex';
   renderChat(bookingId);
+  updateMsgBadge();
 }
 
 function renderChat(id){
@@ -3497,6 +3507,15 @@ function updateNotifDot(){
   const unread=S.get('cu_notifs',[]).filter(n=>!n.read).length;
   const dot=document.getElementById('notif-dot');
   if(dot)dot.style.display=unread?'block':'none';
+}
+
+function updateMsgBadge(){
+  const msgs=S.get('db_messages',{});
+  const bookings=S.get('db_bookings',[]);
+  let unread=0;
+  bookings.forEach(b=>{unread+=(msgs[b.id]||[]).filter(m=>m.byCaptan&&!m.readByCustomer).length;});
+  const badge=document.getElementById('nav-msg-badge');
+  if(badge){badge.style.display=unread?'':'none';badge.textContent=unread||'';}
 }
 
 function renderNotifs(){
