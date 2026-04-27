@@ -4529,6 +4529,11 @@ function respondFleetMerge(fmrId, notifId, action){
    AKILLI İPTAL MODÜLÜ
    ══════════════════════════════════════════════════════════ */
 
+function timeToMinutes(saat){
+  const p=(saat||'0:0').split(':');
+  return(parseInt(p[0])||0)*60+(parseInt(p[1])||0);
+}
+
 function extractIlce(kalkis){
   if(!kalkis)return'';
   return(kalkis.split(/[\s\/\-,]/)[0]||'').trim().toLowerCase();
@@ -4545,7 +4550,7 @@ function findCandidateTours(cancelledTour,guests){
   const ckalkis=(cancelledTour.kalkis||'').toLowerCase();
   const cilce=extractIlce(cancelledTour.kalkis);
   const ctarih=cancelledTour.tarih||cancelledTour.tarihISO?.slice(0,10)||'';
-  const chour=parseInt(cancelledTour.saat||'0')||0;
+  const cmin=timeToMinutes(cancelledTour.saat);
   return tours.filter(t=>{
     if(String(t.id)===String(cancelledTour.id))return false;
     if(t.captainEmail===cap?.email)return false;
@@ -4556,21 +4561,54 @@ function findCandidateTours(cancelledTour,guests){
     if(bos<guests)return false;
     const tkalkis=(t.kalkis||'').toLowerCase();
     const exact=tkalkis===ckalkis;
-    const ilce=extractIlce(t.kalkis)===cilce;
-    if(!exact&&!ilce)return false;
-    const thour=parseInt(t.saat||'0')||0;
-    if(Math.abs(thour-chour)>1)return false;
-    t._matchScore=(exact?100:50)+(Math.abs(thour-chour)===0?20:0);
+    const sameSehir=extractIlce(t.kalkis)===cilce;
+    if(!exact&&!sameSehir)return false;
+    const tmin=timeToMinutes(t.saat);
+    if(Math.abs(tmin-cmin)>60)return false;
+    t._exactMarina=exact;
+    t._minFark=Math.abs(tmin-cmin);
+    t._matchScore=(exact?100:40)+(t._minFark===0?20:t._minFark<=30?10:0);
     return true;
   }).sort((a,b)=>(b._matchScore||0)-(a._matchScore||0));
+}
+
+function findAlternativeDays(cancelledTour,guests){
+  const tours=S.get('db_tours',[]);
+  const bookings=S.get('db_bookings',[]);
+  const cap=getActiveCaptain();
+  const guestMap={};
+  bookings.filter(b=>['bekliyor','onaylandi'].includes(b.durum)).forEach(b=>{
+    guestMap[String(b.tourId)]=(guestMap[String(b.tourId)]||0)+(+b.guests||1);
+  });
+  const ckalkis=(cancelledTour.kalkis||'').toLowerCase();
+  const baseStr=cancelledTour.tarih||cancelledTour.tarihISO?.slice(0,10)||new Date().toISOString().slice(0,10);
+  const base=new Date(baseStr+'T12:00:00');
+  const results=[];
+  for(let d=1;d<=7;d++){
+    const check=new Date(base);
+    check.setDate(check.getDate()+d);
+    const checkStr=check.toISOString().slice(0,10);
+    tours.forEach(t=>{
+      if(t.captainEmail===cap?.email)return;
+      if(!['aktif','yayinda',undefined,null,''].includes(t.durum))return;
+      const ttarih=t.tarih||t.tarihISO?.slice(0,10)||'';
+      if(ttarih!==checkStr)return;
+      if((t.kalkis||'').toLowerCase()!==ckalkis)return;
+      const bos=(t.kapasite||0)-(guestMap[String(t.id)]||0);
+      if(bos<guests)return;
+      results.push({...t,_gunFark:d,_altTarih:checkStr});
+    });
+  }
+  return results;
 }
 
 function smartCancelModule(tourId,affectedBookings,tour,reason,cuNotifs){
   const totalGuests=affectedBookings.reduce((s,b)=>s+(+b.guests||1),0);
   const candidates=findCandidateTours(tour,totalGuests);
+  const exactCandidates=candidates.filter(c=>c._exactMarina);
+  const altDayCandidates=findAlternativeDays(tour,totalGuests);
   const connections=S.get('ca_connections',[]);
-  const arkadasAdaylar=candidates.filter(c=>connections.some(conn=>conn.captainEmail===c.captainEmail&&conn.acilIstekAktif&&conn.durum==='aktif'));
-  const digerAdaylar=candidates.filter(c=>!connections.some(conn=>conn.captainEmail===c.captainEmail));
+  const isArkadas=c=>connections.some(conn=>conn.captainEmail===c.captainEmail&&conn.acilIstekAktif&&conn.durum==='aktif');
   const havuzEntry={
     id:'YH'+Date.now(),
     kaynak_turId:String(tourId),
@@ -4583,18 +4621,26 @@ function smartCancelModule(tourId,affectedBookings,tour,reason,cuNotifs){
     saat:tour.saat||'',
     kalkis:tour.kalkis||'',
     iptalNedeni:reason,
-    status:candidates.length?'teklif_gonderildi':'cozumsuz',
-    eskalasyon_halkasi:arkadasAdaylar.length?1:digerAdaylar.length?2:0,
+    status:exactCandidates.length?'teklif_gonderildi':altDayCandidates.length?'alternatif_gun':'cozumsuz',
+    eskalasyon_halkasi:exactCandidates.filter(isArkadas).length?1:exactCandidates.length?2:0,
     teklifGonderildi:[],
+    altGunAdaylar:altDayCandidates.slice(0,5).map(t=>({
+      id:String(t.id),ad:t.ad||t.title||'Tur',
+      kalkis:t.kalkis||'',saat:t.saat||'',
+      tarih:t._altTarih||'',gunFark:t._gunFark||0,
+      captainEmail:t.captainEmail||''
+    })),
     createdAt:new Date().toISOString(),
-    resolvedAt:candidates.length?null:new Date().toISOString(),
-    cozum:candidates.length?null:'iade_bonus'
+    resolvedAt:exactCandidates.length||altDayCandidates.length?null:new Date().toISOString(),
+    cozum:exactCandidates.length||altDayCandidates.length?null:'iade_bonus'
   };
   const havuz=S.get('db_yolcu_havuzu',[]);
   havuz.unshift(havuzEntry);
-  if(candidates.length){
+  if(exactCandidates.length){
+    // Birebir ayni marina — otomatik transfer teklifi gonder
     const teklifler=S.get('db_transfer_teklifleri',[]);
-    const ilkGrup=arkadasAdaylar.length?arkadasAdaylar:digerAdaylar.slice(0,3);
+    const arkadaslar=exactCandidates.filter(isArkadas);
+    const ilkGrup=arkadaslar.length?arkadaslar:exactCandidates.slice(0,3);
     ilkGrup.forEach(aday=>{
       const teklif={
         id:'TT'+Date.now()+Math.random().toString(36).slice(2,6),
@@ -4603,12 +4649,12 @@ function smartCancelModule(tourId,affectedBookings,tour,reason,cuNotifs){
         hedefTourId:String(aday.id),
         turTitle:aday.ad||aday.title||'—',
         kaynak_turTitle:tour.ad||tour.title||'—',
-        kalkis:tour.kalkis||'',
+        kalkis:aday.kalkis||tour.kalkis||'',
         guests:totalGuests,
-        saat:tour.saat||'',
-        tarih:tour.tarih||'',
+        saat:aday.saat||'',
+        tarih:aday.tarih||tour.tarih||'',
         status:'bekliyor',
-        halka:arkadasAdaylar.length?'arkadas':'genel',
+        halka:arkadaslar.length?'arkadas':'genel',
         kilitli_mi:false,
         createdAt:new Date().toISOString()
       };
@@ -4620,18 +4666,34 @@ function smartCancelModule(tourId,affectedBookings,tour,reason,cuNotifs){
       cuNotifs.unshift({
         id:Date.now()+Math.random(),
         title:'Alternatif Tur Aranıyor',
-        body:`"${tour.ad||tour.title}" iptal edildi. Ayni kalkis noktasindan size uygun alternatif aranis baslatildi. 30 dakika icinde bilgi veririz.`,
+        body:`"${tour.ad||tour.title}" iptal edildi. Aynı kalkış noktasından uygun tekne aranıyor. En geç 30 dakika içinde bilgi veririz.`,
         type:'warning',ts:new Date().toISOString(),read:false,
         bookingId:b.id,havuzId:havuzEntry.id,modalType:'arayor'
       });
     });
+  } else if(altDayCandidates.length){
+    // Bugün eşleşme yok ama bu hafta aynı marinadan tur var — müşteriye sor
+    const gunSecenekleri=havuzEntry.altGunAdaylar;
+    affectedBookings.forEach(b=>{
+      cuNotifs.unshift({
+        id:Date.now()+Math.random(),
+        title:'Bu Hafta Alternatif Tur Bulundu',
+        body:`Bugün için uygun tekne bulunamadı. Aynı kalkış noktasından önümüzdeki 7 gün içinde ${gunSecenekleri.length} seçenek mevcut.`,
+        type:'info',ts:new Date().toISOString(),read:false,
+        bookingId:b.id,havuzId:havuzEntry.id,
+        modalType:'gun_secenekleri',
+        gunSecenekleri,
+        kaynak_turTitle:tour.ad||tour.title||'—'
+      });
+    });
   } else {
+    // Hiç eşleşme yok — tam iade + bonus
     const bonus='DENIZ20_'+Date.now().toString(36).slice(-4).toUpperCase();
     affectedBookings.forEach(b=>{
       cuNotifs.unshift({
         id:Date.now()+Math.random(),
-        title:'Tam Iade + %20 Bonus Kazandınız',
-        body:`Uygun alternatif bulunamadı. Odemeniz iade edildi. Bir sonraki rezervasyonunuzda ${bonus} kuponunu kullanabilirsiniz.`,
+        title:'Tam İade + %20 Bonus Kazandınız',
+        body:`Uygun alternatif bulunamadı. Ödemeniz iade edildi. Bir sonraki rezervasyonunuzda ${bonus} kuponunu kullanabilirsiniz.`,
         type:'success',ts:new Date().toISOString(),read:false,
         bookingId:b.id,havuzId:havuzEntry.id,modalType:'iade_bonus',bonusKod:bonus
       });
@@ -4697,6 +4759,57 @@ function declineTransferOffer(teklifId,notifId){
   if(ni>=0){notifs[ni].transferResponded='reddedildi';notifs[ni].read=true;S.set('ca_notifications',notifs);}
   renderNotifications();
   showToast('Transfer teklifi reddedildi.');
+}
+
+function acceptDayOption(havuzId,hedefTourId,notifId){
+  const havuz=S.get('db_yolcu_havuzu',[]);
+  const entry=havuz.find(h=>h.id===havuzId);
+  if(!entry){showToast('Kayıt bulunamadı','danger');return;}
+  const tours=S.get('db_tours',[]);
+  const hedefTour=tours.find(t=>String(t.id)===String(hedefTourId));
+  if(!hedefTour){showToast('Seçilen tur artık mevcut değil','danger');return;}
+  const bookings=S.get('db_bookings',[]);
+  entry.bookingIds.forEach(bId=>{
+    const b=bookings.find(x=>x.id===bId);
+    if(b){
+      b.durum='onaylandi';b.iptalNedeni=null;b.iptalKategori=null;
+      b.tourId=String(hedefTourId);
+      b.tourTitle=hedefTour.ad||hedefTour.title||'—';
+      b.captainEmail=hedefTour.captainEmail||'';
+      b.transferFrom=entry.kaynak_turTitle;
+      b.transferAt=new Date().toISOString();
+    }
+  });
+  S.set('db_bookings',bookings);
+  entry.status='cozuldu';entry.cozum='musteri_gun_secimi';entry.resolvedAt=new Date().toISOString();
+  S.set('db_yolcu_havuzu',havuz);
+  const cuNotifs=S.get('cu_notifs',[]);
+  entry.bookingIds.forEach(bId=>{
+    cuNotifs.unshift({
+      id:Date.now()+Math.random(),
+      title:'Turunuz Güvenceye Alındı ✓',
+      body:`"${hedefTour.ad||hedefTour.title}" turuna aktarıldınız. Kalkış: ${hedefTour.kalkis||'—'} · Saat: ${hedefTour.saat||'—'} · Tarih: ${hedefTour.tarih||'—'}`,
+      type:'success',ts:new Date().toISOString(),read:false,bookingId:bId,modalType:'transfer_tamamlandi'
+    });
+  });
+  S.set('cu_notifs',cuNotifs.slice(0,500));
+}
+
+function declineDayOptions(havuzId,notifId){
+  const havuz=S.get('db_yolcu_havuzu',[]);
+  const entry=havuz.find(h=>h.id===havuzId);
+  if(!entry)return;
+  const bonus='DENIZ20_'+Date.now().toString(36).slice(-4).toUpperCase();
+  entry.status='cozumsuz';entry.cozum='musteri_red';entry.resolvedAt=new Date().toISOString();
+  S.set('db_yolcu_havuzu',havuz);
+  const cuNotifs=S.get('cu_notifs',[]);
+  const ni=cuNotifs.findIndex(n=>String(n.id)===String(notifId));
+  if(ni>=0){
+    cuNotifs[ni].modalType='iade_bonus';cuNotifs[ni].bonusKod=bonus;cuNotifs[ni].read=true;
+    cuNotifs[ni].title='Tam İade + %20 Bonus';
+    cuNotifs[ni].body=`Alternatif teklifi reddettiniz. Ödemeniz iade edildi. Kupon: ${bonus}`;
+    S.set('cu_notifs',cuNotifs);
+  }
 }
 
 function cleanYolcuHavuzu(){

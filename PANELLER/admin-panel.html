@@ -12571,9 +12571,165 @@ function adminForceIade(havuzId){
   alert('İade + Bonus kararı müşterilere bildirildi.');
 }
 
+let _mtHavuzId=null,_mtSelectedTourId=null;
+
+function timeToMinutesAdmin(saat){
+  const p=(saat||'0:0').split(':');
+  return(parseInt(p[0])||0)*60+(parseInt(p[1])||0);
+}
+
 function adminManualTransfer(havuzId){
-  alert('Manuel transfer: Rezervasyon sayfasına gidin, yolcuları seçin ve FMR başlatın.');
-  window.location.hash='#reservations';
+  const havuz=lsGet('db_yolcu_havuzu',[]);
+  const entry=havuz.find(h=>h.id===havuzId);
+  if(!entry){showToast('Kayıt bulunamadı','danger');return;}
+  _mtHavuzId=havuzId;
+  _mtSelectedTourId=null;
+  document.getElementById('mt-subtitle').textContent=`${entry.kalkis||'—'} · ${entry.saat||'—'} · ${entry.guests||0} kişi · Kaynak: ${entry.kaynak_turTitle||'—'}`;
+  // Uygun turları filtrele: ayni kalkis, ±60 dk, yeterli kapasite
+  const tours=lsGet('db_tours',[]);
+  const bookings=lsGet('db_bookings',[]);
+  const guestMap={};
+  bookings.filter(b=>['bekliyor','onaylandi'].includes(b.durum)).forEach(b=>{
+    guestMap[String(b.tourId)]=(guestMap[String(b.tourId)]||0)+(+b.guests||1);
+  });
+  const cmin=timeToMinutesAdmin(entry.saat);
+  const ckalkis=(entry.kalkis||'').toLowerCase();
+  const candidates=tours.filter(t=>{
+    if(t.captainEmail===entry.kaynak_captainEmail)return false;
+    if(!['aktif','yayinda',undefined,null,''].includes(t.durum))return false;
+    const ttarih=t.tarih||t.tarihISO?.slice(0,10)||'';
+    const etarih=entry.tarih||entry.tarihISO?.slice(0,10)||'';
+    if(ttarih!==etarih)return false;
+    const bos=(t.kapasite||0)-(guestMap[String(t.id)]||0);
+    if(bos<(entry.guests||0))return false;
+    if((t.kalkis||'').toLowerCase()!==ckalkis)return false;
+    const tmin=timeToMinutesAdmin(t.saat);
+    if(Math.abs(tmin-cmin)>60)return false;
+    return true;
+  });
+  const listEl=document.getElementById('mt-tour-list');
+  const emptyEl=document.getElementById('mt-empty');
+  if(!candidates.length){
+    listEl.innerHTML='';
+    emptyEl.style.display='block';
+  } else {
+    emptyEl.style.display='none';
+    listEl.innerHTML=candidates.map(t=>{
+      const bos=(t.kapasite||0)-(guestMap[String(t.id)]||0);
+      const tmin=timeToMinutesAdmin(t.saat);
+      const dakika=Math.abs(tmin-cmin);
+      return`<div style="border:2px solid #e2e8f0;border-radius:10px;padding:14px;cursor:pointer;transition:all .15s" id="mt-card-${t.id}"
+        onclick="selectMTTour('${t.id}','${(t.ad||t.title||'Tur').replace(/'/g,'&apos;')}','${t.captainEmail||''}','${t.saat||''}',${bos})">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-weight:700;font-size:13px;color:#0f172a">${t.ad||t.title||'—'}</div>
+          <span style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">±${dakika} dk</span>
+        </div>
+        <div style="font-size:11px;color:#64748b"><i class="fas fa-user-tie mr-1"></i>${t.captainEmail||'—'} &nbsp;·&nbsp; <i class="fas fa-clock mr-1"></i>${t.saat||'—'} &nbsp;·&nbsp; <i class="fas fa-users mr-1"></i>${bos} boş yer</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:4px"><i class="fas fa-map-marker-alt mr-1"></i>${t.kalkis||'—'} · ${t.tarih||'—'}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('mt-step1').style.display='block';
+  document.getElementById('mt-step2').style.display='none';
+  document.getElementById('mt-step3').style.display='none';
+  document.getElementById('mt-overlay').style.display='block';
+  document.getElementById('mt-modal').style.display='block';
+}
+
+function selectMTTour(tourId,tourAd,captainEmail,saat,bosYer){
+  _mtSelectedTourId=tourId;
+  document.querySelectorAll('[id^="mt-card-"]').forEach(el=>{
+    el.style.borderColor='#e2e8f0';el.style.background='#fff';
+  });
+  const card=document.getElementById('mt-card-'+tourId);
+  if(card){card.style.borderColor='#0369a1';card.style.background='#eff6ff';}
+  const havuz=lsGet('db_yolcu_havuzu',[]);
+  const entry=havuz.find(h=>h.id===_mtHavuzId);
+  document.getElementById('mt-confirm1-text').innerHTML=
+    `<strong>İptal edilen tur:</strong> ${entry?.kaynak_turTitle||'—'} (${entry?.kalkis||'—'}, ${entry?.saat||'—'})<br>`+
+    `<strong>Hedef tur:</strong> ${tourAd} (${saat}) — Kaptan: ${captainEmail}<br>`+
+    `<strong>Aktarılacak yolcu:</strong> ${entry?.guests||0} kişi (${(entry?.bookingIds||[]).length} rezervasyon)<br>`+
+    `<strong>Boş kapasite:</strong> ${bosYer} yer mevcut`;
+  document.getElementById('mt-step1').style.display='none';
+  document.getElementById('mt-step2').style.display='block';
+}
+
+function confirmManualTransfer2(){
+  if(!_mtSelectedTourId||!_mtHavuzId)return;
+  const tours=lsGet('db_tours',[]);
+  const hedef=tours.find(t=>String(t.id)===String(_mtSelectedTourId));
+  const havuz=lsGet('db_yolcu_havuzu',[]);
+  const entry=havuz.find(h=>h.id===_mtHavuzId);
+  document.getElementById('mt-confirm2-text').innerHTML=
+    `Aşağıdaki işlem <strong>kalıcıdır</strong> ve <strong>geri alınamaz</strong>:<br><br>`+
+    `• <strong>${(entry?.bookingIds||[]).length} rezervasyon</strong> "${hedef?.ad||hedef?.title||'—'}" turuna taşınacak<br>`+
+    `• Müşteri(ler) anında bildirim alacak<br>`+
+    `• Müşteri iletişim bilgileri <strong>${hedef?.captainEmail||'—'}</strong> ile paylaşılacak`;
+  document.getElementById('mt-step2').style.display='none';
+  document.getElementById('mt-step3').style.display='block';
+}
+
+function executeManualTransfer(){
+  if(!_mtSelectedTourId||!_mtHavuzId)return;
+  const havuz=lsGet('db_yolcu_havuzu',[]);
+  const entry=havuz.find(h=>h.id===_mtHavuzId);
+  if(!entry)return;
+  const tours=lsGet('db_tours',[]);
+  const hedefTour=tours.find(t=>String(t.id)===String(_mtSelectedTourId));
+  if(!hedefTour)return;
+  const bookings=lsGet('db_bookings',[]);
+  entry.bookingIds.forEach(bId=>{
+    const b=bookings.find(x=>x.id===bId);
+    if(b){
+      b.durum='onaylandi';b.iptalNedeni=null;b.iptalKategori=null;
+      b.tourId=String(_mtSelectedTourId);
+      b.tourTitle=hedefTour.ad||hedefTour.title||'—';
+      b.captainEmail=hedefTour.captainEmail||'';
+      b.transferFrom=entry.kaynak_turTitle;
+      b.transferAt=new Date().toISOString();
+      b.adminTransfer=true;
+    }
+  });
+  lsSet('db_bookings',bookings);
+  entry.status='cozuldu';entry.cozum='admin_transfer';entry.resolvedAt=new Date().toISOString();
+  entry.hedefCaptainEmail=hedefTour.captainEmail||'';
+  lsSet('db_yolcu_havuzu',havuz);
+  const cuNotifs=lsGet('cu_notifs',[]);
+  entry.bookingIds.forEach(bId=>{
+    cuNotifs.unshift({
+      id:Date.now()+Math.random(),
+      title:'Turunuz Admin Tarafından Güvenceye Alındı ✓',
+      body:`"${hedefTour.ad||hedefTour.title}" turuna aktarıldınız. Kalkış: ${hedefTour.kalkis||'—'} · Saat: ${hedefTour.saat||'—'}`,
+      type:'success',ts:new Date().toISOString(),read:false,bookingId:bId,modalType:'transfer_tamamlandi'
+    });
+  });
+  lsSet('cu_notifs',cuNotifs.slice(0,500));
+  closeMTModal();
+  renderKrizMerkezi();
+  showToast('Transfer başarıyla tamamlandı.','success');
+}
+
+function adminForceIadeFromModal(){
+  closeMTModal();
+  if(_mtHavuzId)adminForceIade(_mtHavuzId);
+}
+
+function backToStep1MT(){
+  _mtSelectedTourId=null;
+  document.querySelectorAll('[id^="mt-card-"]').forEach(el=>{el.style.borderColor='#e2e8f0';el.style.background='#fff';});
+  document.getElementById('mt-step2').style.display='none';
+  document.getElementById('mt-step1').style.display='block';
+}
+
+function backToStep2MT(){
+  document.getElementById('mt-step3').style.display='none';
+  document.getElementById('mt-step2').style.display='block';
+}
+
+function closeMTModal(){
+  document.getElementById('mt-overlay').style.display='none';
+  document.getElementById('mt-modal').style.display='none';
+  _mtHavuzId=null;_mtSelectedTourId=null;
 }
 
 function renderMucbir(){
@@ -13558,5 +13714,54 @@ function subSaveAssignment(){
   showToast('Abonelik güncellendi','success');
 }
 </script>
+
+<!-- Manuel Transfer Modal -->
+<div id="mt-overlay" onclick="closeMTModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000"></div>
+<div id="mt-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:16px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;z-index:9001;box-shadow:0 24px 60px rgba(0,0,0,.25)">
+  <div style="padding:20px 24px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-weight:800;font-size:16px;color:#0f172a"><i class="fas fa-exchange-alt mr-2 text-primary"></i>Manuel Transfer</div>
+      <div id="mt-subtitle" style="font-size:12px;color:#64748b;margin-top:2px"></div>
+    </div>
+    <button onclick="closeMTModal()" style="width:32px;height:32px;border:none;background:#f1f5f9;border-radius:8px;cursor:pointer;font-size:16px;color:#64748b">&times;</button>
+  </div>
+  <div id="mt-step1" style="padding:20px 24px">
+    <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:10px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:16px">
+      <i class="fas fa-filter mr-1"></i>Yalnızca <strong>aynı kalkış noktası</strong> ve <strong>±60 dk saat aralığı</strong>ndaki uygun turlar listeleniyor.
+    </div>
+    <div id="mt-tour-list" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div id="mt-empty" style="display:none;text-align:center;padding:32px;color:#94a3b8;font-size:13px">
+      <i class="fas fa-search text-3xl block mb-3 text-gray-200"></i>
+      Filtrelere uyan uygun tur bulunamadı.<br>
+      <button onclick="adminForceIadeFromModal()" style="margin-top:12px;background:#ef4444;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer"><i class="fas fa-undo mr-1"></i>Zorla İade Başlat</button>
+    </div>
+  </div>
+  <div id="mt-step2" style="display:none;padding:20px 24px">
+    <div style="background:#fff7ed;border:1px solid #f97316;border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="font-weight:700;font-size:13px;color:#c2410c;margin-bottom:6px"><i class="fas fa-exclamation-triangle mr-1"></i>1. Onay — İşlemi gözden geçirin</div>
+      <div id="mt-confirm1-text" style="font-size:12px;color:#7c3aed;line-height:1.6"></div>
+    </div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:16px">
+      Bu işlem onaylanırsa müşteri bilgileri (ad, telefon, e-posta) hedef kaptanla paylaşılacak ve rezervasyon yeni tura aktarılacaktır.
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="backToStep1MT()" style="flex:1;border:1px solid #e2e8f0;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#64748b">Geri Dön</button>
+      <button onclick="confirmManualTransfer2()" style="flex:1;background:#f97316;color:#fff;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer"><i class="fas fa-arrow-right mr-1"></i>Evet, Devam Et</button>
+    </div>
+  </div>
+  <div id="mt-step3" style="display:none;padding:20px 24px">
+    <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="font-weight:800;font-size:14px;color:#dc2626;margin-bottom:8px"><i class="fas fa-shield-alt mr-1"></i>2. Kesin Onay — Bu işlem GERİ ALINAMAZ</div>
+      <div id="mt-confirm2-text" style="font-size:12px;color:#374151;line-height:1.6"></div>
+      <div style="margin-top:10px;background:#fff;border:1px solid #fee2e2;border-radius:8px;padding:10px;font-size:11px;color:#b91c1c">
+        <i class="fas fa-info-circle mr-1"></i>Müşteri anında bildirim alacak ve yeni tur kaptan ile iletişime geçebilecek.
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="backToStep2MT()" style="flex:1;border:1px solid #e2e8f0;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#64748b">Vazgeç</button>
+      <button onclick="executeManualTransfer()" style="flex:1;background:#dc2626;color:#fff;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer"><i class="fas fa-check mr-1"></i>Evet, Kesin Transferi Başlat</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

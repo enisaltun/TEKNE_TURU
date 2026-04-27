@@ -3793,6 +3793,37 @@ function renderNotifs(){
         </div>`:''}
       </div>`;
     }
+    // Özel kart: Bu hafta alternatif gün seçenekleri
+    if(n.modalType==='gun_secenekleri'&&n.gunSecenekleri&&!n.transferResponded){
+      const GUNLER=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+      const gunHtml=(n.gunSecenekleri||[]).map(g=>{
+        const d=new Date((g.tarih||'')+'T12:00:00');
+        const gunAdi=GUNLER[d.getDay()]||'—';
+        const gun=isNaN(d.getDate())?'?':d.getDate();
+        const ay=isNaN(d.getMonth())?'?':String(d.getMonth()+1).padStart(2,'0');
+        return`<button onclick="cuAcceptDayOption('${n.havuzId}','${g.id}','${n.id}')" class="w-full text-left p-2.5 rounded-xl border border-primary/30 bg-white active:bg-primaryLight transition-colors mb-2 flex items-center gap-3">
+          <div class="w-10 h-10 bg-primaryLight rounded-lg flex items-center justify-center flex-shrink-0 text-center">
+            <div><div class="text-[10px] text-primary font-bold leading-none">${gunAdi}</div><div class="text-sm font-black text-primary leading-tight">${gun}</div><div class="text-[9px] text-primary/70">${ay}</div></div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-semibold text-gray-800 truncate">${g.ad||'Tur'}</div>
+            <div class="text-[10px] text-gray-500 truncate">${g.kalkis||'—'} · Saat ${g.saat||'—'}</div>
+          </div>
+          <i class="fas fa-chevron-right text-primary text-xs flex-shrink-0"></i>
+        </button>`;
+      }).join('');
+      return`<div class="card p-3 border-l-4 border-primary ${n.read?'opacity-70':''}">
+        <div class="flex items-start gap-3 mb-3">
+          <div class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><i class="fas fa-calendar-alt text-primary text-sm"></i></div>
+          <div class="flex-1"><div class="text-sm font-medium">${n.title}</div><div class="text-xs text-gray-500 mt-0.5">${n.body}</div><div class="text-[10px] text-gray-400 mt-1">${ago}</div></div>
+        </div>
+        <div class="text-[11px] font-semibold text-gray-600 mb-2">Bir tarih seçin — aynı kalkış noktası, tam eşleşme:</div>
+        ${gunHtml}
+        <button onclick="cuDeclineDayOptions('${n.havuzId}','${n.id}')" class="w-full text-center text-xs text-danger py-2 border border-danger/30 rounded-xl active:bg-red-50 mt-1">
+          <i class="fas fa-undo mr-1"></i>Hayır, tam iade istiyorum
+        </button>
+      </div>`;
+    }
     // Standart kart
     return`<div class="card p-3 flex items-start gap-3 border-l-4 ${s.b} ${n.read?'opacity-60':''}">
       <div class="w-9 h-9 ${s.bg} rounded-full flex items-center justify-center flex-shrink-0"><i class="fas ${s.i} text-sm"></i></div>
@@ -3803,6 +3834,61 @@ function renderNotifs(){
 
 function markAllRead(){
   const n=S.get('cu_notifs',[]);n.forEach(x=>x.read=true);S.set('cu_notifs',n);updateNotifDot();renderNotifs();
+}
+
+function cuAcceptDayOption(havuzId,hedefTourId,notifId){
+  const havuz=S.get('db_yolcu_havuzu',[]);
+  const entry=havuz.find(h=>h.id===havuzId);
+  if(!entry){showToast('Kayıt bulunamadı.','danger');return;}
+  const tours=S.get('db_tours',[]);
+  const hedefTour=tours.find(t=>String(t.id)===String(hedefTourId));
+  if(!hedefTour){showToast('Seçilen tur artık mevcut değil.','danger');return;}
+  const bookings=S.get('db_bookings',[]);
+  entry.bookingIds.forEach(bId=>{
+    const b=bookings.find(x=>x.id===bId);
+    if(b){
+      b.durum='onaylandi';b.iptalNedeni=null;b.iptalKategori=null;
+      b.tourId=String(hedefTourId);
+      b.tourTitle=hedefTour.ad||hedefTour.title||'—';
+      b.captainEmail=hedefTour.captainEmail||'';
+      b.transferFrom=entry.kaynak_turTitle;
+      b.transferAt=new Date().toISOString();
+    }
+  });
+  S.set('db_bookings',bookings);
+  entry.status='cozuldu';entry.cozum='musteri_gun_secimi';entry.resolvedAt=new Date().toISOString();
+  S.set('db_yolcu_havuzu',havuz);
+  const notifs=S.get('cu_notifs',[]);
+  const ni=notifs.findIndex(n=>String(n.id)===String(notifId));
+  if(ni>=0){
+    notifs[ni].transferResponded='kabul';notifs[ni].read=true;
+    notifs[ni].modalType='transfer_tamamlandi';
+    notifs[ni].title='Turunuz Güvenceye Alındı ✓';
+    notifs[ni].body=`"${hedefTour.ad||hedefTour.title}" turuna aktarıldınız. Kalkış: ${hedefTour.kalkis||'—'} · Saat: ${hedefTour.saat||'—'} · Tarih: ${hedefTour.tarih||'—'}`;
+    S.set('cu_notifs',notifs);
+  }
+  showToast('Tur seçiminiz onaylandı!','success');
+  renderNotifs();
+}
+
+function cuDeclineDayOptions(havuzId,notifId){
+  const havuz=S.get('db_yolcu_havuzu',[]);
+  const entry=havuz.find(h=>h.id===havuzId);
+  if(!entry)return;
+  const bonus='DENIZ20_'+Date.now().toString(36).slice(-4).toUpperCase();
+  entry.status='cozumsuz';entry.cozum='musteri_red';entry.resolvedAt=new Date().toISOString();
+  S.set('db_yolcu_havuzu',havuz);
+  const notifs=S.get('cu_notifs',[]);
+  const ni=notifs.findIndex(n=>String(n.id)===String(notifId));
+  if(ni>=0){
+    notifs[ni].modalType='iade_bonus';notifs[ni].bonusKod=bonus;
+    notifs[ni].transferResponded='red';notifs[ni].read=true;
+    notifs[ni].title='Tam İade + %20 Bonus';
+    notifs[ni].body=`Alternatif teklifi reddettiniz. Ödemeniz iade edildi. Kupon: ${bonus}`;
+    S.set('cu_notifs',notifs);
+  }
+  showToast('Tam iade işlemi başlatıldı.','success');
+  renderNotifs();
 }
 
 /* ── PROFILE ── */
