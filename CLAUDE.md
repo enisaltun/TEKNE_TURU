@@ -97,6 +97,17 @@ danger:  #ef4444     success:     #10b981     surface: #f8fafc
 
 Backend bağlantısı yoktur. State, JavaScript değişkenleri ve DOM manipülasyonu ile yönetilir. `renderAll()` / `renderApp()` gibi fonksiyonlar başlangıçta tüm dinamik içeriği render eder.
 
+## Güvenlik Kuralı — Dahili Araç Gizliliği (KESİN KURAL)
+
+Bu kurallar ihlal edilemez; her yeni özellik veya sayfa eklenirken kontrol edilmeli:
+
+- **Müşteri/kullanıcı yüzlü hiçbir sayfada** (`customer-app.html`, `customer-site.html`, `auth.html`) admin paneline, kaptan uygulamasına veya başka dahili araçlara link, buton veya görsel ipucu **bulunmamalıdır.** Bu bağlantılar ticari sırdır.
+- **Kaptan uygulamasında** (`captain-app.html`) admin paneline veya diğer dahili araçlara link bulunmamalıdır.
+- **Test araçları** ("Veriyi Temizle", seed data, debug butonları vb.) kullanıcı arayüzünde **görünmemelidir.**
+- **Geliştirici erişimi** yalnızca sürüm numarasına 5 kez art arda dokunuş (5-tap gesture) ile açılan gizli modal üzerinden sağlanır. Bu modalın varlığına dair hiçbir görsel ipucu gösterilmez.
+- **`index.html`** (prototip hub'ı) şifre kapısıyla korunur. Erişim kodu: `denizdev25`. Bu kod kaynak kodda `btoa()` ile obfüske edilmiştir; düz metin olarak bırakılmamalıdır.
+- Yeni bir panel veya dahili araç eklendiğinde: kullanıcı yüzlü sayfalarda bu araca **hiçbir referans** verilmemelidir.
+
 ## Geliştirme Kuralları
 
 - Her dosya **bağımsızdır** — paylaşılan CSS, JS veya component dosyası yoktur. Bir dosyada yapılan değişiklik diğerlerini etkilemez.

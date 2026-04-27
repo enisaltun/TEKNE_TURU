@@ -93,6 +93,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
 
+<div id="_main-content" style="display:none">
 <!-- Hero -->
 <div style="background:linear-gradient(135deg,#0369a1 0%,#0ea5e9 60%,#38bdf8 100%)" class="pb-10 pt-12 px-6 text-center text-white">
   <div class="flex items-center justify-center gap-3 mb-5">
@@ -185,16 +186,15 @@
       <span class="text-gray-400 text-xs">UI Prototype v1.0.0</span>
     </div>
     <div class="flex gap-5 text-xs text-gray-400">
-      <a href="paneller/customer-app.html" class="hover:text-primary transition">Müşteri</a>
-      <a href="paneller/captain-app.html" class="hover:text-sky-600 transition">Kaptan</a>
-      <a href="paneller/admin-panel.html" class="hover:text-purple-600 transition">Admin</a>
-      <a href="paneller/customer-site.html" class="hover:text-gray-600 transition">Web Sitesi</a>
+      <span class="cursor-default">v1.0.0</span>
     </div>
   </div>
 </div>
 
 <!-- Toast -->
 <div id="hub-toast"><i id="hub-toast-icon" class="fas fa-info-circle"></i><span id="hub-toast-msg"></span></div>
+
+</div><!-- /#_main-content -->
 
 <script>
 /* ═══════════════════════════════════════
@@ -436,7 +436,55 @@ function toast(msg,type='info'){
 }
 
 /* ═══ INIT ═══ */
-render();
+// Şifre kapısı: sessionStorage'da oturum yoksa içerik gizle
+(function(){
+  const SESS_KEY='_dbdev_auth';
+  // btoa('denizdev25') — ticari gizli erişim kodu
+  const _ok=btoa('denizdev25');
+  function _unlock(){
+    document.getElementById('_gate').style.display='none';
+    document.getElementById('_main-content').style.display='block';
+    render();
+  }
+  window._gateSubmit=function(){
+    const v=(document.getElementById('_gate-input').value||'').trim();
+    if(btoa(v)===_ok){sessionStorage.setItem(SESS_KEY,'ok');_unlock();}
+    else{
+      const err=document.getElementById('_gate-err');
+      err.style.display='block';
+      document.getElementById('_gate-input').value='';
+      document.getElementById('_gate-input').focus();
+      setTimeout(()=>{err.style.display='none';},2500);
+    }
+  };
+  window._gateKey=function(e){if(e.key==='Enter')_gateSubmit();};
+  if(sessionStorage.getItem(SESS_KEY)==='ok'){_unlock();}
+  else{
+    document.getElementById('_gate').style.display='flex';
+    document.getElementById('_main-content').style.display='none';
+    // render() çağrılmaz — içerik gizli
+  }
+})();
 </script>
+
+<!-- Şifre Kapısı Overlay -->
+<div id="_gate" style="display:none;position:fixed;inset:0;background:#0f172a;z-index:9999;align-items:center;justify-content:center;flex-direction:column">
+  <div style="background:#1e293b;border-radius:24px;padding:36px 28px;width:320px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)">
+    <div style="width:52px;height:52px;background:#0369a1;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <i class="fas fa-ship" style="color:#fff;font-size:22px"></i>
+    </div>
+    <div style="font-size:20px;font-weight:800;color:#f1f5f9;margin-bottom:4px">DenizBul.tr</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:24px">Geliştirici Erişimi</div>
+    <input id="_gate-input" type="password" placeholder="Erişim kodu..." onkeydown="_gateKey(event)"
+      style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:12px;padding:12px 14px;font-size:14px;color:#f1f5f9;margin-bottom:10px;outline:none;box-sizing:border-box"
+      onfocus="this.style.borderColor='#0369a1'" onblur="this.style.borderColor='#334155'">
+    <div id="_gate-err" style="display:none;font-size:11px;color:#ef4444;margin-bottom:10px"><i class="fas fa-times-circle mr-1"></i>Hatalı erişim kodu</div>
+    <button onclick="_gateSubmit()"
+      style="width:100%;background:#0369a1;color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer">
+      Giriş
+    </button>
+  </div>
+</div>
+
 </body>
 </html>
