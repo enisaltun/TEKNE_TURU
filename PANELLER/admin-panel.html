@@ -436,13 +436,6 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
           <option value="reddedildi">Reddedildi</option>
           <option value="iptal">Iptal</option>
         </select>
-        <select id="res-filter-sort" onchange="renderReservations()" class="px-3 py-2 border rounded-lg text-sm !w-auto">
-          <option value="yeni">En Yeni</option>
-          <option value="eski">En Eski</option>
-          <option value="yuksek">En Yuksek Tutar</option>
-          <option value="dusuk">En Dusuk Tutar</option>
-          <option value="tura-kalan">Tura Kalan Süre</option>
-        </select>
         <select id="res-filter-urgency" onchange="renderReservations()" class="px-3 py-2 border rounded-lg text-sm !w-auto">
           <option value="">Tüm Turlar</option>
           <option value="6">⚠ 6 saatten az</option>
@@ -460,16 +453,16 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         <table>
           <thead>
             <tr>
-              <th>Rez. No</th>
-              <th>Musteri</th>
-              <th>Tur</th>
-              <th>Kaptan</th>
-              <th>Tarih / Saat</th>
-              <th>Misafir</th>
-              <th>Tutar</th>
-              <th>Komisyon</th>
-              <th>Durum</th>
-              <th>Islem</th>
+              <th id="rth-rezno"    onclick="resColSort('rezno')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Rez. No</th>
+              <th id="rth-musteri"  onclick="resColSort('musteri')"  class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Musteri</th>
+              <th id="rth-tur"      onclick="resColSort('tur')"      class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Tur</th>
+              <th id="rth-kaptan"   onclick="resColSort('kaptan')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Kaptan</th>
+              <th id="rth-tarih"    onclick="resColSort('tarih')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Tarih / Saat</th>
+              <th id="rth-misafir"  onclick="resColSort('misafir')"  class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Misafir</th>
+              <th id="rth-tutar"    onclick="resColSort('tutar')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Tutar</th>
+              <th id="rth-komisyon" onclick="resColSort('komisyon')" class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Komisyon</th>
+              <th id="rth-durum"    onclick="resColSort('durum')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Durum</th>
+              <th class="whitespace-nowrap">Islem</th>
             </tr>
           </thead>
           <tbody id="res-tbody">
@@ -616,15 +609,15 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
           <thead>
             <tr>
               <th style="width:32px"><input type="checkbox" id="cap-select-all" onchange="capToggleSelectAll(this)" class="rounded"></th>
-              <th>Kaptan</th>
-              <th>Tekne / Kapasite</th>
-              <th>Bölge</th>
-              <th>Tur İstatistikleri</th>
-              <th>Rezervasyon</th>
-              <th>Evrak</th>
-              <th>Risk</th>
-              <th>Durum</th>
-              <th>İşlem</th>
+              <th id="capth-ad"      onclick="capColSort('ad')"      class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Kaptan</th>
+              <th id="capth-tekne"   onclick="capColSort('tekne')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Tekne / Kapasite</th>
+              <th id="capth-bolge"   onclick="capColSort('bolge')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Bölge</th>
+              <th id="capth-tur"     onclick="capColSort('tur')"     class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Tur İstatistikleri</th>
+              <th id="capth-rez"     onclick="capColSort('rez')"     class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Rezervasyon</th>
+              <th id="capth-evrak"   onclick="capColSort('evrak')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Evrak</th>
+              <th id="capth-risk"    onclick="capColSort('risk')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Risk</th>
+              <th id="capth-durum"   onclick="capColSort('durum')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Durum</th>
+              <th class="whitespace-nowrap">İşlem</th>
             </tr>
           </thead>
           <tbody id="cap-tbody">
@@ -932,18 +925,18 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
           <table>
             <thead>
               <tr>
-                <th>Rez. No</th>
-                <th>Müşteri</th>
-                <th>Tur</th>
-                <th>Kaptan</th>
-                <th>Tarih / Saat</th>
-                <th style="text-align:center">Kişi</th>
-                <th style="text-align:right">Tutar</th>
-                <th style="text-align:right">Komisyon</th>
-                <th style="text-align:right">Kaptan Payı</th>
-                <th>Durum</th>
-                <th>Ödeme</th>
-                <th>İşlem</th>
+                <th id="tbth-rezno"   onclick="tbResColSort('rezno')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Rez. No</th>
+                <th id="tbth-musteri" onclick="tbResColSort('musteri')" class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Müşteri</th>
+                <th id="tbth-tur"     onclick="tbResColSort('tur')"     class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Tur</th>
+                <th id="tbth-kaptan"  onclick="tbResColSort('kaptan')"  class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Kaptan</th>
+                <th id="tbth-tarih"   onclick="tbResColSort('tarih')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Tarih / Saat</th>
+                <th id="tbth-kisi"    onclick="tbResColSort('kisi')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap" style="text-align:center">Kişi</th>
+                <th id="tbth-tutar"   onclick="tbResColSort('tutar')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap" style="text-align:right">Tutar</th>
+                <th id="tbth-komisyon" onclick="tbResColSort('komisyon')" class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap" style="text-align:right">Komisyon</th>
+                <th style="text-align:right" class="whitespace-nowrap">Kaptan Payı</th>
+                <th id="tbth-durum"   onclick="tbResColSort('durum')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Durum</th>
+                <th id="tbth-odeme"   onclick="tbResColSort('odeme')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Ödeme</th>
+                <th class="whitespace-nowrap">İşlem</th>
               </tr>
             </thead>
             <tbody id="bookings-tbody">
@@ -1034,7 +1027,14 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
           <table>
             <thead>
               <tr>
-                <th>Şikayet No</th><th>Müşteri</th><th>Konu</th><th>Kaptan / Tur</th><th>Tarih</th><th>Öncelik</th><th>Durum</th><th>İşlem</th>
+                <th id="cth-id"       onclick="compColSort('id')"       class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Şikayet No</th>
+                <th id="cth-musteri"  onclick="compColSort('musteri')"  class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Müşteri</th>
+                <th id="cth-konu"     onclick="compColSort('konu')"     class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Konu</th>
+                <th id="cth-kaptan"   onclick="compColSort('kaptan')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Kaptan / Tur</th>
+                <th id="cth-tarih"    onclick="compColSort('tarih')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Tarih</th>
+                <th id="cth-oncelik"  onclick="compColSort('oncelik')"  class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Öncelik</th>
+                <th id="cth-durum"    onclick="compColSort('durum')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Durum</th>
+                <th class="whitespace-nowrap">İşlem</th>
               </tr>
             </thead>
             <tbody id="complaints-tbody">
@@ -1172,7 +1172,17 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
       <div class="card">
         <div class="table-container">
           <table>
-            <thead><tr><th>Sipariş No</th><th>Müşteri</th><th>Ürün</th><th>Satıcı</th><th>Tutar</th><th>Komisyon</th><th>Tarih</th><th>Durum</th><th></th></tr></thead>
+            <thead><tr>
+              <th id="saoth-id"       onclick="saOrdColSort('id')"       class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Sipariş No</th>
+              <th id="saoth-musteri"  onclick="saOrdColSort('musteri')"  class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Müşteri</th>
+              <th id="saoth-urun"     onclick="saOrdColSort('urun')"     class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Ürün</th>
+              <th id="saoth-satici"   onclick="saOrdColSort('satici')"   class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Satıcı</th>
+              <th id="saoth-tutar"    onclick="saOrdColSort('tutar')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Tutar</th>
+              <th id="saoth-komisyon" onclick="saOrdColSort('komisyon')" class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Komisyon</th>
+              <th id="saoth-tarih"    onclick="saOrdColSort('tarih')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Tarih</th>
+              <th id="saoth-durum"    onclick="saOrdColSort('durum')"    class="cursor-pointer select-none hover:bg-gray-50 transition whitespace-nowrap">Durum</th>
+              <th></th>
+            </tr></thead>
             <tbody id="sa-orders-tbody"><tr><td colspan="9" class="text-center text-gray-400 py-8 text-xs">Yükleniyor...</td></tr></tbody>
           </table>
         </div>
@@ -6429,6 +6439,43 @@ function renderTBStats(){
 }
 
 let _tbResFilter='all';
+
+/* ── Tablo kolon sıralama (ortak altyapı) ── */
+const _sortState={
+  res:   {col:'tarih',dir:'desc'},
+  tb:    {col:'tarih',dir:'desc'},
+  comp:  {col:'tarih',dir:'desc'},
+  saOrd: {col:'tarih',dir:'desc'},
+  cap:   {col:'ad',   dir:'asc'},
+};
+function _colSort(key,col,renderFn){
+  if(_sortState[key].col===col)_sortState[key].dir=_sortState[key].dir==='asc'?'desc':'asc';
+  else{_sortState[key].col=col;_sortState[key].dir='desc';}
+  renderFn();
+}
+function _updateSortThs(key,cols,labels){
+  const ss=_sortState[key];
+  Object.entries(cols).forEach(([col,thId])=>{
+    const th=document.getElementById(thId);if(!th)return;
+    const active=ss.col===col;
+    const arrow=active?(ss.dir==='asc'?' <i class="fas fa-arrow-up text-[9px]"></i>':' <i class="fas fa-arrow-down text-[9px]"></i>'):'<span style="opacity:0.2;margin-left:3px"><i class="fas fa-sort text-[9px]"></i></span>';
+    th.innerHTML=`<span class="flex items-center gap-0.5 ${active?'text-primary font-bold':''}">${labels[col]}${arrow}</span>`;
+  });
+}
+function _applyColSort(list,ss,fieldMap){
+  const field=fieldMap[ss.col];if(!field)return list;
+  return list.slice().sort((a,b)=>{
+    const va=field(a),vb=field(b);
+    if(typeof va==='number')return ss.dir==='asc'?va-vb:vb-va;
+    return ss.dir==='asc'?String(va||'').localeCompare(String(vb||''),'tr'):String(vb||'').localeCompare(String(va||''),'tr');
+  });
+}
+function resColSort(c){_colSort('res',c,renderReservations);}
+function tbResColSort(c){_colSort('tb',c,renderBookingsTable);}
+function compColSort(c){_colSort('comp',c,renderComplaints);}
+function saOrdColSort(c){_colSort('saOrd',c,saRenderOrders);}
+function capColSort(c){_colSort('cap',c,renderCaptains);}
+
 function tbSetResFilter(f){
   _tbResFilter=f;
   document.querySelectorAll('.tb-res-filter').forEach(b=>b.classList.toggle('active',b.dataset.filter===f));
@@ -6463,6 +6510,20 @@ function renderBookingsTable(){
   if(dt) rows=rows.filter(b=>!b.tarih||b.tarih<=dt);
   const fk=(document.getElementById('res-filter-kaptan')?.value||'').toLowerCase();
   if(fk) rows=rows.filter(b=>(b.captainName||'').toLowerCase().includes(fk));
+
+  rows=_applyColSort(rows,_sortState.tb,{
+    rezno:   b=>b.id||'',
+    musteri: b=>b.customerName||'',
+    tur:     b=>b.tourTitle||'',
+    kaptan:  b=>b.captainName||'',
+    tarih:   b=>b.tarih||'',
+    kisi:    b=>Number(b.guests||b.kisi||0),
+    tutar:   b=>Number(b.amount||0),
+    komisyon:b=>Math.round((b.amount||0)*0.1),
+    durum:   b=>b.durum||'',
+    odeme:   b=>b.odemeYapildi?1:0,
+  });
+  _updateSortThs('tb',{rezno:'tbth-rezno',musteri:'tbth-musteri',tur:'tbth-tur',kaptan:'tbth-kaptan',tarih:'tbth-tarih',kisi:'tbth-kisi',tutar:'tbth-tutar',komisyon:'tbth-komisyon',durum:'tbth-durum',odeme:'tbth-odeme'},{rezno:'Rez. No',musteri:'Müşteri',tur:'Tur',kaptan:'Kaptan',tarih:'Tarih / Saat',kisi:'Kişi',tutar:'Tutar',komisyon:'Komisyon',durum:'Durum',odeme:'Ödeme'});
 
   const countEl=document.getElementById('res-row-count');
   if(countEl)countEl.textContent=rows.length+' rezervasyon';
@@ -6609,10 +6670,16 @@ function renderComplaints(){
 
   const oncelikOrder={yuksek:0,orta:1,dusuk:2};
   const durumOrder={yeni:0,inceleniyor:1,cozuldu:2};
-  if(sort==='tarih-desc')filtered.sort((a,b)=>b.tarih.localeCompare(a.tarih));
-  else if(sort==='tarih-asc')filtered.sort((a,b)=>a.tarih.localeCompare(b.tarih));
-  else if(sort==='oncelik-desc')filtered.sort((a,b)=>(oncelikOrder[a.oncelik]??9)-(oncelikOrder[b.oncelik]??9));
-  else if(sort==='durum')filtered.sort((a,b)=>(durumOrder[a.durum]??9)-(durumOrder[b.durum]??9));
+  filtered=_applyColSort(filtered,_sortState.comp,{
+    id:      c=>c.id||'',
+    musteri: c=>c.customerName||'',
+    konu:    c=>c.konu||'',
+    kaptan:  c=>c.captainName||'',
+    tarih:   c=>c.tarih||'',
+    oncelik: c=>oncelikOrder[c.oncelik]??9,
+    durum:   c=>durumOrder[c.durum]??9,
+  });
+  _updateSortThs('comp',{id:'cth-id',musteri:'cth-musteri',konu:'cth-konu',kaptan:'cth-kaptan',tarih:'cth-tarih',oncelik:'cth-oncelik',durum:'cth-durum'},{id:'Şikayet No',musteri:'Müşteri',konu:'Konu',kaptan:'Kaptan / Tur',tarih:'Tarih',oncelik:'Öncelik',durum:'Durum'});
 
   const countEl=document.getElementById('comp-row-count');
   if(countEl)countEl.textContent=filtered.length+' şikayet';
@@ -9348,8 +9415,6 @@ function renderCaptains(){
   const fEvrak=document.getElementById('cap-filter-evrak')?.value||'';
   const fRisk=document.getElementById('cap-filter-risk')?.value||'';
   const fSikayet=document.getElementById('cap-filter-sikayet')?.value||'';
-  const fSort=document.getElementById('cap-filter-sort')?.value||'yeni';
-
   let filtered=captains.filter(c=>{
     if(fDurum&&c.durum!==fDurum)return false;
     if(fBolge&&!(c.bolge||'').includes(fBolge))return false;
@@ -9366,12 +9431,18 @@ function renderCaptains(){
     return true;
   });
 
-  if(fSort==='puan')filtered.sort((a,b)=>(b.puan||0)-(a.puan||0));
-  else if(fSort==='tur')filtered.sort((a,b)=>allTours.filter(t=>t.captainEmail===b.email).length-allTours.filter(t=>t.captainEmail===a.email).length);
-  else if(fSort==='iptal')filtered.sort((a,b)=>{
-    const rate=c=>{const ct=allTours.filter(t=>t.captainEmail===c.email);const cb=allBookings.filter(b=>ct.some(t=>t.id===b.tourId));const ip=cb.filter(b=>b.durum==='iptal'||b.durum==='reddedildi').length;return cb.length?ip/cb.length:0;};
-    return rate(b)-rate(a);
+  const riskOrder={dusuk:0,orta:1,yuksek:2};
+  filtered=_applyColSort(filtered,_sortState.cap,{
+    ad:    c=>((c.ad||'')+' '+(c.soyad||'')).trim(),
+    tekne: c=>c.tekne||'',
+    bolge: c=>c.bolge||'',
+    tur:   c=>allTours.filter(t=>t.captainEmail===c.email).length,
+    rez:   c=>allBookings.filter(b=>allTours.find(t=>t.captainEmail===c.email&&t.id===b.tourId)).length,
+    evrak: c=>_capHasEvrakEksik(c)?1:0,
+    risk:  c=>riskOrder[_capCalcRisk(c,allTours.filter(t=>t.captainEmail===c.email),allBookings.filter(b=>allTours.find(t=>t.captainEmail===c.email&&t.id===b.tourId)))]??0,
+    durum: c=>c.durum||'',
   });
+  _updateSortThs('cap',{ad:'capth-ad',tekne:'capth-tekne',bolge:'capth-bolge',tur:'capth-tur',rez:'capth-rez',evrak:'capth-evrak',risk:'capth-risk',durum:'capth-durum'},{ad:'Kaptan',tekne:'Tekne / Kapasite',bolge:'Bölge',tur:'Tur İstatistikleri',rez:'Rezervasyon',evrak:'Evrak',risk:'Risk',durum:'Durum'});
 
   if(countEl)countEl.textContent=filtered.length+'/'+total+' kaptan';
 
@@ -10311,7 +10382,6 @@ function renderReservations(){
   const all=lsGet('db_bookings',[]);
   const search=(document.getElementById('res-search')?.value||'').toLowerCase();
   const fDurum=document.getElementById('res-filter-durum')?.value||'';
-  const fSort=document.getElementById('res-filter-sort')?.value||'yeni';
   const fUrgency=parseInt(document.getElementById('res-filter-urgency')?.value||'0')||0;
 
   let list=all.filter(b=>{
@@ -10327,11 +10397,18 @@ function renderReservations(){
     return true;
   });
 
-  if(fSort==='yeni')       list.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-  if(fSort==='eski')       list.sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
-  if(fSort==='yuksek')     list.sort((a,b)=>(b.amount||0)-(a.amount||0));
-  if(fSort==='dusuk')      list.sort((a,b)=>(a.amount||0)-(b.amount||0));
-  if(fSort==='tura-kalan') list.sort((a,b)=>(_hoursLeft(a)||Infinity)-(_hoursLeft(b)||Infinity));
+  list=_applyColSort(list,_sortState.res,{
+    rezno:   b=>b.id||'',
+    musteri: b=>b.customerName||'',
+    tur:     b=>b.tourTitle||'',
+    kaptan:  b=>b.captainName||'',
+    tarih:   b=>b.tarih||'',
+    misafir: b=>Number(b.guests||b.kisi||0),
+    tutar:   b=>Number(b.amount||0),
+    komisyon:b=>Math.round((b.amount||0)*0.1),
+    durum:   b=>b.durum||'',
+  });
+  _updateSortThs('res',{rezno:'rth-rezno',musteri:'rth-musteri',tur:'rth-tur',kaptan:'rth-kaptan',tarih:'rth-tarih',misafir:'rth-misafir',tutar:'rth-tutar',komisyon:'rth-komisyon',durum:'rth-durum'},{rezno:'Rez. No',musteri:'Musteri',tur:'Tur',kaptan:'Kaptan',tarih:'Tarih / Saat',misafir:'Misafir',tutar:'Tutar',komisyon:'Komisyon',durum:'Durum'});
 
   // Stats
   document.getElementById('res-stat-toplam').textContent=all.length;
@@ -12154,6 +12231,18 @@ function saRenderOrders(){
 
   const DURUM={bekliyor:{bg:'#fef3c7',col:'#d97706',lbl:'Bekliyor'},hazirlaniyor:{bg:'#dbeafe',col:'#1d4ed8',lbl:'Hazırlanıyor'},kargoda:{bg:'#e0f2fe',col:'#0284c7',lbl:'Kargoda'},
     'teslim-edildi':{bg:'#dcfce7',col:'#16a34a',lbl:'Teslim Edildi'},iptal:{bg:'#fee2e2',col:'#dc2626',lbl:'İptal'}};
+
+  list=_applyColSort(list,_sortState.saOrd,{
+    id:      o=>o.id||'',
+    musteri: o=>o.musteri||'',
+    urun:    o=>o.urun||'',
+    satici:  o=>o.satici||'',
+    tutar:   o=>Number(o.tutar||0),
+    komisyon:o=>Number(o.komisyon||0),
+    tarih:   o=>o.tarih||'',
+    durum:   o=>o.durum||'',
+  });
+  _updateSortThs('saOrd',{id:'saoth-id',musteri:'saoth-musteri',urun:'saoth-urun',satici:'saoth-satici',tutar:'saoth-tutar',komisyon:'saoth-komisyon',tarih:'saoth-tarih',durum:'saoth-durum'},{id:'Sipariş No',musteri:'Müşteri',urun:'Ürün',satici:'Satıcı',tutar:'Tutar',komisyon:'Komisyon',tarih:'Tarih',durum:'Durum'});
 
   const cnt=document.getElementById('sa-ord-count');
   if(cnt)cnt.textContent=list.length+' sipariş';
