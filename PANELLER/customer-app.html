@@ -807,10 +807,17 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
       <p class="text-[10px] text-gray-400 mt-2 text-center"><i class="fas fa-info-circle mr-0.5"></i>Liman veya marina giris saatine dikkat edin</p>
     </div>
 
-    <div class="flex gap-2">
-      <button onclick="navigateTo('messages')" class="flex-1 border py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-comment mr-1"></i>Kaptana Yaz</button>
-      <button onclick="navigateTo('my-tours')" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-list mr-1"></i>Turlarim</button>
-    </div>
+    <!-- bottom padding for sticky bar -->
+    <div style="height:80px"></div>
+  </div>
+  <!-- Sabit aksiyon bar — içerik ne kadar uzarsa uzasın görünür -->
+  <div style="position:sticky;bottom:0;left:0;right:0;background:#f8fafc;border-top:1px solid #e2e8f0;padding:12px 16px;display:flex;gap:10px;z-index:50">
+    <button onclick="navigateTo('messages')" style="flex:1;border:1.5px solid #0369a1;color:#0369a1;background:#fff;padding:13px;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+      <i class="fas fa-comment" style="font-size:12px"></i>Kaptana Yaz
+    </button>
+    <button onclick="navigateTo('my-tours')" style="flex:1;background:#0369a1;color:#fff;border:none;padding:13px;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+      <i class="fas fa-list" style="font-size:12px"></i>Turlarım
+    </button>
   </div>
 </section>
 
