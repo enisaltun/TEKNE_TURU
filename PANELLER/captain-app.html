@@ -2875,7 +2875,11 @@ function initWizardCal(){
   wizardDates=[];
   renderWizardCal();
 }
-function calPrev(){calM--;if(calM<0){calM=11;calY--;}renderWizardCal();}
+function calPrev(){
+  const now=new Date();
+  if(calY===now.getFullYear()&&calM===now.getMonth())return;
+  calM--;if(calM<0){calM=11;calY--;}renderWizardCal();
+}
 function calNext(){calM++;if(calM>11){calM=0;calY++;}renderWizardCal();}
 
 function renderWizardCal(){
@@ -2886,6 +2890,10 @@ function renderWizardCal(){
   if(!grid)return;
 
   const today=new Date();today.setHours(0,0,0,0);
+  const now=new Date();
+  const atCurrentMonth=(calY===now.getFullYear()&&calM===now.getMonth());
+  const prevBtn=document.querySelector('[onclick="calPrev()"]');
+  if(prevBtn){prevBtn.style.opacity=atCurrentMonth?'0.3':'1';prevBtn.style.cursor=atCurrentMonth?'default':'pointer';}
   const firstDay=new Date(calY,calM,1);
   const startOffset=(firstDay.getDay()+6)%7; // Pazartesi=0
   const daysInMonth=new Date(calY,calM+1,0).getDate();
@@ -2895,7 +2903,7 @@ function renderWizardCal(){
   for(let d=1;d<=daysInMonth;d++){
     const iso=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const date=new Date(calY,calM,d);
-    const isPast=date<today;
+    const isPast=date<=today;
     const isSel=wizardDates.includes(iso);
     const isToday=date.getTime()===today.getTime();
     const dow=date.getDay(); // 0=Paz,6=Ct
@@ -3337,8 +3345,15 @@ function editTourApp(id){
   const capEl=document.getElementById('capacity-val');
   if(capEl) capEl.textContent=capacity;
   calcPerPerson();
-  // Step 3 — tarihler & saatler
-  wizardDates=[...(t.tarihler||[])];
+  // Step 3 — tarihler & saatler (geçmiş tarihler otomatik temizlenir)
+  const _tomorrow=new Date();_tomorrow.setHours(0,0,0,0);_tomorrow.setDate(_tomorrow.getDate()+1);
+  const _allDates=t.tarihler||[];
+  const _futureDates=_allDates.filter(iso=>new Date(iso)>=_tomorrow);
+  wizardDates=[..._futureDates];
+  if(_futureDates.length<_allDates.length){
+    const _removed=_allDates.length-_futureDates.length;
+    showToast(`${_removed} geçmiş tarih düzenleme için kaldırıldı`,'warning');
+  }
   document.querySelectorAll('#wizard-3 .pill').forEach(el=>{
     el.classList.toggle('selected',(t.saatler||[]).includes(el.textContent.trim()));
   });

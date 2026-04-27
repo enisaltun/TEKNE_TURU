@@ -450,23 +450,40 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <!-- PAGE: REZERVASYON YONETIMI             -->
   <!-- ======================================= -->
   <section id="page-reservations" class="page">
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-4">
       <h1 class="text-xl font-bold">Rezervasyon Yonetimi</h1>
       <button onclick="exportBookings()" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"><i class="fas fa-download mr-1"></i> Dis Aktar</button>
     </div>
 
-    <!-- Stat cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <!-- Zaman Dönemi Sekmeleri -->
+    <div class="flex gap-2 mb-5">
+      <button id="res-tab-yaklasan" onclick="setResPeriod('yaklasan')" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white shadow-sm transition">
+        <i class="fas fa-arrow-right text-xs"></i>Yaklaşan
+        <span id="res-tab-cnt-yaklasan" class="bg-white/25 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+      </button>
+      <button id="res-tab-gecmis" onclick="setResPeriod('gecmis')" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+        <i class="fas fa-history text-xs"></i>Geçmiş
+        <span id="res-tab-cnt-gecmis" class="bg-gray-200 text-gray-500 text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+      </button>
+      <button id="res-tab-tumu" onclick="setResPeriod('tumu')" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+        <i class="fas fa-list text-xs"></i>Tümü
+        <span id="res-tab-cnt-tumu" class="bg-gray-200 text-gray-500 text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+      </button>
+    </div>
+
+    <!-- Stat cards — 5 sütun -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
       <div class="stat-card"><div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-calendar-check"></i></div><div><div class="text-xl font-bold" id="res-stat-toplam">0</div><div class="text-xs text-gray-500">Toplam</div></div></div>
-      <div class="stat-card"><div class="stat-icon bg-green-100 text-success"><i class="fas fa-check-circle"></i></div><div><div class="text-xl font-bold" id="res-stat-bekliyor">0</div><div class="text-xs text-gray-500">Aktif</div></div></div>
-      <div class="stat-card"><div class="stat-icon bg-blue-100 text-blue-600"><i class="fas fa-flag-checkered"></i></div><div><div class="text-xl font-bold" id="res-stat-onaylandi">0</div><div class="text-xs text-gray-500">Tamamlandi</div></div></div>
-      <div class="stat-card"><div class="stat-icon bg-red-100 text-danger"><i class="fas fa-times-circle"></i></div><div><div class="text-xl font-bold" id="res-stat-iptal">0</div><div class="text-xs text-gray-500">Iptal / Red</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-green-100 text-success"><i class="fas fa-clock"></i></div><div><div class="text-xl font-bold" id="res-stat-yaklasan">0</div><div class="text-xs text-gray-500">Yaklaşan Aktif</div></div></div>
+      <div class="stat-card" style="background:#fff7ed"><div class="stat-icon bg-orange-100 text-orange-500"><i class="fas fa-exclamation-triangle"></i></div><div><div class="text-xl font-bold text-orange-500" id="res-stat-gecikmiş">0</div><div class="text-xs text-gray-500">Gecikmiş</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-blue-100 text-blue-600"><i class="fas fa-flag-checkered"></i></div><div><div class="text-xl font-bold" id="res-stat-onaylandi">0</div><div class="text-xs text-gray-500">Tamamlandı</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-red-100 text-danger"><i class="fas fa-times-circle"></i></div><div><div class="text-xl font-bold" id="res-stat-iptal">0</div><div class="text-xs text-gray-500">İptal / Red</div></div></div>
     </div>
 
     <!-- Filtreler -->
     <div class="card mb-4">
       <div class="flex flex-wrap gap-3 items-center">
-        <input type="text" id="res-search" placeholder="Musteri, tur veya no ile ara..." oninput="renderReservations()" class="!w-64 px-3 py-2 border rounded-lg text-sm">
+        <input type="text" id="res-search" placeholder="Musteri, tur veya no ile ara..." oninput="renderReservations()" class="!w-56 px-3 py-2 border rounded-lg text-sm">
         <select id="res-filter-durum" onchange="renderReservations()" class="px-3 py-2 border rounded-lg text-sm !w-auto">
           <option value="">Tum Durumlar</option>
           <option value="bekliyor">Bekliyor</option>
@@ -483,6 +500,15 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
           <option value="48">48 saatten az</option>
           <option value="72">72 saatten az</option>
         </select>
+        <div class="flex items-center gap-2 ml-auto flex-wrap">
+          <span class="text-xs text-gray-400 font-medium">Tarih aralığı:</span>
+          <input type="date" id="res-date-from" onchange="renderReservations()" class="px-2 py-1.5 border rounded-lg text-xs !w-auto" title="Başlangıç tarihi">
+          <span class="text-gray-300 text-sm">—</span>
+          <input type="date" id="res-date-to" onchange="renderReservations()" class="px-2 py-1.5 border rounded-lg text-xs !w-auto" title="Bitiş tarihi">
+          <button onclick="setResDateQuick('week')" class="px-2.5 py-1.5 border rounded-lg text-xs font-medium hover:bg-gray-50 whitespace-nowrap">Bu Hafta</button>
+          <button onclick="setResDateQuick('month')" class="px-2.5 py-1.5 border rounded-lg text-xs font-medium hover:bg-gray-50 whitespace-nowrap">Bu Ay</button>
+          <button onclick="setResDateQuick('clear')" class="text-xs text-gray-400 hover:text-gray-600 px-1" title="Tarih filtresini temizle"><i class="fas fa-times"></i></button>
+        </div>
       </div>
     </div>
 
@@ -10548,22 +10574,67 @@ function updateMsgBadge(){
   if(b){b.style.display=cnt?'':'none';b.textContent=cnt;}
 }
 
+let _resPeriod='yaklasan';
+
+function setResPeriod(p){
+  _resPeriod=p;
+  ['yaklasan','gecmis','tumu'].forEach(tab=>{
+    const btn=document.getElementById('res-tab-'+tab);
+    const cnt=document.getElementById('res-tab-cnt-'+tab);
+    if(!btn)return;
+    const active=tab===p;
+    btn.className=`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${active?'bg-primary text-white shadow-sm':'bg-gray-100 text-gray-600 hover:bg-gray-200'}`;
+    if(cnt)cnt.className=`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${active?'bg-white/25 text-white':'bg-gray-200 text-gray-500'}`;
+  });
+  renderReservations();
+}
+
+function setResDateQuick(mode){
+  const from=document.getElementById('res-date-from');
+  const to=document.getElementById('res-date-to');
+  if(!from||!to)return;
+  const t=new Date();
+  if(mode==='week'){
+    const mon=new Date(t);mon.setDate(t.getDate()-((t.getDay()+6)%7));
+    const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+    from.value=mon.toISOString().slice(0,10);
+    to.value=sun.toISOString().slice(0,10);
+  }else if(mode==='month'){
+    from.value=new Date(t.getFullYear(),t.getMonth(),1).toISOString().slice(0,10);
+    to.value=new Date(t.getFullYear(),t.getMonth()+1,0).toISOString().slice(0,10);
+  }else{
+    from.value='';to.value='';
+  }
+  renderReservations();
+}
+
 function renderReservations(){
   const all=lsGet('db_bookings',[]);
+  const today=new Date();today.setHours(0,0,0,0);
+  const _bDate=b=>{const iso=b.tarihISO||b.tur_tarihi||null;if(!iso)return null;const d=new Date(iso);d.setHours(0,0,0,0);return d;};
+  const _isOverdue=b=>{const d=_bDate(b);return d&&d<today&&['bekliyor','onaylandi'].includes(b.durum||'');};
+
   const search=(document.getElementById('res-search')?.value||'').toLowerCase();
   const fDurum=document.getElementById('res-filter-durum')?.value||'';
   const fUrgency=parseInt(document.getElementById('res-filter-urgency')?.value||'0')||0;
+  const fFrom=document.getElementById('res-date-from')?.value||'';
+  const fTo=document.getElementById('res-date-to')?.value||'';
+
+  // Sekme badge sayıları
+  const cntY=all.filter(b=>{const d=_bDate(b);return!d||d>=today;}).length;
+  const cntG=all.filter(b=>{const d=_bDate(b);return d&&d<today;}).length;
+  const setSpan=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  setSpan('res-tab-cnt-yaklasan',cntY);setSpan('res-tab-cnt-gecmis',cntG);setSpan('res-tab-cnt-tumu',all.length);
 
   let list=all.filter(b=>{
+    const d=_bDate(b);
+    if(_resPeriod==='yaklasan'&&d&&d<today)return false;
+    if(_resPeriod==='gecmis'&&(!d||d>=today))return false;
+    if(fFrom){const fd=new Date(fFrom);fd.setHours(0,0,0,0);if(!d||d<fd)return false;}
+    if(fTo){const td=new Date(fTo);td.setHours(23,59,59,999);if(!d||d>td)return false;}
     if(fDurum&&b.durum!==fDurum)return false;
-    if(fUrgency){
-      const h=_hoursLeft(b);
-      if(h===Infinity||h<0||h>=fUrgency)return false;
-    }
-    if(search){
-      const hay=[(b.id||''),(b.customerName||''),(b.tourTitle||''),(b.captainName||'')].join(' ').toLowerCase();
-      if(!hay.includes(search))return false;
-    }
+    if(fUrgency){const h=_hoursLeft(b);if(h===Infinity||h<0||h>=fUrgency)return false;}
+    if(search){const hay=[(b.id||''),(b.customerName||''),(b.tourTitle||''),(b.captainName||'')].join(' ').toLowerCase();if(!hay.includes(search))return false;}
     return true;
   });
 
@@ -10572,7 +10643,7 @@ function renderReservations(){
     musteri: b=>b.customerName||'',
     tur:     b=>b.tourTitle||'',
     kaptan:  b=>b.captainName||'',
-    tarih:   b=>b.tarih||'',
+    tarih:   b=>b.tarihISO||b.tur_tarihi||b.tarih||'',
     misafir: b=>Number(b.guests||b.kisi||0),
     tutar:   b=>Number(b.amount||0),
     komisyon:b=>Math.round((b.amount||0)*0.1),
@@ -10581,10 +10652,12 @@ function renderReservations(){
   _updateSortThs('res',{rezno:'rth-rezno',musteri:'rth-musteri',tur:'rth-tur',kaptan:'rth-kaptan',tarih:'rth-tarih',misafir:'rth-misafir',tutar:'rth-tutar',komisyon:'rth-komisyon',durum:'rth-durum'},{rezno:'Rez. No',musteri:'Musteri',tur:'Tur',kaptan:'Kaptan',tarih:'Tarih / Saat',misafir:'Misafir',tutar:'Tutar',komisyon:'Komisyon',durum:'Durum'});
 
   // Stats
-  document.getElementById('res-stat-toplam').textContent=all.length;
-  document.getElementById('res-stat-bekliyor').textContent=all.filter(b=>b.durum==='onaylandi'||b.durum==='bekliyor').length;
-  document.getElementById('res-stat-onaylandi').textContent=all.filter(b=>b.durum==='tamamlandi').length;
-  document.getElementById('res-stat-iptal').textContent=all.filter(b=>b.durum==='iptal'||b.durum==='reddedildi').length;
+  const setS=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  setS('res-stat-toplam',all.length);
+  setS('res-stat-yaklasan',all.filter(b=>{const d=_bDate(b);return(!d||d>=today)&&['bekliyor','onaylandi'].includes(b.durum||'');}).length);
+  setS('res-stat-gecikmiş',all.filter(_isOverdue).length);
+  setS('res-stat-onaylandi',all.filter(b=>b.durum==='tamamlandi').length);
+  setS('res-stat-iptal',all.filter(b=>b.durum==='iptal'||b.durum==='reddedildi').length);
 
   // Badge — işlenmemiş iade talebi varsa göster
   const bekleyenIade=all.filter(b=>b.refundStatus==='pending').length;
@@ -10595,7 +10668,8 @@ function renderReservations(){
   if(!tbody)return;
 
   if(!list.length){
-    tbody.innerHTML=`<tr><td colspan="10" class="text-center text-gray-400 py-10 text-xs"><i class="fas fa-calendar text-3xl block mb-2 opacity-20"></i>${search||fDurum?'Eslesen rezervasyon bulunamadi':'Henuz rezervasyon yok'}</td></tr>`;
+    const msg=search||fDurum||fFrom||fTo?'Filtre koşullarına uyan rezervasyon bulunamadı':'Henüz rezervasyon yok';
+    tbody.innerHTML=`<tr><td colspan="10" class="text-center text-gray-400 py-10 text-xs"><i class="fas fa-calendar text-3xl block mb-2 opacity-20"></i>${msg}</td></tr>`;
     document.getElementById('res-count').textContent='0 rezervasyon';
     document.getElementById('res-total-amount').textContent='';
     return;
@@ -10612,7 +10686,8 @@ function renderReservations(){
     const kom=Math.round((b.amount||0)*0.1);
     const urgInfo=_urgencyInfo(b);
     const urgCls=urgInfo?urgInfo.cls:'';
-    const rowBg=urgCls||(durum==='bekliyor'?'bg-amber-50/50':'');
+    const isOv=_isOverdue(b);
+    const rowBg=isOv?'bg-orange-50':urgCls||(durum==='bekliyor'?'bg-amber-50/50':'');
     const cuUser=cuUsers.find(u=>u.email===b.customerEmail||u.name===b.customerName);
     const email=b.customerEmail||cuUser?.email||null;
     const phone=b.customerPhone||cuUser?.phone||null;
@@ -10621,7 +10696,7 @@ function renderReservations(){
       <td><div class="flex items-center gap-2"><div class="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600 flex-shrink-0">${(b.customerName||'M')[0]}</div><div><div class="font-medium text-sm">${b.customerName||'Misafir'}</div>${email?`<div class="text-[10px] text-gray-400">${email}</div>`:''}${phone?`<div class="text-[10px] text-gray-400"><i class="fas fa-phone text-[8px]"></i> ${phone}</div>`:''}</div></div></td>
       <td><div class="text-sm font-medium max-w-[160px] truncate">${b.tourTitle||'—'}</div></td>
       <td class="text-xs text-gray-500">${b.captainName||'—'}</td>
-      <td><div class="text-sm">${b.tarih||'—'}</div><div class="text-[10px] text-gray-400">${b.saat||'—'}</div>${_urgencyBadge(urgInfo)}</td>
+      <td><div class="text-sm">${b.tarih||'—'}</div><div class="text-[10px] text-gray-400">${b.saat||'—'}</div>${isOv?'<div class="text-[9px] font-semibold text-orange-600 mt-0.5"><i class="fas fa-exclamation-circle mr-0.5"></i>Gecikmiş</div>':_urgencyBadge(urgInfo)}</td>
       <td class="text-center text-sm">${b.guests||1}</td>
       <td class="font-semibold text-sm">${(b.amount||0).toLocaleString('tr-TR')} TL</td>
       <td class="text-accent text-sm">${kom.toLocaleString('tr-TR')} TL</td>
@@ -10633,7 +10708,6 @@ function renderReservations(){
       </td>
     </tr>`;
   }).join('');
-  // FMR widget'ını rezervasyon filtresine göre senkronize et
   if(document.getElementById('dash-fmr-list'))syncFMRFilterFromRes();
 }
 
