@@ -1479,6 +1479,39 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
   </div>
 </div>
 
+<!-- CANCEL CONFIRM SHEET -->
+<div class="bottom-sheet" id="cancel-confirm-sheet">
+  <div class="swipe-indicator"></div>
+
+  <!-- Normal iptal akışı -->
+  <div id="cc-normal-flow" class="pt-2 pb-1">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-11 h-11 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-times-circle text-danger text-lg"></i>
+      </div>
+      <div>
+        <h2 class="font-bold text-base text-gray-900">Rezervasyonu İptal Et</h2>
+        <p id="cc-tour-name" class="text-xs text-gray-500 mt-0.5"></p>
+      </div>
+    </div>
+    <div id="cc-policy-card" class="rounded-2xl p-4 mb-4"></div>
+    <div id="cc-payment-row" class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 mb-4">
+      <span class="text-sm text-gray-600">Ödenen tutar</span>
+      <span id="cc-paid-amt" class="text-sm font-semibold text-gray-900"></span>
+    </div>
+    <div class="flex gap-3 mb-3">
+      <button onclick="closeSheet()" class="flex-1 border border-gray-300 py-3 rounded-xl text-sm font-medium text-gray-700">Vazgeç</button>
+      <button id="cc-confirm-btn" onclick="executeCancelBooking()" class="flex-1 py-3 rounded-xl text-sm font-semibold text-white" style="background:#ef4444">İptali Onayla</button>
+    </div>
+    <button onclick="openMucbirFlow()" class="w-full py-2.5 rounded-xl text-sm font-medium text-primary border border-primary/30 bg-primaryLight/30 hover:bg-primaryLight transition flex items-center justify-center gap-2">
+      <i class="fas fa-shield-alt text-sm"></i>Mücbir Sebep Bildir
+    </button>
+  </div>
+
+  <!-- Mücbir sebep akışı -->
+  <div id="cc-mucbir-flow" style="display:none" class="pt-2 pb-1"></div>
+</div>
+
 <!-- PROFILE EDIT SHEET -->
 <div class="bottom-sheet" id="edit-sheet">
   <div class="swipe-indicator"></div>
@@ -3160,7 +3193,7 @@ function _parseDurMinutes(durStr){
   const m=/(\d+(?:[.,]\d+)?)/.exec(s);
   return m?Math.round(+m[1].replace(',','.')*60):240;
 }
-function _checkBookingConflict(targetDate,targetTimeStr,tourDurStr){
+function _checkBookingConflict(targetDate,targetTimeStr,tourDurStr,targetTourId){
   if(!targetDate)return{conflict:false};
   const myBkIds=new Set(S.get('cu_bookings',[]));
   if(!myBkIds.size)return{conflict:false};
@@ -3172,6 +3205,10 @@ function _checkBookingConflict(targetDate,targetTimeStr,tourDurStr){
   const newIsFullDay=newStart===null||newDur>=420;
   const newEnd=newStart!==null?newStart+newDur:null;
   for(const b of myOnDate){
+    // Aynı tur — fiziksel çakışma değil, yumuşak uyarı döndür
+    if(targetTourId&&String(b.tourId)===String(targetTourId)){
+      return{conflict:true,type:'ayni_tur',booking:b,tourName:b.tourTitle||'Bu tur'};
+    }
     const existTour=S.get('db_tours',[]).find(t=>String(t.id)===String(b.tourId));
     const existDurStr=existTour?.dur||existTour?.sure||'';
     const existStart=_parseMinutes(b.saat);
@@ -3196,16 +3233,32 @@ function _updateConflictBanner(){
   const msgEl=document.getElementById('booking-conflict-msg');
   const proceedBtn=document.getElementById('booking-proceed-btn');
   if(!banner)return;
-  const r=_checkBookingConflict(selDate,selTime,t?.dur||t?.sure||'');
+  const r=_checkBookingConflict(selDate,selTime,t?.dur||t?.sure||'',t?.id);
   if(r.conflict){
-    const text=r.type==='tamgun'
-      ?`"${r.tourName}" rezervasyonunuz bu tarihte tam gün sürmekte. Aynı gün başka tur rezervasyonu yapılamaz.`
-      :`"${r.tourName}" rezervasyonunuz bu tarihte ${r.range} saatleri arasında — seçilen saat çakışıyor.`;
-    if(msgEl)msgEl.textContent=text;
-    banner.style.display='block';
-    if(proceedBtn){proceedBtn.disabled=true;proceedBtn.style.opacity='0.4';proceedBtn.style.pointerEvents='none';proceedBtn.innerHTML='<i class="fas fa-ban mr-2"></i>Rezervasyon Çakışıyor';}
+    if(r.type==='ayni_tur'){
+      const text=`Bu tura zaten rezervasyonunuz var. İkinci bir yer de ekleyebilirsiniz — devam etmek istiyorsanız ödemeye geçin.`;
+      if(msgEl)msgEl.textContent=text;
+      banner.style.display='block';
+      banner.style.background='#fefce8';
+      banner.style.borderColor='#fbbf24';
+      if(msgEl)msgEl.style.color='#92400e';
+      if(proceedBtn){proceedBtn.disabled=false;proceedBtn.style.opacity='1';proceedBtn.style.pointerEvents='auto';proceedBtn.innerHTML='<i class="fas fa-arrow-right mr-2"></i>Odemeye Gec';}
+    }else{
+      const text=r.type==='tamgun'
+        ?`"${r.tourName}" rezervasyonunuz bu tarihte tam gün sürmekte. Aynı gün başka tur rezervasyonu yapılamaz.`
+        :`"${r.tourName}" rezervasyonunuz bu tarihte ${r.range} saatleri arasında — seçilen saat çakışıyor.`;
+      if(msgEl)msgEl.textContent=text;
+      banner.style.display='block';
+      banner.style.background='';
+      banner.style.borderColor='';
+      if(msgEl)msgEl.style.color='';
+      if(proceedBtn){proceedBtn.disabled=true;proceedBtn.style.opacity='0.4';proceedBtn.style.pointerEvents='none';proceedBtn.innerHTML='<i class="fas fa-ban mr-2"></i>Rezervasyon Çakışıyor';}
+    }
   }else{
     banner.style.display='none';
+    banner.style.background='';
+    banner.style.borderColor='';
+    if(msgEl)msgEl.style.color='';
     if(proceedBtn){
       const noDate=!t||!_activeDates(t).length;
       if(!noDate){proceedBtn.disabled=false;proceedBtn.style.opacity='1';proceedBtn.style.pointerEvents='auto';proceedBtn.innerHTML='<i class="fas fa-arrow-right mr-2"></i>Odemeye Gec';}
@@ -3220,8 +3273,8 @@ async function doBooking(){
   if(turDurum!=='aktif'){showToast('Bu tur şu anda rezervasyona açık değil','danger');_paySetLoading(false);return;}
   if(!_activeDates(t).length){showToast('Bu tur icin kaptan henuz tarih belirlemedi','danger');_paySetLoading(false);return;}
   if(!selDate){showToast('Lutfen bir tarih secin','danger');_paySetLoading(false);return;}
-  const _conflict=_checkBookingConflict(selDate,selTime,t.dur||t.sure||'');
-  if(_conflict.conflict){
+  const _conflict=_checkBookingConflict(selDate,selTime,t.dur||t.sure||'',t.id);
+  if(_conflict.conflict&&_conflict.type!=='ayni_tur'){
     const _cmsg=_conflict.type==='tamgun'
       ?`"${_conflict.tourName}" rezervasyonunuz bu tarihte tam gün sürmekte — aynı gün başka tur yapılamaz.`
       :`"${_conflict.tourName}" rezervasyonunuz ${_conflict.range} saatleri arasında — seçilen saat çakışıyor.`;
@@ -3407,9 +3460,10 @@ function renderMyTours(tab){
     const ts=_getTransferState(b.id);
     return!ts||ts.state==='arayor'||ts.state==='gun_secenekleri';
   };
-  const up=all.filter(b=>(b.durum!=='iptal'&&b.durum!=='reddedildi'&&b.durum!=='tamamlandi')||_kaptanPending(b));
-  const past=all.filter(b=>b.durum==='tamamlandi');
-  const canc=all.filter(b=>(b.durum==='iptal'||b.durum==='reddedildi')&&!_kaptanPending(b));
+  const _isMucbirAskiya=b=>!!b.mucbirAskiya;
+  const up=all.filter(b=>(b.durum!=='iptal'&&b.durum!=='reddedildi'&&b.durum!=='tamamlandi')||_kaptanPending(b)||_isMucbirAskiya(b));
+  const past=all.filter(b=>b.durum==='tamamlandi'&&!_isMucbirAskiya(b));
+  const canc=all.filter(b=>(b.durum==='iptal'||b.durum==='reddedildi')&&!_kaptanPending(b)&&!_isMucbirAskiya(b));
   document.getElementById('tab-up').textContent=`Yaklasan (${up.length})`;
   document.getElementById('tab-past').textContent=`Gecmis (${past.length})`;
   document.getElementById('tab-cancelled').textContent=`Iptal (${canc.length})`;
@@ -3460,11 +3514,19 @@ function renderMyTours(tab){
         transferBanner=`<div style="margin-top:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px"><i class="fas fa-gift" style="color:#2563eb;font-size:13px;flex-shrink:0"></i><span style="font-size:11px;color:#1e40af">Tam iade yapıldı${kod?` · Kupon: <strong>${kod}</strong>`:''}</span></div>`;
       }
     }
-    return`<div class="card p-4 card-hover" onclick="openBookingDetail('${b.id}')">
+    const isMucbir=!!b.mucbirAskiya;
+    const mucbirBant=isMucbir?`
+      <div style="position:absolute;inset:0;background:rgba(255,255,255,0.35);z-index:4;pointer-events:none;border-radius:inherit"></div>
+      <div style="position:absolute;top:50%;left:-12%;right:-12%;transform:translateY(-50%) rotate(-2.5deg);background:rgba(194,65,12,0.92);color:#fff;text-align:center;padding:9px 0;font-size:10px;font-weight:800;letter-spacing:1.5px;z-index:5;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,0.25);box-shadow:0 2px 8px rgba(0,0,0,0.18)">
+        <i class="fas fa-hourglass-half mr-1.5" style="font-size:9px"></i>İPTAL SÜRECİ DEĞERLENDİRİLİYOR
+      </div>`:'';
+    const mucbirBadge=isMucbir?'<span class="badge bg-orange-100 text-orange-700" style="font-size:10px">İncelemede</span>':badge;
+    return`<div class="card p-4${isMucbir?'':' card-hover'}" style="position:relative;overflow:hidden;${isMucbir?'cursor:default;':''}${isMucbir?'opacity:0.88;':''}"${isMucbir?'':` onclick="openBookingDetail('${b.id}')"`}>
+      ${mucbirBant}
       <div class="flex items-center gap-3 mb-2">
         <div class="w-12 h-12 bg-gradient-to-br ${m.grad} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas ${m.icon} text-white"></i></div>
         <div class="flex-1"><div class="font-medium text-sm">${b.tourTitle||'Tur'}</div><div class="text-[11px] text-gray-500">${b.captainName||'—'}</div></div>
-        ${badge}
+        ${mucbirBadge}
       </div>
       <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
         <span><i class="fas fa-calendar mr-0.5"></i>${b.tarih||'—'}</span>
@@ -3475,10 +3537,12 @@ function renderMyTours(tab){
       ${transferBanner}
       <div class="flex items-center justify-between mt-2">
         <span class="font-bold text-primary">${(b.amount||0).toLocaleString('tr-TR')} TL</span>
-        <div class="flex gap-2">
-          <button class="bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-[11px] font-medium" onclick="event.stopPropagation();jumpToChat('${b.id}')"><i class="fas fa-comment mr-0.5"></i>Mesaj</button>
-          ${(b.durum==='bekliyor'||b.durum==='onaylandi')&&!_tourUnder24h(b)?`<button class="border px-3 py-1.5 rounded-lg text-[11px] font-medium text-danger" onclick="event.stopPropagation();cancelB('${b.id}')">Iptal</button>`:''}
-        </div>
+        ${isMucbir
+          ?`<div class="flex items-center gap-1.5 text-[10px] text-orange-700 bg-orange-50 border border-orange-200 rounded-lg px-2.5 py-1.5"><i class="fas fa-clock text-[9px]"></i>Merkez yanıt bekliyor</div>`
+          :`<div class="flex gap-2">
+            <button class="bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-[11px] font-medium" onclick="event.stopPropagation();jumpToChat('${b.id}')"><i class="fas fa-comment mr-0.5"></i>Mesaj</button>
+            ${(b.durum==='bekliyor'||b.durum==='onaylandi')?`<button class="border px-3 py-1.5 rounded-lg text-[11px] font-medium text-danger" onclick="event.stopPropagation();cancelB('${b.id}')">Iptal</button>`:''}
+          </div>`}
       </div>
     </div>`;
   }).join('');
@@ -3571,13 +3635,11 @@ function renderBookingDetail(){
 
   /* action buttons */
   const isActive=b.durum==='bekliyor'||b.durum==='onaylandi';
-  const under24=_tourUnder24h(b);
-  const canCancel=isActive&&!under24;
   let cancelBtn='';
-  if(isActive&&under24){
-    cancelBtn=`<div class="flex items-center gap-1 px-3 py-2.5 rounded-xl bg-gray-100 text-[11px] text-gray-500 font-medium whitespace-nowrap"><i class="fas fa-lock text-xs mr-1"></i>İptal süresi doldu</div>`;
-  }else if(canCancel){
-    cancelBtn=`<button onclick="cancelBFromDetail('${b.id}')" class="border border-danger text-danger px-4 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-times"></i></button>`;
+  if(isActive){
+    const pol=_getCancelPolicy(b);
+    const tooltip=pol.tier==='under48h'?'İadesiz iptal':'İptal & iade';
+    cancelBtn=`<button onclick="cancelBFromDetail('${b.id}')" title="${tooltip}" class="border border-danger text-danger px-4 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-times"></i></button>`;
   }
   document.getElementById('bdet-actions').innerHTML=
     `<button onclick="navigateTo('messages')" class="flex-1 border py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-comment mr-1"></i>Kaptana Yaz</button>`+
@@ -3686,36 +3748,326 @@ function _tourUnder24h(b){
   }catch{return false;}
 }
 
-function cancelBFromDetail(id){
-  const db=S.get('db_bookings',[]);
-  const b=db.find(x=>x.id===id);
-  if(!b)return;
-  if(!confirm('Rezervasyonu iptal etmek istediginizden emin misiniz?'))return;
-  b.durum='iptal';
-  b.iptalKaynagi='musteri';
-  b.iptalTarihi=new Date().toISOString();
-  S.set('db_bookings',db);
-  addNotif('Rezervasyon iptal edildi',`${b.tourTitle} rezervasyonunuz iptal edildi.`,'danger');
-  _cuNotifyAdminCancel(b);
-  _cuNotifyCaptainCancel(b);
-  showToast('Rezervasyon iptal edildi','danger');
-  renderBookingDetail();
+/* İptal politikası — kalan süreye göre kesinti ve iade oranını döndürür */
+function _getCancelPolicy(b){
+  if(!b)return{tier:'unknown',cut:100,refundPct:0,refundAmt:0,label:'—'};
+  try{
+    const iso=b.tarihISO||(b.tarih?b.tarih.split('.').reverse().join('-'):null);
+    if(!iso)return{tier:'no_date',cut:100,refundPct:0,refundAmt:0,label:'Tarih belirsiz'};
+    const [h='00',m='00']=(b.saat||'00:00').split(':');
+    const tourDt=new Date(iso+'T'+h.padStart(2,'0')+':'+m.padStart(2,'0')+':00');
+    const diffMs=tourDt.getTime()-Date.now();
+    const diffHours=diffMs/3600000;
+    const paid=+(b.amount||b.price||0);
+    if(diffHours<48){
+      return{tier:'under48h',cut:100,refundPct:0,refundAmt:0,
+        label:'48 saatten az kaldı — iade yapılmaz'};
+    }else if(diffHours<5*24){
+      const refundAmt=Math.round(paid*0.85);
+      return{tier:'under5d',cut:15,refundPct:85,refundAmt,
+        label:`%15 kesinti — ${refundAmt.toLocaleString('tr-TR')} ₺ iade`};
+    }else{
+      const refundAmt=Math.round(paid*0.97);
+      return{tier:'over5d',cut:3,refundPct:97,refundAmt,
+        label:`%3 işlem ücreti — ${refundAmt.toLocaleString('tr-TR')} ₺ iade`};
+    }
+  }catch{return{tier:'error',cut:100,refundPct:0,refundAmt:0,label:'Hesaplanamadı'};}
 }
 
-function cancelB(id){
+let _cancelCtx={id:null,fromDetail:false};
+
+/* ── MÜCBİR SEBEP AKIŞI ── */
+const _MUCBIR_KATEGORILER=[
+  {id:'saglik',   icon:'fa-hospital',            label:'Sağlık Krizi',          desc:'Hastaneye yatış, acil ameliyat, yoğun bakım',           belge:'Hastane belgesi / Doktor raporu'},
+  {id:'olum',     icon:'fa-heart-crack',         label:'Ölüm Vakası',           desc:'1. derece yakın (eş, çocuk, anne, baba, kardeş)',       belge:'Ölüm belgesi'},
+  {id:'afet',     icon:'fa-house-flood-water',   label:'Doğal Afet',            desc:'Deprem, sel, yangın, fırtına',                          belge:'AFAD belgesi / Hasar tespit tutanağı'},
+  {id:'yasak',    icon:'fa-ban',                 label:'Resmi Seyahat Yasağı',  desc:'Devlet kararnamesi veya zorunlu karantina',             belge:'Resmi karar belgesi'},
+  {id:'kaza',     icon:'fa-car-burst',           label:'Kaza',                  desc:'Seyahati engelleyen trafik veya ulaşım kazası',         belge:'Trafik tutanağı / Hastane raporu'},
+  {id:'diger',    icon:'fa-clipboard-question',  label:'Diğer Durum',           desc:'Belgelenemeyen ancak zorunlu engel',                    belge:'İncelemeye alınır'},
+];
+let _mucbirStep=0,_mucbirKat=null,_mucbirBelge=true,_mucbirNot='',_mucbirTier='low';
+
+function openMucbirFlow(){
+  document.getElementById('cc-normal-flow').style.display='none';
+  document.getElementById('cc-mucbir-flow').style.display='';
+  _mucbirStep=1;_mucbirKat=null;_mucbirBelge=true;_mucbirNot='';
+  _renderMucbirContent();
+}
+function _mucbirGeriNormal(){
+  document.getElementById('cc-mucbir-flow').style.display='none';
+  document.getElementById('cc-normal-flow').style.display='';
+}
+function _renderMucbirContent(){
+  const c=document.getElementById('cc-mucbir-flow');if(!c)return;
+  if(_mucbirStep===1)c.innerHTML=_mucbirHTML1();
+  else if(_mucbirStep===2)c.innerHTML=_mucbirHTML2();
+  else if(_mucbirStep===3)c.innerHTML=_mucbirHTML3();
+}
+
+function _mucbirHTML1(){
+  return`<div>
+    <div class="flex items-center gap-2 mb-4">
+      <button onclick="_mucbirGeriNormal()" class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 flex-shrink-0"><i class="fas fa-arrow-left text-sm"></i></button>
+      <div class="flex-1">
+        <div class="text-sm font-bold text-gray-900">Mücbir Sebep Bildirimi</div>
+        <div class="text-[11px] text-gray-500">Durumunuzu en iyi açıklayan kategoriyi seçin</div>
+      </div>
+      <span class="text-[10px] text-gray-400 font-medium bg-gray-100 px-2 py-0.5 rounded-full">1/2</span>
+    </div>
+    <div class="space-y-2 mb-4">
+      ${_MUCBIR_KATEGORILER.map(k=>`<button onclick="selectMucbirKat('${k.id}')" id="mkat-${k.id}" class="w-full text-left p-3 rounded-xl border border-gray-200 bg-white transition flex items-start gap-3">
+        <div class="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas ${k.icon} text-gray-400 text-sm"></i></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-semibold text-gray-800">${k.label}</div>
+          <div class="text-[11px] text-gray-500 mt-0.5">${k.desc}</div>
+          <div class="text-[10px] text-primary/80 mt-0.5"><i class="fas fa-file-alt mr-1 text-[9px]"></i>${k.belge}</div>
+        </div>
+        <div class="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 transition" id="mkat-radio-${k.id}"></div>
+      </button>`).join('')}
+    </div>
+    <button id="mkat-devam-btn" onclick="_mucbirStep=2;_renderMucbirContent()" disabled class="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gray-300 transition">Devam Et</button>
+  </div>`;
+}
+
+function selectMucbirKat(id){
+  _mucbirKat=id;
+  _MUCBIR_KATEGORILER.forEach(k=>{
+    const card=document.getElementById('mkat-'+k.id);
+    const radio=document.getElementById('mkat-radio-'+k.id);
+    const sel=k.id===id;
+    if(card){card.style.borderColor=sel?'#0369a1':'';card.style.background=sel?'#e0f2fe':'';}
+    if(radio){radio.style.background=sel?'#0369a1':'';radio.style.borderColor=sel?'#0369a1':'#d1d5db';}
+  });
+  const btn=document.getElementById('mkat-devam-btn');
+  if(btn){btn.disabled=false;btn.style.background='#0369a1';}
+}
+
+function _mucbirHTML2(){
+  const kat=_MUCBIR_KATEGORILER.find(k=>k.id===_mucbirKat);
+  return`<div>
+    <div class="flex items-center gap-2 mb-4">
+      <button onclick="_mucbirStep=1;_renderMucbirContent()" class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 flex-shrink-0"><i class="fas fa-arrow-left text-sm"></i></button>
+      <div class="flex-1">
+        <div class="text-sm font-bold text-gray-900">Mücbir Sebep Bildirimi</div>
+        <div class="text-[11px] text-primary font-medium">${kat?.label||''}</div>
+      </div>
+      <span class="text-[10px] text-gray-400 font-medium bg-gray-100 px-2 py-0.5 rounded-full">2/2</span>
+    </div>
+
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 flex items-start gap-2">
+      <i class="fas fa-info-circle text-amber-500 mt-0.5 flex-shrink-0"></i>
+      <div class="text-[11px] text-amber-800 leading-relaxed">Satın alma sırasında onayladığınız <strong>iptal politikamız</strong> bu tur için geçerlidir. Mücbir sebep başvurularınız bireysel incelenir. Belge sunmanız süreci hızlandırır.</div>
+    </div>
+
+    <div class="mb-4">
+      <label class="text-xs font-semibold text-gray-700 mb-1.5 block">Kısa Açıklama <span class="font-normal text-gray-400">(isteğe bağlı)</span></label>
+      <textarea id="mucbir-not-input" rows="3" maxlength="200" placeholder="Durumunuzu kısaca anlatın..." oninput="_mucbirNot=this.value" class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-primary"></textarea>
+    </div>
+
+    <div class="mb-5">
+      <label class="text-xs font-semibold text-gray-700 mb-2 block">Resmi Belge Durumunuz</label>
+      <div class="flex gap-2">
+        <button onclick="_mucbirBelge=true;_setBelgeBtn(true)" id="mbtn-var" class="flex-1 py-2.5 rounded-xl text-sm font-medium border transition" style="background:#0369a1;color:#fff;border-color:#0369a1"><i class="fas fa-check mr-1"></i>Belgem Var</button>
+        <button onclick="_mucbirBelge=false;_setBelgeBtn(false)" id="mbtn-yok" class="flex-1 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-600 transition"><i class="fas fa-times mr-1"></i>Belge Yok</button>
+      </div>
+    </div>
+
+    <button onclick="submitMucbirSebep()" class="w-full py-3 rounded-xl text-sm font-semibold text-white" style="background:#0369a1"><i class="fas fa-paper-plane mr-2"></i>Başvuruyu Gönder</button>
+  </div>`;
+}
+
+function _setBelgeBtn(varMi){
+  const v=document.getElementById('mbtn-var'),y=document.getElementById('mbtn-yok');
+  if(v){v.style.background=varMi?'#0369a1':'';v.style.color=varMi?'#fff':'';v.style.borderColor=varMi?'#0369a1':'#e5e7eb';}
+  if(y){y.style.background=varMi?'':'#0369a1';y.style.color=varMi?'':'#fff';y.style.borderColor=varMi?'#e5e7eb':'#0369a1';}
+}
+
+function submitMucbirSebep(){
+  const db=S.get('db_bookings',[]);
+  const b=db.find(x=>x.id===_cancelCtx.id);
+  if(!b){closeSheet();return;}
+  const paid=+(b.amount||b.price||0);
+  const guests=Math.max(1,+(b.guests||1));
+  const perPerson=Math.round(paid/guests);
+  _mucbirTier=perPerson>=5000?'high':perPerson>=2000?'mid':'low';
+  const kat=_MUCBIR_KATEGORILER.find(k=>k.id===_mucbirKat);
+  if(_mucbirTier!=='low'){
+    b.mucbirAskiya=true;
+    b.mucbirBasvuru={kat:_mucbirKat,katLabel:kat?.label||'—',belge:_mucbirBelge,not:_mucbirNot,ts:Date.now(),durum:'inceleniyor',tier:_mucbirTier};
+    S.set('db_bookings',db);
+    renderMyTours(curTab);
+  }
+  _notifyAdminMucbir(b,_mucbirTier,kat?.label||'—');
+  _mucbirStep=3;_renderMucbirContent();
+}
+
+function _mucbirHTML3(){
+  const db=S.get('db_bookings',[]);
+  const b=db.find(x=>x.id===_cancelCtx.id)||{};
+  const kat=_MUCBIR_KATEGORILER.find(k=>k.id===_mucbirKat);
+
+  if(_mucbirTier==='high') return`<div class="text-center py-2">
+    <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-building text-primary text-2xl"></i></div>
+    <div class="text-base font-bold text-gray-900 mb-2">Merkeze İletildi</div>
+    <p class="text-sm text-gray-600 mb-4 leading-relaxed">Yüksek tutarlı rezervasyonunuz <strong>merkez yönetimine</strong> iletildi. Rezervasyonunuz askıya alındı.</p>
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-left space-y-2.5">
+      <div class="flex items-center gap-2 text-sm text-gray-700"><i class="fas fa-clock text-primary w-4 text-center"></i><span><strong>72 saat</strong> içinde geri dönüş yapılacak</span></div>
+      <div class="flex items-center gap-2 text-sm text-gray-700"><i class="fas fa-user-tie text-primary w-4 text-center"></i><span>Merkez ekibi durumunuzu inceleyecek</span></div>
+      <div class="flex items-center gap-2 text-sm text-gray-700"><i class="fas fa-shield-alt text-primary w-4 text-center"></i><span>Belgeli başvurular <strong>öncelikli</strong> işleme alınır</span></div>
+    </div>
+    <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-[11px] text-amber-800 text-left mb-5"><i class="fas fa-bell mr-1"></i>Yanıt e-posta ve uygulama bildirimi ile iletilecektir.</div>
+    <button onclick="closeSheet()" class="w-full border border-gray-300 py-3 rounded-xl text-sm font-medium text-gray-700">Tamam, Anlıyorum</button>
+  </div>`;
+
+  if(_mucbirTier==='mid') return`<div class="text-center py-2">
+    <div class="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-magnifying-glass text-amber-600 text-2xl"></i></div>
+    <div class="text-base font-bold text-gray-900 mb-2">İncelemeye Alındı</div>
+    <p class="text-sm text-gray-600 mb-4 leading-relaxed">Başvurunuz inceleme sürecine alındı. Rezervasyonunuz <strong>askıya alındı</strong>.</p>
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-left space-y-2.5">
+      <div class="flex items-center gap-2 text-sm text-gray-700"><i class="fas fa-clock text-amber-600 w-4 text-center"></i><span><strong>48 saat</strong> içinde geri dönüş yapılacak</span></div>
+      <div class="flex items-center gap-2 text-sm text-gray-700"><i class="fas fa-tag text-amber-600 w-4 text-center"></i><span>Kategori: <strong>${kat?.label||'—'}</strong></span></div>
+      <div class="flex items-center gap-2 text-sm text-gray-700"><i class="fas fa-envelope text-amber-600 w-4 text-center"></i><span>Yanıt e-posta ve bildirimle iletilecek</span></div>
+    </div>
+    <button onclick="closeSheet()" class="w-full border border-gray-300 py-3 rounded-xl text-sm font-medium text-gray-700">Tamam</button>
+  </div>`;
+
+  /* low tier — <2000 TL/kişi */
+  const pol=_getCancelPolicy(b);
+  const paid=+(b.amount||b.price||0);
+  return`<div class="py-1">
+    <div class="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3"><i class="fas fa-file-invoice text-gray-500 text-xl"></i></div>
+    <div class="text-base font-bold text-gray-900 mb-1 text-center">Standart Politika Uygulanır</div>
+    <p class="text-sm text-gray-500 mb-4 text-center leading-relaxed">Kişi başı fiyat eşiği altındaki rezervasyonlarda standart iptal politikamız geçerlidir.</p>
+    <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4 space-y-2 text-sm">
+      <div class="flex justify-between"><span class="text-gray-500">Ödenen tutar</span><span class="font-semibold">${paid.toLocaleString('tr-TR')} ₺</span></div>
+      <div class="flex justify-between"><span class="text-gray-500">${pol.cut>0?'%'+pol.cut+' kesinti':'Kesinti yok'}</span><span class="text-danger font-medium">-${(paid-pol.refundAmt).toLocaleString('tr-TR')} ₺</span></div>
+      <div class="flex justify-between border-t border-gray-200 pt-2 mt-1"><span class="font-semibold text-gray-900">İade tutarı</span><span class="font-bold text-success">${pol.refundAmt.toLocaleString('tr-TR')} ₺</span></div>
+    </div>
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-[11px] text-blue-800 mb-4"><i class="fas fa-info-circle mr-1"></i>Yine de itirazınız varsa talebinizi merkeze iletebilirsiniz. İnceleme sonucuna göre geri dönüş yapılacaktır.</div>
+    <div class="flex gap-2">
+      <button onclick="executeCancelBooking()" class="flex-1 py-3 rounded-xl text-sm font-semibold text-white" style="background:#ef4444">Standart İade ile İptal</button>
+      <button onclick="_mucbirEscalateLow()" class="flex-1 py-3 rounded-xl text-xs font-medium border border-primary text-primary">Merkeze İlet</button>
+    </div>
+  </div>`;
+}
+
+function _mucbirEscalateLow(){
+  const db=S.get('db_bookings',[]);
+  const b=db.find(x=>x.id===_cancelCtx.id);
+  if(b){
+    const kat=_MUCBIR_KATEGORILER.find(k=>k.id===_mucbirKat);
+    b.mucbirAskiya=true;
+    b.mucbirBasvuru={kat:_mucbirKat,katLabel:kat?.label||'—',belge:_mucbirBelge,not:_mucbirNot,ts:Date.now(),durum:'itiraz',tier:'low'};
+    S.set('db_bookings',db);
+    _notifyAdminMucbir(b,'low',kat?.label||'—');
+    renderMyTours(curTab);
+  }
+  closeSheet();showToast('Talebiniz merkeze iletildi','success');
+}
+
+function _notifyAdminMucbir(b,tier,katLabel){
+  try{
+    const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
+    const tierText={high:'⚠ Yüksek tutar — 72 saat içinde yanıtlanmalı',mid:'Orta tutar — 48 saat içinde yanıtlanmalı',low:'Düşük tutar — itiraz başvurusu'};
+    notifs.unshift({
+      id:'MUCBIR'+Date.now(),type:'mucbir_sebep',read:false,
+      bookingId:b.id,tourTitle:b.tourTitle||'—',
+      customerName:b.customerName||'Müşteri',tarih:b.tarih||'—',
+      amount:+(b.amount||0),guests:+(b.guests||1),
+      kategori:katLabel,tier,belge:_mucbirBelge,not:_mucbirNot,
+      tierText:tierText[tier]||'—',ts:Date.now()
+    });
+    localStorage.setItem('admin_notifs',JSON.stringify(notifs.slice(0,100)));
+  }catch(e){}
+}
+
+function _openCancelSheet(id,fromDetail){
   const db=S.get('db_bookings',[]);
   const b=db.find(x=>x.id===id);
   if(!b)return;
+  _cancelCtx={id,fromDetail};
+  const pol=_getCancelPolicy(b);
+  const paid=+(b.amount||b.price||0);
+
+  document.getElementById('cc-tour-name').textContent=b.tourTitle||'Rezervasyon';
+  document.getElementById('cc-paid-amt').textContent=paid?paid.toLocaleString('tr-TR')+' ₺':'—';
+
+  const card=document.getElementById('cc-policy-card');
+  const confirmBtn=document.getElementById('cc-confirm-btn');
+  if(pol.tier==='under48h'){
+    card.innerHTML=`<div class="flex items-start gap-3">
+      <i class="fas fa-exclamation-triangle text-danger mt-0.5 flex-shrink-0"></i>
+      <div>
+        <div class="text-sm font-semibold text-danger mb-1">İade Yapılmaz</div>
+        <div class="text-xs text-gray-600">Tura 48 saatten az kaldığı için iade işlemi gerçekleştirilemez. Yine de iptal etmek istiyorsanız devam edebilirsiniz.</div>
+      </div>
+    </div>`;
+    card.style.background='#fef2f2';
+    card.style.border='1px solid #fecaca';
+    confirmBtn.textContent='İptali Onayla (İadesiz)';
+    confirmBtn.style.background='#ef4444';
+  }else if(pol.tier==='under5d'){
+    card.innerHTML=`<div class="flex items-start gap-3">
+      <i class="fas fa-info-circle text-amber-600 mt-0.5 flex-shrink-0"></i>
+      <div>
+        <div class="text-sm font-semibold text-amber-800 mb-1">%15 Kesinti Uygulanır</div>
+        <div class="text-xs text-gray-600 mb-2">Tura 5 günden az kaldığı için ödemenizin %15'i kesinti olarak alınır.</div>
+        <div class="flex items-center justify-between bg-white rounded-xl px-3 py-2 border border-amber-200">
+          <span class="text-xs text-gray-500">İade edilecek tutar</span>
+          <span class="text-sm font-bold text-amber-700">${pol.refundAmt.toLocaleString('tr-TR')} ₺</span>
+        </div>
+      </div>
+    </div>`;
+    card.style.background='#fffbeb';
+    card.style.border='1px solid #fcd34d';
+    confirmBtn.textContent='İptali Onayla';
+    confirmBtn.style.background='#ef4444';
+  }else{
+    card.innerHTML=`<div class="flex items-start gap-3">
+      <i class="fas fa-check-circle text-success mt-0.5 flex-shrink-0"></i>
+      <div>
+        <div class="text-sm font-semibold text-green-800 mb-1">%3 İşlem Ücreti</div>
+        <div class="text-xs text-gray-600 mb-2">5 gün önceden iptal ettiğiniz için yalnızca küçük bir işlem ücreti alınır.</div>
+        <div class="flex items-center justify-between bg-white rounded-xl px-3 py-2 border border-green-200">
+          <span class="text-xs text-gray-500">İade edilecek tutar</span>
+          <span class="text-sm font-bold text-success">${pol.refundAmt.toLocaleString('tr-TR')} ₺</span>
+        </div>
+      </div>
+    </div>`;
+    card.style.background='#f0fdf4';
+    card.style.border='1px solid #bbf7d0';
+    confirmBtn.textContent='İptali Onayla';
+    confirmBtn.style.background='#ef4444';
+  }
+  openSheet('cancel-confirm-sheet');
+}
+
+function executeCancelBooking(){
+  const {id,fromDetail}=_cancelCtx;
+  if(!id)return;
+  const db=S.get('db_bookings',[]);
+  const b=db.find(x=>x.id===id);
+  if(!b){closeSheet();return;}
+  const pol=_getCancelPolicy(b);
   b.durum='iptal';
   b.iptalKaynagi='musteri';
   b.iptalTarihi=new Date().toISOString();
+  b.iptalIadePct=pol.refundPct;
+  b.iptalIadeAmt=pol.refundAmt;
   S.set('db_bookings',db);
-  addNotif('Rezervasyon iptal edildi',`${b.tourTitle} rezervasyonunuz iptal edildi.`,'danger');
+  const iadeMsg=pol.refundAmt>0?` ${pol.refundAmt.toLocaleString('tr-TR')} ₺ iade yapılacak.`:'İade yapılmayacak.';
+  addNotif('Rezervasyon iptal edildi',`${b.tourTitle} rezervasyonunuz iptal edildi.${iadeMsg}`,'danger');
   _cuNotifyAdminCancel(b);
   _cuNotifyCaptainCancel(b);
-  renderMyTours(curTab);
+  closeSheet();
   showToast('Rezervasyon iptal edildi','danger');
+  if(fromDetail)renderBookingDetail();
+  else renderMyTours(curTab);
 }
+
+function cancelBFromDetail(id){_openCancelSheet(id,true);}
+
+function cancelB(id){_openCancelSheet(id,false);}
 
 function _cuNotifyAdminCancel(b){
   try{
@@ -3727,6 +4079,10 @@ function _cuNotifyAdminCancel(b){
       captainEmail:b.captainEmail||'—',
       customerName:b.customerName||b.customerEmail||'Müşteri',
       guests:b.guests||1,tarih:b.tarih||'—',
+      amount:+(b.amount||b.price||0),
+      iptalIadePct:b.iptalIadePct??null,
+      iptalIadeAmt:b.iptalIadeAmt??null,
+      iadeOnaylandi:false,
       ts:Date.now()
     });
     localStorage.setItem('admin_notifs',JSON.stringify(notifs.slice(0,100)));

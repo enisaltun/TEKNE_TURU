@@ -299,7 +299,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         <h3 class="font-semibold text-sm"><i class="fas fa-ship text-primary mr-1"></i>Onay Bekleyen Turlar</h3>
         <div class="flex items-center gap-2">
           <span class="badge bg-amber-100 text-amber-700" id="dash-pending-tours-badge">0 bekliyor</span>
-          <button onclick="navigateTo('tours')" class="text-xs text-primary font-medium hover:underline">Tur yönetimine git →</button>
+          <button onclick="window.location.hash='#tours'" class="text-xs text-primary font-medium hover:underline">Tur yönetimine git →</button>
         </div>
       </div>
       <div class="table-container">
@@ -781,6 +781,15 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
           <button onclick="clearOkunmusUyarilar()" class="border px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-50"><i class="fas fa-trash mr-1"></i>Okunmuşları Sil</button>
         </div>
       </div>
+    </div>
+
+    <!-- Bekleyen İade Özet Satırı -->
+    <div id="iptal-ozet-bar" style="display:none" class="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-clock text-amber-500 text-sm"></i>
+        <span id="iptal-ozet-text" class="text-sm font-medium text-amber-800"></span>
+      </div>
+      <button onclick="uyariSetFilter('tip','musteri_iptal')" class="text-xs text-amber-700 border border-amber-300 px-3 py-1 rounded-lg hover:bg-amber-100 transition">Sadece İptalleri Göster</button>
     </div>
 
     <!-- Liste -->
@@ -11413,7 +11422,8 @@ const _UYARI_SEVIYE={
   withdrawal_fee_missing:'uyari',no_show_uncompensated:'uyari',
   date_full:'uyari',tour_full:'uyari',
   // bilgi
-  admin_cancel:'bilgi',tour_iptal:'bilgi',
+  admin_cancel:'bilgi',tour_iptal:'bilgi',musteri_iptal:'uyari',
+  mucbir_sebep:'uyari',
 };
 const _UYARI_KAT={
   orphan_booking:'rezervasyon',duplicate_booking_id:'rezervasyon',past_date_active:'rezervasyon',
@@ -11423,7 +11433,8 @@ const _UYARI_KAT={
   booking_on_unapproved_tour:'rezervasyon',booking_on_cancelled_tour:'rezervasyon',
   unknown_customer:'rezervasyon',weather_cancel_no_compensation:'rezervasyon',
   force_majeure_unhandled:'rezervasyon',withdrawal_fee_missing:'rezervasyon',
-  no_show_uncompensated:'rezervasyon',admin_cancel:'rezervasyon',
+  no_show_uncompensated:'rezervasyon',admin_cancel:'rezervasyon',musteri_iptal:'rezervasyon',
+  mucbir_sebep:'rezervasyon',
   malformed_tour:'tur',wrong_tour_info:'tur',admin_approval_timeout:'tur',
   national_mourning_tours:'tur',tour_iptal:'tur',price_invalid:'tur',
   overcapacity:'kapasite',oversell:'kapasite',date_full:'kapasite',tour_full:'kapasite',
@@ -11434,6 +11445,11 @@ const _UYARI_KAT={
 const _UYARI_SEV_ORDER={kritik:0,uyari:1,bilgi:2};
 
 function _notifBaslik(n){
+  if(n.type==='musteri_iptal')return'Müşteri Rezervasyon İptali';
+  if(n.type==='mucbir_sebep'){
+    const tier={high:'⚠ Mücbir Sebep — Merkez İncelemesi',mid:'Mücbir Sebep — İncelemeye Alındı',low:'Mücbir Sebep — İtiraz Başvurusu'};
+    return tier[n.tier]||'Mücbir Sebep Başvurusu';
+  }
   return{date_full:'Tarih Doldu',tour_full:'Tur Tamamen Doldu',oversell:'Aşırı Satış Tespit Edildi',
     tour_iptal:'Tur İptal Edildi (Kaptan)',admin_cancel:'Rezervasyon İptal Edildi (Admin)'}[n.type]||n.type;
 }
@@ -11443,6 +11459,14 @@ function _notifAciklama(n){
   if(n.type==='oversell')return`"${n.tourTitle}" — ${n.tarih}: ${n.satilan} kişi satıldı, kapasite ${n.kapasite}`;
   if(n.type==='tour_iptal')return`"${n.tourTitle}" · Neden: ${n.reason||'—'}${n.etkilenen?' · '+n.etkilenen+' müşteri etkilendi':''}`;
   if(n.type==='admin_cancel')return`"${n.tourTitle||'—'}" · ${n.musteriAd||''} · ${n.sebep||'—'}`;
+  if(n.type==='musteri_iptal'){
+    const iade=n.iptalIadeAmt!=null?(n.iptalIadeAmt>0?`${n.iptalIadeAmt.toLocaleString('tr-TR')} ₺ iade`:'İadesiz'):'Hesaplanmadı';
+    return`${n.customerName||'Müşteri'} · "${n.tourTitle}" · ${n.tarih} · ${n.guests||1} kişi · ${iade}`;
+  }
+  if(n.type==='mucbir_sebep'){
+    const perPerson=n.guests>0?Math.round((n.amount||0)/n.guests):0;
+    return`${n.customerName||'Müşteri'} · "${n.tourTitle}" · ${n.tarih} · Kategori: ${n.kategori||'—'} · ${n.belge?'Belgeli':'Belgesiz'} · Kişi başı: ${perPerson.toLocaleString('tr-TR')} ₺`;
+  }
   return'';
 }
 
@@ -11500,6 +11524,7 @@ function _getUnifiedAlerts(){
       baslik:_notifBaslik(n),
       aciklama:_notifAciklama(n),
       ts:n.ts||now,read:!!n.read,kaynak:'notif',
+      _raw:n,
     });
   });
 
@@ -11534,10 +11559,10 @@ function _getUnifiedAlerts(){
   return unified;
 }
 
-let _uyariFilterSeviye='';
+let _uyariFilterSeviye='',_uyariFilterTip='';
 function uyariSetFilter(key,val){
   if(key==='seviye'){
-    _uyariFilterSeviye=val;
+    _uyariFilterSeviye=val;_uyariFilterTip='';
     ['all','kritik','uyari','bilgi'].forEach(k=>{
       const el=document.getElementById('uf-sev-'+k);if(!el)return;
       const active=(k==='all'&&val==='')||(k===val);
@@ -11546,6 +11571,7 @@ function uyariSetFilter(key,val){
         :'px-3 py-1 rounded-md text-xs font-medium text-gray-500 hover:bg-white/60 transition';
     });
   }
+  if(key==='tip'){_uyariFilterTip=val;_uyariFilterSeviye='';}
   if(key==='okunmamis'){const el=document.getElementById('uyari-filter-okunmamis');if(el)el.checked=val;}
   renderUyarilar();
 }
@@ -11561,12 +11587,26 @@ function renderUyarilar(){
   setEl('uyari-stat-uyari',uyari);
   setEl('uyari-stat-okunmamis',okunmamis);
 
+  /* Bekleyen iade özet satırı */
+  const mIptaller=all.filter(a=>a.type==='musteri_iptal'&&a._raw);
+  const bekleyenIade=mIptaller.filter(a=>!a._raw.iadeOnaylandi&&(a._raw.iptalIadeAmt??0)>0);
+  const toplamIade=bekleyenIade.reduce((s,a)=>s+(a._raw.iptalIadeAmt||0),0);
+  const ozetBar=document.getElementById('iptal-ozet-bar');
+  const ozetText=document.getElementById('iptal-ozet-text');
+  if(ozetBar&&ozetText){
+    if(bekleyenIade.length){
+      ozetText.textContent=`${bekleyenIade.length} bekleyen iade — Toplam ${toplamIade.toLocaleString('tr-TR')} ₺ iade işlemi bekliyor`;
+      ozetBar.style.display='';
+    }else{ozetBar.style.display='none';}
+  }
+
   const fKat=document.getElementById('uyari-filter-kat')?.value||'';
   const fKaynak=document.getElementById('uyari-filter-kaynak')?.value||'';
   const fOkunmamis=document.getElementById('uyari-filter-okunmamis')?.checked||false;
 
   let list=all;
-  if(_uyariFilterSeviye)list=list.filter(a=>a.seviye===_uyariFilterSeviye);
+  if(_uyariFilterTip)list=list.filter(a=>a.type===_uyariFilterTip);
+  else if(_uyariFilterSeviye)list=list.filter(a=>a.seviye===_uyariFilterSeviye);
   if(fKat)list=list.filter(a=>a.kat===fKat);
   if(fKaynak)list=list.filter(a=>a.kaynak===fKaynak);
   if(fOkunmamis)list=list.filter(a=>!a.read);
@@ -11593,6 +11633,142 @@ function renderUyarilar(){
   const KAYNAK_LABEL={notif:'Sistem Bildirimi',health:'Sağlık Taraması'};
 
   container.innerHTML=list.map(a=>{
+    /* ── Mücbir Sebep: Zengin Kart ── */
+    if(a.type==='mucbir_sebep'&&a._raw){
+      const n=a._raw;
+      const readOp=a.read?'opacity-60':'';
+      const paid=+(n.amount||0);
+      const guests=Math.max(1,+(n.guests||1));
+      const perPerson=Math.round(paid/guests);
+      const tierCfg={
+        high:{label:'Yüksek Tutar — Merkez İncelemesi',sure:'72 saat',bg:'bg-red-50',border:'border-red-300',badgeBg:'bg-red-100',badgeText:'text-red-700',iconColor:'text-red-600',boxBg:'bg-red-50',boxBorder:'border-red-200',boxText:'text-red-800'},
+        mid: {label:'Orta Tutar — İnceleme Ekibi',sure:'48 saat',bg:'bg-amber-50',border:'border-amber-300',badgeBg:'bg-amber-100',badgeText:'text-amber-700',iconColor:'text-amber-600',boxBg:'bg-amber-50',boxBorder:'border-amber-200',boxText:'text-amber-800'},
+        low: {label:'Düşük Tutar — İtiraz Başvurusu',sure:'Standart politika',bg:'bg-blue-50',border:'border-blue-200',badgeBg:'bg-blue-100',badgeText:'text-blue-700',iconColor:'text-primary',boxBg:'bg-blue-50',boxBorder:'border-blue-200',boxText:'text-blue-800'},
+      };
+      const tc=tierCfg[n.tier]||tierCfg.low;
+      const onaylandi=!!n.mucbirOnaylandi;
+      const reddedildi=!!n.mucbirReddedildi;
+      const durum=onaylandi?'Onaylandı':reddedildi?'Reddedildi':'Bekliyor';
+      const durumBadge=onaylandi
+        ?`<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700"><i class="fas fa-check mr-1"></i>Onaylandı</span>`
+        :reddedildi
+        ?`<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Reddedildi</span>`
+        :`<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${tc.badgeBg} ${tc.badgeText}" style="animation:${n.tier==='high'?'pulse 1.5s infinite':'none'}"><i class="fas fa-clock mr-1"></i>Karar Bekliyor</span>`;
+      const actionBtns=(!onaylandi&&!reddedildi)?`
+        <button onclick="onayMucbir('${n.id}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5"><i class="fas fa-check-circle"></i>Onayla — Tam İade</button>
+        <button onclick="reddetMucbir('${n.id}')" class="flex-1 bg-red-50 hover:bg-red-100 text-danger border border-red-200 py-2 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1.5"><i class="fas fa-times-circle"></i>Standart İade ile Reddet</button>`
+        :'';
+      return`<div class="rounded-xl border ${tc.border} ${tc.bg} p-4 ${readOp} transition hover:shadow-sm">
+        <div class="flex items-start gap-3 mb-3">
+          <div class="w-10 h-10 bg-white border ${tc.border} rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+            <i class="fas fa-shield-alt ${tc.iconColor}"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap mb-0.5">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${tc.badgeBg} ${tc.badgeText}">Uyarı</span>
+              <span class="text-[10px] text-gray-400">Rezervasyon · Sistem Bildirimi</span>
+              ${!a.read?'<span class="ml-auto w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span>':''}
+            </div>
+            <div class="text-sm font-bold text-gray-900">${tc.label}</div>
+            <div class="text-xs text-gray-600 mt-0.5">
+              <span class="font-medium">${n.customerName||'Müşteri'}</span> ·
+              "${n.tourTitle||'—'}" · ${n.tarih||'—'} · ${guests} kişi
+            </div>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+              <span class="text-[11px] text-gray-500">Ödenen: <strong class="text-gray-700">${paid.toLocaleString('tr-TR')} ₺</strong></span>
+              <span class="text-[11px] text-gray-500">Kişi başı: <strong class="text-gray-700">${perPerson.toLocaleString('tr-TR')} ₺</strong></span>
+              <span class="text-[11px] ${n.belge?'text-green-700 font-semibold':'text-gray-400'}"><i class="fas fa-file-alt mr-0.5 text-[9px]"></i>${n.belge?'Belgeli Başvuru':'Belge Yok'}</span>
+              <span class="text-[10px] text-gray-400 ml-auto">${_timeAgo(a.ts)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kategori & durum kutusu -->
+        <div class="${tc.boxBg} border ${tc.boxBorder} rounded-xl px-4 py-3 mb-3 flex items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-semibold ${tc.boxText} mb-0.5">
+              <i class="fas fa-tag mr-1 text-[10px]"></i>${n.kategori||'Belirtilmemiş'}
+            </div>
+            ${n.not?`<div class="text-[11px] text-gray-500 italic">"${n.not}"</div>`:''}
+          </div>
+          <div class="flex flex-col items-end gap-1 flex-shrink-0">
+            ${durumBadge}
+            <span class="text-[10px] text-gray-400"><i class="fas fa-clock mr-1 text-[9px]"></i>${tc.sure} içinde yanıt</span>
+          </div>
+        </div>
+
+        <!-- Aksiyonlar -->
+        <div class="flex gap-2">
+          <button onclick="window.location.hash='#reservations'" class="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1"><i class="fas fa-arrow-up-right-from-square text-[10px]"></i>Rezervasyon</button>
+          ${actionBtns}
+          <button onclick="markUyariOkundu('${n.id}','notif')" class="px-3 py-2 rounded-lg text-xs border border-gray-200 text-gray-400 hover:bg-gray-50 transition ml-auto" title="Kapat"><i class="fas fa-times"></i></button>
+        </div>
+      </div>`;
+    }
+
+    /* ── Müşteri İptali: Zengin Kart ── */
+    if(a.type==='musteri_iptal'&&a._raw){
+      const n=a._raw;
+      const readOp=a.read?'opacity-60':'';
+      const paid=+(n.amount||0);
+      const iadeAmt=n.iptalIadeAmt??null;
+      const iadePct=n.iptalIadePct??null;
+      const onaylandi=!!n.iadeOnaylandi;
+      let iadeBadge='',iadeBox='';
+      if(iadeAmt===0||iadePct===0){
+        iadeBadge=`<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">İadesiz İptal</span>`;
+        iadeBox=`<div class="text-xs text-gray-500 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200">Bu iptal için iade yapılmayacak (48 saaten az kalmıştı).</div>`;
+      }else if(onaylandi){
+        iadeBadge=`<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700"><i class="fas fa-check mr-1"></i>İade Onaylandı</span>`;
+        iadeBox=`<div class="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+          <span class="text-xs text-green-700 font-medium">İade tamamlandı</span>
+          <span class="text-sm font-bold text-green-700">${(iadeAmt||0).toLocaleString('tr-TR')} ₺</span>
+        </div>`;
+      }else{
+        const kesinti=iadePct!=null?(100-iadePct)+'% kesinti':'-';
+        iadeBadge=`<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700" style="animation:pulse 2s infinite"><i class="fas fa-clock mr-1"></i>İade Bekliyor</span>`;
+        iadeBox=`<div class="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+          <div><div class="text-xs text-amber-800 font-medium">İade Tutarı</div><div class="text-[10px] text-amber-600">${kesinti} uygulandı</div></div>
+          <span class="text-base font-bold text-amber-700">${(iadeAmt||0).toLocaleString('tr-TR')} ₺</span>
+        </div>`;
+      }
+      const iadeBtn=(!onaylandi&&iadeAmt>0)
+        ?`<button onclick="onaylaIade('${n.id}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1"><i class="fas fa-check"></i>İadeyi Onayla</button>`
+        :'';
+      return`<div class="rounded-xl border border-orange-200 bg-orange-50 p-4 ${readOp} transition hover:shadow-sm">
+        <div class="flex items-start gap-3 mb-3">
+          <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-user-times text-orange-600"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap mb-0.5">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Uyarı</span>
+              <span class="text-[10px] text-gray-400">Rezervasyon · Sistem Bildirimi</span>
+              ${!a.read?'<span class="ml-auto w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span>':''}
+            </div>
+            <div class="text-sm font-semibold text-gray-800">Müşteri Rezervasyon İptali</div>
+            <div class="text-xs text-gray-600 mt-0.5">
+              <span class="font-medium">${n.customerName||'Müşteri'}</span> ·
+              "${n.tourTitle||'—'}" · ${n.tarih||'—'} · ${n.guests||1} kişi
+            </div>
+            <div class="flex items-center gap-3 mt-1.5 flex-wrap">
+              ${paid?`<span class="text-[10px] text-gray-400">Ödenen: <strong class="text-gray-600">${paid.toLocaleString('tr-TR')} ₺</strong></span>`:''}
+              <span class="text-[10px] text-gray-300">·</span>
+              ${iadeBadge}
+              <span class="text-[10px] text-gray-400 ml-auto">${_timeAgo(a.ts)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="mb-3">${iadeBox}</div>
+        <div class="flex gap-2">
+          <button onclick="window.location.hash='#reservations'" class="flex-1 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 py-2 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1"><i class="fas fa-arrow-up-right-from-square text-[10px]"></i>Rezervasyona Git</button>
+          ${iadeBtn}
+          <button onclick="markUyariOkundu('${n.id}','notif')" class="px-3 py-2 rounded-lg text-xs border border-gray-200 text-gray-400 hover:bg-gray-50 transition" title="Kapat"><i class="fas fa-times"></i></button>
+        </div>
+      </div>`;
+    }
+
+    /* ── Standart Kart ── */
     const s=SEV_STYLE[a.seviye]||SEV_STYLE.uyari;
     const ki=KAT_ICON[a.kat]||'fa-circle-info text-gray-400';
     const readOp=a.read?'opacity-50':'';
@@ -11619,6 +11795,83 @@ function renderUyarilar(){
     </div>`;
   }).join('');
   updateUyarilarBadge();
+}
+
+function onaylaIade(notifId){
+  const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
+  const n=notifs.find(x=>x.id===notifId);
+  if(!n){showToast('Bildirim bulunamadı','danger');return;}
+  n.iadeOnaylandi=true;
+  n.iadeOnayTs=Date.now();
+  n.read=true;
+  localStorage.setItem('admin_notifs',JSON.stringify(notifs));
+  if(n.bookingId){
+    const bookings=lsGet('db_bookings',[]);
+    const b=bookings.find(x=>x.id===n.bookingId);
+    if(b){b.iadeOnaylandi=true;b.iadeOnayTs=n.iadeOnayTs;lsSet('db_bookings',bookings);}
+  }
+  renderUyarilar();
+  showToast(`${(n.iptalIadeAmt||0).toLocaleString('tr-TR')} ₺ iade onaylandı`,'success');
+}
+
+function onayMucbir(notifId){
+  const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
+  const n=notifs.find(x=>x.id===notifId);
+  if(!n){showToast('Bildirim bulunamadı','danger');return;}
+  n.mucbirOnaylandi=true;n.read=true;n.onayTs=Date.now();
+  localStorage.setItem('admin_notifs',JSON.stringify(notifs));
+  if(n.bookingId){
+    const bookings=lsGet('db_bookings',[]);
+    const b=bookings.find(x=>x.id===n.bookingId);
+    if(b){
+      b.mucbirAskiya=false;b.mucbirOnaylandi=true;
+      b.durum='iptal';b.iptalKaynagi='mucbir_onay';
+      b.iptalTarihi=new Date().toISOString();
+      b.iptalIadePct=100;b.iptalIadeAmt=+(b.amount||b.price||0);
+      b.iadeOnaylandi=true;b.iadeOnayTs=Date.now();
+      lsSet('db_bookings',bookings);
+      const caNotifs=lsGet('ca_notifications',[]);
+      caNotifs.unshift({id:Date.now()+Math.random(),title:'Mücbir Sebep Onaylandı — Tam İade',body:`"${b.tourTitle||'Tur'}" · ${b.tarih||'—'}: Müşterinin mücbir sebep başvurusu onaylandı. Tam iade uygulandı, rezervasyon iptal edildi.`,type:'info',ts:Date.now(),read:false,bookingId:b.id,captainEmail:b.captainEmail});
+      lsSet('ca_notifications',caNotifs.slice(0,50));
+    }
+  }
+  renderUyarilar();
+  showToast('Mücbir sebep onaylandı — tam iade uygulandı','success');
+}
+
+function reddetMucbir(notifId){
+  const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
+  const n=notifs.find(x=>x.id===notifId);
+  if(!n){showToast('Bildirim bulunamadı','danger');return;}
+  n.mucbirReddedildi=true;n.read=true;n.redTs=Date.now();
+  localStorage.setItem('admin_notifs',JSON.stringify(notifs));
+  if(n.bookingId){
+    const bookings=lsGet('db_bookings',[]);
+    const b=bookings.find(x=>x.id===n.bookingId);
+    if(b){
+      b.mucbirAskiya=false;b.mucbirReddedildi=true;
+      b.durum='iptal';b.iptalKaynagi='mucbir_red';
+      b.iptalTarihi=new Date().toISOString();
+      /* Standart politika: kalan süreye göre kesinti */
+      try{
+        const iso=b.tarihISO||(b.tarih?b.tarih.split('.').reverse().join('-'):null);
+        const [h='00',m='00']=(b.saat||'00:00').split(':');
+        const tourDt=new Date((iso||'')+'T'+h.padStart(2,'0')+':'+m.padStart(2,'0')+':00');
+        const diffH=(tourDt-Date.now())/3600000;
+        const paid=+(b.amount||b.price||0);
+        if(diffH<48){b.iptalIadePct=0;b.iptalIadeAmt=0;}
+        else if(diffH<120){b.iptalIadePct=85;b.iptalIadeAmt=Math.round(paid*0.85);}
+        else{b.iptalIadePct=97;b.iptalIadeAmt=Math.round(paid*0.97);}
+      }catch(e){b.iptalIadePct=0;b.iptalIadeAmt=0;}
+      lsSet('db_bookings',bookings);
+      const iadeMsj=b.iptalIadeAmt>0?`${b.iptalIadeAmt.toLocaleString('tr-TR')} ₺ iade uygulandı.`:'İade yapılmadı (48 saat kuralı).';
+      const caNotifs=lsGet('ca_notifications',[]);
+      caNotifs.unshift({id:Date.now()+Math.random(),title:'Mücbir Sebep Reddedildi',body:`"${b.tourTitle||'Tur'}" · ${b.tarih||'—'}: Müşterinin mücbir sebep başvurusu reddedildi. Standart iptal politikası uygulandı. ${iadeMsj}`,type:'warning',ts:Date.now(),read:false,bookingId:b.id,captainEmail:b.captainEmail});
+      lsSet('ca_notifications',caNotifs.slice(0,50));
+    }
+  }
+  renderUyarilar();
+  showToast('Mücbir sebep reddedildi — standart iptal politikası uygulandı','danger');
 }
 
 function markUyariOkundu(id,kaynak){
@@ -11655,9 +11908,9 @@ function clearOkunmusUyarilar(){
 }
 
 function _uyariGit(kat,kaynak){
-  if(kaynak==='health'){navigateTo('system-health');return;}
+  if(kaynak==='health'){window.location.hash='#system-health';return;}
   const map={rezervasyon:'reservations',tur:'tours-bookings',kapasite:'reservations',finans:'finance',sistem:'system-health'};
-  navigateTo(map[kat]||'system-health');
+  window.location.hash='#'+(map[kat]||'system-health');
 }
 
 function updateUyarilarBadge(){
@@ -11763,14 +12016,22 @@ function renderAdminAlerts(){
       </div>`;
     }
     if(n.type==='musteri_iptal'){
+      const iadeAmt=n.iptalIadeAmt??null;
+      const onaylandi=!!n.iadeOnaylandi;
+      const iadeBadge=iadeAmt===0?`<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">İadesiz</span>`
+        :onaylandi?`<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">İade Onaylandı</span>`
+        :`<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">İade Bekliyor${iadeAmt?(' · '+(iadeAmt).toLocaleString('tr-TR')+' ₺'):''}</span>`;
       return`<div class="flex items-start gap-3 p-3 rounded-xl border border-orange-200 bg-orange-50">
         <div class="w-9 h-9 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-user-times text-orange-600 text-sm"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-sm font-semibold text-orange-800">Müşteri Rezervasyon İptal Etti</div>
-          <div class="text-xs text-orange-700 mt-0.5"><strong>${n.customerName||'Müşteri'}</strong> — "${n.tourTitle}" · ${n.tarih} · ${n.guests||1} kişi</div>
-          <div class="text-[10px] text-orange-400 mt-1">${ago} · Kaptan: ${n.captainEmail||'—'}</div>
+          <div class="text-xs text-orange-700 mt-0.5"><strong>${n.customerName||'Müşteri'}</strong> — "${n.tourTitle}" · ${n.tarih}</div>
+          <div class="flex items-center gap-2 mt-1">${iadeBadge}<span class="text-[9px] text-orange-400">${ago}</span></div>
         </div>
-        <button onclick="markAlertRead('${n.id}')" class="text-orange-300 hover:text-orange-500 text-xs mt-0.5"><i class="fas fa-times"></i></button>
+        <div class="flex flex-col gap-1">
+          <button onclick="window.location.hash='#uyarilar'" class="text-[9px] text-primary border border-primary/30 rounded px-1.5 py-0.5 hover:bg-primaryLight transition">Yönet</button>
+          <button onclick="markAlertRead('${n.id}')" class="text-orange-300 hover:text-orange-500 text-xs"><i class="fas fa-times"></i></button>
+        </div>
       </div>`;
     }
     return'';

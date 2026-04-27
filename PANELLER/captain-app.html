@@ -1620,21 +1620,24 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
     </div>
     <div>
       <h3 class="font-bold text-base text-danger">Turu İptal Et</h3>
-      <p class="text-xs text-gray-500" id="tour-cancel-subtitle">Tum aktif rezervasyonlar iptal edilecek</p>
+      <p class="text-xs text-gray-500" id="tour-cancel-subtitle"></p>
     </div>
   </div>
-  <div class="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-xs text-red-700 leading-relaxed">
+  <!-- Rezervasyon varsa: uyarı + hızlı seçim -->
+  <div id="tcs-booking-warning" style="display:none" class="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-xs text-red-700 leading-relaxed">
     <i class="fas fa-info-circle mr-1"></i>İptal ettiğinizde rezervasyonu olan tüm müşterilere otomatik bildirim gönderilir ve mesaj iletilir.
   </div>
-  <p class="text-xs font-semibold text-gray-500 mb-2">Hızlı Neden Seç</p>
-  <div class="flex flex-wrap gap-2 mb-3" id="tour-cancel-pills">
-    <button onclick="selectCancelReason('Lodos nedeniyle tur iptal edildi',this)" class="cancel-reason-pill pill text-xs">⛵ Lodos</button>
-    <button onclick="selectCancelReason('Fırtına nedeniyle tur iptal edildi',this)" class="cancel-reason-pill pill text-xs">⛈ Fırtına</button>
-    <button onclick="selectCancelReason('Kötü hava koşulları nedeniyle tur iptal edildi',this)" class="cancel-reason-pill pill text-xs">🌊 Kötü Hava</button>
-    <button onclick="selectCancelReason('Teknik arıza nedeniyle tur iptal edildi',this)" class="cancel-reason-pill pill text-xs">🔧 Teknik Arıza</button>
-    <button onclick="selectCancelReason('Acil durum nedeniyle tur iptal edildi',this)" class="cancel-reason-pill pill text-xs">🚨 Acil Durum</button>
+  <div id="tcs-pills-section" style="display:none">
+    <p class="text-xs font-semibold text-gray-500 mb-2">Hızlı Neden Seç</p>
+    <div class="flex flex-wrap gap-2 mb-3">
+      <button onclick="selectCancelReason('Lodos nedeniyle tur iptal edildi',this)" class="cancel-reason-pill pill text-xs">⛵ Lodos</button>
+      <button onclick="selectCancelReason('Fırtına nedeniyle tur iptal edildi',this)" class="cancel-reason-pill pill text-xs">⛈ Fırtına</button>
+      <button onclick="selectCancelReason('Kötü hava koşulları nedeniyle tur iptal edildi',this)" class="cancel-reason-pill pill text-xs">🌊 Kötü Hava</button>
+      <button onclick="selectCancelReason('Teknik arıza nedeniyle tur iptal edildi',this)" class="cancel-reason-pill pill text-xs">🔧 Teknik Arıza</button>
+      <button onclick="selectCancelReason('Acil durum nedeniyle tur iptal edildi',this)" class="cancel-reason-pill pill text-xs">🚨 Acil Durum</button>
+    </div>
   </div>
-  <label class="text-xs font-semibold text-gray-500 mb-1 block">İptal Nedeni <span class="text-danger">*</span></label>
+  <label class="text-xs font-semibold text-gray-500 mb-1 block" id="tcs-reason-label">İptal Nedeni <span class="text-danger">*</span></label>
   <textarea id="tour-cancel-reason" rows="3" placeholder="İptal nedeninizi açıklayın..." class="mb-4 resize-none" style="border-radius:12px"></textarea>
   <div class="flex gap-2">
     <button onclick="closeTourCancelSheet()" class="flex-1 border py-3 rounded-xl text-sm font-semibold">Vazgeç</button>
@@ -2402,29 +2405,29 @@ function renderMyTours(){
     let actions='';
     if(d==='aktif'){
       actions=`
-        <button onclick="cancelTourApp(${t.id})" class="flex-1 bg-red-50 text-danger py-2 rounded-xl text-xs font-semibold border border-red-200"><i class="fas fa-ban mr-1"></i>İptal Et</button>
-        <button onclick="toggleTourStatusApp(${t.id})" class="flex-1 bg-amber-50 text-amber-700 py-2 rounded-xl text-xs font-medium">Pasife Al</button>
-        <button onclick="deleteTour(${t.id})" class="border py-2 px-3 rounded-xl text-xs text-danger"><i class="fas fa-trash"></i></button>`;
+        <button type="button" onclick="cancelTourApp(${t.id})" class="flex-1 bg-red-50 text-danger py-2 rounded-xl text-xs font-semibold border border-red-200 active:bg-red-100"><i class="fas fa-ban mr-1"></i>İptal Et</button>
+        <button type="button" onclick="toggleTourStatusApp(${t.id})" class="flex-1 bg-amber-50 text-amber-700 py-2 rounded-xl text-xs font-medium active:bg-amber-100">Pasife Al</button>
+        <button type="button" onclick="deleteTour(${t.id})" class="border py-2 px-3 rounded-xl text-xs text-danger active:bg-red-50"><i class="fas fa-trash"></i></button>`;
     } else if(d==='pasif'){
       actions=`
-        <button onclick="toggleTourStatusApp(${t.id})" class="flex-1 bg-success/10 text-success py-2 rounded-xl text-xs font-medium">Aktif Et</button>
-        <button class="flex-1 border py-2 rounded-xl text-xs font-medium" onclick="navigateTo('calendar')">Takvim</button>
-        <button onclick="deleteTour(${t.id})" class="border py-2 px-3 rounded-xl text-xs text-danger"><i class="fas fa-trash"></i></button>`;
+        <button type="button" onclick="toggleTourStatusApp(${t.id})" class="flex-1 bg-success/10 text-success py-2 rounded-xl text-xs font-medium active:bg-green-100">Aktif Et</button>
+        <button type="button" class="flex-1 border py-2 rounded-xl text-xs font-medium" onclick="navigateTo('calendar')">Takvim</button>
+        <button type="button" onclick="deleteTour(${t.id})" class="border py-2 px-3 rounded-xl text-xs text-danger active:bg-red-50"><i class="fas fa-trash"></i></button>`;
     } else if(d==='reddedildi'){
       actions=`
-        <button onclick="editTourApp(${t.id})" class="flex-1 bg-primary text-white py-2 rounded-xl text-xs font-bold"><i class="fas fa-edit mr-1"></i>Düzenle ve Tekrar Gönder</button>
-        <button onclick="deleteTour(${t.id})" class="border py-2 px-3 rounded-xl text-xs text-danger"><i class="fas fa-trash"></i></button>`;
+        <button type="button" onclick="editTourApp(${t.id})" class="flex-1 bg-primary text-white py-2 rounded-xl text-xs font-bold"><i class="fas fa-edit mr-1"></i>Düzenle ve Tekrar Gönder</button>
+        <button type="button" onclick="deleteTour(${t.id})" class="border py-2 px-3 rounded-xl text-xs text-danger active:bg-red-50"><i class="fas fa-trash"></i></button>`;
     } else if(d==='iptal'){
       actions=`
-        <button onclick="deleteTour(${t.id})" class="flex-1 border border-red-200 text-danger py-2 rounded-xl text-xs font-medium"><i class="fas fa-trash mr-1"></i>Kaydı Sil</button>`;
+        <button type="button" onclick="deleteTour(${t.id})" class="flex-1 border border-red-200 text-danger py-2 rounded-xl text-xs font-medium active:bg-red-50"><i class="fas fa-trash mr-1"></i>Kaydı Sil</button>`;
     } else {
       actions=`
-        <button class="flex-1 border py-2 rounded-xl text-xs font-medium" onclick="navigateTo('calendar')">Takvim</button>
-        <button onclick="deleteTour(${t.id})" class="border py-2 px-3 rounded-xl text-xs text-danger"><i class="fas fa-trash"></i></button>`;
+        <button type="button" class="flex-1 border py-2 rounded-xl text-xs font-medium" onclick="navigateTo('calendar')">Takvim</button>
+        <button type="button" onclick="deleteTour(${t.id})" class="border py-2 px-3 rounded-xl text-xs text-danger active:bg-red-50"><i class="fas fa-trash"></i></button>`;
     }
 
     const hasNewBk=toursWithNewBk.has(String(t.id));
-    return`<div class="card card-hover ${cardBorder}${hasNewBk?' new-booking-pulse':''}" data-tour-id="${t.id}" style="overflow:visible">
+    return`<div class="card ${cardBorder}${hasNewBk?' new-booking-pulse':''}" data-tour-id="${t.id}" style="overflow:visible;transition:box-shadow .15s">
       ${hasNewBk?'<span class="new-booking-badge"><i class="fas fa-bell mr-1"></i>YENİ REZERVASYON</span>':''}
       <div class="flex gap-3">
         <div class="w-16 h-16 bg-gradient-to-br ${m.grad} rounded-2xl flex items-center justify-center flex-shrink-0 relative">
@@ -2505,8 +2508,8 @@ function setTourTimeFilter(hours,btn){
 
 function toggleTourStatusApp(id){
   const tours=S.get('db_tours',[]);
-  const t=tours.find(x=>x.id===id);
-  if(!t)return;
+  const t=tours.find(x=>String(x.id)===String(id));
+  if(!t){showToast('Tur bulunamadi','danger');return;}
   const cur=caGetDurum(t);
   if(cur==='bekliyor'){showToast('Bu tur admin onayı bekliyor, durum değiştirilemez','danger');return;}
   if(cur==='reddedildi'){showToast('Reddedilen tur önce düzenlenip tekrar gönderilmeli','danger');return;}
@@ -2515,7 +2518,7 @@ function toggleTourStatusApp(id){
   t.updatedAt=new Date().toISOString();
   S.set('db_tours',tours);
   renderMyTours();
-  showToast(`"${t.ad||t.title}" ${yeni==='aktif'?'aktif edildi':'pasife alindi'}`);
+  showToast(`"${t.ad||t.title}" ${yeni==='aktif'?'aktif edildi':'pasife alindi'}`,'info');
 }
 
 function deleteTour(id){
@@ -2523,8 +2526,9 @@ function deleteTour(id){
   const aktif=bookings.filter(b=>String(b.tourId)===String(id)&&['bekliyor','onaylandi'].includes((b.durum||'').toLowerCase()));
   const msg=aktif.length
     ? `Bu turun ${aktif.length} aktif rezervasyonu var. Tur silinirse tümü iptal edilecek ve müşterilere bildirim gidecek. Devam edilsin mi?`
-    : 'Bu turu silmek istiyor musunuz?';
-  if(!confirm(msg))return;
+    : 'Bu turu kalıcı olarak silmek istiyor musunuz?';
+  // eslint-disable-next-line no-restricted-globals
+  if(!window.confirm(msg))return;
   // Cascade iptal + otomatik iade talebi
   bookings.forEach(b=>{
     if(String(b.tourId)===String(id)&&['bekliyor','onaylandi'].includes((b.durum||'').toLowerCase())){
@@ -2541,7 +2545,7 @@ function deleteTour(id){
     }
   });
   S.set('db_bookings',bookings);
-  const tours=S.get('db_tours',[]).filter(t=>t.id!==id);
+  const tours=S.get('db_tours',[]).filter(t=>String(t.id)!==String(id));
   S.set('db_tours',tours);renderMyTours();
   showToast(aktif.length?`Tur silindi — ${aktif.length} rezervasyon iptal edildi, iade talepleri oluşturuldu`:'Tur silindi');
 }
@@ -2551,15 +2555,24 @@ let _cancelTourId=null;
 
 function cancelTourApp(id){
   const tours=S.get('db_tours',[]);
-  const t=tours.find(x=>x.id===id);
-  if(!t)return;
+  const t=tours.find(x=>String(x.id)===String(id));
+  if(!t){showToast('Tur bulunamadi','danger');return;}
   const bookings=S.get('db_bookings',[]);
   const aktif=bookings.filter(b=>String(b.tourId)===String(id)&&['bekliyor','onaylandi'].includes(b.durum||''));
   _cancelTourId=id;
+  const hasBookings=aktif.length>0;
   const sub=document.getElementById('tour-cancel-subtitle');
-  if(sub)sub.textContent=aktif.length
-    ? `${aktif.length} aktif rezervasyon iptal edilecek ve müşteriler bilgilendirilecek`
-    : 'Bu tura henüz rezervasyon yok';
+  const warn=document.getElementById('tcs-booking-warning');
+  const pills=document.getElementById('tcs-pills-section');
+  const lbl=document.getElementById('tcs-reason-label');
+  if(sub)sub.textContent=hasBookings
+    ?`${aktif.length} aktif rezervasyon iptal edilecek — müşteriler bilgilendirilecek`
+    :'Bu tura henüz rezervasyon yok';
+  if(warn)warn.style.display=hasBookings?'block':'none';
+  if(pills)pills.style.display=hasBookings?'block':'none';
+  if(lbl)lbl.innerHTML=hasBookings
+    ?'İptal Nedeni <span class="text-danger">*</span>'
+    :'Bu tur neden iptal oldu? <span class="text-danger">*</span>';
   document.getElementById('tour-cancel-reason').value='';
   document.querySelectorAll('.cancel-reason-pill').forEach(p=>p.classList.remove('active'));
   document.getElementById('tour-cancel-overlay').style.display='block';
@@ -2584,7 +2597,7 @@ function doTourCancel(){
   const id=_cancelTourId;
   if(!id){closeTourCancelSheet();return;}
   const tours=S.get('db_tours',[]);
-  const t=tours.find(x=>x.id===id);
+  const t=tours.find(x=>String(x.id)===String(id));
   if(!t){closeTourCancelSheet();return;}
   // Tour'u iptal et
   t.durum='iptal'; t.status='iptal'; t.aktif=false;
@@ -3616,15 +3629,28 @@ function renderBookings(){
   const all=list;
   el.innerHTML=all.map(b=>{
     const ini=(b.customerName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const badge=b.durum==='onaylandi'?'<span class="badge bg-green-100 text-green-700">Onaylandi</span>':
-      b.durum==='bekliyor'?'<span class="badge bg-amber-100 text-amber-700" style="animation:pulse 2s infinite">Onay Bekliyor</span>':
-      b.durum==='tamamlandi'?'<span class="badge bg-gray-100 text-gray-600">Bitti</span>':
-      '<span class="badge bg-red-100 text-danger">Iptal</span>';
+    const isMucbirReview=!!b.mucbirAskiya;
+    const badge=isMucbirReview
+      ?'<span class="badge bg-orange-100 text-orange-700" style="animation:pulse 2s infinite"><i class="fas fa-hourglass-half mr-1"></i>İptal İnceleniyor</span>'
+      :b.durum==='onaylandi'?'<span class="badge bg-green-100 text-green-700">Onaylandi</span>'
+      :b.durum==='bekliyor'?'<span class="badge bg-amber-100 text-amber-700" style="animation:pulse 2s infinite">Onay Bekliyor</span>'
+      :b.durum==='tamamlandi'?'<span class="badge bg-gray-100 text-gray-600">Bitti</span>'
+      :'<span class="badge bg-red-100 text-danger">Iptal</span>';
     const net=Math.round((b.amount||0)*0.9);
-    const actions=b.durum==='bekliyor'?`
+    const mucbirBanner=isMucbirReview?`
+      <div class="flex items-start gap-2 mb-3 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2.5">
+        <i class="fas fa-shield-alt text-orange-500 mt-0.5 flex-shrink-0 text-sm"></i>
+        <div>
+          <div class="text-[10px] font-bold text-orange-700 mb-0.5 uppercase tracking-wide">Mücbir Sebep Başvurusu</div>
+          <div class="text-xs text-orange-800">Müşteri mücbir sebep bildirdi. Admin kararı bekleniyor — rezervasyon askıya alındı.</div>
+        </div>
+      </div>`:'';
+    const actions=isMucbirReview
+      ?`<div class="flex-1 bg-orange-50 border-l-2 border-orange-400 rounded-xl py-2 px-3 text-[11px] font-semibold text-orange-800 flex items-center gap-1.5"><i class="fas fa-hourglass-half"></i>Admin kararı bekleniyor</div>`
+      :b.durum==='bekliyor'?`
       <div class="flex-1 bg-amber-50 border-l-2 border-amber-400 rounded-xl py-2 px-3 text-[11px] font-semibold text-amber-800 flex items-center"><i class="fas fa-hourglass-half mr-1.5"></i>Admin onayı bekleniyor</div>
-      <button class="bg-primary/10 text-primary py-2.5 px-3 rounded-xl text-xs font-medium" onclick="jumpToChat('${b.id}')"><i class="fas fa-comment"></i></button>`:
-      `<button class="flex-1 bg-primary/10 text-primary py-2.5 rounded-xl text-xs font-medium" onclick="jumpToChat('${b.id}')"><i class="fas fa-comment mr-1"></i>Mesaj</button>
+      <button class="bg-primary/10 text-primary py-2.5 px-3 rounded-xl text-xs font-medium" onclick="jumpToChat('${b.id}')"><i class="fas fa-comment"></i></button>`
+      :`<button class="flex-1 bg-primary/10 text-primary py-2.5 rounded-xl text-xs font-medium" onclick="jumpToChat('${b.id}')"><i class="fas fa-comment mr-1"></i>Mesaj</button>
        <button class="flex-1 border py-2.5 rounded-xl text-xs font-medium"><i class="fas fa-phone mr-1"></i>Ara</button>`;
     return`<div class="card" id="bcard-${b.id}">
       <div class="flex justify-between items-start mb-2">
@@ -3638,6 +3664,7 @@ function renderBookings(){
         <span><i class="fas fa-wallet mr-0.5"></i>${net.toLocaleString('tr-TR')} TL net</span>
       </div>
       ${b.note?`<div class="flex items-start gap-2 mb-3 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5"><i class="fas fa-exclamation-circle text-amber-500 mt-0.5 flex-shrink-0"></i><div><div class="text-[10px] font-bold text-amber-700 mb-0.5 uppercase tracking-wide">Müşteri Notu</div><div class="text-xs text-amber-800">${b.note}</div></div></div>`:''}
+      ${mucbirBanner}
       <div class="flex gap-2">${actions}</div>
     </div>`;
   }).join('');

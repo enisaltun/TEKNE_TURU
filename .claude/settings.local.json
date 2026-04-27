@@ -31,7 +31,16 @@
       "Bash(start \"C:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\index.html\")",
       "Read(//c/Users/PC/Desktop/MOBIL_APP_FIKIRLERI/**)",
       "Bash(start index.html)",
-      "Bash(start \"C:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\\\\index.html\")"
+      "Bash(start \"C:\\\\Users\\\\PC\\\\Desktop\\\\MOBIL_APP_FIKIRLERI\\\\TUR_TEKNESI\\\\index.html\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(python -c ' *)",
+      "Bash(node --check /tmp/___TRACKED_VAR__.js)",
+      "Bash(mkdir -p .claude/tmp)",
+      "Bash(node --check .claude/tmp/___TRACKED_VAR__.js)",
+      "Bash(node -e \"const fs=require\\('fs'\\);const s=fs.readFileSync\\('C:/Users/PC/Desktop/MOBIL_APP_FIKIRLERI/TUR_TEKNESI/admin-panel.html','utf8'\\);const m=s.match\\(/<script[^>]*>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\);let ok=true;m.forEach\\(\\(blk,i\\)=>{const code=blk.replace\\(/^<script[^>]*>/,''\\).replace\\(/<\\\\/script>$/,''\\);try{new Function\\(code\\);}catch\\(e\\){ok=false;console.log\\('block',i,'FAIL:',e.message\\);}}\\);console.log\\(ok?'ALL OK':'ERRORS'\\);\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const h=fs.readFileSync\\('admin-panel.html','utf8'\\);const scripts=[...h.matchAll\\(/<script\\(?![^>]*src\\)[^>]*>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\)].map\\(m=>m[1]\\).join\\('\\\\n;\\\\n'\\);try{new Function\\(scripts\\);console.log\\('admin-panel.html OK'\\);}catch\\(e\\){console.log\\('ERR:',e.message\\);}\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);['admin-panel.html','captain-panel.html','captain-app.html','customer-site.html','customer-app.html'].forEach\\(f=>{const h=fs.readFileSync\\(f,'utf8'\\);const scripts=[...h.matchAll\\(/<script\\(?![^>]*src\\)[^>]*>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\)].map\\(m=>m[1]\\).join\\('\\\\n;\\\\n'\\);try{new Function\\(scripts\\);console.log\\(f,'OK'\\);}catch\\(e\\){console.log\\(f,'ERR:',e.message\\);}}\\);\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const h=fs.readFileSync\\('admin-panel.html','utf8'\\);const scripts=[...h.matchAll\\(/<script\\(?![^>]*src\\)[^>]*>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\)].map\\(m=>m[1]\\).join\\('\\\\n;\\\\n'\\);try{new Function\\(scripts\\);console.log\\('OK'\\);}catch\\(e\\){console.log\\('ERR:',e.message\\);}\")"
     ]
   }
 }

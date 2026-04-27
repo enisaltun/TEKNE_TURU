@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İptal ve Yer Kaydırma Kuralları — DenizBul.tr</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f8fafc;color:#1e293b;line-height:1.7}
+  .page-wrap{max-width:860px;margin:0 auto;padding:40px 24px 80px}
+
+  /* Header */
+  .doc-header{background:linear-gradient(135deg,#0369a1 0%,#075985 100%);color:#fff;border-radius:20px;padding:40px;margin-bottom:36px}
+  .doc-header .brand{font-size:13px;font-weight:700;letter-spacing:1px;opacity:.8;margin-bottom:8px}
+  .doc-header h1{font-size:26px;font-weight:800;margin-bottom:8px}
+  .doc-header .subtitle{font-size:14px;opacity:.85;max-width:540px}
+  .doc-header .meta{display:flex;gap:24px;margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,.2);font-size:12px;opacity:.75}
+
+  /* TOC */
+  .toc{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;margin-bottom:36px}
+  .toc h2{font-size:13px;font-weight:700;color:#64748b;letter-spacing:.5px;margin-bottom:16px}
+  .toc ol{padding-left:20px;space-y:4px}
+  .toc li{margin-bottom:6px}
+  .toc a{color:#0369a1;text-decoration:none;font-size:14px;font-weight:500}
+  .toc a:hover{text-decoration:underline}
+
+  /* Sections */
+  .section{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:32px;margin-bottom:24px;scroll-margin-top:20px}
+  .section-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#0369a1;color:#fff;border-radius:8px;font-size:12px;font-weight:800;margin-right:10px;flex-shrink:0}
+  .section h2{font-size:19px;font-weight:800;color:#0f172a;margin-bottom:6px;display:flex;align-items:center}
+  .section .section-desc{font-size:13px;color:#64748b;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #f1f5f9}
+  .section h3{font-size:14px;font-weight:700;color:#1e293b;margin:20px 0 10px}
+  .section p{font-size:14px;color:#475569;margin-bottom:10px}
+
+  /* Tier table */
+  .tier-table{width:100%;border-collapse:collapse;margin:12px 0 4px;font-size:13px}
+  .tier-table th{background:#f1f5f9;font-weight:700;padding:10px 14px;text-align:left;border:1px solid #e2e8f0;color:#374151}
+  .tier-table td{padding:10px 14px;border:1px solid #e2e8f0;vertical-align:top}
+  .tier-table tr:nth-child(even) td{background:#f8fafc}
+
+  /* Badges */
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+  .badge-green{background:#dcfce7;color:#166534}
+  .badge-amber{background:#fef3c7;color:#92400e}
+  .badge-red{background:#fee2e2;color:#991b1b}
+  .badge-blue{background:#dbeafe;color:#1e40af}
+  .badge-gray{background:#f1f5f9;color:#475569}
+
+  /* Info boxes */
+  .info-box{border-radius:12px;padding:16px;margin:14px 0;display:flex;gap:12px;font-size:13px;line-height:1.6}
+  .info-box .icon{font-size:16px;flex-shrink:0;margin-top:1px}
+  .info-box-blue{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+  .info-box-amber{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .info-box-green{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+  .info-box-red{background:#fff1f2;border:1px solid #fecdd3;color:#9f1239}
+
+  /* Step list */
+  .step-list{list-style:none;padding:0;margin:12px 0}
+  .step-list li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:13px;color:#374151;align-items:flex-start}
+  .step-list li:last-child{border-bottom:none}
+  .step-num{width:24px;height:24px;background:#0369a1;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px}
+  .step-num-gray{background:#94a3b8}
+
+  /* Category grid */
+  .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  @media(max-width:600px){.cat-grid{grid-template-columns:1fr}}
+  .cat-card{border:1px solid #e2e8f0;border-radius:12px;padding:14px;background:#f8fafc}
+  .cat-card .cat-icon{font-size:18px;margin-bottom:6px}
+  .cat-card .cat-title{font-size:13px;font-weight:700;color:#1e293b;margin-bottom:2px}
+  .cat-card .cat-desc{font-size:11px;color:#64748b;margin-bottom:6px}
+  .cat-card .cat-belge{font-size:10px;color:#0369a1;font-weight:600}
+
+  /* Footer */
+  .doc-footer{text-align:center;font-size:12px;color:#94a3b8;padding-top:32px;border-top:1px solid #e2e8f0;margin-top:40px}
+  .doc-footer strong{color:#64748b}
+
+  @media print{
+    body{background:#fff}
+    .page-wrap{padding:20px}
+    .doc-header{background:#0369a1!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .section{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- Header -->
+  <div class="doc-header">
+    <div class="brand">DENİZBUL.TR</div>
+    <h1>İptal ve Yer Kaydırma Kuralları</h1>
+    <div class="subtitle">Tekne turu rezervasyonlarında geçerli iptal politikaları, mücbir sebep prosedürleri ve akıllı yer kaydırma kuralları</div>
+    <div class="meta">
+      <span>📅 Son güncelleme: Nisan 2026</span>
+      <span>📋 Versiyon: 2.0</span>
+      <span>🌐 Tüm rezervasyonlar için geçerlidir</span>
+    </div>
+  </div>
+
+  <!-- Table of Contents -->
+  <div class="toc">
+    <h2>İÇİNDEKİLER</h2>
+    <ol>
+      <li><a href="#sec1">Müşteri Tarafından İptal — Standart Politika</a></li>
+      <li><a href="#sec2">Mücbir Sebep İptal Politikası</a></li>
+      <li><a href="#sec3">Kaptan / Platform Kaynaklı İptal</a></li>
+      <li><a href="#sec4">Akıllı Yer Kaydırma (Transfer) Kuralları</a></li>
+      <li><a href="#sec5">Platform Garantisi ve Genel Hükümler</a></li>
+    </ol>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="sec1">
+    <h2><span class="section-num">1</span>Müşteri Tarafından İptal — Standart Politika</h2>
+    <div class="section-desc">Müşteri kaynaklı iptallerde kalan süreye göre kademeli iade politikası uygulanır.</div>
+
+    <h3>1.1 İade Kademesi</h3>
+    <table class="tier-table">
+      <thead>
+        <tr>
+          <th>Tura Kalan Süre</th>
+          <th>Kesinti Oranı</th>
+          <th>İade Oranı</th>
+          <th>İşlem</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>5 gün ve üzeri</strong></td>
+          <td><span class="badge badge-green">%3 işlem ücreti</span></td>
+          <td>%97 iade</td>
+          <td>Otomatik — 3-5 iş günü</td>
+        </tr>
+        <tr>
+          <td><strong>48 saat – 5 gün arası</strong></td>
+          <td><span class="badge badge-amber">%15 iptal kesintisi</span></td>
+          <td>%85 iade</td>
+          <td>Otomatik — 3-5 iş günü</td>
+        </tr>
+        <tr>
+          <td><strong>48 saatten az</strong></td>
+          <td><span class="badge badge-red">%100 kesinti</span></td>
+          <td>İade yapılmaz</td>
+          <td>Mücbir sebep başvurusu açık</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="info-box info-box-blue">
+      <span class="icon">ℹ️</span>
+      <div>İptal, tur başlangıç saatine göre hesaplanır. Yeterli bildirim süresi olmadan yapılan iptallerde sistem otomatik olarak politikayı uygular. İade tutarları orijinal ödeme yöntemine 3-5 iş günü içinde aktarılır.</div>
+    </div>
+
+    <h3>1.2 İptal Süreci</h3>
+    <ul class="step-list">
+      <li><span class="step-num">1</span><div>Müşteri uygulama üzerinden "İptal Et" butonuna basar</div></li>
+      <li><span class="step-num">2</span><div>Sistem kalan süreyi hesaplar ve iade politikasını gösterir</div></li>
+      <li><span class="step-num">3</span><div>Müşteri "İptali Onayla" ile işlemi tamamlar — otomatik iade başlatılır</div></li>
+      <li><span class="step-num">4</span><div>Kaptan ve admin paneline iptal bildirimi iletilir</div></li>
+      <li><span class="step-num">5</span><div>Tur kapasitesi serbest bırakılır, başka müşterilere açılır</div></li>
+    </ul>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="sec2">
+    <h2><span class="section-num">2</span>Mücbir Sebep İptal Politikası</h2>
+    <div class="section-desc">Müşterinin elinde olmayan zorunlu hallerde uygulanan özel inceleme ve iade süreci.</div>
+
+    <div class="info-box info-box-amber">
+      <span class="icon">⚠️</span>
+      <div><strong>Önemli Not:</strong> Satın alma sırasında onaylanan standart iptal politikamız tüm rezervasyonlar için geçerlidir. Mücbir sebep başvuruları bireysel olarak incelenir; her başvurunun kabulü garanti değildir. Resmi belge sunumu inceleme sürecini hızlandırır ve olumlu sonuç olasılığını artırır.</div>
+    </div>
+
+    <h3>2.1 Kabul Edilen Mücbir Sebep Kategorileri</h3>
+    <div class="cat-grid">
+      <div class="cat-card">
+        <div class="cat-icon">🏥</div>
+        <div class="cat-title">Sağlık Krizi</div>
+        <div class="cat-desc">Hastaneye yatış, acil ameliyat, yoğun bakım tedavisi</div>
+        <div class="cat-belge">📎 Hastane belgesi / Doktor raporu gerektirir</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-icon">🕊️</div>
+        <div class="cat-title">Ölüm Vakası</div>
+        <div class="cat-desc">1. derece yakın kaybı: eş, çocuk, anne, baba, kardeş</div>
+        <div class="cat-belge">📎 Ölüm belgesi gerektirir</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-icon">🌊</div>
+        <div class="cat-title">Doğal Afet</div>
+        <div class="cat-desc">Deprem, sel, yangın, fırtına — ikametgahı veya rotayı etkileyen</div>
+        <div class="cat-belge">📎 AFAD belgesi / Hasar tespit tutanağı</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-icon">🚫</div>
+        <div class="cat-title">Resmi Seyahat Yasağı</div>
+        <div class="cat-desc">Devlet kararnamesi veya zorunlu karantina uygulaması</div>
+        <div class="cat-belge">📎 Resmi karar belgesi / Karantina yazısı</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-icon">🚗</div>
+        <div class="cat-title">Kaza</div>
+        <div class="cat-desc">Seyahati engelleyen trafik veya ulaşım kazası</div>
+        <div class="cat-belge">📎 Trafik tutanağı / Hastane raporu</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-icon">📋</div>
+        <div class="cat-title">Diğer Zorunlu Hal</div>
+        <div class="cat-desc">Belgelenemeyen ancak zorunlu ve kaçınılmaz engel</div>
+        <div class="cat-belge">🔍 Her durumda incelemeye alınır</div>
+      </div>
+    </div>
+
+    <h3>2.2 Kabul Edilmeyen Durumlar</h3>
+    <p>Aşağıdaki durumlar mücbir sebep kapsamı dışındadır ve standart iptal politikası uygulanır:</p>
+    <ul style="padding-left:20px;font-size:13px;color:#475569;space-y:4px">
+      <li style="margin-bottom:5px">İş yoğunluğu veya çalışma programı değişikliği</li>
+      <li style="margin-bottom:5px">Seyahat planı veya tercih değişikliği</li>
+      <li style="margin-bottom:5px">Finansal güçlük (ödeme tamamlandıktan sonra)</li>
+      <li style="margin-bottom:5px">Kötü hava koşulları (kaptan iptali değil, müşteri kararı ise)</li>
+      <li style="margin-bottom:5px">Rezervasyon unutulması veya tarih karışıklığı</li>
+      <li style="margin-bottom:5px">Diğer rezervasyonlarla çakışma</li>
+    </ul>
+
+    <h3>2.3 Fiyat Eşiğine Göre İşlem Süreci</h3>
+    <p>Rezervasyon tutarının kişi başına düşen miktarı inceleme kanalını belirler:</p>
+    <table class="tier-table">
+      <thead>
+        <tr>
+          <th>Kişi Başı Fiyat</th>
+          <th>İşlem Kanalı</th>
+          <th>Yanıt Süresi</th>
+          <th>Rezervasyon Durumu</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>5.000 ₺ ve üzeri</strong></td>
+          <td><span class="badge badge-blue">Merkez Yönetimi</span></td>
+          <td>72 saat içinde</td>
+          <td>Askıya alınır, iptal bekler</td>
+        </tr>
+        <tr>
+          <td><strong>2.000 – 4.999 ₺ arası</strong></td>
+          <td><span class="badge badge-amber">İnceleme Ekibi</span></td>
+          <td>48 saat içinde</td>
+          <td>Askıya alınır, iptal bekler</td>
+        </tr>
+        <tr>
+          <td><strong>2.000 ₺ altı</strong></td>
+          <td><span class="badge badge-gray">Standart Politika</span></td>
+          <td>Otomatik</td>
+          <td>Standart iade uygulanır</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="info-box info-box-green">
+      <span class="icon">✅</span>
+      <div>2.000 ₺ altı rezervasyonlarda standart iptal politikası otomatik uygulanır. Yine de itirazınız varsa "Merkeze İlet" seçeneğiyle başvurunuzu inceleme ekibine yönlendirebilirsiniz.</div>
+    </div>
+
+    <h3>2.4 Mücbir Sebep Başvuru Adımları</h3>
+    <ul class="step-list">
+      <li><span class="step-num">1</span><div><strong>Kategori Seçimi:</strong> Uygulamada "Mücbir Sebep Bildir" butonuna basın, durumunuza en uygun kategoriyi seçin</div></li>
+      <li><span class="step-num">2</span><div><strong>Açıklama ve Belge:</strong> Kısa bir açıklama girin; resmi belgeniz varsa "Belgem Var" seçeneğini işaretleyin</div></li>
+      <li><span class="step-num">3</span><div><strong>Başvuru Gönderimi:</strong> Sistem fiyat eşiğinize göre otomatik yönlendirme yapar</div></li>
+      <li><span class="step-num">4</span><div><strong>İnceleme:</strong> Ekibimiz başvurunuzu değerlendirip belirtilen süre içinde e-posta ve uygulama bildirimi ile geri döner</div></li>
+      <li><span class="step-num">5</span><div><strong>Sonuç:</strong> Olumlu kararla tam veya kısmi iade yapılır; olumsuz kararla standart politika devreye girer</div></li>
+    </ul>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="sec3">
+    <h2><span class="section-num">3</span>Kaptan / Platform Kaynaklı İptal</h2>
+    <div class="section-desc">Kaptanın veya platformun başlattığı iptallerde müşteri hakları ve akıllı yeniden eşleştirme süreci.</div>
+
+    <h3>3.1 Müşteri Hakları</h3>
+    <div class="info-box info-box-blue">
+      <span class="icon">🛡️</span>
+      <div>Kaptan veya platform kaynaklı iptallerde <strong>müşteriden herhangi bir kesinti yapılmaz.</strong> Müşteri tam iade hakkına sahiptir. Ek olarak platform, alternatif tur bulmak için aktif arama başlatır.</div>
+    </div>
+
+    <h3>3.2 Akıllı Eşleştirme Cascade'i</h3>
+    <p>Platform sırasıyla aşağıdaki yollarla alternatif kaptan arar:</p>
+    <ul class="step-list">
+      <li><span class="step-num">1</span><div><strong>Yedek Anlaşması Kaptanı:</strong> İptal eden kaptanın önceden anlaştığı yedek kaptan — otomatik transfer</div></li>
+      <li><span class="step-num">2</span><div><strong>Arkadaş Kaptanlar:</strong> Kaptan ağındaki (ca_connections) müsait kaptanlar — 10 dakika bekleme süresi</div></li>
+      <li><span class="step-num">3</span><div><strong>Acil Destek Gönüllüleri:</strong> Aynı bölgede opt-in kaptanlar — 10 dakika</div></li>
+      <li><span class="step-num">4</span><div><strong>Bölge Yayını:</strong> Tüm müsait kaptanlara broadcast — 10 dakika</div></li>
+      <li><span class="step-num">5</span><div><strong>Admin Müdahalesi:</strong> Platform ekibi manuel eşleştirme — 15 dakika</div></li>
+      <li><span class="step-num step-num-gray">6</span><div><strong>Çözümsüz:</strong> Tam iade + %20 değerinde bonus kupon otomatik verilir</div></li>
+    </ul>
+
+    <h3>3.3 Kaptan İptal Ceza Politikası</h3>
+    <table class="tier-table">
+      <thead>
+        <tr><th>İptal Zamanlaması</th><th>Ceza</th><th>Ek Yükümlülük</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>7+ gün önce</td><td><span class="badge badge-green">%0 ceza</span></td><td>—</td></tr>
+        <tr><td>3-7 gün önce</td><td><span class="badge badge-amber">%10 ceza</span></td><td>—</td></tr>
+        <tr><td>24-72 saat önce</td><td><span class="badge badge-red">%25 ceza</span></td><td>+ Fiyat farkı</td></tr>
+        <tr><td>24 saatten az</td><td><span class="badge badge-red">%50 ceza</span></td><td>+ Fiyat farkı</td></tr>
+        <tr><td>Mücbir sebep (admin onaylı)</td><td><span class="badge badge-gray">%0 ceza</span></td><td>Belge zorunlu</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="sec4">
+    <h2><span class="section-num">4</span>Akıllı Yer Kaydırma (Transfer) Kuralları</h2>
+    <div class="section-desc">Kaptan iptali sonrası müşteriye sunulan alternatif tur eşleştirme katmanları ve müşteri seçim hakları.</div>
+
+    <h3>4.1 Lokasyon Eşleştirme Katmanları</h3>
+    <p>Sistem müşterinin kalkış noktasına göre sırasıyla aşağıdaki kriterlerde eşleştirme arar:</p>
+    <ul class="step-list">
+      <li><span class="step-num">1</span><div><strong>Tam Eşleşme:</strong> Aynı kalkış noktası, aynı saat → Otomatik transfer, müşteri onayı gerekmez</div></li>
+      <li><span class="step-num">2</span><div><strong>Aynı Nokta ±15 Dakika:</strong> Saat kayması var → Müşteriye saat teklifi sunulur, 90 dakika yanıt süresi</div></li>
+      <li><span class="step-num">3</span><div><strong>Aynı İlçe, Farklı Nokta:</strong> Yakın nokta → Mesafe gösterilir, müşteri karar verir</div></li>
+      <li><span class="step-num">4</span><div><strong>On-Demand Transfer:</strong> Müsait kaptan aynı noktaya gider → Müşteri onayı gerekir</div></li>
+      <li><span class="step-num">5</span><div><strong>Komşu İlçe:</strong> Farklı bölge → Uzak mesafe teklifi, müşteri tercihine bırakılır</div></li>
+      <li><span class="step-num step-num-gray">6</span><div><strong>Eşleşme Yok:</strong> Tam iade + %20 değerinde bonus kupon otomatik verilir</div></li>
+    </ul>
+
+    <h3>4.2 Müşteri Seçim Hakları</h3>
+    <div class="info-box info-box-green">
+      <span class="icon">✅</span>
+      <div>Müşteri her aşamada alternatif teklifi <strong>reddetme</strong> ve <strong>tam iade talep etme</strong> hakkına sahiptir. Teklif yanıt süresi (90 dakika) geçerse sistem otomatik iade sürecini başlatır.</div>
+    </div>
+
+    <h3>4.3 Transfer Sürecinde Veri Gizliliği</h3>
+    <div class="info-box info-box-amber">
+      <span class="icon">🔒</span>
+      <div><strong>Kaptan Veri İzolasyonu:</strong> Transfer akışında yeni kaptana yalnızca şu bilgiler iletilir: grup büyüklüğü, kalkış noktası, saat ve tur rotası. Müşterinin kişisel bilgileri (ad, telefon, e-posta) transfer kabul edildikten sonra iletilir. Kaptanlar birbirlerinin gelir, rezervasyon ve müşteri bilgilerini hiçbir koşulda göremez.</div>
+    </div>
+
+    <h3>4.4 Transfer Akış Zaman Çizelgesi</h3>
+    <table class="tier-table">
+      <thead>
+        <tr><th>Aşama</th><th>Süre</th><th>Durum</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Yedek kaptan bildirimi</td><td>Anında</td><td>Otomatik</td></tr>
+        <tr><td>Arkadaş kaptan bekleme</td><td>10 dakika</td><td>Otomatik yayın</td></tr>
+        <tr><td>Acil destek gönüllüleri</td><td>+10 dakika</td><td>Bölge yayını</td></tr>
+        <tr><td>Tüm bölge kaptanları</td><td>+10 dakika</td><td>Geniş yayın</td></tr>
+        <tr><td>Admin müdahalesi</td><td>+15 dakika</td><td>Manuel</td></tr>
+        <tr><td>Müşteri teklif yanıt süresi</td><td>90 dakika</td><td>Müşteri kararı</td></tr>
+        <tr><td>Süre aşımı → Otomatik iade</td><td>Anında</td><td>Otomatik + Kupon</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="sec5">
+    <h2><span class="section-num">5</span>Platform Garantisi ve Genel Hükümler</h2>
+    <div class="section-desc">DenizBul.tr platformunun tüm rezervasyonlara sağladığı güvenceler ve genel şartlar.</div>
+
+    <h3>5.1 Platform Garantisi</h3>
+    <div class="cat-grid">
+      <div class="cat-card">
+        <div class="cat-icon">💳</div>
+        <div class="cat-title">Güvenli Ödeme</div>
+        <div class="cat-desc">Tüm ödemeler platform üzerinden gerçekleşir; nakit veya direkt transfer kabul edilmez</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-icon">⚡</div>
+        <div class="cat-title">Hızlı İade</div>
+        <div class="cat-desc">Onaylanan iadeler 3-5 iş günü içinde orijinal ödeme yöntemine aktarılır</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-icon">🔍</div>
+        <div class="cat-title">Şeffaf Fiyatlandırma</div>
+        <div class="cat-desc">Tüm kesinti oranları satın alma öncesinde açıkça gösterilir, gizli ücret yoktur</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-icon">📞</div>
+        <div class="cat-title">7/24 Destek</div>
+        <div class="cat-desc">Mücbir sebep ve acil durumlarda destek ekibimize her zaman ulaşabilirsiniz</div>
+      </div>
+    </div>
+
+    <h3>5.2 Genel Şartlar</h3>
+    <ul style="padding-left:20px;font-size:13px;color:#475569">
+      <li style="margin-bottom:8px">Bu politika, DenizBul.tr platformu üzerinden gerçekleştirilen tüm tekne turu rezervasyonlarını kapsar.</li>
+      <li style="margin-bottom:8px">İptal politikası, rezervasyon tamamlandığında ve ödeme alındığında yürürlüğe girer.</li>
+      <li style="margin-bottom:8px">Platform, özel durumlarda (doğal afet, salgın vb.) bu politikayı toplu olarak güncelleme hakkını saklı tutar. Değişiklikler önceden bildirilir.</li>
+      <li style="margin-bottom:8px">Anlaşmazlık durumlarında Türkiye Cumhuriyeti kanunları ve Türkiye Tüketici Mahkemeleri yetkilidir.</li>
+      <li style="margin-bottom:8px">Mücbir sebep başvurularında sunulan belgeler yalnızca başvuru değerlendirmesi amacıyla kullanılır; üçüncü taraflarla paylaşılmaz.</li>
+      <li style="margin-bottom:8px">Bu politikada yapılan güncellemeler DenizBul.tr uygulama ve web sitesinde yayımlanır.</li>
+    </ul>
+
+    <h3>5.3 İletişim</h3>
+    <div class="info-box info-box-blue">
+      <span class="icon">📬</span>
+      <div>
+        Mücbir sebep başvuruları, itirazlar ve destek için:<br>
+        <strong>Uygulama üzerinden:</strong> Rezervasyon detayı → Mücbir Sebep Bildir<br>
+        <strong>E-posta:</strong> destek@denizbul.tr<br>
+        <strong>Yanıt süresi:</strong> Tier'a göre 48-72 saat (iş günleri)
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <p><strong>DenizBul.tr</strong> — Türkiye'nin Tekne Turu Marketplace'i</p>
+    <p style="margin-top:6px">Bu belge prototip aşamasında olup yasal bağlayıcılığı yoktur. Nihai sürüm hukuki danışman onayından geçecektir.</p>
+  </div>
+
+</div>
+</body>
+</html>
