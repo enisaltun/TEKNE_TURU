@@ -2059,6 +2059,10 @@ window.addEventListener('storage',function(e){
     if(h==='messages'){renderMsgList();if(curChatId)renderChat(curChatId);}
     updateMsgBadge();
   }
+  if(e.key==='cu_notifs'){
+    updateNotifDot();
+    if(h==='notifications')renderNotifs();
+  }
   // Fix #3: admin kaptan başvuruyu onaylayınca profildeki "Kaptan Paneli" butonu canli belirsin
   if(e.key==='db_users'||e.key==='db_captains'){if(h==='profile'&&typeof renderProfile==='function')renderProfile();}
 });
@@ -4129,7 +4133,8 @@ function pollBookingStatus(){
     if(!seen[key]&&b.durum!=='bekliyor'){
       seen[key]=true;
       if(b.durum==='onaylandi')addNotif('Rezervasyon onaylandi!',`${b.tourTitle} rezervasyonunuz kaptan tarafindan onaylandi.`,'success');
-      else if(b.durum==='reddedildi'||b.durum==='iptal')addNotif('Rezervasyon reddedildi',`${b.tourTitle} talebi kabul edilmedi.`,'danger');
+      else if(b.durum==='reddedildi')addNotif('Rezervasyon reddedildi',`${b.tourTitle} talebi kabul edilmedi.`,'danger');
+      else if(b.durum==='iptal'&&b.iptalKaynagi!=='musteri'&&b.iptalKategori!=='kaptan_tur_iptali')addNotif('Rezervasyon iptal edildi',`${b.tourTitle} rezervasyonunuz iptal edildi.`,'danger');
       else if(b.durum==='tamamlandi')addNotif('Tur tamamlandi',`${b.tourTitle} turunu tamamladiniz. Yorum yazmak ister misiniz?`,'success');
     }
   });
