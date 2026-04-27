@@ -2125,10 +2125,17 @@ function renderMyTours(){
     const d=caGetDurum(t);
     const di=CA_DURUM_INFO[d];
     const kapasite=t.kapasite||8;
-    const tourBkgs=allBookings.filter(b=>b.tourId===t.id&&b.durum!=='iptal'&&b.durum!=='reddedildi');
-    const rezerveKisi=tourBkgs.reduce((s,b)=>s+(b.guests||1),0);
+    // En yakın gelecek tarih bazlı doluluk — tüm tarih toplamı değil, per-date kapasite
+    const _bugun=new Date();_bugun.setHours(0,0,0,0);
+    const _upcoming=(t.tarihler||[]).filter(iso=>{const d=new Date(iso);return !isNaN(d)&&d>=_bugun;}).sort();
+    const _nextISO=_upcoming[0]||null;
+    const _nextStr=_nextISO?new Date(_nextISO).toLocaleDateString('tr-TR'):null;
+    const _nextLabel=_nextISO?new Date(_nextISO).toLocaleDateString('tr-TR',{day:'2-digit',month:'short'}):null;
+    const tourBkgs=allBookings.filter(b=>String(b.tourId)===String(t.id)&&b.durum!=='iptal'&&b.durum!=='reddedildi');
+    const nextDateBkgs=_nextStr?tourBkgs.filter(b=>b.tarih===_nextStr):[];
+    const rezerveKisi=nextDateBkgs.reduce((s,b)=>s+(b.guests||1),0);
     const kalanKisi=Math.max(0,kapasite-rezerveKisi);
-    const dolulukPct=Math.min(100,Math.round(rezerveKisi/kapasite*100));
+    const dolulukPct=_nextISO?Math.min(100,Math.round(rezerveKisi/kapasite*100)):0;
     const barColor=dolulukPct>=90?'bg-danger':dolulukPct>=60?'bg-amber-400':'bg-success';
     const totalPrice=t.fiyat??t.price??0;
     const tTitle=t.ad||t.title||'Tur';
@@ -2212,15 +2219,15 @@ function renderMyTours(){
         return `
       <div class="mt-3 pt-3 border-t">
         <div class="flex items-center justify-between text-xs mb-1.5">
-          <span class="text-gray-500"><i class="fas fa-users mr-1"></i>${rezerveKisi} kisi rezerve</span>
-          <span class="${kalanKisi===0?'text-danger font-semibold':'text-gray-500'}">${kalanKisi===0?'Dolu!':kalanKisi+' yer kaldi'}</span>
+          <span class="text-gray-500"><i class="fas fa-users mr-1"></i>${_nextLabel?_nextLabel+': '+rezerveKisi+' kisi':'Gelecek tarih yok'}</span>
+          <span class="${kalanKisi===0&&_nextISO?'text-danger font-semibold':'text-gray-500'}">${!_nextISO?'—':kalanKisi===0?'Dolu!':kalanKisi+' yer kaldi'}</span>
         </div>
         <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
           <div class="${barColor} h-1.5 rounded-full transition-all" style="width:${dolulukPct}%"></div>
         </div>
         <div class="flex justify-between text-[10px] text-gray-400 mt-1">
-          <span>${tourBkgs.length} rezervasyon</span>
-          <span>%${dolulukPct} dolu</span>
+          <span>${tourBkgs.length} toplam rezervasyon</span>
+          <span>${_nextLabel?'%'+dolulukPct+' dolu ('+_nextLabel+')':'Gelecek tarih yok'}</span>
         </div>
         ${dateBlock}
       </div>`;
