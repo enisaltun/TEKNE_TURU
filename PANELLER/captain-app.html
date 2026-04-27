@@ -722,7 +722,7 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
       <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2 font-medium">
         <div>Pzt</div><div>Sal</div><div>Car</div><div>Per</div><div>Cum</div><div>Cmt</div><div>Paz</div>
       </div>
-      <div class="grid grid-cols-7 gap-1" id="cal-grid"></div>
+      <div class="grid grid-cols-7 gap-1" id="page-cal-grid"></div>
       <div class="flex gap-4 mt-4 text-[10px] text-gray-500 justify-center">
         <span class="flex items-center gap-1"><span class="w-3 h-3 bg-amber-200 rounded"></span>Rezervasyon</span>
         <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-200 rounded"></span>Kapali</span>
@@ -1826,9 +1826,9 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
   <a href="#create-tour" data-nav="create-tour" style="margin-top:-20px">
     <div class="w-14 h-14 bg-gradient-to-br from-primary to-sky-500 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30"><i class="fas fa-plus text-white text-lg"></i></div>
   </a>
-  <a href="#bookings" data-nav="bookings">
+  <a href="#bookings" data-nav="bookings" style="position:relative">
     <i class="fas fa-calendar-check"></i>Rezervasyon
-    <span class="absolute -top-0.5 right-2 w-4 h-4 bg-danger text-white text-[8px] rounded-full flex items-center justify-center">1</span>
+    <span id="nav-booking-badge" class="absolute -top-0.5 right-2 w-4 h-4 bg-danger text-white text-[8px] rounded-full flex items-center justify-center" style="display:none">0</span>
   </a>
   <a href="#tools" data-nav="tools"><i class="fas fa-water"></i>Araçlar</a>
   <a href="#profile" data-nav="profile"><i class="fas fa-user-cog"></i>Profil</a>
@@ -1947,6 +1947,8 @@ function handleRoute(){
   if(h==='profile')      renderProfile();
   if(h==='tools')        renderCaptainTools();
   if(h==='notifications')renderNotifications();
+  if(h==='calendar')     renderCalendar();
+  if(h==='earnings')     renderEarnings();
   if(h==='profile-edit') renderProfileEdit();
   if(h==='boat-edit')    renderBoatEdit();
   if(h==='create-tour'){currentStep=1;resetWizard();updateWizardUI();for(let i=1;i<=5;i++){const w=document.getElementById('wizard-'+i);if(w)w.style.display=i===1?'block':'none';}}
@@ -3368,6 +3370,12 @@ function captainAccept(id){
   b.onayTarihi=new Date().toISOString();
   S.set('db_bookings',db);
   try{if(DB_MODE==='remote')DB.rezervasyonlar.updateDurum(b.id,'onaylandi').catch(e=>console.warn('[SB]',e));}catch(e){}
+  // Müşteriye chat mesajı — db_messages
+  const _msgs=S.get('db_messages',{});
+  if(!_msgs[b.id])_msgs[b.id]=[];
+  const cap=getActiveCaptain();
+  _msgs[b.id].push({text:`Merhaba! "${b.tourTitle||'Tur'}" rezervasyonunuzu onayladım. ${b.tarih} tarihinde sizi bekliyorum. Sorularınız için mesaj atabilirsiniz. — ${cap?.ad||'Kaptan'}`,byCaptan:true,ts:Date.now(),readByCustomer:false,readByCaptain:true,sysMsg:false});
+  S.set('db_messages',_msgs);
   // Müşteriye gerçek bildirim — cu_notifs
   const _cn1=S.get('cu_notifs',[]);
   _cn1.unshift({id:Date.now(),title:`${b.tourTitle||'Tur'} — Rezervasyon Onaylandı`,body:'Rezervasyonunuz kaptan tarafından onaylandı. İyi seyahatler!',type:'success',read:false,ts:new Date().toISOString(),bookingId:b.id});
@@ -3709,7 +3717,10 @@ function renderProfile(){
 }
 
 function switchCaptain(id){
-  S.set('cp_active_id',+id);renderProfile();renderDashboard();showToast('Kaptan degistirildi');
+  S.set('cp_active_id',+id);
+  const newCap=S.get('db_captains',[]).find(c=>String(c.id)===String(id));
+  if(typeof capacity!=='undefined')capacity=+(newCap?.kapasite||8);
+  renderProfile();renderDashboard();showToast('Kaptan degistirildi');
 }
 
 /* ── PROFİL DÜZENLE ── */
@@ -3725,6 +3736,9 @@ function renderProfileEdit(){
   s('edit-bio',cap.bio);
   _populateSehirSelect('edit-sehir', cap.sehir||'');
   _populateBolgeSelect(cap.sehir||'', cap.bolge||'');
+  // Şehir select'in değerini set ettikten sonra bölge listesini senkronize et
+  const sehirEl=document.getElementById('edit-sehir');
+  if(sehirEl&&cap.sehir){sehirEl.value=cap.sehir;_populateBolgeSelect(cap.sehir,cap.bolge||'');}
   const av=document.getElementById('prof-edit-avatar');
   if(av)av.textContent=(cap.ad[0]+(cap.soyad?.[0]||'')).toUpperCase();
 }
@@ -3902,37 +3916,67 @@ function toggleFaq(btn){
 }
 
 /* ── CALENDAR ── */
+let _pageCalY=null,_pageCalM=null;
 function renderCalendar(){
-  const grid=document.getElementById('cal-grid');
+  const grid=document.getElementById('page-cal-grid');
   if(!grid)return;
-  const bookings=getMyBookings();
   const now=new Date();
-  const year=now.getFullYear();const month=now.getMonth();
+  if(_pageCalY===null){_pageCalY=now.getFullYear();_pageCalM=now.getMonth();}
+  const year=_pageCalY,month=_pageCalM;
+  const TR_MONTHS=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  const monthEl=document.getElementById('cal-month');
+  if(monthEl)monthEl.textContent=TR_MONTHS[month]+' '+year;
+  const bookings=getMyBookings();
+  const today=new Date();today.setHours(0,0,0,0);
+  // Aktif rezervasyonları bu aya ait gün setine dönüştür
+  const bookedDays=new Set();
+  bookings.filter(b=>b.durum==='onaylandi'||b.durum==='bekliyor').forEach(b=>{
+    const d=b.tarih?.split('.');
+    if(d&&d.length===3&&+d[1]-1===month&&+d[2]===year)bookedDays.add(+d[0]);
+  });
   const firstDay=(new Date(year,month,1).getDay()+6)%7;
   const daysInMonth=new Date(year,month+1,0).getDate();
-  const bookedDays=new Set(bookings.filter(b=>b.durum==='onaylandi'||b.durum==='bekliyor').map(b=>{
-    const d=b.tarih?.split('.');return d?+d[0]:null;
-  }).filter(Boolean));
   let html='';
   for(let i=0;i<firstDay;i++)html+='<div class="calendar-day empty"></div>';
   for(let d=1;d<=daysInMonth;d++){
+    const dateObj=new Date(year,month,d);
+    const isPast=dateObj<today;
     let cls='calendar-day';
-    if(d===now.getDate())cls+=' today';
+    if(d===now.getDate()&&month===now.getMonth()&&year===now.getFullYear())cls+=' today';
     if(bookedDays.has(d))cls+=' booked';
-    html+=`<div class="${cls}" onclick="selectDay(this,${d})">${d}</div>`;
+    if(isPast)cls+=' closed';
+    html+=`<div class="${cls}" onclick="selectDay(this,${d},${year},${month})">${d}</div>`;
   }
   grid.innerHTML=html;
-  const monthEl=document.getElementById('cal-month');
-  if(monthEl)monthEl.textContent=now.toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
 }
-function selectDay(el,d){document.querySelectorAll('.calendar-day').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');}
-function changeMonth(d){showToast(d>0?'Sonraki ay':'Onceki ay');}
+function selectDay(el,d,year,month){
+  document.querySelectorAll('#page-cal-grid .calendar-day').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  const dateStr=`${String(d).padStart(2,'0')}.${String((month||new Date().getMonth())+1).padStart(2,'0')}.${year||new Date().getFullYear()}`;
+  const bookings=getMyBookings().filter(b=>(b.durum==='onaylandi'||b.durum==='bekliyor')&&b.tarih===dateStr);
+  const det=document.getElementById('cal-detail');
+  if(!det)return;
+  if(!bookings.length){det.innerHTML=`<div class="text-center py-6 text-sm text-gray-400"><i class="fas fa-calendar-day text-2xl mb-2 block opacity-30"></i>${dateStr} — Rezervasyon yok</div>`;return;}
+  det.innerHTML=`<h3 class="font-semibold text-sm mb-3"><i class="fas fa-calendar-day text-primary mr-1"></i>${dateStr}</h3>`+bookings.map(b=>`<div class="flex items-center gap-3 bg-amber-50 rounded-xl p-3 mb-2"><div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center"><i class="fas fa-user text-primary text-sm"></i></div><div class="flex-1"><div class="text-sm font-semibold">${b.customerName||'Misafir'}</div><div class="text-xs text-gray-500">${b.tourTitle||'Tur'} · ${b.guests||1} kişi · ${b.saat||'—'}</div></div><span class="badge ${b.durum==='onaylandi'?'bg-green-100 text-green-700':'bg-amber-100 text-amber-700'}">${b.durum==='onaylandi'?'Onaylı':'Bekliyor'}</span></div>`).join('');
+}
+function changeMonth(d){
+  if(_pageCalY===null){const n=new Date();_pageCalY=n.getFullYear();_pageCalM=n.getMonth();}
+  _pageCalM+=d;
+  if(_pageCalM<0){_pageCalM=11;_pageCalY--;}
+  if(_pageCalM>11){_pageCalM=0;_pageCalY++;}
+  renderCalendar();
+}
 function switchTourTab(btn,filter){btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(filter){caCurrentTourTab=filter;renderMyTours();}}
 function switchBookingTab(btn){btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 
 /* ── EARNINGS (static demo) ── */
+function renderEarnings(){
+  const btn=document.querySelector('#page-earnings .tab-btn.active')||document.querySelector('#page-earnings .tab-btn');
+  const period=btn?(btn.getAttribute('onclick')||'').match(/'(\w+)'\)/)?.[1]||'month':'month';
+  setEarningPeriod(btn,period);
+}
 function setEarningPeriod(btn,period){
-  btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  if(btn?.parentElement?.querySelectorAll){btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
   const data={
     week:{total:'12,450 TL',com:'1,380 TL',tours:'5',avg:'2,490 TL',rate:'100%'},
     month:{total:'45,200 TL',com:'5,020 TL',tours:'18',avg:'2,511 TL',rate:'98%'},
@@ -3959,7 +4003,10 @@ function openQRScanner(){
         {fps:10,qrbox:{width:220,height:220},aspectRatio:1.0},
         (decodedText)=>{processScannedQR(decodedText);},
         ()=>{}
-      ).catch(()=>{/* camera not available — manual input still works */});
+      ).catch(()=>{
+        const qrEl=document.getElementById('qr-reader');
+        if(qrEl)qrEl.innerHTML='<div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px"><i class="fas fa-camera-slash" style="font-size:28px;margin-bottom:8px;display:block"></i>Kamera açılamadı.<br>Lütfen aşağıdaki alana rezervasyon kodunu girin.</div>';
+      });
     }catch(e){}
   },300);
 }
@@ -4056,9 +4103,11 @@ function _checkNewBookingNotifs(allBk){
 function updateNotifDot(){
   const notifs=S.get('ca_notifications',[]);
   const unread=notifs.filter(n=>!n.read).length;
-  document.querySelectorAll('.notification-dot').forEach(dot=>{
-    dot.style.display=unread?'':'none';
-  });
+  document.querySelectorAll('.notification-dot').forEach(dot=>{dot.style.display=unread?'':'none';});
+  // Rezervasyon nav badge — bekleyen rezervasyonlar
+  const pending=getMyBookings().filter(b=>b.durum==='bekliyor').length;
+  const navBadge=document.getElementById('nav-booking-badge');
+  if(navBadge){navBadge.style.display=pending?'flex':'none';navBadge.textContent=pending>9?'9+':pending;}
 }
 function renderNotifications(){
   const notifs=S.get('ca_notifications',[]);
@@ -4099,7 +4148,7 @@ function respondFleetMerge(fmrId, notifId, action){
      Bunun yerine ortak localStorage'a cevap yazıyoruz. Admin panel renderDashboard'da bunu görecek. */
   const fmrs=S.get('db_fleet_merge_requests',[]);
   const idx=fmrs.findIndex(f=>String(f.id)===String(fmrId));
-  const cap=getCaptain();
+  const cap=getActiveCaptain();
   if(idx<0){alert('Birleştirme talebi bulunamadı. Lütfen admin ile iletişime geçin.');return;}
   const fmr=fmrs[idx];
   const isSource=fmr.sourceCaptainEmail===cap?.email;
