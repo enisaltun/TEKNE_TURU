@@ -186,6 +186,19 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
           <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">SIFRE *</label>
           <input id="reg-password" type="password" placeholder="En az 6 karakter" autocomplete="new-password">
         </div>
+        <!-- KVKK Onayı -->
+        <div style="margin-bottom:10px">
+          <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+            <input type="checkbox" id="reg-kvkk" style="margin-top:2px;flex-shrink:0;accent-color:#0369a1;width:15px;height:15px">
+            <span style="font-size:11px;color:#475569;line-height:1.5">
+              <strong style="color:#1e293b">KVKK Aydınlatma Metni</strong>'ni okudum, anladım ve kabul ediyorum.
+              <button type="button" onclick="cuOpenKvkkModal()" style="color:#0369a1;font-size:11px;font-weight:600;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;margin-left:2px">Metni Oku →</button>
+            </span>
+          </label>
+          <div id="reg-kvkk-err" style="display:none;font-size:10px;color:#ef4444;margin-top:4px;padding-left:23px">
+            <i class="fas fa-times-circle" style="margin-right:3px"></i>Devam etmek için KVKK Aydınlatma Metni'ni kabul etmelisiniz.
+          </div>
+        </div>
         <div id="reg-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;font-size:12px;color:#ef4444;margin-bottom:12px">
           <i class="fas fa-exclamation-circle" style="margin-right:6px"></i><span id="reg-error-msg"></span>
         </div>
@@ -1609,6 +1622,10 @@ function regNextStep(){
     if(!validateTC(tc)){showAuthErr('reg','Gecerli bir TC Kimlik No girin (11 hane).');document.getElementById('reg-tc').focus();return;}
     if(!pass||pass.length<6){showAuthErr('reg','Sifre en az 6 karakter olmali.');document.getElementById('reg-password').focus();return;}
     if(U.find(email)){showAuthErr('reg','Bu e-posta zaten kayitli. Giris yapin.');return;}
+    const kvkkEl=document.getElementById('reg-kvkk');
+    const kvkkErrEl=document.getElementById('reg-kvkk-err');
+    if(!kvkkEl||!kvkkEl.checked){if(kvkkErrEl)kvkkErrEl.style.display='block';return;}
+    if(kvkkErrEl)kvkkErrEl.style.display='none';
     if(_regType==='customer'){doRegister();return;}
     _regStep=3;
     regShowStep(3);
@@ -1662,6 +1679,7 @@ function doRegister(){
     createdAt:new Date().toISOString(),
     durum:isCustomer?'aktif':'onay_bekliyor',
     roles:isCustomer?['customer']:['customer',_regType],
+    kvkkOnayi:true,kvkkOnayTarihi:new Date().toISOString(),
   };
 
   if(_regType==='captain'){
@@ -3990,6 +4008,120 @@ function clearAll(){
   Object.keys(localStorage).filter(k=>k.startsWith('cms_content_')||k.startsWith('seller_products_')).forEach(k=>localStorage.removeItem(k));
   location.reload();
 }
+
+
+/* ── KVKK MODAL ── */
+var _cuKvkkOpen=false;
+function cuOpenKvkkModal(){
+  var overlay=document.getElementById('cu-kvkk-overlay');
+  var body=document.getElementById('cu-kvkk-body');
+  var btn=document.getElementById('cu-kvkk-accept-btn');
+  var hint=document.getElementById('cu-kvkk-hint');
+  if(!overlay)return;
+  body.scrollTop=0;
+  btn.disabled=true;btn.style.opacity='0.4';btn.style.cursor='not-allowed';
+  hint.style.display='flex';
+  overlay.style.display='flex';
+}
+function cuCloseKvkkModal(e){
+  var overlay=document.getElementById('cu-kvkk-overlay');
+  if(e&&e.target!==overlay)return;
+  overlay.style.display='none';
+}
+function cuKvkkScroll(el){
+  var atBottom=el.scrollHeight-el.scrollTop-el.clientHeight<40;
+  var btn=document.getElementById('cu-kvkk-accept-btn');
+  var hint=document.getElementById('cu-kvkk-hint');
+  btn.disabled=!atBottom;btn.style.opacity=atBottom?'1':'0.4';btn.style.cursor=atBottom?'pointer':'not-allowed';
+  if(atBottom)hint.style.display='none';
+}
+function cuAcceptKvkk(){
+  var cb=document.getElementById('reg-kvkk');
+  if(cb)cb.checked=true;
+  var errEl=document.getElementById('reg-kvkk-err');
+  if(errEl)errEl.style.display='none';
+  document.getElementById('cu-kvkk-overlay').style.display='none';
+}
 </script>
+
+<!-- KVKK Modal -->
+<div id="cu-kvkk-overlay" onclick="cuCloseKvkkModal(event)"
+  style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;align-items:flex-end;justify-content:center;padding:0">
+  <div onclick="event.stopPropagation()"
+    style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden">
+    <!-- Header -->
+    <div style="padding:18px 20px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;background:#eff6ff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="fas fa-shield-alt" style="color:#0369a1;font-size:15px"></i>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:#1e293b">KVKK Aydınlatma Metni</div>
+        <div style="font-size:10px;color:#94a3b8">6698 Sayılı Kişisel Verilerin Korunması Kanunu</div>
+      </div>
+      <button onclick="document.getElementById('cu-kvkk-overlay').style.display='none'"
+        style="width:32px;height:32px;border-radius:50%;border:none;background:#f1f5f9;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748b;flex-shrink:0">
+        <i class="fas fa-times" style="font-size:13px"></i>
+      </button>
+    </div>
+    <!-- Body -->
+    <div id="cu-kvkk-body" onscroll="cuKvkkScroll(this)"
+      style="overflow-y:auto;flex:1;padding:18px 20px;font-size:12px;line-height:1.75;color:#374151">
+      <p style="font-weight:700;color:#0369a1;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">1. Veri Sorumlusu</p>
+      <p style="margin-bottom:14px">6698 sayılı KVKK kapsamında kişisel verileriniz; veri sorumlusu sıfatıyla <strong>DenizBul.tr Teknoloji Ticaret A.Ş.</strong> tarafından işlenmektedir.</p>
+
+      <p style="font-weight:700;color:#0369a1;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">2. İşlenen Kişisel Veriler</p>
+      <ul style="padding-left:16px;margin-bottom:14px">
+        <li style="margin-bottom:4px"><strong>Kimlik:</strong> Ad, soyad, TC kimlik numarası</li>
+        <li style="margin-bottom:4px"><strong>İletişim:</strong> E-posta adresi, telefon numarası</li>
+        <li style="margin-bottom:4px"><strong>Hesap:</strong> Şifrelenmiş parola, kayıt tarihi, son giriş</li>
+        <li style="margin-bottom:4px"><strong>İşlem:</strong> Rezervasyon kayıtları, ödeme tutarı, yorumlar, mesajlar</li>
+        <li style="margin-bottom:4px"><strong>Teknik:</strong> IP adresi, oturum verileri</li>
+      </ul>
+
+      <p style="font-weight:700;color:#0369a1;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">3. İşlenme Amaçları</p>
+      <ul style="padding-left:16px;margin-bottom:14px">
+        <li style="margin-bottom:4px">Üyelik hesabının oluşturulması ve yönetilmesi</li>
+        <li style="margin-bottom:4px">Tekne turu rezervasyonlarının gerçekleştirilmesi</li>
+        <li style="margin-bottom:4px">Ödeme işlemlerinin güvenli yürütülmesi</li>
+        <li style="margin-bottom:4px">Platform güvenliği ve sahtekârlık önleme</li>
+        <li style="margin-bottom:4px">Müşteri hizmetleri ve destek süreçleri</li>
+        <li style="margin-bottom:4px">Yasal yükümlülüklerin yerine getirilmesi</li>
+      </ul>
+
+      <p style="font-weight:700;color:#0369a1;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">4. Veri Aktarımı</p>
+      <p style="margin-bottom:14px">Verileriniz; ödeme kuruluşları, bulut altyapı sağlayıcıları (Supabase — GDPR uyumlu), ilgili kaptanlar (rezervasyon bilgisi) ve yasal zorunluluk halinde yetkili kamu kurumlarıyla paylaşılabilir.</p>
+
+      <p style="font-weight:700;color:#0369a1;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">5. Saklama Süresi</p>
+      <p style="margin-bottom:14px">Kişisel verileriniz hesabınız aktif olduğu sürece ve yasal yükümlülükler kapsamında (ticari kayıtlar 10 yıl, vergi kayıtları 5 yıl) saklanır. Hesap silinmesinde veriler yasal zorunluluklar dışında silinir veya anonim hale getirilir.</p>
+
+      <p style="font-weight:700;color:#0369a1;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">6. Haklarınız (KVKK Md. 11)</p>
+      <ul style="padding-left:16px;margin-bottom:14px">
+        <li style="margin-bottom:4px">Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
+        <li style="margin-bottom:4px">İşlenen veriler hakkında bilgi talep etme</li>
+        <li style="margin-bottom:4px">Yanlış veya eksik verilerin düzeltilmesini isteme</li>
+        <li style="margin-bottom:4px">Verilerin silinmesini veya yok edilmesini talep etme</li>
+        <li style="margin-bottom:4px">Otomatik işleme sonuçlarına itiraz etme</li>
+        <li style="margin-bottom:4px">Zarara uğraması halinde tazminat talep etme</li>
+      </ul>
+
+      <p style="font-weight:700;color:#0369a1;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">7. İletişim</p>
+      <p style="margin-bottom:6px">Haklarınızı kullanmak için <strong>kvkk@denizbul.tr</strong> adresine e-posta gönderebilir veya platform üzerindeki "Hesabım → Veri Talebi" bölümünü kullanabilirsiniz. Başvurunuz en geç <strong>30 gün</strong> içinde yanıtlanacaktır.</p>
+      <div style="margin-top:14px;padding:10px 12px;background:#f0f9ff;border-radius:8px;border-left:3px solid #0369a1;font-size:11px;color:#0369a1">
+        <i class="fas fa-info-circle" style="margin-right:5px"></i>Bu metin en son <strong>Ocak 2026</strong> tarihinde güncellenmiştir.
+      </div>
+    </div>
+    <!-- Footer -->
+    <div style="padding:14px 20px;border-top:1px solid #f1f5f9;background:#fff">
+      <div id="cu-kvkk-hint" style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:10px;color:#94a3b8;margin-bottom:10px">
+        <i class="fas fa-arrow-down" style="font-size:9px"></i>Kabul etmek için metni sonuna kadar okuyun
+      </div>
+      <button id="cu-kvkk-accept-btn" onclick="cuAcceptKvkk()" disabled
+        style="width:100%;padding:13px;background:#0369a1;color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;opacity:0.4;cursor:not-allowed;display:flex;align-items:center;justify-content:center;gap:8px">
+        <i class="fas fa-check"></i>Okudum ve Kabul Ediyorum
+      </button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
