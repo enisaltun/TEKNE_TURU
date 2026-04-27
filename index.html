@@ -436,8 +436,8 @@ function toast(msg,type='info'){
 }
 
 /* ═══ INIT ═══ */
-// Şifre kapısı: sessionStorage'da oturum yoksa içerik gizle
-(function(){
+// Şifre kapısı: _gate div script bloğundan sonra geldiği için DOMContentLoaded ile bekliyoruz
+window.addEventListener('DOMContentLoaded', function(){
   const SESS_KEY='_dbdev_auth';
   // btoa('denizdev25') — ticari gizli erişim kodu
   const _ok=btoa('denizdev25');
@@ -464,7 +464,7 @@ function toast(msg,type='info'){
     document.getElementById('_main-content').style.display='none';
     // render() çağrılmaz — içerik gizli
   }
-})();
+});
 </script>
 
 <!-- Şifre Kapısı Overlay -->
