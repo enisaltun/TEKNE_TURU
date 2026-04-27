@@ -1810,183 +1810,82 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
       </button>
     </div>
 
-    <!-- Preset buttons -->
-    <div class="px-5 pt-4 pb-3 border-b flex-shrink-0">
-      <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Hızlı Preset</div>
-      <div class="flex gap-2">
-        <button onclick="simPreset('minimal')" id="sim-preset-minimal"
-          class="flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100">
-          <i class="fas fa-seedling mr-1"></i>Minimal
-        </button>
-        <button onclick="simPreset('balanced')" id="sim-preset-balanced"
-          class="flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100">
-          <i class="fas fa-balance-scale mr-1"></i>Dengeli
-        </button>
-        <button onclick="simPreset('full')" id="sim-preset-full"
-          class="flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100">
-          <i class="fas fa-fire mr-1"></i>Tam Senaryo
-        </button>
-      </div>
-    </div>
+    <!-- Scenario cards body -->
+    <div class="flex-1 overflow-y-auto px-5 py-5 space-y-3">
 
-    <!-- Config body (scrollable) -->
-    <div class="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-
-      <!-- BÖLÜM: Kullanıcı Sayıları -->
-      <div>
-        <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-          <i class="fas fa-users text-blue-500"></i> Kullanıcı Sayıları
-        </div>
-        <div class="space-y-3">
-          <!-- Kaptan -->
-          <div class="bg-cyan-50 rounded-xl p-3">
-            <div class="flex items-center justify-between mb-2">
-              <label class="text-xs font-semibold text-cyan-800 flex items-center gap-1.5">
-                <i class="fas fa-anchor text-cyan-500 text-[10px]"></i> Kaptan
-              </label>
-              <input type="number" id="sim-n-captains" min="1" max="100" value="20"
-                class="w-16 text-center text-xs font-bold border border-cyan-200 rounded-lg py-1 bg-white"
-                oninput="simSyncFromInput('captains',this.value)">
+      <!-- Senaryo 1: Yeni Platform -->
+      <div id="sim-sc-yeni" onclick="selectScenario('yeni_platform',this)"
+        class="border-2 border-emerald-200 bg-emerald-50 rounded-2xl p-4 cursor-pointer transition-all hover:border-emerald-400 hover:shadow-md">
+        <div class="flex items-start gap-3">
+          <div class="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0 text-xl">🌱</div>
+          <div class="flex-1">
+            <div class="font-bold text-emerald-900 text-sm mb-0.5">Yeni Platform</div>
+            <div class="text-xs text-emerald-700">Minimal, temiz başlangıç — ilk testler için ideal</div>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">5 kaptan</span>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">30 müşteri</span>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">2 satıcı · 1 mağaza</span>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">~15 tur</span>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">%40 doluluk</span>
+              <span class="text-[10px] bg-white text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">Sorun yok</span>
             </div>
-            <input type="range" id="sim-r-captains" min="1" max="100" value="20" class="sim-range w-full accent-cyan-500"
-              oninput="simSyncFromRange('captains',this.value)">
-            <div class="flex justify-between text-[9px] text-gray-400 mt-0.5"><span>1</span><span>100</span></div>
-          </div>
-          <!-- Müşteri -->
-          <div class="bg-blue-50 rounded-xl p-3">
-            <div class="flex items-center justify-between mb-2">
-              <label class="text-xs font-semibold text-blue-800 flex items-center gap-1.5">
-                <i class="fas fa-user text-blue-400 text-[10px]"></i> Müşteri
-              </label>
-              <input type="number" id="sim-n-customers" min="10" max="1000" value="150"
-                class="w-16 text-center text-xs font-bold border border-blue-200 rounded-lg py-1 bg-white"
-                oninput="simSyncFromInput('customers',this.value)">
-            </div>
-            <input type="range" id="sim-r-customers" min="10" max="1000" value="150" class="sim-range w-full accent-blue-500"
-              oninput="simSyncFromRange('customers',this.value)">
-            <div class="flex justify-between text-[9px] text-gray-400 mt-0.5"><span>10</span><span>1000</span></div>
-          </div>
-          <!-- Seyyar Satıcı -->
-          <div class="bg-orange-50 rounded-xl p-3">
-            <div class="flex items-center justify-between mb-2">
-              <label class="text-xs font-semibold text-orange-800 flex items-center gap-1.5">
-                <i class="fas fa-cart-shopping text-orange-400 text-[10px]"></i> Seyyar Satıcı
-              </label>
-              <input type="number" id="sim-n-vendors" min="0" max="50" value="10"
-                class="w-16 text-center text-xs font-bold border border-orange-200 rounded-lg py-1 bg-white"
-                oninput="simSyncFromInput('vendors',this.value)">
-            </div>
-            <input type="range" id="sim-r-vendors" min="0" max="50" value="10" class="sim-range w-full accent-orange-500"
-              oninput="simSyncFromRange('vendors',this.value)">
-            <div class="flex justify-between text-[9px] text-gray-400 mt-0.5"><span>0</span><span>50</span></div>
-          </div>
-          <!-- Mağaza -->
-          <div class="bg-emerald-50 rounded-xl p-3">
-            <div class="flex items-center justify-between mb-2">
-              <label class="text-xs font-semibold text-emerald-800 flex items-center gap-1.5">
-                <i class="fas fa-store text-emerald-500 text-[10px]"></i> Mağaza (Shop)
-              </label>
-              <input type="number" id="sim-n-shops" min="0" max="30" value="5"
-                class="w-16 text-center text-xs font-bold border border-emerald-200 rounded-lg py-1 bg-white"
-                oninput="simSyncFromInput('shops',this.value)">
-            </div>
-            <input type="range" id="sim-r-shops" min="0" max="30" value="5" class="sim-range w-full accent-emerald-500"
-              oninput="simSyncFromRange('shops',this.value)">
-            <div class="flex justify-between text-[9px] text-gray-400 mt-0.5"><span>0</span><span>30</span></div>
           </div>
         </div>
       </div>
 
-      <!-- BÖLÜM: Aktivite Parametreleri -->
-      <div>
-        <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-          <i class="fas fa-chart-line text-purple-500"></i> Aktivite Parametreleri
-        </div>
-        <div class="space-y-3">
-          <!-- Tur / Kaptan -->
-          <div class="bg-gray-50 rounded-xl p-3">
-            <div class="flex items-center justify-between mb-2">
-              <label class="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-                <i class="fas fa-route text-purple-400 text-[10px]"></i> Tur sayısı / kaptan (ort.)
-              </label>
-              <span id="sim-v-toursPerCaptain" class="text-xs font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-lg">8</span>
+      <!-- Senaryo 2: Aktif Sezon -->
+      <div id="sim-sc-aktif" onclick="selectScenario('aktif_sezon',this)"
+        class="border-2 border-blue-200 bg-blue-50 rounded-2xl p-4 cursor-pointer transition-all hover:border-blue-400 hover:shadow-md">
+        <div class="flex items-start gap-3">
+          <div class="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0 text-xl">⛵</div>
+          <div class="flex-1">
+            <div class="font-bold text-blue-900 text-sm mb-0.5">Aktif Sezon</div>
+            <div class="text-xs text-blue-700">Tüm modüller aktif — gerçekçi yaz sezonu verisi</div>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">15 kaptan</span>
+              <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">150 müşteri</span>
+              <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">8 satıcı · 4 mağaza</span>
+              <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">~120 tur</span>
+              <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">Mesajlar & yorumlar</span>
+              <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">%30 sorun</span>
             </div>
-            <input type="range" id="sim-r-toursPerCaptain" min="2" max="20" value="8" class="sim-range w-full accent-purple-500"
-              oninput="simSyncVal('toursPerCaptain',this.value)">
-            <div class="flex justify-between text-[9px] text-gray-400 mt-0.5"><span>2</span><span>20</span></div>
-          </div>
-          <!-- Doluluk oranı -->
-          <div class="bg-gray-50 rounded-xl p-3">
-            <div class="flex items-center justify-between mb-2">
-              <label class="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-                <i class="fas fa-percent text-indigo-400 text-[10px]"></i> Rezervasyon doluluk oranı
-              </label>
-              <span id="sim-v-fillRate" class="text-xs font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-lg">60%</span>
-            </div>
-            <input type="range" id="sim-r-fillRate" min="10" max="100" value="60" class="sim-range w-full accent-indigo-500"
-              oninput="simSyncPct('fillRate',this.value)">
-            <div class="flex justify-between text-[9px] text-gray-400 mt-0.5"><span>10%</span><span>100%</span></div>
-          </div>
-          <!-- Yorum oranı -->
-          <div class="bg-gray-50 rounded-xl p-3">
-            <div class="flex items-center justify-between mb-2">
-              <label class="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-                <i class="fas fa-star text-yellow-400 text-[10px]"></i> Yorum yazma oranı
-              </label>
-              <span id="sim-v-reviewRate" class="text-xs font-bold text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded-lg">40%</span>
-            </div>
-            <input type="range" id="sim-r-reviewRate" min="0" max="80" value="40" class="sim-range w-full accent-yellow-500"
-              oninput="simSyncPct('reviewRate',this.value)">
-            <div class="flex justify-between text-[9px] text-gray-400 mt-0.5"><span>0%</span><span>80%</span></div>
           </div>
         </div>
       </div>
 
-      <!-- BÖLÜM: Tarih Aralığı -->
-      <div>
-        <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-          <i class="fas fa-calendar-alt text-sky-500"></i> Tarih Aralığı
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-slate-50 rounded-xl p-3">
-            <label class="text-[10px] font-bold text-gray-500 block mb-2">GEÇMİŞ (gün)</label>
-            <input type="number" id="sim-n-pastDays" min="14" max="365" value="60"
-              class="w-full text-center text-sm font-bold border border-slate-200 rounded-lg py-2 bg-white">
-          </div>
-          <div class="bg-slate-50 rounded-xl p-3">
-            <label class="text-[10px] font-bold text-gray-500 block mb-2">GELECEK (gün)</label>
-            <input type="number" id="sim-n-futureDays" min="7" max="180" value="30"
-              class="w-full text-center text-sm font-bold border border-slate-200 rounded-lg py-2 bg-white">
+      <!-- Senaryo 3: Kriz + Tam Platform -->
+      <div id="sim-sc-kriz" onclick="selectScenario('kriz_tam',this)"
+        class="border-2 border-red-200 bg-red-50 rounded-2xl p-4 cursor-pointer transition-all hover:border-red-400 hover:shadow-md">
+        <div class="flex items-start gap-3">
+          <div class="w-11 h-11 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0 text-xl">🔥</div>
+          <div class="flex-1">
+            <div class="font-bold text-red-900 text-sm mb-0.5">Kriz + Tam Platform</div>
+            <div class="text-xs text-red-700">Kriz merkezi, tekne birleştirme ve iptal akışlarını test et</div>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              <span class="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-medium">25 kaptan</span>
+              <span class="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-medium">300 müşteri</span>
+              <span class="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-medium">15 satıcı · 8 mağaza</span>
+              <span class="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-medium">Aktif krizler</span>
+              <span class="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-medium">Yolcu havuzu</span>
+              <span class="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-medium">Abonelikler</span>
+              <span class="text-[10px] bg-red-200 text-red-900 px-2 py-0.5 rounded-full font-bold">%70 sorun</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- BÖLÜM: Veri Kalitesi -->
-      <div>
-        <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-          <i class="fas fa-bug text-red-500"></i> Veri Kalitesi (Sorun Enjeksiyonu)
-        </div>
-        <div class="bg-red-50 rounded-xl p-3">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-xs font-semibold text-red-800">Sorun enjeksiyon oranı</label>
-            <span id="sim-v-problemRate" class="text-xs font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-lg">0%</span>
-          </div>
-          <input type="range" id="sim-r-problemRate" min="0" max="100" value="0" class="sim-range w-full accent-red-500"
-            oninput="simSyncPct('problemRate',this.value)">
-          <div class="flex justify-between text-[9px] text-red-300 mt-0.5"><span>Temiz veri</span><span>Tam kaos</span></div>
-        </div>
+      <!-- Seçim göstergesi -->
+      <div id="sim-sc-selected" class="text-center text-xs text-gray-400 py-1">
+        <i class="fas fa-hand-pointer mr-1"></i>Bir senaryo seçin
       </div>
 
       <!-- Uyarı -->
       <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3">
         <i class="fas fa-triangle-exclamation text-amber-500 mt-0.5 flex-shrink-0"></i>
         <div class="text-xs text-amber-800">
-          <b>Mevcut tüm veriler silinecek.</b> Kullanıcılar, turlar, rezervasyonlar ve şikayetler sıfırdan üretilecek. Bu işlem geri alınamaz.
+          <b>Mevcut tüm veriler silinecek.</b> Sıfırdan üretilecek. Bu işlem geri alınamaz.
         </div>
       </div>
-
-      <!-- Özet -->
-      <div id="sim-config-summary" class="bg-purple-50 border border-purple-200 rounded-xl p-3 text-xs text-purple-800"></div>
 
     </div>
 
@@ -1995,7 +1894,8 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
       <button onclick="closeSimConfig()" class="flex-none px-5 py-2.5 rounded-xl border font-semibold text-sm text-gray-600 hover:bg-gray-100 transition">
         İptal
       </button>
-      <button onclick="startSimulation()" class="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm transition flex items-center justify-content-center gap-2 justify-center">
+      <button onclick="startSimulation()" id="sim-run-btn" disabled
+        class="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm transition flex items-center gap-2 justify-center disabled:opacity-40 disabled:cursor-not-allowed">
         <i class="fas fa-play"></i> Simülasyonu Çalıştır
       </button>
     </div>
@@ -3695,7 +3595,28 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         <button onclick="seedAliKaptan()" class="bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-anchor mr-1"></i>Ali Kaptan Üret</button>
         <button onclick="seedTestUser()" class="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-user mr-1"></i>Test Kullanıcı Üret</button>
         <button onclick="factoryReset()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-trash-can mr-1"></i>Fabrika Ayarına Dön</button>
-        <button onclick="openSimConfig()" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-sliders mr-1"></i>Gerçekçi Simülasyon Çalıştır</button>
+        <button onclick="openSimConfig()" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-flask mr-1"></i>Gerçekçi Simülasyon Çalıştır</button>
+      </div>
+      <!-- Tekil kullanıcı üretimi — mevcut veriyi silmez, üstüne ekler -->
+      <div class="border-t border-purple-200 pt-4">
+        <div class="text-[11px] font-bold text-purple-700 uppercase tracking-wider mb-3"><i class="fas fa-user-plus mr-1"></i>Tekil Kullanıcı Üretimi <span class="font-normal text-purple-500 normal-case">(mevcut veriyi silmez)</span></div>
+        <div class="flex flex-col gap-2.5">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold text-cyan-800 w-40 flex-shrink-0"><i class="fas fa-anchor mr-1.5 text-cyan-500"></i>Sadece Kaptan Üret</span>
+            <input type="number" id="seed-n-kaptan" value="5" min="1" max="50" class="w-16 border border-cyan-200 rounded-lg px-2 py-1.5 text-xs text-center font-bold bg-white focus:outline-none focus:border-cyan-400">
+            <button onclick="seedOnlyKaptanlar()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition"><i class="fas fa-plus mr-1"></i>Üret</button>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold text-orange-800 w-40 flex-shrink-0"><i class="fas fa-cart-shopping mr-1.5 text-orange-500"></i>Sadece Satıcı Üret</span>
+            <input type="number" id="seed-n-satici" value="5" min="1" max="50" class="w-16 border border-orange-200 rounded-lg px-2 py-1.5 text-xs text-center font-bold bg-white focus:outline-none focus:border-orange-400">
+            <button onclick="seedOnlySaticilar()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition"><i class="fas fa-plus mr-1"></i>Üret</button>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold text-blue-800 w-40 flex-shrink-0"><i class="fas fa-user mr-1.5 text-blue-500"></i>Sadece Müşteri Üret</span>
+            <input type="number" id="seed-n-musteri" value="10" min="1" max="200" class="w-16 border border-blue-200 rounded-lg px-2 py-1.5 text-xs text-center font-bold bg-white focus:outline-none focus:border-blue-400">
+            <button onclick="seedOnlyMusteriler()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition"><i class="fas fa-plus mr-1"></i>Üret</button>
+          </div>
+        </div>
       </div>
       <div id="sim-progress" class="hidden mb-3">
         <div class="text-xs text-purple-800 mb-1 font-medium" id="sim-progress-text">Başlatılıyor…</div>
@@ -5092,6 +5013,122 @@ function seedTestUser(){
   renderUsers?.();renderDashboard();
   showToast('Test kullanıcı oluşturuldu (kullanıcı: 1 / şifre: 1)','success');
 }
+/* ── TEKİL ÜRETİM FONKSİYONLARI ── */
+function seedOnlyKaptanlar(){
+  const n=Math.min(50,Math.max(1,parseInt(document.getElementById('seed-n-kaptan')?.value)||5));
+  const existing=lsGet('db_captains',[]);
+  const users=lsGet('db_users',[]);
+  const startId=10000+(Date.now()%10000);
+  const SIM_LT=['A1','A1','A2','B1'];
+  const added=[];
+  for(let i=0;i<n;i++){
+    const ad=_pick(SIM_POOLS.isim),soyad=_pick(SIM_POOLS.soyisim),bolge=_pick(SIM_POOLS.bolge);
+    const uzunluk=_rand(9,22),kapasite=Math.max(4,Math.round(uzunluk*0.75));
+    const tekneAdi=_pick(SIM_POOLS.tekneAdi)+' '+_rand(1,99);
+    const id=startId+i,email=`kaptan_${id}@denizbul.tr`;
+    const lisansNo=`KEGM-TR-${_rand(10000,99999)}`;
+    const kategoriler=_pickN(SIM_POOLS.kategori,_rand(2,4));
+    const cat={id,email,ad,soyad,
+      telefon:`05${_rand(30,59)}${_rand(1000000,9999999)}`,
+      phone:`05${_rand(30,59)}${_rand(1000000,9999999)}`,
+      password:'demo1234',roles:['customer','captain'],durum:'aktif',
+      puan:parseFloat((4+Math.random()).toFixed(1)),turSayisi:_rand(5,100),
+      tekne:tekneAdi,tekneAdi,tekneTuru:_pick(SIM_POOLS.tekneTip),
+      uzunluk,kapasite,tekneYil:_rand(2005,2023),
+      bolge,marina:`${bolge} Marinası`,kategoriler,
+      tc:`${_rand(10000000,99999999)}${_rand(100,999)}`,
+      lisans:lisansNo,lisansTipi:_pick(SIM_LT),
+      lisansTarih:new Date(Date.now()+_rand(180,1095)*86400000).toISOString().slice(0,10),
+      ruhsat:`RH-${_rand(10000,99999)}`,sigorta:`SG-${_rand(10000,99999)}`,
+      bio:`${ad} ${soyad}, ${bolge} bölgesinde ${_rand(3,25)} yıllık deneyimli kaptandır.`,
+      belgeler:{verified:true,tc:true,lisans:true,ruhsat:true,sigorta:true},
+      createdAt:new Date(Date.now()-_rand(30,365)*86400000).toISOString()
+    };
+    added.push(cat);
+  }
+  lsSet('db_captains',[...existing,...added]);
+  lsSet('db_users',[...users,...added]);
+  showToast(`${n} yeni kaptan oluşturuldu`,'success');
+  renderCaptains?.();renderDashboard?.();
+}
+
+function seedOnlySaticilar(){
+  const n=Math.min(50,Math.max(1,parseInt(document.getElementById('seed-n-satici')?.value)||5));
+  const users=lsGet('db_users',[]);
+  const listings=lsGet('db_vendor_listings',[]);
+  const startId=70000+(Date.now()%10000);
+  const added=[];
+  for(let i=0;i<n;i++){
+    const ad=_pick(SIM_POOLS.isim),soyad=_pick(SIM_POOLS.soyisim);
+    const sahil=_pick(SIM_VENDOR_POOLS.sahiller);
+    const id=startId+i,email=`satici_${id}@example.com`;
+    const v={id,email,ad,soyad,
+      phone:`05${_rand(30,59)}${_rand(1000000,9999999)}`,
+      password:'demo1234',roles:['customer','vendor'],durum:'aktif',
+      createdAt:new Date(Date.now()-_rand(30,400)*86400000).toISOString(),
+      vendorData:{sahil,kategori:_pick(['Olta Takimlari','Yemler','Aksesuar','Hazir Paketler']),
+        rozet:_pick(['new','new','trusted']),gpsDogrulandi:Math.random()>0.2,durum:'aktif',
+        puan:parseFloat((3.5+Math.random()*1.5).toFixed(1)),reviewCount:_rand(0,120)}
+    };
+    added.push(v);
+    const ilanN=_rand(1,3);
+    for(let j=0;j<ilanN;j++){
+      listings.push({id:`VL-${id}-${j}`,vendorId:id,vendorEmail:email,
+        vendorName:ad+' '+soyad,sahil,urun:_pick(SIM_VENDOR_POOLS.vendorUrunler),
+        fiyat:_rand(25,350),stok:_rand(0,50),durum:'aktif',
+        createdAt:new Date(Date.now()-_rand(1,90)*86400000).toISOString()});
+    }
+  }
+  lsSet('db_users',[...users,...added]);
+  lsSet('db_vendor_listings',listings);
+  showToast(`${n} yeni satıcı oluşturuldu`,'success');
+  renderUsers?.();renderDashboard?.();
+}
+
+function seedOnlyMusteriler(){
+  const n=Math.min(200,Math.max(1,parseInt(document.getElementById('seed-n-musteri')?.value)||10));
+  const users=lsGet('db_users',[]);
+  const cuUsers=lsGet('cu_users',[]);
+  const startId=50000+(Date.now()%10000);
+  const added=[];
+  for(let i=0;i<n;i++){
+    const ad=_pick(SIM_POOLS.isim),soyad=_pick(SIM_POOLS.soyisim);
+    const id=startId+i,email=`musteri_${id}@example.com`;
+    const u={id,email,ad,soyad,
+      phone:`05${_rand(30,59)}${_rand(1000000,9999999)}`,
+      password:'demo1234',roles:['customer'],durum:'aktif',
+      createdAt:new Date(Date.now()-_rand(1,730)*86400000).toISOString()};
+    added.push(u);
+    cuUsers.push({email,ad,soyad,phone:u.phone,password:'demo1234',createdAt:u.createdAt});
+  }
+  lsSet('db_users',[...users,...added]);
+  lsSet('cu_users',cuUsers);
+  showToast(`${n} yeni müşteri oluşturuldu`,'success');
+  renderUsers?.();renderDashboard?.();
+}
+
+/* ── SENARYO SEÇİCİ ── */
+let _simScenario=null;
+const SIM_SCENARIOS={
+  yeni_platform: {captains:5,customers:30,vendors:2,shops:1,toursPerCaptain:3,fillRate:40,reviewRate:20,pastDays:30,futureDays:14,problemRate:0},
+  aktif_sezon:   {captains:15,customers:150,vendors:8,shops:4,toursPerCaptain:8,fillRate:65,reviewRate:45,pastDays:60,futureDays:30,problemRate:30},
+  kriz_tam:      {captains:25,customers:300,vendors:15,shops:8,toursPerCaptain:12,fillRate:80,reviewRate:50,pastDays:90,futureDays:45,problemRate:70},
+};
+function selectScenario(name,el){
+  _simScenario=name;
+  ['sim-sc-yeni','sim-sc-aktif','sim-sc-kriz'].forEach(id=>{
+    const c=document.getElementById(id);
+    if(!c)return;
+    c.style.outline='';c.style.boxShadow='';
+  });
+  if(el){el.style.outline='3px solid';el.style.boxShadow='0 0 0 3px rgba(109,40,217,.25)';}
+  const lbl={yeni_platform:'🌱 Yeni Platform seçildi',aktif_sezon:'⛵ Aktif Sezon seçildi',kriz_tam:'🔥 Kriz + Tam Platform seçildi'};
+  const sel=document.getElementById('sim-sc-selected');
+  if(sel) sel.innerHTML=`<span class="text-purple-700 font-semibold">${lbl[name]||name}</span>`;
+  const btn=document.getElementById('sim-run-btn');
+  if(btn) btn.disabled=false;
+}
+
 async function factoryReset(){
   if(!confirm('TÜM VERİ SİLİNECEK:\n• Kullanıcılar, Kaptanlar, Turlar\n• Rezervasyonlar, Ödemeler, Yorumlar\n• Mesajlar, Satıcılar, Mağazalar\n\n⚠ Supabase dahil her şey sıfırlanacak.\nBu işlem GERİ ALINAMAZ.\n\nDevam?')) return;
   if(!confirm('SON UYARI — Supabase + localStorage tamamen temizlenecek. Emin misiniz?')) return;
@@ -5277,8 +5314,9 @@ function simUpdateSummary(){
 }
 
 function startSimulation(){
+  if(!_simScenario){showToast('Önce bir senaryo seçin','warning');return;}
   closeSimConfig();
-  const cfg=simGetCfg();
+  const cfg={...(SIM_SCENARIOS[_simScenario]||SIM_SCENARIOS.aktif_sezon),scenario:_simScenario};
   runRealisticSimulation(cfg);
 }
 
@@ -5553,7 +5591,105 @@ async function runRealisticSimulation(cfg){
   }));
   localStorage.setItem('db_payments',JSON.stringify(simPayments));
 
-  // 8.5. Veri bütünlüğü otomatik düzelt — enjeksiyon kaynaklı tutarsızlıkları gider
+  // 8.5. Senaryo ek verileri
+  setP(88,'Ek veriler üretiliyor…'); await sleep(30);
+  const scenario=cfg.scenario||'aktif_sezon';
+
+  // Mesajlar (aktif_sezon + kriz_tam)
+  if(scenario!=='yeni_platform'){
+    const convCount=scenario==='kriz_tam'?35:18;
+    const MSG_CAP=['Merhaba! Tur için sizi bekliyoruz.','Liman girişinden 15 dk önce buluşalım.','Ekipmanlarınızı hazır edin, keyifli bir gün olacak.','İyi günler! Sorunuz var mı?','Hava durumu iyi görünüyor, tur planlı şekilde devam edecek.'];
+    const MSG_CUS=['Teşekkürler, bekliyoruz!','Ekstra kişi ekleyebilir miyiz?','Kalkış yeri tam olarak neresi?','İptal politikası nedir?','Çok heyecanlıyız, görüşürüz!'];
+    const msgs=[];
+    for(let i=0;i<convCount;i++){
+      const bk=_pick(bookings.filter(b=>b.durum!=='iptal')||bookings);
+      if(!bk) continue;
+      const convId=`conv-${_slug()}`;
+      const mCount=_rand(2,5);
+      for(let j=0;j<mCount;j++){
+        const fromCap=j%2===0;
+        msgs.push({id:`msg-${_slug()}`,conversationId:convId,bookingId:bk.id,tourId:bk.tourId,
+          from:fromCap?bk.captainEmail:bk.customerEmail,to:fromCap?bk.customerEmail:bk.captainEmail,
+          fromRole:fromCap?'captain':'customer',
+          text:fromCap?_pick(MSG_CAP):_pick(MSG_CUS),
+          read:Math.random()>0.35,createdAt:new Date(Date.now()-_rand(1,20)*86400000).toISOString()});
+      }
+    }
+    localStorage.setItem('db_messages',JSON.stringify(msgs));
+  }
+
+  // Abonelikler (aktif_sezon + kriz_tam)
+  if(scenario!=='yeni_platform'){
+    const planlar=['Standart','Premium','Pro'];
+    const subs=captains.slice(0,Math.ceil(captains.length*0.6)).map((cap,i)=>({
+      id:`sub-${cap.id}`,captainEmail:cap.email,
+      plan:_pick(planlar),durum:'aktif',
+      baslangic:new Date(Date.now()-_rand(30,180)*86400000).toISOString().slice(0,10),
+      bitis:new Date(Date.now()+_rand(30,335)*86400000).toISOString().slice(0,10),
+      odemeTarihi:new Date(Date.now()-_rand(1,30)*86400000).toISOString().slice(0,10),
+      tutar:_pick([299,599,999])
+    }));
+    localStorage.setItem('db_subscriptions',JSON.stringify(subs));
+  }
+
+  // Kriz verileri (yolcu havuzu + transfer teklifleri + kaptan bağlantıları) — sadece kriz_tam
+  if(scenario==='kriz_tam'){
+    const yolcuHavuzu=[];
+    const transferTeklifleri=[];
+    const krizCount=_rand(3,5);
+    const iptalTurlar=tours.filter(t=>t.durum==='iptal'||Math.random()>0.8);
+    const havuzBookings=bookings.filter(b=>b.durum!=='tamamlandi');
+    for(let k=0;k<krizCount;k++){
+      const srcTour=_pick(iptalTurlar)||_pick(tours);
+      const srcCap=captains.find(c=>c.email===srcTour.captainEmail)||_pick(captains);
+      const havuzBkgs=_pickN(havuzBookings,_rand(1,3));
+      const havuzId=`hz-${_slug()}`;
+      yolcuHavuzu.push({
+        id:havuzId,
+        kaynak_turId:srcTour.id,kaynak_turTitle:srcTour.ad||'İptal Edilen Tur',
+        kaynak_captainEmail:srcCap.email,
+        tarih:_pick(srcTour.tarihler||[_iso(new Date())]),
+        saat:_pick(srcTour.saatler||['09:00']),
+        kalkis:srcTour.kalkisNoktasi||`${srcCap.bolge||'Bodrum'} Limanı`,
+        guests:havuzBkgs.reduce((s,b)=>s+(+b.guests||1),0)||_rand(3,10),
+        bookingIds:havuzBkgs.map(b=>b.id),
+        status:'aktif',teklifGonderildi:[],eskalasyon_halkasi:0,
+        createdAt:new Date(Date.now()-_rand(5,120)*60000).toISOString()
+      });
+      // 1-2 teklif gönderilmiş
+      const tCount=_rand(1,2);
+      for(let t2=0;t2<tCount;t2++){
+        const hedefCap=_pick(captains.filter(c=>c.email!==srcCap.email));
+        if(!hedefCap) continue;
+        const hedefTour=_pick(tours.filter(t=>t.captainEmail===hedefCap.email))||_pick(tours);
+        transferTeklifleri.push({
+          id:`tr-${_slug()}`,havuzId,
+          hedefCaptainEmail:hedefCap.email,hedefCaptainName:hedefCap.ad+' '+hedefCap.soyad,
+          hedefTourId:hedefTour?.id,hedefTourTitle:hedefTour?.ad||'—',
+          hedefSaat:hedefTour?.saatler?.[0]||'09:00',
+          halka:t2===0?'arkadaslar':'genel',
+          durum:_pick(['bekliyor','bekliyor','reddetti']),
+          createdAt:new Date(Date.now()-_rand(2,60)*60000).toISOString()
+        });
+      }
+    }
+    localStorage.setItem('db_yolcu_havuzu',JSON.stringify(yolcuHavuzu));
+    localStorage.setItem('db_transfer_teklifleri',JSON.stringify(transferTeklifleri));
+
+    // Kaptan arkadaş bağlantıları
+    const connections={};
+    captains.forEach(cap=>{
+      const friends=_pickN(captains.filter(c=>c.email!==cap.email),_rand(1,4));
+      connections[cap.email]=friends.map(f=>({email:f.email,ad:f.ad,soyad:f.soyad,tekne:f.tekneAdi,bolge:f.bolge}));
+    });
+    localStorage.setItem('ca_connections',JSON.stringify(connections));
+
+    // Acil destek gönüllüleri
+    const destekKaptanlar=_pickN(captains,Math.ceil(captains.length*0.3)).map(c=>c.email);
+    localStorage.setItem('db_destek_kaptanlari',JSON.stringify(destekKaptanlar));
+  }
+
+  // 8.6. Veri bütünlüğü otomatik düzelt — enjeksiyon kaynaklı tutarsızlıkları gider
   setP(90,'Veri bütünlüğü sağlanıyor…'); await sleep(20);
   runIntegrityPass({aggressive:true,silent:true});
 
@@ -5570,6 +5706,10 @@ async function runRealisticSimulation(cfg){
     tours:tours.length, bookings:bookings.length,
     reviews:reviews.length, complaints:complaints.length,
     vendorListings:vendorListings.length, shopListings:shopListings.length,
+    scenario,
+    messages:scenario!=='yeni_platform'?(lsGet('db_messages',[]).length):0,
+    subscriptions:scenario!=='yeni_platform'?(lsGet('db_subscriptions',[]).length):0,
+    krizler:scenario==='kriz_tam'?(lsGet('db_yolcu_havuzu',[]).length):0,
     injected:_simInjected, findings:findingTotals
   });
   rEl.classList.remove('hidden');
@@ -5741,11 +5881,16 @@ function _renderSimReport(r){
       <div class="bg-orange-50 p-2.5 rounded-lg"><div class="text-[9px] text-orange-700 font-bold">SATICI <span class="font-normal">(${r.vendorListings||0} ilan)</span></div><div class="text-lg font-bold">${r.vendors||0}</div></div>
       <div class="bg-emerald-50 p-2.5 rounded-lg"><div class="text-[9px] text-emerald-700 font-bold">MAĞAZA <span class="font-normal">(${r.shopListings||0} ürün)</span></div><div class="text-lg font-bold">${r.shops||0}</div></div>
     </div>
-    <div class="grid grid-cols-3 gap-2 mb-4">
+    <div class="grid grid-cols-3 gap-2 mb-2">
       <div class="bg-purple-50 p-2.5 rounded-lg"><div class="text-[9px] text-purple-700 font-bold">TUR</div><div class="text-lg font-bold">${r.tours}</div></div>
       <div class="bg-indigo-50 p-2.5 rounded-lg"><div class="text-[9px] text-indigo-700 font-bold">REZERVASYON</div><div class="text-lg font-bold">${r.bookings}</div></div>
       <div class="bg-yellow-50 p-2.5 rounded-lg"><div class="text-[9px] text-yellow-700 font-bold">YORUM &nbsp;<span class="font-normal text-red-600">${r.complaints} şikayet</span></div><div class="text-lg font-bold">${r.reviews||0}</div></div>
     </div>
+    ${(r.messages||r.subscriptions||r.krizler)?`<div class="grid grid-cols-3 gap-2 mb-4">
+      <div class="bg-slate-50 p-2.5 rounded-lg"><div class="text-[9px] text-slate-600 font-bold">MESAJ</div><div class="text-lg font-bold">${r.messages||0}</div></div>
+      <div class="bg-teal-50 p-2.5 rounded-lg"><div class="text-[9px] text-teal-700 font-bold">ABONELİK</div><div class="text-lg font-bold">${r.subscriptions||0}</div></div>
+      <div class="bg-red-50 p-2.5 rounded-lg"><div class="text-[9px] text-red-700 font-bold">AKTİF KRİZ</div><div class="text-lg font-bold">${r.krizler||0}</div></div>
+    </div>`:''}
     <div class="grid md:grid-cols-2 gap-4">
       <div class="bg-purple-50 rounded-lg p-3">
         <div class="font-bold text-purple-900 mb-2 text-xs">🧪 Enjekte Edilen Sorunlar <span class="float-right font-mono">${totalInj}</span></div>
