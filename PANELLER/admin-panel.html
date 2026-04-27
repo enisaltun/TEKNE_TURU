@@ -12882,6 +12882,7 @@ function adminForceIade(havuzId){
 }
 
 let _mtHavuzId=null,_mtSelectedTourId=null;
+let _mtCandidates=[],_mtSaatFilter=60,_mtKalkisFilter='match',_mtCminutes=0,_mtCkalkis='';
 
 function timeToMinutesAdmin(saat){
   const p=(saat||'0:0').split(':');
@@ -12917,53 +12918,91 @@ function adminManualTransfer(havuzId){
       <span style="font-size:12px;font-weight:800;color:#c2410c">${totalGuests} kişi · ${hBookings.length} rez.</span>
     </div>`;
   }
-  // Uygun turları filtrele: aynı kalkis, ±60 dk, yeterli kapasite, aynı tarih
+  // Sabit filtreler: aynı tarih, farklı kaptan, aktif tur
+  // İnteraktif filtreler (saat, kalkış, kişi) filterMTList() tarafından uygulanır
   const guestMap={};
   bookings.filter(b=>['bekliyor','onaylandi'].includes(b.durum)).forEach(b=>{
     guestMap[String(b.tourId)]=(guestMap[String(b.tourId)]||0)+(+b.guests||1);
   });
-  const cmin=timeToMinutesAdmin(entry.saat);
-  const ckalkis=(entry.kalkis||'').toLowerCase();
-  const candidates=tours.filter(t=>{
+  _mtCminutes=timeToMinutesAdmin(entry.saat);
+  _mtCkalkis=(entry.kalkis||'').toLowerCase();
+  const etarih=entry.tarih||entry.tarihISO?.slice(0,10)||'';
+  _mtCandidates=tours.filter(t=>{
     if(t.captainEmail===entry.kaynak_captainEmail)return false;
     if(!['aktif','yayinda',undefined,null,''].includes(t.durum))return false;
     const ttarih=t.tarih||t.tarihISO?.slice(0,10)||'';
-    const etarih=entry.tarih||entry.tarihISO?.slice(0,10)||'';
     if(ttarih!==etarih)return false;
-    const bos=(t.kapasite||0)-(guestMap[String(t.id)]||0);
-    if(bos<(entry.guests||0))return false;
-    if((t.kalkis||'').toLowerCase()!==ckalkis)return false;
-    const tmin=timeToMinutesAdmin(t.saat);
-    if(Math.abs(tmin-cmin)>60)return false;
     return true;
+  }).map(t=>{
+    const bos=(t.kapasite||0)-(guestMap[String(t.id)]||0);
+    return{...t,_bos:bos,_dakika:Math.abs(timeToMinutesAdmin(t.saat)-_mtCminutes)};
   });
-  const listEl=document.getElementById('mt-tour-list');
-  const emptyEl=document.getElementById('mt-empty');
-  if(!candidates.length){
-    listEl.innerHTML='';
-    emptyEl.style.display='block';
-  } else {
-    emptyEl.style.display='none';
-    listEl.innerHTML=candidates.map(t=>{
-      const bos=(t.kapasite||0)-(guestMap[String(t.id)]||0);
-      const tmin=timeToMinutesAdmin(t.saat);
-      const dakika=Math.abs(tmin-cmin);
-      return`<div style="border:2px solid #e2e8f0;border-radius:10px;padding:12px;cursor:pointer;transition:all .15s" id="mt-card-${t.id}"
-        onclick="selectMTTour('${t.id}','${(t.ad||t.title||'Tur').replace(/'/g,'&apos;')}','${t.captainEmail||''}','${t.saat||''}',${bos})">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
-          <div style="font-weight:700;font-size:13px;color:#0f172a">${t.ad||t.title||'—'}</div>
-          <span style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">±${dakika} dk</span>
-        </div>
-        <div style="font-size:11px;color:#64748b"><i class="fas fa-user-tie mr-1"></i>${t.captainEmail||'—'} &nbsp;·&nbsp; <i class="fas fa-clock mr-1"></i>${t.saat||'—'} &nbsp;·&nbsp; <i class="fas fa-users mr-1"></i>${bos} boş yer</div>
-        <div style="font-size:10px;color:#94a3b8;margin-top:3px"><i class="fas fa-map-marker-alt mr-1"></i>${t.kalkis||'—'} · ${t.tarih||'—'}</div>
-      </div>`;
-    }).join('');
-  }
+  // Filtre varsayılanlarını ayarla
+  _mtSaatFilter=60;_mtKalkisFilter='match';
+  const _kisiEl=document.getElementById('mt-filter-kisi');
+  if(_kisiEl)_kisiEl.value=entry.guests||1;
+  ['30','60','90','0'].forEach(v=>{const el=document.getElementById('mt-f-s'+v);if(!el)return;const a=v==='60';el.style.cssText=`font-size:10px;padding:3px 8px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid ${a?'#0369a1':'#e2e8f0'};background:${a?'#0369a1':'#fff'};color:${a?'#fff':'#64748b'}`;});
+  ['match','all'].forEach(v=>{const el=document.getElementById('mt-f-kalkis-'+v);if(!el)return;const a=v==='match';el.style.cssText=`font-size:10px;padding:3px 8px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid ${a?'#0369a1':'#e2e8f0'};background:${a?'#0369a1':'#fff'};color:${a?'#fff':'#64748b'}`;});
+  filterMTList();
   document.getElementById('mt-step1').style.display='flex';
   document.getElementById('mt-step2').style.display='none';
   document.getElementById('mt-step3').style.display='none';
   document.getElementById('mt-overlay').style.display='block';
   document.getElementById('mt-modal').style.display='flex';
+}
+
+function setMTSaatFilter(val){
+  _mtSaatFilter=val;
+  ['30','60','90','0'].forEach(v=>{
+    const el=document.getElementById('mt-f-s'+v);if(!el)return;
+    const a=String(val)===v;
+    el.style.cssText=`font-size:10px;padding:3px 8px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid ${a?'#0369a1':'#e2e8f0'};background:${a?'#0369a1':'#fff'};color:${a?'#fff':'#64748b'}`;
+  });
+  filterMTList();
+}
+function setMTKalkisFilter(val){
+  _mtKalkisFilter=val;
+  ['match','all'].forEach(v=>{
+    const el=document.getElementById('mt-f-kalkis-'+v);if(!el)return;
+    const a=val===v;
+    el.style.cssText=`font-size:10px;padding:3px 8px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid ${a?'#0369a1':'#e2e8f0'};background:${a?'#0369a1':'#fff'};color:${a?'#fff':'#64748b'}`;
+  });
+  filterMTList();
+}
+function filterMTList(){
+  const kisiVal=Math.max(1,parseInt(document.getElementById('mt-filter-kisi')?.value)||1);
+  const filtered=_mtCandidates.filter(t=>{
+    if(t._bos<kisiVal)return false;
+    if(_mtSaatFilter>0&&t._dakika>_mtSaatFilter)return false;
+    if(_mtKalkisFilter==='match'&&(t.kalkis||'').toLowerCase()!==_mtCkalkis)return false;
+    return true;
+  }).sort((a,b)=>a._dakika-b._dakika);
+  const listEl=document.getElementById('mt-tour-list');
+  const emptyEl=document.getElementById('mt-empty');
+  const countEl=document.getElementById('mt-filter-count');
+  if(countEl)countEl.textContent=filtered.length+' tur';
+  if(!filtered.length){
+    listEl.innerHTML='';
+    const hint=(_mtKalkisFilter==='match'||_mtSaatFilter>0)?
+      `<div style="margin-top:10px;font-size:11px;color:#0369a1;cursor:pointer;text-decoration:underline" onclick="setMTSaatFilter(0);setMTKalkisFilter('all')"><i class="fas fa-expand-alt mr-1"></i>Tüm filtreleri genişlet</div>`:'';
+    emptyEl.innerHTML=`<i class="fas fa-search" style="font-size:28px;display:block;margin-bottom:10px;color:#e2e8f0"></i>Bu filtrelere uyan tur bulunamadı.${hint}<button onclick="adminForceIadeFromModal()" style="margin-top:12px;background:#ef4444;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer"><i class="fas fa-undo mr-1"></i>Zorla İade Başlat</button>`;
+    emptyEl.style.display='block';
+  }else{
+    emptyEl.style.display='none';
+    listEl.innerHTML=filtered.map(t=>{
+      const isSame=(t.kalkis||'').toLowerCase()===_mtCkalkis;
+      const kalkisBadge=!isSame?`<span style="background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:4px">Farklı kalkış</span>`:'';
+      return`<div style="border:2px solid #e2e8f0;border-radius:10px;padding:12px;cursor:pointer;transition:all .15s" id="mt-card-${t.id}"
+        onclick="selectMTTour('${t.id}','${(t.ad||t.title||'Tur').replace(/'/g,'&apos;')}','${t.captainEmail||''}','${t.saat||''}',${t._bos})">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+          <div style="font-weight:700;font-size:13px;color:#0f172a;flex:1;min-width:0;margin-right:8px">${t.ad||t.title||'—'}${kalkisBadge}</div>
+          <span style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0">±${t._dakika} dk</span>
+        </div>
+        <div style="font-size:11px;color:#64748b"><i class="fas fa-user-tie mr-1"></i>${t.captainEmail||'—'} &nbsp;·&nbsp; <i class="fas fa-clock mr-1"></i>${t.saat||'—'} &nbsp;·&nbsp; <i class="fas fa-users mr-1"></i>${t._bos} boş yer</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:3px"><i class="fas fa-map-marker-alt mr-1"></i>${t.kalkis||'—'} · ${t.tarih||'—'}</div>
+      </div>`;
+    }).join('');
+  }
 }
 
 function selectMTTour(tourId,tourAd,captainEmail,saat,bosYer){
@@ -14068,8 +14107,28 @@ function subSaveAssignment(){
     </div>
     <!-- Sağ: Uygun Hedef Turlar -->
     <div style="flex:1;overflow-y:auto;padding:16px">
-      <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:8px 12px;font-size:11px;color:#92400e;margin-bottom:12px">
-        <i class="fas fa-filter mr-1"></i><strong>Filtre aktif:</strong> Aynı kalkış noktası · ±60 dk · Aynı tarih · Yeterli kapasite
+      <!-- İnteraktif Filtre Çubuğu -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <i class="fas fa-users" style="color:#64748b;font-size:11px;flex-shrink:0"></i>
+          <span style="font-size:11px;color:#374151;white-space:nowrap">En az</span>
+          <input type="number" id="mt-filter-kisi" min="1" max="200" oninput="filterMTList()"
+            style="width:52px;border:1.5px solid #0369a1;border-radius:6px;padding:3px 6px;font-size:13px;font-weight:700;color:#0369a1;text-align:center;outline:none">
+          <span style="font-size:11px;color:#374151;white-space:nowrap">kişilik boş yer</span>
+          <div style="flex:1"></div>
+          <span id="mt-filter-count" style="font-size:11px;font-weight:700;color:#0369a1;background:#dbeafe;padding:2px 8px;border-radius:20px;white-space:nowrap">— tur</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+          <i class="fas fa-clock" style="color:#94a3b8;font-size:10px;flex-shrink:0"></i>
+          <button id="mt-f-s30" onclick="setMTSaatFilter(30)" style="font-size:10px;padding:3px 8px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:#64748b">±30dk</button>
+          <button id="mt-f-s60" onclick="setMTSaatFilter(60)" style="font-size:10px;padding:3px 8px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid #0369a1;background:#0369a1;color:#fff">±60dk</button>
+          <button id="mt-f-s90" onclick="setMTSaatFilter(90)" style="font-size:10px;padding:3px 8px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:#64748b">±90dk</button>
+          <button id="mt-f-s0"  onclick="setMTSaatFilter(0)"  style="font-size:10px;padding:3px 8px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:#64748b">Tümü</button>
+          <div style="width:1px;height:14px;background:#e2e8f0;margin:0 3px"></div>
+          <i class="fas fa-map-marker-alt" style="color:#94a3b8;font-size:10px;flex-shrink:0"></i>
+          <button id="mt-f-kalkis-match" onclick="setMTKalkisFilter('match')" style="font-size:10px;padding:3px 8px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid #0369a1;background:#0369a1;color:#fff">Eşleşen kalkış</button>
+          <button id="mt-f-kalkis-all"   onclick="setMTKalkisFilter('all')"   style="font-size:10px;padding:3px 8px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:#64748b">Tüm kalkışlar</button>
+        </div>
       </div>
       <div id="mt-tour-list" style="display:flex;flex-direction:column;gap:8px"></div>
       <div id="mt-empty" style="display:none;text-align:center;padding:32px;color:#94a3b8;font-size:13px">

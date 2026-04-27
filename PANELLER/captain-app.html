@@ -3566,8 +3566,14 @@ function renderBookings(){
   if(tabs[0])tabs[0].textContent=`Yaklasan (${upcoming.length})`;
   if(tabs[1])tabs[1].textContent=`Bekleyen (${pending.length})`;
   if(tabs[2])tabs[2].textContent=`Gecmis (${past.length})`;
-  const all=[...pending,...upcoming,...past];
-  if(!all.length){el.innerHTML='<div class="text-center py-12 text-xs text-gray-400"><i class="fas fa-calendar text-3xl mb-3 block text-gray-200"></i>Henuz rezervasyon yok</div>';return;}
+  // Aktif sekmeye göre filtrele
+  const list=_bkTab==='bekleyen'?pending:_bkTab==='gecmis'?past:upcoming;
+  if(!list.length){
+    const emptyMsg=_bkTab==='bekleyen'?'Bekleyen rezervasyon yok':_bkTab==='gecmis'?'Gecmis rezervasyon yok':'Yaklasan rezervasyon yok';
+    el.innerHTML=`<div class="text-center py-12 text-xs text-gray-400"><i class="fas fa-calendar text-3xl mb-3 block text-gray-200"></i>${emptyMsg}</div>`;
+    return;
+  }
+  const all=list;
   el.innerHTML=all.map(b=>{
     const ini=(b.customerName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const badge=b.durum==='onaylandi'?'<span class="badge bg-green-100 text-green-700">Onaylandi</span>':
@@ -4269,7 +4275,16 @@ function switchTourTab(btn,filter){
     renderMyTours();
   }
 }
-function switchBookingTab(btn){btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+let _bkTab='yaklasan';
+function switchBookingTab(btn){
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const txt=btn.textContent||'';
+  if(txt.startsWith('Bekl'))_bkTab='bekleyen';
+  else if(txt.startsWith('Gec')||txt.startsWith('Geç'))_bkTab='gecmis';
+  else _bkTab='yaklasan';
+  renderBookings();
+}
 
 /* ── EARNINGS (static demo) ── */
 function renderEarnings(){
