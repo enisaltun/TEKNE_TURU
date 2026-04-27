@@ -10949,12 +10949,51 @@ function _notifAciklama(n){
   return'';
 }
 
+function _healthAciklama(type,rec,lbl){
+  switch(type){
+    case 'duplicate_booking_id':return`ID ${rec.id} birden fazla rezervasyonda${rec.tour?' — "'+rec.tour+'"':''}`;
+    case 'orphan_booking':return`${rec.id}: tourId "${rec.tourId}" — eşleşen tur bulunamadı`;
+    case 'unknown_customer':return`${rec.id}: "${rec.email||'?'}" kullanıcılar tablosunda kayıtlı değil`;
+    case 'past_date_active':return`${rec.id}: Tarih ${rec.tarih} geçti, durum hâlâ "${rec.durum}"`;
+    case 'missing_tarihISO':return`${rec.id}: tarih="${rec.tarih}" var fakat ISO formatı eksik`;
+    case 'tarihISO_mismatch':return`${rec.id}: tarih "${rec.tarih}" ↔ tarihISO "${rec.tarihISO}" uyuşmuyor`;
+    case 'invalid_guests':return`${rec.id}: Misafir sayısı ${rec.guests} (geçersiz — en az 1 olmalı)`;
+    case 'paid_no_ref':return`${rec.id}: Ödeme yapıldı işaretli fakat odemeRef boş`;
+    case 'completed_unpaid':return`${rec.id}: Durum "tamamlandı" ama ödeme alınmamış`;
+    case 'price_zero':return`${rec.id}: Fiyat sıfır/tanımsız (amount=${rec.amount||'—'})`;
+    case 'rejected_yet_boarded':return`${rec.id}: Durum reddedildi/iptal ama binisYapildi=true`;
+    case 'boarded_not_completed':return`${rec.id}: Misafir bindi fakat durum "onaylandı" — tamamlandıya geçirilmeli`;
+    case 'captain_mismatch':return`${rec.id}: Rez. kaptan "${rec.booking}" ≠ Tur kaptan "${rec.tour}"`;
+    case 'tarih_not_in_tour':return`${rec.id}: Tarih ${rec.tarih} turun programında bulunmuyor`;
+    case 'booking_on_unapproved_tour':return`${rec.id}: "${rec.tour}" admin onayı olmadan rezervasyon oluşturulmuş`;
+    case 'booking_on_cancelled_tour':return`${rec.id}: "${rec.tour}" iptal edildi ama rezervasyon hâlâ aktif`;
+    case 'overcapacity':return`"${rec.tour}" — ${rec.date}: ${rec.dolu}/${rec.kapasite} kişi (${rec.dolu-rec.kapasite} fazla), ${rec.bookings} rezervasyon`;
+    case 'price_invalid':return`Tur ${rec.id} "${rec.ad||'?'}": fiyat=${rec.fiyat||'—'} (geçersiz)`;
+    case 'malformed_tour':return`Tur ${rec.id} "${rec.ad||'?'}": süre=${rec.sure||'yok'}, kapasite=${rec.kapasite||'yok'}, ${rec.tarihler} tarih`;
+    case 'wrong_tour_info':return`Tur ${rec.id} "${rec.ad||'?'}": ${rec.aciklama?'"'+rec.aciklama+'..."':'Açıklama boş'}`;
+    case 'admin_approval_timeout':return`Tur ${rec.id} "${rec.ad||'?'}": ${rec.bekleme_saat} saattir onay bekliyor`;
+    case 'national_mourning_tours':return`Tur ${rec.id} "${rec.ad||'?'}": Yas tarihlerine denk — ${(rec.tarihler||[]).join(', ')}`;
+    case 'refund_stuck':return`${rec.id}: İade talebi ${rec.gun} gündür "pending" — işlem tamamlanmamış`;
+    case 'weather_cancel_no_compensation':return`${rec.id}: Hava iptali — iade/tazminat ataması yok`;
+    case 'force_majeure_unhandled':return`${rec.id}: Mücbir sebep iptalinde refundStatus atanmamış`;
+    case 'withdrawal_fee_missing':return`${rec.id}: Cayma iptali — ceza veya iade tutarı hesaplanmamış`;
+    case 'no_show_uncompensated':return`${rec.id}: Tarih ${rec.tarih} geçti, binis kaydı yok`;
+    case 'dispute_open':return`Şikayet ${rec.id}: "${rec.konu||'?'}" ${rec.gun}g açık${rec.booking?' — Rez: '+rec.booking:''}`;
+    case 'dangling_payment_ref':return`${rec.id}: odemeRef "${rec.ref}" ödeme tablosunda bulunamadı${rec.tutar?' (₺'+rec.tutar+')':''}`;
+    case 'refund_exceeds_payment':return`${rec.id}: İade ₺${rec.iade} > Ödeme ₺${rec.odeme} — fazla iade`;
+    default:{const p=[rec.id?'ID: '+rec.id:'',rec.tour||rec.ad||'',rec.tarih||'',rec.gun?rec.gun+'g':''].filter(Boolean).join(' · ');return lbl.desc+(p?' · '+p:'');}
+  }
+}
+
 function _getUnifiedAlerts(){
   const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
   const healthRead=new Set(JSON.parse(localStorage.getItem('admin_health_read')||'[]'));
+  const firstSeen=JSON.parse(localStorage.getItem('admin_health_first_seen')||'{}');
   let findings={};
   try{findings=runHealthScan();}catch(e){}
+  const now=Date.now();
   const unified=[];
+  const activeHids=new Set();
 
   notifs.forEach(n=>{
     unified.push({
@@ -10963,7 +11002,7 @@ function _getUnifiedAlerts(){
       kat:_UYARI_KAT[n.type]||'sistem',
       baslik:_notifBaslik(n),
       aciklama:_notifAciklama(n),
-      ts:n.ts||Date.now(),read:!!n.read,kaynak:'notif',
+      ts:n.ts||now,read:!!n.read,kaynak:'notif',
     });
   });
 
@@ -10971,17 +11010,23 @@ function _getUnifiedAlerts(){
     const lbl=SH_LABELS[type];if(!lbl)return;
     recs.forEach((rec,i)=>{
       const hid='H_'+type+'_'+(rec.id||rec.tour||i);
-      const extra=[rec.id?'ID: '+rec.id:'',rec.tour||'',rec.gun?rec.gun+'g':'',rec.tarih||''].filter(Boolean).join(' · ');
+      activeHids.add(hid);
+      if(!firstSeen[hid])firstSeen[hid]=now;
       unified.push({
         id:hid,type,
         seviye:_UYARI_SEVIYE[type]||'uyari',
         kat:_UYARI_KAT[type]||'sistem',
         baslik:lbl.label,
-        aciklama:lbl.desc+(extra?' · '+extra:''),
-        ts:Date.now(),read:healthRead.has(hid),kaynak:'health',
+        aciklama:_healthAciklama(type,rec,lbl),
+        ts:firstSeen[hid],read:healthRead.has(hid),kaynak:'health',
       });
     });
   });
+
+  // Çözülen sorunların firstSeen kayıtlarını temizle
+  let dirty=false;
+  Object.keys(firstSeen).forEach(hid=>{if(!activeHids.has(hid)){delete firstSeen[hid];dirty=true;}});
+  if(dirty||activeHids.size)localStorage.setItem('admin_health_first_seen',JSON.stringify(firstSeen));
 
   unified.sort((a,b)=>{
     if(a.read!==b.read)return a.read?1:-1;
@@ -11040,10 +11085,10 @@ function renderUyarilar(){
     updateUyarilarBadge();return;
   }
 
-  const S={
-    kritik:{bg:'bg-red-50',border:'border-red-200',badge:'bg-red-100 text-red-700',dot:'bg-red-500',icon:'fa-circle-exclamation text-danger'},
-    uyari: {bg:'bg-amber-50',border:'border-amber-200',badge:'bg-amber-100 text-amber-700',dot:'bg-amber-400',icon:'fa-triangle-exclamation text-amber-500'},
-    bilgi: {bg:'bg-blue-50', border:'border-blue-200', badge:'bg-blue-100 text-blue-700', dot:'bg-blue-400',icon:'fa-circle-info text-primary'},
+  const SEV_STYLE={
+    kritik:{bg:'bg-red-50',border:'border-red-200',badge:'bg-red-100 text-red-700',dot:'bg-red-500'},
+    uyari: {bg:'bg-amber-50',border:'border-amber-200',badge:'bg-amber-100 text-amber-700',dot:'bg-amber-400'},
+    bilgi: {bg:'bg-blue-50', border:'border-blue-200', badge:'bg-blue-100 text-blue-700', dot:'bg-blue-400'},
   };
   const KAT_ICON={rezervasyon:'fa-calendar-check text-primary',tur:'fa-ship text-cyan-600',kapasite:'fa-people-group text-orange-500',finans:'fa-wallet text-green-600',sistem:'fa-stethoscope text-purple-600'};
   const KAT_LABEL={rezervasyon:'Rezervasyon',tur:'Tur',kapasite:'Kapasite',finans:'Finans',sistem:'Sistem'};
@@ -11051,9 +11096,9 @@ function renderUyarilar(){
   const KAYNAK_LABEL={notif:'Sistem Bildirimi',health:'Sağlık Taraması'};
 
   container.innerHTML=list.map(a=>{
-    const s=S[a.seviye]||S.uyari;
+    const s=SEV_STYLE[a.seviye]||SEV_STYLE.uyari;
     const ki=KAT_ICON[a.kat]||'fa-circle-info text-gray-400';
-    const readOp=a.read?'opacity-60':'';
+    const readOp=a.read?'opacity-50':'';
     return`<div class="flex items-start gap-3 p-4 rounded-xl border ${s.border} ${s.bg} ${readOp} transition hover:shadow-sm">
       <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-white border ${s.border} flex items-center justify-center shadow-sm">
         <i class="fas ${ki.split(' ')[0]} ${ki.split(' ')[1]||''} text-sm"></i>
@@ -11067,13 +11112,13 @@ function renderUyarilar(){
           ${!a.read?`<span class="ml-auto w-2 h-2 rounded-full ${s.dot} flex-shrink-0"></span>`:''}
         </div>
         <div class="text-sm font-semibold text-gray-800">${a.baslik}</div>
-        ${a.aciklama?`<div class="text-xs text-gray-500 mt-0.5 leading-relaxed">${a.aciklama}</div>`:''}
+        ${a.aciklama?`<div class="text-xs text-gray-500 mt-0.5 leading-relaxed font-mono">${a.aciklama}</div>`:''}
         <div class="text-[10px] text-gray-400 mt-1.5">${_timeAgo(a.ts)}</div>
       </div>
-      <button onclick="markUyariOkundu('${a.id}','${a.kaynak}')"
-        class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${a.read?'text-green-400 bg-green-50':'text-gray-300 hover:text-gray-600 hover:bg-gray-100'} transition" title="${a.read?'Okundu':'Okundu işaretle'}">
-        <i class="fas fa-check text-xs"></i>
-      </button>
+      <div class="flex flex-col gap-1.5 flex-shrink-0">
+        <button onclick="_uyariGit('${a.kat}')" class="w-[52px] h-7 rounded-lg text-[10px] font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 transition flex items-center justify-center gap-1" title="İlgili sayfaya git"><i class="fas fa-arrow-up-right-from-square text-[8px]"></i>Git</button>
+        <button onclick="markUyariOkundu('${a.id}','${a.kaynak}')" class="w-[52px] h-7 rounded-lg text-[10px] font-medium flex items-center justify-center gap-1 ${a.read?'text-green-600 bg-green-50 border border-green-200':'text-gray-400 border border-gray-200 hover:text-gray-600 hover:bg-gray-50'} transition" title="${a.read?'Okundu':'Okundu işaretle'}"><i class="fas fa-check text-[9px]"></i>${a.read?'Tamam':'Okundu'}</button>
+      </div>
     </div>`;
   }).join('');
   updateUyarilarBadge();
@@ -11108,8 +11153,13 @@ function markAllUyarilarOkundu(){
 function clearOkunmusUyarilar(){
   const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
   localStorage.setItem('admin_notifs',JSON.stringify(notifs.filter(n=>!n.read)));
-  localStorage.removeItem('admin_health_read');
-  renderUyarilar();showToast('Okunmuş uyarılar temizlendi','success');
+  // Health uyarıları canlı hesaplanan verilerdir — admin_health_read korunur, silinmez
+  renderUyarilar();showToast('Okunmuş bildirimler temizlendi','success');
+}
+
+function _uyariGit(kat){
+  const map={rezervasyon:'reservations',tur:'tours-bookings',kapasite:'reservations',finans:'finance',sistem:'system-health'};
+  navigateTo(map[kat]||'system-health');
 }
 
 function updateUyarilarBadge(){
