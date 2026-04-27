@@ -1869,7 +1869,10 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
     <i class="fas fa-calendar-check"></i>Rezervasyon
     <span id="nav-booking-badge" class="absolute -top-0.5 right-2 w-4 h-4 bg-danger text-white text-[8px] rounded-full flex items-center justify-center" style="display:none">0</span>
   </a>
-  <a href="#tools" data-nav="tools"><i class="fas fa-water"></i>Araçlar</a>
+  <a href="#messages" data-nav="messages" style="position:relative">
+    <i class="fas fa-comment-dots"></i>Mesajlar
+    <span id="nav-msg-badge" class="absolute -top-0.5 right-1 w-4 h-4 bg-primary text-white text-[8px] rounded-full flex items-center justify-center" style="display:none">0</span>
+  </a>
   <a href="#profile" data-nav="profile"><i class="fas fa-user-cog"></i>Profil</a>
 </nav>
 
@@ -1877,7 +1880,7 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
 <script>
 /* ── CONSTANTS ── */
 const allPages=['login','dashboard','my-tours','create-tour','calendar','bookings','messages','earnings','notifications','profile','tools','profile-edit','boat-edit','certificates','bank','help','terms'];
-const hideNavPages=['login','messages','calendar','earnings','notifications','create-tour','profile-edit','boat-edit','certificates','bank','help','terms'];
+const hideNavPages=['login','calendar','earnings','notifications','create-tour','profile-edit','boat-edit','certificates','bank','help','terms'];
 
 const CAT_META={
   'Balik Avi':     {icon:'fa-fish',      grad:'from-blue-400 to-blue-600'},
@@ -2059,7 +2062,7 @@ function _seedAliKaptan(){
       tekne:'Ali\'nin Teknesi',tekneAdi:'Ali\'nin Teknesi',tekne_adi:'Ali\'nin Teknesi',
       tekneTuru:'Motor Tekne',tekne_turu:'Motor Tekne',tekneYil:'2020',tekne_yil:'2020',
       kapasite:8,bolge:'Bodrum',marina:'Bodrum Marina',
-      lisans:'TR-12345',lisansTarih:'2025-01-01',
+      lisans:'TR-12345',lisansTarih:'2025-01-01',mesajCevap:true,
       kategoriler:['Tekne Gezisi','Balik Avi'],
       createdAt:new Date().toISOString(),created_at:new Date().toISOString(),
     });
@@ -2080,6 +2083,7 @@ window.addEventListener('storage',(e)=>{
     if(h==='my-tours')renderMyTours();
   }
   if(e.key==='db_messages'){
+    updateCapMsgBadge();
     if(h==='messages'){renderMsgList();if(curCaptainChatId)renderCaptainChat(curCaptainChatId);}
   }
 });
@@ -3560,34 +3564,59 @@ function doReject(){
 
 /* ── MESSAGES ── */
 let curCaptainChatId=null;
+let _msgRealtimeSub=null;
+
+// Her iki mesaj şemasını normalize eder (eski byCaptan/byAdmin + yeni gonderen/okundu*)
+function _normMsg(m){
+  const isKaptan=m.gonderen==='kaptan'||m.byCaptan===true;
+  const isAdmin =m.gonderen==='admin' ||m.byAdmin ===true;
+  return{
+    id:m.id, text:m.text||m.mesaj||'',
+    ts:m.ts||(m.created_at?new Date(m.created_at).getTime():0),
+    isKaptan, isAdmin, isMusteri:!isKaptan&&!isAdmin,
+    okunduMusteri:m.okunduMusteri??m.readByCustomer??false,
+    okunduKaptan :m.okunduKaptan ??m.readByCaptain ??false,
+  };
+}
+
+function updateCapMsgBadge(){
+  const msgs=S.get('db_messages',{});
+  const bookings=getMyBookings();
+  let unread=0;
+  bookings.forEach(b=>{unread+=(msgs[b.id]||[]).filter(m=>{const n=_normMsg(m);return n.isMusteri&&!n.okunduKaptan;}).length;});
+  const badge=document.getElementById('nav-msg-badge');
+  if(badge){badge.style.display=unread?'flex':'none';badge.textContent=unread||'';}
+}
 
 function renderMsgList(){
   const bookings=getMyBookings();
   const msgs=S.get('db_messages',{});
   const el=document.getElementById('msg-list-body');
   if(!el)return;
-  if(!bookings.length){el.innerHTML='<div class="text-center py-12 text-xs text-gray-400 px-4">Rezervasyon oldugunda buradan musteriyle yazisabilirsiniz.</div>';return;}
+  if(!bookings.length){el.innerHTML='<div class="text-center py-12 text-xs text-gray-400 px-4">Rezervasyon oldugunda buradan musteriyle yazisabilirsiniz.</div>';updateCapMsgBadge();return;}
   el.innerHTML=bookings.map(b=>{
     const thread=msgs[b.id]||[];
     const last=thread[thread.length-1];
-    const unread=thread.filter(m=>!m.byCaptan&&!m.readByCaptain).length;
+    const lastN=last?_normMsg(last):null;
+    const unread=thread.filter(m=>{const n=_normMsg(m);return n.isMusteri&&!n.okunduKaptan;}).length;
     const cname=b.customerName||'Musteri';
     const ini=cname.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     return`<div class="px-4 py-3.5 flex items-center gap-3 cursor-pointer card-hover" onclick="captainOpenChat('${b.id}')">
       <div class="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center"><span class="font-bold text-primary text-sm">${ini}</span></div>
       <div class="flex-1 min-w-0">
-        <div class="flex justify-between"><span class="font-medium text-sm">${cname}</span>${last?`<span class="text-[10px] text-gray-400">${new Date(last.ts).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span>`:''}</div>
-        <div class="text-xs text-gray-500 truncate">${last?last.text:'Mesaj yok — yaz!'}</div>
+        <div class="flex justify-between"><span class="font-medium text-sm">${cname}</span>${lastN?`<span class="text-[10px] text-gray-400">${new Date(lastN.ts).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span>`:''}</div>
+        <div class="text-xs text-gray-500 truncate">${lastN?lastN.text:'Mesaj yok — yaz!'}</div>
         <span class="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full mt-0.5 inline-block">${b.tourTitle||'Tur'} — ${b.tarih||''}</span>
       </div>
       ${unread?`<span class="w-5 h-5 bg-primary text-white text-[9px] rounded-full flex items-center justify-center">${unread}</span>`:''}
     </div>`;
   }).join('');
+  updateCapMsgBadge();
 }
 
 function _updateChatInputState(){
   const cap=getActiveCaptain();
-  const canReply=cap&&cap.mesajCevap===true;
+  const canReply=cap&&cap.mesajCevap!==false;
   const locked=document.getElementById('cap-reply-locked');
   const area=document.getElementById('cap-reply-area');
   if(locked)locked.style.display=canReply?'none':'flex';
@@ -3606,46 +3635,55 @@ function captainOpenChat(bookingId){
   document.getElementById('main-nav').style.display='none';
   _updateChatInputState();
   renderCaptainChat(bookingId);
+  // Supabase Realtime — sohbet açıkken yeni mesaj gelince otomatik güncelle
+  if(typeof DB_MODE!=='undefined'&&DB_MODE==='remote'){
+    if(_msgRealtimeSub){_msgRealtimeSub();_msgRealtimeSub=null;}
+    _msgRealtimeSub=DB.mesajlar.subscribeByRezervasyonId(bookingId,()=>{
+      if(curCaptainChatId===bookingId)renderCaptainChat(bookingId);
+    });
+  }
 }
 
 function renderCaptainChat(id){
   const msgs=S.get('db_messages',{});
   const thread=msgs[id]||[];
   let changed=false;
-  thread.forEach(m=>{if(!m.byCaptan&&!m.byAdmin&&!m.readByCaptain){m.readByCaptain=true;changed=true;}});
-  if(changed)S.set('db_messages',msgs);
+  thread.forEach(m=>{
+    const n=_normMsg(m);
+    if(n.isMusteri&&!n.okunduKaptan){m.okunduKaptan=true;m.readByCaptain=true;changed=true;}
+  });
+  if(changed){S.set('db_messages',msgs);updateCapMsgBadge();}
   const body=document.getElementById('cap-chat-body');
   if(!body)return;
   if(!thread.length){body.innerHTML='<div class="text-center text-xs text-gray-400 py-8">Henuz mesaj yok. Ilk mesaji siz gonderin!</div>';return;}
   body.innerHTML='<div class="text-center text-[10px] text-gray-400 mb-2">Konusma</div>'+thread.map(m=>{
-    if(m.byAdmin)return `<div class="flex justify-center my-1"><div class="msg-bubble bg-blue-100 text-blue-800 text-xs text-center"><i class="fas fa-shield-alt mr-1 text-blue-500"></i>DenizBul: ${m.text}</div></div>`;
-    return `<div class="flex ${m.byCaptan?'justify-end':'justify-start'}"><div class="msg-bubble ${m.byCaptan?'msg-out':'msg-in'}">${m.text}</div></div>`;
+    const n=_normMsg(m);
+    if(n.isAdmin)return`<div class="flex justify-center my-1"><div class="msg-bubble bg-blue-100 text-blue-800 text-xs text-center"><i class="fas fa-shield-alt mr-1 text-blue-500"></i>DenizBul: ${n.text}</div></div>`;
+    return`<div class="flex ${n.isKaptan?'justify-end':'justify-start'}"><div class="msg-bubble ${n.isKaptan?'msg-out':'msg-in'}">${n.text}</div></div>`;
   }).join('');
   body.scrollTop=body.scrollHeight;
 }
 
 function captainSendMsg(){
   const cap=getActiveCaptain();
-  if(!cap||cap.mesajCevap!==true){showToast('Yanit izniniz henuz aktif degil','danger');return;}
+  if(cap&&cap.mesajCevap===false){showToast('Mesaj izniniz admin tarafindan kapatildi','danger');return;}
   const inp=document.getElementById('cap-chat-input');
   const text=inp?.value.trim();
   if(!text||!curCaptainChatId)return;
   const msgs=S.get('db_messages',{});
   if(!msgs[curCaptainChatId])msgs[curCaptainChatId]=[];
-  msgs[curCaptainChatId].push({text,byCaptan:true,ts:Date.now(),readByCustomer:false,readByCaptain:true});
+  msgs[curCaptainChatId].push({text,gonderen:'kaptan',ts:Date.now(),okunduMusteri:false,okunduKaptan:true});
   S.set('db_messages',msgs);
-  const cp=S.get('cp_messages',{});
-  if(!cp[curCaptainChatId])cp[curCaptainChatId]=[];
-  cp[curCaptainChatId].push({text,byCaptan:true,ts:Date.now()});
-  S.set('cp_messages',cp);
   if(inp)inp.value='';
   renderCaptainChat(curCaptainChatId);
 }
 
 function closeChat(){
+  if(_msgRealtimeSub){_msgRealtimeSub();_msgRealtimeSub=null;}
   curCaptainChatId=null;
   document.getElementById('msg-list-view').style.display='';
   document.getElementById('msg-chat-view').style.display='none';
+  const nav=document.getElementById('main-nav');if(nav)nav.style.display='flex';
   renderMsgList();
 }
 function jumpToChat(id){navigateTo('messages');setTimeout(()=>captainOpenChat(id),150);}

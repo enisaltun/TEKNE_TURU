@@ -10457,14 +10457,42 @@ function renderMessages(){
   }).join('');
 }
 
+// Her iki mesaj şemasını normalize eder (eski byCaptan/byAdmin + yeni gonderen/okundu*)
+function _normMsg(m){
+  const isKaptan=m.gonderen==='kaptan'||m.byCaptan===true;
+  const isAdmin =m.gonderen==='admin' ||m.byAdmin ===true;
+  return{
+    id:m.id, text:m.text||m.mesaj||'',
+    ts:m.ts||(m.created_at?new Date(m.created_at).getTime():0),
+    isKaptan, isAdmin, isMusteri:!isKaptan&&!isAdmin,
+    okunduMusteri:m.okunduMusteri??m.readByCustomer??false,
+    okunduKaptan :m.okunduKaptan ??m.readByCaptain ??false,
+  };
+}
+
+function toggleKaptanMesajCevap(email,resId){
+  if(!email)return;
+  const caps=lsGet('db_captains',[]);
+  const cap=caps.find(c=>c.email===email);
+  if(!cap){showToast('Kaptan bulunamadı','danger');return;}
+  cap.mesajCevap=cap.mesajCevap===false?true:false;
+  lsSet('db_captains',caps);
+  const durum=cap.mesajCevap===false?'kapatıldı':'açıldı';
+  showToast(`${cap.ad||email} için mesaj izni ${durum}`);
+  openMsgThread(resId);
+}
+
 function openMsgThread(resId){
   _activeMsgResId=resId;
-  renderMessages(); // thread listesini active state ile yenile
+  renderMessages();
 
   const rawMsgs=lsGet('db_messages',{});
   const msgs=rawMsgs[resId]||[];
   const bookings=lsGet('db_bookings',[]);
   const b=bookings.find(x=>x.id===resId)||{};
+  const captainEmail=b.captainEmail||b.kaptan_email||'';
+  const cap=lsGet('db_captains',[]).find(c=>c.email===captainEmail)||{};
+  const canReply=cap.mesajCevap!==false;
 
   const emptyEl=document.getElementById('msg-detail-empty');
   const wrapEl=document.getElementById('msg-detail-wrap');
@@ -10474,12 +10502,14 @@ function openMsgThread(resId){
   // Header
   const hdr=document.getElementById('msg-detail-header');
   const durumBadgeMap={bekliyor:'background:#fef3c7;color:#d97706',onaylandi:'background:#dcfce7;color:#15803d',tamamlandi:'background:#dbeafe;color:#1d4ed8',iptal:'background:#f3f4f6;color:#6b7280',reddedildi:'background:#fee2e2;color:#dc2626'};
-  if(hdr)hdr.innerHTML=`<div style="display:flex;align-items:center;gap:12px">
+  const durumLabel={bekliyor:'Bekliyor',onaylandi:'Onaylandı',tamamlandi:'Tamamlandı',iptal:'İptal',reddedildi:'Reddedildi'};
+  if(hdr)hdr.innerHTML=`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <div style="flex:1;min-width:0">
       <div style="font-weight:700;font-size:14px;color:#0f172a">${b.tourTitle||'—'}</div>
       <div style="font-size:11px;color:#64748b;margin-top:1px"><i class="fas fa-user mr-1"></i>${b.customerName||'—'} &nbsp;·&nbsp; <i class="fas fa-anchor mr-1"></i>${b.captainName||'—'}</div>
     </div>
-    <span style="font-size:10px;padding:3px 10px;border-radius:20px;font-weight:600;${durumBadgeMap[b.durum||'']||'background:#f3f4f6;color:#6b7280'}">${{bekliyor:'Bekliyor',onaylandi:'Onaylandı',tamamlandi:'Tamamlandı',iptal:'İptal',reddedildi:'Reddedildi'}[b.durum||'']||b.durum||'—'}</span>
+    <span style="font-size:10px;padding:3px 10px;border-radius:20px;font-weight:600;${durumBadgeMap[b.durum||'']||'background:#f3f4f6;color:#6b7280'}">${durumLabel[b.durum||'']||b.durum||'—'}</span>
+    ${captainEmail?`<button onclick="toggleKaptanMesajCevap('${captainEmail}','${resId}')" title="Kaptanın yanıt iznini aç/kapat" style="background:${canReply?'#dcfce7;color:#15803d':'#fee2e2;color:#dc2626'};border:none;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer"><i class="fas fa-comment-${canReply?'check':'slash'} mr-1"></i>${canReply?'İzin Var':'İzin Yok'}</button>`:''}
     <button onclick="openResDetail('${resId}')" style="background:#eff6ff;color:#1d4ed8;border:none;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer"><i class="fas fa-external-link-alt mr-1"></i>Rez. Detay</button>
   </div>`;
 
@@ -10488,10 +10518,11 @@ function openMsgThread(resId){
   if(body){
     if(!msgs.length){body.innerHTML='<div class="text-center text-xs text-gray-400 py-6">Henüz mesaj yok.</div>';return;}
     body.innerHTML=msgs.map(m=>{
-      const time=new Date(m.ts||0).toLocaleString('tr-TR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-      if(m.byAdmin)return`<div style="display:flex;justify-content:center"><div style="background:#dbeafe;color:#1d4ed8;border-radius:12px;padding:8px 14px;font-size:12px;max-width:70%;text-align:center"><i class="fas fa-shield-alt" style="font-size:10px;margin-right:4px"></i><strong>Admin:</strong> ${m.text}<div style="font-size:10px;color:#93c5fd;margin-top:3px">${time}</div></div></div>`;
-      if(m.byCaptan)return`<div style="display:flex;justify-content:flex-start"><div style="background:#f1f5f9;color:#334155;border-radius:12px 12px 12px 2px;padding:8px 14px;font-size:12px;max-width:70%"><i class="fas fa-anchor" style="font-size:9px;color:#94a3b8;margin-right:4px"></i>${m.text}<div style="font-size:10px;color:#94a3b8;margin-top:3px">${time}</div></div></div>`;
-      return`<div style="display:flex;justify-content:flex-end"><div style="background:#0369a1;color:#fff;border-radius:12px 12px 2px 12px;padding:8px 14px;font-size:12px;max-width:70%">${m.text}<div style="font-size:10px;color:#bae6fd;margin-top:3px">${time}</div></div></div>`;
+      const n=_normMsg(m);
+      const time=new Date(n.ts||0).toLocaleString('tr-TR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      if(n.isAdmin)return`<div style="display:flex;justify-content:center"><div style="background:#dbeafe;color:#1d4ed8;border-radius:12px;padding:8px 14px;font-size:12px;max-width:70%;text-align:center"><i class="fas fa-shield-alt" style="font-size:10px;margin-right:4px"></i><strong>Admin:</strong> ${n.text}<div style="font-size:10px;color:#93c5fd;margin-top:3px">${time}</div></div></div>`;
+      if(n.isKaptan)return`<div style="display:flex;justify-content:flex-start"><div style="background:#f1f5f9;color:#334155;border-radius:12px 12px 12px 2px;padding:8px 14px;font-size:12px;max-width:70%"><i class="fas fa-anchor" style="font-size:9px;color:#94a3b8;margin-right:4px"></i>${n.text}<div style="font-size:10px;color:#94a3b8;margin-top:3px">${time}</div></div></div>`;
+      return`<div style="display:flex;justify-content:flex-end"><div style="background:#0369a1;color:#fff;border-radius:12px 12px 2px 12px;padding:8px 14px;font-size:12px;max-width:70%">${n.text}<div style="font-size:10px;color:#bae6fd;margin-top:3px">${time}</div></div></div>`;
     }).join('');
     body.scrollTop=body.scrollHeight;
   }
@@ -10504,8 +10535,8 @@ function msgAdminSend(){
   if(!text)return;
   const msgs=lsGet('db_messages',{});
   if(!msgs[_activeMsgResId])msgs[_activeMsgResId]=[];
-  msgs[_activeMsgResId].push({text,byAdmin:true,byCaptan:false,ts:Date.now(),readByCustomer:false,readByCaptain:false});
-  localStorage.setItem('db_messages',JSON.stringify(msgs));
+  msgs[_activeMsgResId].push({text,gonderen:'admin',ts:Date.now(),okunduMusteri:false,okunduKaptan:false});
+  lsSet('db_messages',msgs);
   inp.value='';
   openMsgThread(_activeMsgResId);
 }

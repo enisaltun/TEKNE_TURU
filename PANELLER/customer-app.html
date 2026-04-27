@@ -3407,24 +3407,40 @@ function renderCaptainProfile(){
 }
 
 /* ── MESSAGES ── */
+let _cuMsgRealtimeSub=null;
+
+// Her iki mesaj şemasını normalize eder (eski byCaptan/byAdmin + yeni gonderen/okundu*)
+function _normMsg(m){
+  const isKaptan=m.gonderen==='kaptan'||m.byCaptan===true;
+  const isAdmin =m.gonderen==='admin' ||m.byAdmin ===true;
+  return{
+    id:m.id, text:m.text||m.mesaj||'',
+    ts:m.ts||(m.created_at?new Date(m.created_at).getTime():0),
+    isKaptan, isAdmin, isMusteri:!isKaptan&&!isAdmin,
+    okunduMusteri:m.okunduMusteri??m.readByCustomer??false,
+    okunduKaptan :m.okunduKaptan ??m.readByCaptain ??false,
+  };
+}
+
 function renderMsgList(){
   const bookings=S.get('db_bookings',[]);
   const msgs=S.get('db_messages',{});
   const el=document.getElementById('msg-list-body');
-  if(!bookings.length){el.innerHTML='<div class="text-center py-12 text-xs text-gray-400">Rezervasyon yapildiginda kaptan ile yazisabilirsin.</div>';return;}
+  if(!bookings.length){el.innerHTML='<div class="text-center py-12 text-xs text-gray-400">Rezervasyon yapildiginda kaptan ile yazisabilirsin.</div>';updateMsgBadge();return;}
   let unread=0;
   el.innerHTML=bookings.map(b=>{
     const thread=msgs[b.id]||[];
     const last=thread[thread.length-1];
-    const ur=thread.filter(m=>m.byCaptan&&!m.readByCustomer).length;
+    const lastN=last?_normMsg(last):null;
+    const ur=thread.filter(m=>{const n=_normMsg(m);return n.isKaptan&&!n.okunduMusteri;}).length;
     unread+=ur;
     const cname=b.captainName||'Kaptan';
     const ini=cname.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     return`<div class="px-4 py-3 flex items-center gap-3 card-hover" onclick="openChat('${b.id}')">
       <div class="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0"><span class="font-bold text-primary text-sm">${ini}</span></div>
       <div class="flex-1 min-w-0">
-        <div class="flex justify-between"><span class="font-medium text-sm">${cname}</span>${last?`<span class="text-[10px] text-gray-400">${new Date(last.ts).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span>`:''}</div>
-        <div class="text-xs text-gray-500 truncate">${last?last.text:'Mesaj yok — yaz!'}</div>
+        <div class="flex justify-between"><span class="font-medium text-sm">${cname}</span>${lastN?`<span class="text-[10px] text-gray-400">${new Date(lastN.ts).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span>`:''}</div>
+        <div class="text-xs text-gray-500 truncate">${lastN?lastN.text:'Mesaj yok — yaz!'}</div>
         <span class="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">${b.tourTitle||'Tur'} — ${b.tarih||''}</span>
       </div>
       ${ur?`<span class="w-5 h-5 bg-primary text-white text-[9px] rounded-full flex items-center justify-center">${ur}</span>`:''}
@@ -3447,19 +3463,30 @@ function openChat(bookingId){
   document.getElementById('msg-chat-view').style.display='flex';
   renderChat(bookingId);
   updateMsgBadge();
+  // Supabase Realtime — sohbet açıkken yeni mesaj gelince otomatik güncelle
+  if(typeof DB_MODE!=='undefined'&&DB_MODE==='remote'){
+    if(_cuMsgRealtimeSub){_cuMsgRealtimeSub();_cuMsgRealtimeSub=null;}
+    _cuMsgRealtimeSub=DB.mesajlar.subscribeByRezervasyonId(bookingId,()=>{
+      if(curChatId===bookingId)renderChat(bookingId);
+    });
+  }
 }
 
 function renderChat(id){
   const msgs=S.get('db_messages',{});
   const thread=msgs[id]||[];
   let changed=false;
-  thread.forEach(m=>{if((m.byCaptan||m.byAdmin)&&!m.readByCustomer){m.readByCustomer=true;changed=true;}});
-  if(changed)S.set('db_messages',msgs);
+  thread.forEach(m=>{
+    const n=_normMsg(m);
+    if((n.isKaptan||n.isAdmin)&&!n.okunduMusteri){m.okunduMusteri=true;m.readByCustomer=true;changed=true;}
+  });
+  if(changed){S.set('db_messages',msgs);updateMsgBadge();}
   const el=document.getElementById('chat-body');
   if(!thread.length){el.innerHTML='<div class="text-center text-xs text-gray-400 py-8">Henuz mesaj yok. Ilk mesaji siz gonderin!</div>';return;}
   el.innerHTML=thread.map(m=>{
-    if(m.byAdmin)return `<div class="flex justify-center my-1"><div class="msg-bubble bg-blue-100 text-blue-800 text-xs text-center"><i class="fas fa-shield-alt mr-1 text-blue-500"></i>DenizBul: ${m.text}</div></div>`;
-    return `<div class="flex ${m.byCaptan?'justify-start':'justify-end'}"><div class="msg-bubble ${m.byCaptan?'msg-in':'msg-out'}">${m.text}</div></div>`;
+    const n=_normMsg(m);
+    if(n.isAdmin)return`<div class="flex justify-center my-1"><div class="msg-bubble bg-blue-100 text-blue-800 text-xs text-center"><i class="fas fa-shield-alt mr-1 text-blue-500"></i>DenizBul: ${n.text}</div></div>`;
+    return`<div class="flex ${n.isKaptan?'justify-start':'justify-end'}"><div class="msg-bubble ${n.isKaptan?'msg-in':'msg-out'}">${n.text}</div></div>`;
   }).join('');
   el.scrollTop=el.scrollHeight;
 }
@@ -3468,21 +3495,16 @@ function sendMsg(){
   const inp=document.getElementById('chat-input');
   const text=inp.value.trim();
   if(!text||!curChatId)return;
-  // Write to db_messages (shared with captain)
   const msgs=S.get('db_messages',{});
   if(!msgs[curChatId])msgs[curChatId]=[];
-  msgs[curChatId].push({text,byCaptan:false,ts:Date.now(),readByCustomer:true});
+  msgs[curChatId].push({text,gonderen:'musteri',ts:Date.now(),okunduMusteri:true,okunduKaptan:false});
   S.set('db_messages',msgs);
-  // Mirror to cp_messages so captain panel picks it up
-  const cp=S.get('cp_messages',{});
-  if(!cp[curChatId])cp[curChatId]=[];
-  cp[curChatId].push({text,byCaptan:false,ts:Date.now()});
-  S.set('cp_messages',cp);
   inp.value='';
   renderChat(curChatId);
 }
 
 function closeChat(){
+  if(_cuMsgRealtimeSub){_cuMsgRealtimeSub();_cuMsgRealtimeSub=null;}
   curChatId=null;
   document.getElementById('msg-list-view').style.display='';
   document.getElementById('msg-chat-view').style.display='none';
@@ -3507,9 +3529,9 @@ function updateMsgBadge(){
   const msgs=S.get('db_messages',{});
   const bookings=S.get('db_bookings',[]);
   let unread=0;
-  bookings.forEach(b=>{unread+=(msgs[b.id]||[]).filter(m=>m.byCaptan&&!m.readByCustomer).length;});
+  bookings.forEach(b=>{unread+=(msgs[b.id]||[]).filter(m=>{const n=_normMsg(m);return n.isKaptan&&!n.okunduMusteri;}).length;});
   const badge=document.getElementById('nav-msg-badge');
-  if(badge){badge.style.display=unread?'':'none';badge.textContent=unread||'';}
+  if(badge){badge.style.display=unread?'flex':'none';badge.textContent=unread||'';}
 }
 
 function renderNotifs(){
