@@ -189,7 +189,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
         <!-- KVKK Onayı -->
         <div style="margin-bottom:10px">
           <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
-            <input type="checkbox" id="reg-kvkk" style="margin-top:2px;flex-shrink:0;accent-color:#0369a1;width:15px;height:15px">
+            <input type="checkbox" id="reg-kvkk" onclick="cuCheckboxClick(event)" style="margin-top:2px;flex-shrink:0;accent-color:#0369a1;width:15px;height:15px">
             <span style="font-size:11px;color:#475569;line-height:1.5">
               <strong style="color:#1e293b">KVKK Aydınlatma Metni</strong>'ni okudum, anladım ve kabul ediyorum.
               <button type="button" onclick="cuOpenKvkkModal()" style="color:#0369a1;font-size:11px;font-weight:600;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;margin-left:2px">Metni Oku →</button>
@@ -4011,7 +4011,12 @@ function clearAll(){
 
 
 /* ── KVKK MODAL ── */
-var _cuKvkkOpen=false;
+function cuCheckboxClick(e){
+  e.preventDefault(); // kullanıcı doğrudan işaretleyemesin, sadece modal üzerinden
+  var cb=document.getElementById('reg-kvkk');
+  if(cb&&cb.checked)return; // zaten onaylıysa modal açma
+  cuOpenKvkkModal();
+}
 function cuOpenKvkkModal(){
   var overlay=document.getElementById('cu-kvkk-overlay');
   var body=document.getElementById('cu-kvkk-body');
