@@ -3541,8 +3541,12 @@ function cancelBFromDetail(id){
   if(!b)return;
   if(!confirm('Rezervasyonu iptal etmek istediginizden emin misiniz?'))return;
   b.durum='iptal';
+  b.iptalKaynagi='musteri';
+  b.iptalTarihi=new Date().toISOString();
   S.set('db_bookings',db);
   addNotif('Rezervasyon iptal edildi',`${b.tourTitle} rezervasyonunuz iptal edildi.`,'danger');
+  _cuNotifyAdminCancel(b);
+  _cuNotifyCaptainCancel(b);
   showToast('Rezervasyon iptal edildi','danger');
   renderBookingDetail();
 }
@@ -3550,7 +3554,45 @@ function cancelBFromDetail(id){
 function cancelB(id){
   const db=S.get('db_bookings',[]);
   const b=db.find(x=>x.id===id);
-  if(b){b.durum='iptal';S.set('db_bookings',db);addNotif('Rezervasyon iptal edildi',`${b.tourTitle} rezervasyonunuz iptal edildi.`,'danger');renderMyTours(curTab);showToast('Rezervasyon iptal edildi','danger');}
+  if(!b)return;
+  b.durum='iptal';
+  b.iptalKaynagi='musteri';
+  b.iptalTarihi=new Date().toISOString();
+  S.set('db_bookings',db);
+  addNotif('Rezervasyon iptal edildi',`${b.tourTitle} rezervasyonunuz iptal edildi.`,'danger');
+  _cuNotifyAdminCancel(b);
+  _cuNotifyCaptainCancel(b);
+  renderMyTours(curTab);
+  showToast('Rezervasyon iptal edildi','danger');
+}
+
+function _cuNotifyAdminCancel(b){
+  try{
+    const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
+    notifs.unshift({
+      id:'MIPTAL'+Date.now(),type:'musteri_iptal',read:false,
+      bookingId:b.id,
+      tourId:String(b.tourId),tourTitle:b.tourTitle||'—',
+      captainEmail:b.captainEmail||'—',
+      customerName:b.customerName||b.customerEmail||'Müşteri',
+      guests:b.guests||1,tarih:b.tarih||'—',
+      ts:Date.now()
+    });
+    localStorage.setItem('admin_notifs',JSON.stringify(notifs.slice(0,100)));
+  }catch(e){}
+}
+
+function _cuNotifyCaptainCancel(b){
+  if(!b.captainEmail)return;
+  try{
+    const caN=S.get('ca_notifications',[]);
+    caN.unshift({
+      id:Date.now(),title:'Rezervasyon İptal Edildi',
+      body:`${b.customerName||'Müşteri'} — ${b.tourTitle||'Tur'} · ${b.tarih||'—'} · ${b.guests||1} kişi rezervasyonunu iptal etti.`,
+      type:'danger',ts:Date.now(),read:false,bookingId:b.id
+    });
+    S.set('ca_notifications',caN.slice(0,50));
+  }catch(e){}
 }
 
 function jumpToChat(id){navigateTo('messages');setTimeout(()=>openChat(id),100);}

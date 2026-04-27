@@ -5990,12 +5990,12 @@ function adminRefreshActivePage(){
 }
 
 window.addEventListener('storage',(e)=>{
-  const izlenen=['db_captains','db_tours','db_bookings','cu_users','db_users','db_payments','db_messages'];
+  const izlenen=['db_captains','db_tours','db_bookings','cu_users','db_users','db_payments','db_messages','admin_notifs'];
   if(!izlenen.includes(e.key))return;
   if(e.key==='db_users'){uBridgePendingCaptains();}
   if(e.key==='db_captains'){uSyncCaptainsToUsers();}
+  if(e.key==='admin_notifs'){renderAdminAlerts();return;}
   adminRefreshActivePage();
-  // Toast bildirimi
   showToast('Veriler güncellendi — başka sekme kayıt yaptı','info');
 });
 
@@ -11749,6 +11749,17 @@ function renderAdminAlerts(){
           <div class="text-[10px] text-red-400 mt-1">${ago}</div>
         </div>
         <button onclick="markAlertRead('${n.id}')" class="text-red-300 hover:text-red-500 text-xs mt-0.5"><i class="fas fa-times"></i></button>
+      </div>`;
+    }
+    if(n.type==='musteri_iptal'){
+      return`<div class="flex items-start gap-3 p-3 rounded-xl border border-orange-200 bg-orange-50">
+        <div class="w-9 h-9 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-user-times text-orange-600 text-sm"></i></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-semibold text-orange-800">Müşteri Rezervasyon İptal Etti</div>
+          <div class="text-xs text-orange-700 mt-0.5"><strong>${n.customerName||'Müşteri'}</strong> — "${n.tourTitle}" · ${n.tarih} · ${n.guests||1} kişi</div>
+          <div class="text-[10px] text-orange-400 mt-1">${ago} · Kaptan: ${n.captainEmail||'—'}</div>
+        </div>
+        <button onclick="markAlertRead('${n.id}')" class="text-orange-300 hover:text-orange-500 text-xs mt-0.5"><i class="fas fa-times"></i></button>
       </div>`;
     }
     return'';
