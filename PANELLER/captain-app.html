@@ -837,8 +837,31 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
       <button class="tab-btn" onclick="switchBookingTab(this)">Gecmis (28)</button>
     </div>
 
+    <!-- Geçmiş filtre alanı — sadece Geçmiş sekmesinde görünür -->
+    <div id="bk-gecmis-filter" style="display:none" class="mb-4 space-y-2.5">
+      <div class="relative">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+        <input type="text" id="bk-gecmis-search" placeholder="Müşteri adı veya tur adı ara…"
+          class="w-full pl-8 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white outline-none focus:border-primary"
+          oninput="renderBookings()">
+      </div>
+      <div class="flex gap-2 items-center flex-wrap">
+        <span class="text-[11px] text-gray-500 flex-shrink-0">Durum:</span>
+        <button class="pill active text-xs py-1.5 px-3" onclick="setBkDurum('tumu',this)">Tümü</button>
+        <button class="pill text-xs py-1.5 px-3" onclick="setBkDurum('tamamlandi',this)">Tamamlandı</button>
+        <button class="pill text-xs py-1.5 px-3" onclick="setBkDurum('iptal',this)">İptal</button>
+      </div>
+      <div class="flex gap-2 items-center flex-wrap">
+        <span class="text-[11px] text-gray-500 flex-shrink-0">Dönem:</span>
+        <button class="pill active text-xs py-1.5 px-3" onclick="setBkTarih('tumu',this)">Tümü</button>
+        <button class="pill text-xs py-1.5 px-3" onclick="setBkTarih('buay',this)">Bu ay</button>
+        <button class="pill text-xs py-1.5 px-3" onclick="setBkTarih('3ay',this)">Son 3 ay</button>
+      </div>
+      <div id="bk-gecmis-count" class="text-[11px] text-gray-400"></div>
+    </div>
+
     <!-- QR Scan Button -->
-    <button class="w-full card flex items-center justify-center gap-3 bg-primary/5 border-2 border-dashed border-primary/30 py-5 mb-4 card-hover" onclick="openQRScanner()">
+    <button id="bk-qr-btn" class="w-full card flex items-center justify-center gap-3 bg-primary/5 border-2 border-dashed border-primary/30 py-5 mb-4 card-hover" onclick="openQRScanner()">
       <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center"><i class="fas fa-qrcode text-primary text-xl"></i></div>
       <div class="text-left">
         <div class="text-sm font-bold text-primary">QR Kod Okut</div>
@@ -3567,9 +3590,26 @@ function renderBookings(){
   if(tabs[1])tabs[1].textContent=`Bekleyen (${pending.length})`;
   if(tabs[2])tabs[2].textContent=`Gecmis (${past.length})`;
   // Aktif sekmeye göre filtrele
-  const list=_bkTab==='bekleyen'?pending:_bkTab==='gecmis'?past:upcoming;
+  let list=_bkTab==='bekleyen'?pending:_bkTab==='gecmis'?past:upcoming;
+  // Geçmiş sekmesi için ek filtreler
+  if(_bkTab==='gecmis'){
+    const q=(document.getElementById('bk-gecmis-search')?.value||'').trim().toLowerCase();
+    if(q)list=list.filter(b=>(b.customerName||'').toLowerCase().includes(q)||(b.tourTitle||'').toLowerCase().includes(q));
+    if(_gecmisDurum==='tamamlandi')list=list.filter(b=>b.durum==='tamamlandi');
+    else if(_gecmisDurum==='iptal')list=list.filter(b=>b.durum==='iptal'||b.durum==='reddedildi');
+    if(_gecmisTarih!=='tumu'){
+      const now=new Date();
+      const cutoff=new Date(now.getFullYear(),_gecmisTarih==='buay'?now.getMonth():now.getMonth()-2,1);
+      list=list.filter(b=>{
+        try{const iso=b.tarihISO||(b.tarih?b.tarih.split('.').reverse().join('-'):null);return iso&&new Date(iso)>=cutoff;}catch{return true;}
+      });
+    }
+    // Geçmiş sayacını güncelle
+    const countEl=document.getElementById('bk-gecmis-count');
+    if(countEl)countEl.textContent=list.length?`${list.length} rezervasyon bulundu`:'Sonuç yok';
+  }
   if(!list.length){
-    const emptyMsg=_bkTab==='bekleyen'?'Bekleyen rezervasyon yok':_bkTab==='gecmis'?'Gecmis rezervasyon yok':'Yaklasan rezervasyon yok';
+    const emptyMsg=_bkTab==='bekleyen'?'Bekleyen rezervasyon yok':_bkTab==='gecmis'?'Filtreye uyan geçmiş rezervasyon yok':'Yaklasan rezervasyon yok';
     el.innerHTML=`<div class="text-center py-12 text-xs text-gray-400"><i class="fas fa-calendar text-3xl mb-3 block text-gray-200"></i>${emptyMsg}</div>`;
     return;
   }
@@ -4276,6 +4316,8 @@ function switchTourTab(btn,filter){
   }
 }
 let _bkTab='yaklasan';
+let _gecmisDurum='tumu',_gecmisTarih='tumu';
+
 function switchBookingTab(btn){
   btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -4283,6 +4325,25 @@ function switchBookingTab(btn){
   if(txt.startsWith('Bekl'))_bkTab='bekleyen';
   else if(txt.startsWith('Gec')||txt.startsWith('Geç'))_bkTab='gecmis';
   else _bkTab='yaklasan';
+  const isGecmis=_bkTab==='gecmis';
+  const filterEl=document.getElementById('bk-gecmis-filter');
+  const qrEl=document.getElementById('bk-qr-btn');
+  if(filterEl)filterEl.style.display=isGecmis?'':'none';
+  if(qrEl)qrEl.style.display=isGecmis?'none':'';
+  renderBookings();
+}
+
+function setBkDurum(val,btn){
+  _gecmisDurum=val;
+  btn.closest('.flex').querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderBookings();
+}
+
+function setBkTarih(val,btn){
+  _gecmisTarih=val;
+  btn.closest('.flex').querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
   renderBookings();
 }
 
