@@ -284,7 +284,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
       </div>
       <div class="table-container">
         <table>
-          <thead><tr><th>Kaptan</th><th>Tekne</th><th>Bolge</th><th>Basvuru</th><th>Durum</th><th>Islem</th></tr></thead>
+          <thead><tr><th>Kullanici</th><th>Rol</th><th>Detay</th><th>Konum / Bilgi</th><th>Durum</th><th>Islem</th></tr></thead>
           <tbody id="dash-pending-tbody">
             <tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Onay bekleyen basvuru yok</td></tr>
           </tbody>
@@ -845,6 +845,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
           <option value="">Tüm Durumlar</option>
           <option value="aktif">● Aktif</option>
           <option value="pasif">○ Pasif</option>
+          <option value="onay_bekliyor">⏳ Onay Bekliyor</option>
           <option value="engellendi">✕ Engellendi</option>
         </select>
         <select id="user-filter-kanal" onchange="usersPage=1;renderUsers()" class="px-3 py-2 border rounded-lg text-sm">
@@ -2033,6 +2034,9 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
 
     <!-- Scrollable Tab Content -->
     <div class="flex-1 overflow-y-auto">
+
+      <!-- Onay bekleyen kullanici banner -->
+      <div id="udm-pending-banner" style="display:none;padding:12px 20px 0"></div>
 
       <!-- Tab: Özet -->
       <div id="udm-tab-ozet" class="p-5 space-y-4" style="display:none">
@@ -5953,22 +5957,66 @@ function renderDashboard(){
     });
   }
 
-  const pending=caps.filter(c=>c.durum==='bekliyor');
+  // Tum rollerdeki onay bekleyenleri db_users'tan topla
+  const allDbUsers=uGetUsers();
+  const pendingAll=allDbUsers.filter(u=>u.durum==='onay_bekliyor');
+  const pendingCaptains=pendingAll.filter(u=>(u.roles||[]).includes('captain'));
+  const pendingVendors=pendingAll.filter(u=>(u.roles||[]).includes('vendor')&&!(u.roles||[]).includes('captain'));
+  const pendingShops=pendingAll.filter(u=>(u.roles||[]).includes('shop_vendor')&&!(u.roles||[]).includes('captain'));
+  // Kaptan onayinda db_captains.bekliyor de dahil et (legacy)
+  const pendingCapDB=caps.filter(c=>c.durum==='bekliyor'&&!pendingCaptains.some(u=>u.email===c.email));
+  const totalPending=pendingAll.length+pendingCapDB.length;
   const badge=document.getElementById('dash-pending-badge');
-  if(badge)badge.textContent=pending.length+' bekliyor';
+  if(badge)badge.textContent=totalPending+' bekliyor';
   const tbody=document.getElementById('dash-pending-tbody');
   if(tbody){
-    if(!pending.length){tbody.innerHTML='<tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Onay bekleyen basvuru yok</td></tr>';}
-    else {
-      tbody.innerHTML=pending.map(c=>`<tr>
-        <td><div class="font-medium">${c.ad} ${c.soyad}</div><div class="text-[10px] text-gray-400">${c.email}</div></td>
-        <td>${c.tekne||'—'}</td><td>${c.bolge||'—'}</td><td>${c.tarih||'—'}</td>
-        <td><span class="badge bg-amber-100 text-amber-700">Bekliyor</span></td>
-        <td>
-          <button onclick="setCaptainDurum(${c.id},'aktif');renderDashboard()" class="bg-success text-white px-2 py-1 rounded text-xs mr-1 hover:bg-green-600">Onayla</button>
-          <button onclick="setCaptainDurum(${c.id},'askida');renderDashboard()" class="text-danger text-xs hover:underline">Reddet</button>
-        </td>
-      </tr>`).join('');
+    if(!totalPending){tbody.innerHTML='<tr><td colspan="6" class="text-center text-gray-400 py-6 text-xs">Onay bekleyen basvuru yok</td></tr>';}
+    else{
+      const roleLabel={captain:'<span class="badge bg-cyan-100 text-cyan-700 text-[9px]"><i class="fas fa-anchor mr-0.5"></i>Kaptan</span>',vendor:'<span class="badge bg-orange-100 text-orange-700 text-[9px]"><i class="fas fa-cart-shopping mr-0.5"></i>Satici</span>',shop_vendor:'<span class="badge bg-violet-100 text-violet-700 text-[9px]"><i class="fas fa-store mr-0.5"></i>Magaza</span>'};
+      const capRows=pendingCaptains.map(u=>{
+        const cd=u.captainData||u.captainProfile||{};
+        const nm=((u.ad||'')+' '+(u.soyad||'')).trim()||u.email;
+        return`<tr>
+          <td><div class="font-medium text-sm">${nm}</div><div class="text-[10px] text-gray-400">${u.email}</div></td>
+          <td>${roleLabel.captain}</td>
+          <td class="text-xs">${cd.tekne||'—'}</td>
+          <td class="text-xs">${cd.liman||cd.bolge||'—'}</td>
+          <td><span class="badge bg-amber-100 text-amber-700 text-[10px]">Bekliyor</span></td>
+          <td><button onclick="approveUser('${u.email}','captain')" class="bg-success text-white px-2 py-1 rounded text-xs mr-1 hover:bg-green-600">Onayla</button><button onclick="rejectPendingUser('${u.email}','captain')" class="text-danger text-xs hover:underline">Reddet</button></td>
+        </tr>`;
+      });
+      const legacyCapRows=pendingCapDB.map(c=>`<tr>
+        <td><div class="font-medium text-sm">${c.ad} ${c.soyad}</div><div class="text-[10px] text-gray-400">${c.email}</div></td>
+        <td>${roleLabel.captain}</td>
+        <td class="text-xs">${c.tekne||'—'}</td><td class="text-xs">${c.bolge||'—'}</td>
+        <td><span class="badge bg-amber-100 text-amber-700 text-[10px]">Bekliyor</span></td>
+        <td><button onclick="setCaptainDurum(${c.id},'aktif');renderDashboard()" class="bg-success text-white px-2 py-1 rounded text-xs mr-1 hover:bg-green-600">Onayla</button><button onclick="setCaptainDurum(${c.id},'askida');renderDashboard()" class="text-danger text-xs hover:underline">Reddet</button></td>
+      </tr>`);
+      const vendorRows=pendingVendors.map(u=>{
+        const vd=u.vendorData||{};
+        const nm=((u.ad||'')+' '+(u.soyad||'')).trim()||u.email;
+        return`<tr>
+          <td><div class="font-medium text-sm">${nm}</div><div class="text-[10px] text-gray-400">${u.email}</div></td>
+          <td>${roleLabel.vendor}</td>
+          <td class="text-xs">${vd.kategori||'—'}</td>
+          <td class="text-xs">${vd.sahil||'—'}</td>
+          <td><span class="badge bg-amber-100 text-amber-700 text-[10px]">Bekliyor</span></td>
+          <td><button onclick="approveUser('${u.email}','vendor')" class="bg-success text-white px-2 py-1 rounded text-xs mr-1 hover:bg-green-600">Onayla</button><button onclick="rejectPendingUser('${u.email}','vendor')" class="text-danger text-xs hover:underline">Reddet</button></td>
+        </tr>`;
+      });
+      const shopRows=pendingShops.map(u=>{
+        const sd=u.shopData||{};
+        const nm=((u.ad||'')+' '+(u.soyad||'')).trim()||u.email;
+        return`<tr>
+          <td><div class="font-medium text-sm">${nm}</div><div class="text-[10px] text-gray-400">${u.email}</div></td>
+          <td>${roleLabel.shop_vendor}</td>
+          <td class="text-xs">${sd.magazaAdi||'—'}</td>
+          <td class="text-xs">${sd.il||sd.kategori||'—'}</td>
+          <td><span class="badge bg-amber-100 text-amber-700 text-[10px]">Bekliyor</span></td>
+          <td><button onclick="approveUser('${u.email}','shop_vendor')" class="bg-success text-white px-2 py-1 rounded text-xs mr-1 hover:bg-green-600">Onayla</button><button onclick="rejectPendingUser('${u.email}','shop_vendor')" class="text-danger text-xs hover:underline">Reddet</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML=[...capRows,...legacyCapRows,...vendorRows,...shopRows].join('');
     }
   }
 
@@ -7752,10 +7800,14 @@ function getAllUsers(){
       turSayisi:cu.turSayisi||0,
       createdAt:u.createdAt||cu.createdAt||new Date().toISOString(),
       sonGiris:cu.sonGiris||u.createdAt,
-      durum:cu.durum||'aktif',
-      plan:cu.plan||'free',
+      durum:u.durum||cu.durum||'aktif',
+      plan:cu.plan||u.plan||'free',
       roles:u.roles||['customer'],
       captainProfile:u.captainProfile||null,
+      captainData:u.captainData||null,
+      vendorData:u.vendorData||null,
+      shopData:u.shopData||null,
+      customerData:u.customerData||null,
       password:u.password||cu.password
     });
   });
@@ -7895,10 +7947,11 @@ function renderUsers(){
     }
     /* Durum */
     if(fDurum){
-      const isAktif=u.durum!=='engellendi'&&u.sonGiris&&new Date(u.sonGiris)>=monthAgo;
-      const isPasif=u.durum!=='engellendi'&&(!u.sonGiris||new Date(u.sonGiris)<monthAgo);
+      const isAktif=u.durum!=='engellendi'&&u.durum!=='onay_bekliyor'&&u.durum!=='reddedildi'&&u.sonGiris&&new Date(u.sonGiris)>=monthAgo;
+      const isPasif=u.durum!=='engellendi'&&u.durum!=='onay_bekliyor'&&u.durum!=='reddedildi'&&(!u.sonGiris||new Date(u.sonGiris)<monthAgo);
       if(fDurum==='aktif'&&!isAktif)return false;
       if(fDurum==='pasif'&&!isPasif)return false;
+      if(fDurum==='onay_bekliyor'&&u.durum!=='onay_bekliyor')return false;
       if(fDurum==='engellendi'&&u.durum!=='engellendi')return false;
     }
     /* Kanal */
@@ -7996,9 +8049,13 @@ function renderUsers(){
     const kayitStr=u.createdAt?new Date(u.createdAt).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—';
     const isEng=u.durum==='engellendi';
     const isSusp=u.durum==='askida';
-    const isAktif=!isEng&&!isSusp&&sonGirisRaw&&sonGirisRaw>=new Date(now-30*86400000);
+    const isPending=u.durum==='onay_bekliyor';
+    const isRed=u.durum==='reddedildi';
+    const isAktif=!isEng&&!isSusp&&!isPending&&!isRed&&sonGirisRaw&&sonGirisRaw>=new Date(now-30*86400000);
     const durumBadge=isEng?'<span class="badge bg-red-100 text-red-600"><i class="fas fa-ban mr-0.5 text-[9px]"></i>Engellendi</span>':
-      isSusp?'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-pause-circle mr-0.5 text-[9px]"></i>Askıda</span>':
+      isSusp?'<span class="badge bg-amber-100 text-amber-700"><i class="fas fa-pause-circle mr-0.5 text-[9px]"></i>Askida</span>':
+      isPending?'<span class="badge bg-amber-50 text-amber-600 border border-amber-200"><i class="fas fa-clock mr-0.5 text-[9px]"></i>Onay Bekliyor</span>':
+      isRed?'<span class="badge bg-red-50 text-red-500 border border-red-200"><i class="fas fa-times-circle mr-0.5 text-[9px]"></i>Reddedildi</span>':
       isAktif?'<span class="badge bg-green-100 text-green-700"><i class="fas fa-circle mr-0.5 text-[7px]"></i>Aktif</span>':
       '<span class="badge bg-gray-100 text-gray-500">Pasif</span>';
     const kanalBadge={
@@ -8134,9 +8191,11 @@ function openUserDetailModal(uid){
   const activeB=ub.filter(b=>b.durum!=='iptal'&&b.durum!=='reddedildi');
   const now=new Date();
   const monthAgo=new Date(now-30*86400000);
-  const isAktif=u.durum!=='engellendi'&&u.sonGiris&&new Date(u.sonGiris)>=monthAgo;
   const isEng=u.durum==='engellendi';
   const isSusp=u.durum==='askida';
+  const isPendingUser=u.durum==='onay_bekliyor';
+  const isRedUser=u.durum==='reddedildi';
+  const isAktif=!isEng&&!isSusp&&!isPendingUser&&!isRedUser&&u.sonGiris&&new Date(u.sonGiris)>=monthAgo;
   const uRoles=u.roles||['customer'];
   const uPlan=u.plan||'free';
 
@@ -8149,7 +8208,25 @@ function openUserDetailModal(uid){
   setEl('udm-phone',u.phone||u.telefon||'—');
   setEl('udm-sehir',u.sehir||'—');
   setEl('udm-kayit',u.createdAt?new Date(u.createdAt).toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'}):'—');
-  setHtml('udm-durum',isEng?'<span class="badge bg-red-100 text-red-600 text-[10px]">Engellendi</span>':isSusp?'<span class="badge bg-amber-100 text-amber-700 text-[10px]">Askida</span>':isAktif?'<span class="badge bg-green-100 text-green-700 text-[10px]">Aktif</span>':'<span class="badge bg-gray-100 text-gray-500 text-[10px]">Pasif</span>');
+  setHtml('udm-durum',isEng?'<span class="badge bg-red-100 text-red-600 text-[10px]">Engellendi</span>':isSusp?'<span class="badge bg-amber-100 text-amber-700 text-[10px]">Askida</span>':isPendingUser?'<span class="badge bg-amber-50 text-amber-600 border border-amber-200 text-[10px]"><i class="fas fa-clock mr-0.5"></i>Onay Bekliyor</span>':isRedUser?'<span class="badge bg-red-50 text-red-500 border border-red-200 text-[10px]">Reddedildi</span>':isAktif?'<span class="badge bg-green-100 text-green-700 text-[10px]">Aktif</span>':'<span class="badge bg-gray-100 text-gray-500 text-[10px]">Pasif</span>');
+  // Onay bekleyen kullanici icin modal ustunde aksiyonbanner
+  const udmBanner=document.getElementById('udm-pending-banner');
+  if(udmBanner){
+    if(isPendingUser){
+      const primaryNonCust=(u.roles||[]).find(r=>r!=='customer')||'customer';
+      udmBanner.style.display='block';
+      udmBanner.innerHTML=`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <i class="fas fa-clock" style="color:#d97706;font-size:14px"></i>
+        <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#92400e">Başvuru Onay Bekliyor</div>
+        <div style="font-size:11px;color:#b45309;margin-top:1px">Bu kullanıcı <strong>${{customer:'Müşteri',captain:'Kaptan',vendor:'Satıcı',shop_vendor:'Mağaza'}[primaryNonCust]||primaryNonCust}</strong> rolü için kayıt yaptırdı.</div></div>
+        <button onclick="approveUser('${email}','${primaryNonCust}');closeUserDetailModal&&closeUserDetailModal()" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer"><i class="fas fa-check mr-1"></i>Onayla</button>
+        <button onclick="rejectPendingUser('${email}','${primaryNonCust}');closeUserDetailModal&&closeUserDetailModal()" style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer"><i class="fas fa-times mr-1"></i>Reddet</button>
+      </div>`;
+    } else {
+      udmBanner.style.display='none';
+      udmBanner.innerHTML='';
+    }
+  }
   setHtml('udm-email-verified-badge',u.emailOnaylandi===false?'<span class="text-amber-400 text-[10px]">⚠ dogrulanmadi</span>':'<span class="text-success text-[10px]">✓ dogrulandi</span>');
   const roleBadgeMap={customer:'<span class="badge bg-blue-100 text-blue-600 text-[9px]"><i class="fas fa-user mr-0.5" style="font-size:8px"></i>Müsteri</span>',captain:'<span class="badge bg-cyan-100 text-cyan-700 text-[9px]"><i class="fas fa-anchor mr-0.5" style="font-size:8px"></i>Kaptan</span>',vendor:'<span class="badge bg-orange-100 text-orange-700 text-[9px]"><i class="fas fa-cart-shopping mr-0.5" style="font-size:8px"></i>Seyyar Satici</span>',shop_vendor:'<span class="badge bg-violet-100 text-violet-700 text-[9px]"><i class="fas fa-store mr-0.5" style="font-size:8px"></i>Magaza</span>'};
   setHtml('udm-roles-badges',uRoles.map(r=>roleBadgeMap[r]||'').join(''));
@@ -9937,22 +10014,81 @@ function setCaptainDurum(id,durum){
   // db_users captainProfile senkronu + bildirim
   const users=uGetUsers();
   const u=users.find(x=>x.email===c.email);
-  if(u&&u.captainProfile){
-    const onceki=u.captainProfile.onayDurumu;
-    u.captainProfile.onayDurumu=durum;
-    if(durum==='aktif'){
-      if(!u.roles.includes('captain'))u.roles.push('captain');
-      u.captainProfile.redSebep=null;
-      pushCaptainNotification(u.email,{title:'Kaptan başvurun onaylandı',body:'Artık kaptan paneline erişebilir ve tur açabilirsin.',type:'success'});
-    } else if(durum==='askida'&&onceki==='bekliyor'){
-      u.captainProfile.onayDurumu='reddedildi';
-      u.captainProfile.redSebep=u.captainProfile.redSebep||'Admin tarafından reddedildi.';
-      pushCaptainNotification(u.email,{title:'Kaptan başvurun reddedildi',body:u.captainProfile.redSebep,type:'warning'});
+  if(u){
+    const cp=u.captainData||u.captainProfile;
+    if(cp){
+      const onceki=cp.onayDurumu||cp.durum;
+      cp.onayDurumu=durum; cp.durum=durum;
+      if(durum==='aktif'){
+        u.durum='aktif';
+        if(!u.roles.includes('captain'))u.roles.push('captain');
+        cp.redSebep=null;
+        pushCaptainNotification(u.email,{title:'Kaptan başvurun onaylandi',body:'Artik kaptan paneline erisebilir ve tur acabilirsin.',type:'success'});
+      } else if((durum==='askida'||durum==='reddedildi')&&(onceki==='bekliyor'||onceki==='onay_bekliyor')){
+        u.durum='reddedildi';
+        cp.onayDurumu='reddedildi'; cp.durum='reddedildi';
+        cp.redSebep=cp.redSebep||'Admin tarafindan reddedildi.';
+        pushCaptainNotification(u.email,{title:'Kaptan basvurun reddedildi',body:cp.redSebep,type:'warning'});
+      }
+    } else if(durum==='aktif'){
+      u.durum='aktif';
     }
     uSaveUsers(users);
   }
   renderCaptains();
   showToast(c.ad+' '+c.soyad+' durumu guncellendi','info');
+}
+
+/* Tum roller icin onay / red fonksiyonlari */
+function approveUser(email, role){
+  const users=uGetUsers();
+  const u=users.find(x=>(x.email||'').toLowerCase()===email.toLowerCase());
+  if(!u){showToast('Kullanici bulunamadi','danger');return;}
+  u.durum='aktif';
+  if(!u.roles)u.roles=['customer'];
+  if(role&&role!=='customer'&&!u.roles.includes(role))u.roles.push(role);
+  if(role==='captain'){
+    uSaveUsers(users);
+    uBridgePendingCaptains();
+    const caps=loadCaptains();
+    const cap=caps.find(c=>(c.email||'').toLowerCase()===email.toLowerCase());
+    if(cap){setCaptainDurum(cap.id,'aktif');}else{
+      // Bridge sonrasi tekrar ara
+      const caps2=loadCaptains();
+      const cap2=caps2.find(c=>(c.email||'').toLowerCase()===email.toLowerCase());
+      if(cap2)setCaptainDurum(cap2.id,'aktif');
+    }
+    const cp=u.captainData||u.captainProfile;
+    if(cp){cp.onayDurumu='aktif';cp.durum='aktif';}
+  } else if(role==='vendor'){
+    if(u.vendorData){u.vendorData.durum='aktif';}
+  } else if(role==='shop_vendor'){
+    if(u.shopData){u.shopData.durum='aktif';}
+  }
+  uSaveUsers(users);
+  renderUsers(); renderDashboard();
+  showToast(email+' onaylandi','success');
+}
+
+function rejectPendingUser(email, role){
+  const users=uGetUsers();
+  const u=users.find(x=>(x.email||'').toLowerCase()===email.toLowerCase());
+  if(!u){showToast('Kullanici bulunamadi','danger');return;}
+  u.durum='reddedildi';
+  if(role==='captain'){
+    const cp=u.captainData||u.captainProfile;
+    if(cp){cp.onayDurumu='reddedildi';cp.durum='reddedildi';}
+    const caps=loadCaptains();
+    const cap=caps.find(c=>(c.email||'').toLowerCase()===email.toLowerCase());
+    if(cap){cap.durum='reddedildi';saveCaptains();}
+  } else if(role==='vendor'){
+    if(u.vendorData)u.vendorData.durum='reddedildi';
+  } else if(role==='shop_vendor'){
+    if(u.shopData)u.shopData.durum='reddedildi';
+  }
+  uSaveUsers(users);
+  renderUsers(); renderDashboard();
+  showToast(email+' reddedildi','info');
 }
 
 /* Bridge: db_users.captainProfile=bekliyor olan başvuruları db_captains'e yansıtır */
@@ -9963,16 +10099,28 @@ function uBridgePendingCaptains(){
   let changed=false;
   let nextId=caps.length?Math.max(...caps.map(c=>c.id||0)):0;
   users.forEach(u=>{
-    if(!u.captainProfile)return;
+    const cp=u.captainData||u.captainProfile;
+    if(!cp)return;
     if(byEmail.has(u.email))return; // zaten var
-    const cp=u.captainProfile;
     nextId++;
     const cRec={
       id:nextId, ad:u.ad, soyad:u.soyad, email:u.email, telefon:u.phone,
-      tc:cp.tc||'', tekne:cp.tekne||'', tekneTuru:cp.tekneTuru||'',
-      uzunluk:cp.uzunluk||0, kapasite:cp.kapasite||0, yil:cp.yil||'',
-      marka:cp.marka||'', bolge:cp.bolge||'', marina:cp.marina||'',
-      lisans:cp.lisans||'', lisansTarih:cp.lisansTarih||'',
+      tc:u.tcKimlik||cp.tc||'',
+      tekne:cp.tekne||'',
+      tekneTuru:cp.tekneTipi||cp.tekneTuru||'',
+      uzunluk:cp.uzunluk||0,
+      kapasite:cp.kapasite||0,
+      yil:cp.yil||'',
+      marka:cp.marka||'',
+      bolge:cp.liman||cp.bolge||'',
+      marina:cp.liman||cp.marina||'',
+      lisans:cp.lisans||'',
+      lisansTarih:cp.lisansTarih||'',
+      mmsi:cp.mmsi||'',
+      callSign:cp.callSign||'',
+      aisUydu:cp.aisUydu||false,
+      imoNo:cp.imoNo||'',
+      deneyimYil:cp.deneyimYil||0,
       ruhsat:cp.ruhsat||'', sigorta:cp.sigorta||'', not:cp.not||'',
       kategoriler:cp.kategoriler||[], durum:cp.onayDurumu||'bekliyor',
       tarih:cp.onayTarihi||new Date().toLocaleDateString('tr-TR')
