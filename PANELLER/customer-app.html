@@ -3895,7 +3895,8 @@ function sendMsg(){
   const inp=document.getElementById('chat-input');
   const text=inp.value.trim();
   if(!text||!curChatId)return;
-  const msgs=S.get('db_messages',{});
+  let msgs=S.get('db_messages',{});
+  if(Array.isArray(msgs))msgs={}; // yanlış format koruması
   if(!msgs[curChatId])msgs[curChatId]=[];
   msgs[curChatId].push({text,gonderen:'musteri',ts:Date.now(),okunduMusteri:true,okunduKaptan:false});
   S.set('db_messages',msgs);

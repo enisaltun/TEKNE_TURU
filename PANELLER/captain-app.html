@@ -3905,7 +3905,8 @@ function captainSendMsg(){
   const inp=document.getElementById('cap-chat-input');
   const text=inp?.value.trim();
   if(!text||!curCaptainChatId)return;
-  const msgs=S.get('db_messages',{});
+  let msgs=S.get('db_messages',{});
+  if(Array.isArray(msgs))msgs={}; // yanlış format koruması
   if(!msgs[curCaptainChatId])msgs[curCaptainChatId]=[];
   msgs[curCaptainChatId].push({text,gonderen:'kaptan',ts:Date.now(),okunduMusteri:false,okunduKaptan:true});
   S.set('db_messages',msgs);

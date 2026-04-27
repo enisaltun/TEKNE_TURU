@@ -5600,19 +5600,23 @@ async function runRealisticSimulation(cfg){
     const convCount=scenario==='kriz_tam'?35:18;
     const MSG_CAP=['Merhaba! Tur için sizi bekliyoruz.','Liman girişinden 15 dk önce buluşalım.','Ekipmanlarınızı hazır edin, keyifli bir gün olacak.','İyi günler! Sorunuz var mı?','Hava durumu iyi görünüyor, tur planlı şekilde devam edecek.'];
     const MSG_CUS=['Teşekkürler, bekliyoruz!','Ekstra kişi ekleyebilir miyiz?','Kalkış yeri tam olarak neresi?','İptal politikası nedir?','Çok heyecanlıyız, görüşürüz!'];
-    const msgs=[];
+    // db_messages: {bookingId: [{text,gonderen,ts,...},...]} formatında yazılmalı
+    const msgs={};
     for(let i=0;i<convCount;i++){
       const bk=_pick(bookings.filter(b=>b.durum!=='iptal')||bookings);
-      if(!bk) continue;
-      const convId=`conv-${_slug()}`;
+      if(!bk)continue;
+      if(!msgs[bk.id])msgs[bk.id]=[];
       const mCount=_rand(2,5);
       for(let j=0;j<mCount;j++){
         const fromCap=j%2===0;
-        msgs.push({id:`msg-${_slug()}`,conversationId:convId,bookingId:bk.id,tourId:bk.tourId,
-          from:fromCap?bk.captainEmail:bk.customerEmail,to:fromCap?bk.customerEmail:bk.captainEmail,
-          fromRole:fromCap?'captain':'customer',
+        msgs[bk.id].push({
+          id:`msg-${_slug()}`,
           text:fromCap?_pick(MSG_CAP):_pick(MSG_CUS),
-          read:Math.random()>0.35,createdAt:new Date(Date.now()-_rand(1,20)*86400000).toISOString()});
+          gonderen:fromCap?'kaptan':'musteri',
+          ts:Date.now()-_rand(1,20)*86400000,
+          okunduMusteri:fromCap?Math.random()>0.35:true,
+          okunduKaptan:fromCap?true:Math.random()>0.35
+        });
       }
     }
     localStorage.setItem('db_messages',JSON.stringify(msgs));
@@ -10719,7 +10723,14 @@ const RES_BADGE={
 let _activeMsgResId=null;
 
 function renderMessages(){
-  const rawMsgs=lsGet('db_messages',{});
+  let rawMsgs=lsGet('db_messages',{});
+  // Eski array formatını object formatına dönüştür (simülasyon uyumluluğu)
+  if(Array.isArray(rawMsgs)){
+    const obj={};
+    rawMsgs.forEach(m=>{const k=m.bookingId||m.conversationId||m.id;if(k){if(!obj[k])obj[k]=[];obj[k].push(m);}});
+    rawMsgs=obj;
+    lsSet('db_messages',rawMsgs); // tek seferlik düzeltme
+  }
   const bookings=lsGet('db_bookings',[]);
   const search=(document.getElementById('msg-search')?.value||'').toLowerCase();
   const filt=document.getElementById('msg-filter')?.value||'';
