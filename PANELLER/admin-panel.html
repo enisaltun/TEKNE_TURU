@@ -913,7 +913,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
         <div class="flex flex-wrap gap-3 items-center">
           <div class="relative">
             <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
-            <input type="text" id="res-search" placeholder="Müşteri, tur adı veya rez. no..." oninput="renderBookingsTable()" class="pl-8 pr-4 py-2 border rounded-lg text-sm w-64">
+            <input type="text" id="tb-res-search" placeholder="Müşteri, tur adı veya rez. no..." oninput="renderBookingsTable()" class="pl-8 pr-4 py-2 border rounded-lg text-sm w-64">
           </div>
           <div class="flex items-center gap-1">
             <input type="date" id="res-date-from" onchange="renderBookingsTable()" class="border rounded-lg px-3 py-2 text-sm">
@@ -6435,7 +6435,7 @@ function tbSetResFilter(f){
   renderBookingsTable();
 }
 function clearResFilters(){
-  ['res-search','res-date-from','res-date-to','res-filter-kaptan'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['tb-res-search','res-date-from','res-date-to','res-filter-kaptan'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   renderBookingsTable();
 }
 
@@ -6455,8 +6455,8 @@ function renderBookingsTable(){
     if(_tbResFilter==='iptal') rows=rows.filter(b=>b.durum==='iptal'||b.durum==='reddedildi');
     else rows=rows.filter(b=>b.durum===_tbResFilter);
   }
-  const q=(document.getElementById('res-search')?.value||'').toLowerCase();
-  if(q) rows=rows.filter(b=>[(b.customerName||''),(b.tourTitle||''),(b.id||'')].join(' ').toLowerCase().includes(q));
+  const q=(document.getElementById('tb-res-search')?.value||'').toLowerCase();
+  if(q) rows=rows.filter(b=>[(b.customerName||''),(b.tourTitle||''),(b.id||''),(b.captainName||'')].join(' ').toLowerCase().includes(q));
   const df=document.getElementById('res-date-from')?.value;
   const dt=document.getElementById('res-date-to')?.value;
   if(df) rows=rows.filter(b=>!b.tarih||b.tarih>=df);
@@ -10321,7 +10321,7 @@ function renderReservations(){
       if(h===Infinity||h<0||h>=fUrgency)return false;
     }
     if(search){
-      const hay=(b.id+b.customerName+b.tourTitle+b.captainName).toLowerCase();
+      const hay=[(b.id||''),(b.customerName||''),(b.tourTitle||''),(b.captainName||'')].join(' ').toLowerCase();
       if(!hay.includes(search))return false;
     }
     return true;
