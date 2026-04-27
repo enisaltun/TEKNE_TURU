@@ -1193,7 +1193,7 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
       <div class="card p-3.5 flex items-center gap-3 card-hover text-danger" onclick="doLogout()"><i class="fas fa-sign-out-alt w-6 text-center"></i><span class="text-sm font-medium flex-1">Cikis Yap</span></div>
     </div>
     <div class="text-center text-[10px] text-gray-400 mt-6">
-      <span id="cu-ver-tap" onclick="_devTap('cu')" style="cursor:default;user-select:none">DenizBul v1.0.0</span>
+      <span>DenizBul v1.0.0</span>
     </div>
   </div>
 </section>
@@ -4202,21 +4202,6 @@ function clearAll(){
 }
 
 
-/* ── GİZLİ GELİŞTİRİCİ MODU (5-dokunuş kalıbı — Spotify/Android pattern) ── */
-(function(){
-  let _tapCount=0, _tapTimer=null;
-  window._devTap=function(src){
-    _tapCount++;
-    clearTimeout(_tapTimer);
-    _tapTimer=setTimeout(()=>{_tapCount=0;},1800);
-    if(_tapCount>=5){
-      _tapCount=0;clearTimeout(_tapTimer);
-      const m=document.getElementById('_dev-modal');
-      if(m) m.style.display='flex';
-    }
-  };
-})();
-
 /* ── KVKK MODAL ── */
 function cuCheckboxChange(e){
   var cb=e.target;
@@ -4336,19 +4321,6 @@ function cuAcceptKvkk(){
   </div>
 </div>
 
-<!-- DEV MODAL — görünmez, sadece 5-dokunuş ile açılır -->
-<div id="_dev-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
-  <div style="background:#1e293b;border-radius:20px;padding:24px 20px;width:280px;text-align:center">
-    <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Geliştirici Modu</div>
-    <div style="font-size:18px;margin-bottom:20px">🔧</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <a href="../PANELLER/admin-panel.html" target="_blank" style="background:#7c3aed;color:#fff;padding:11px;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none">Admin Panel</a>
-      <a href="../PANELLER/captain-app.html" target="_blank" style="background:#0284c7;color:#fff;padding:11px;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none">Kaptan Uygulaması</a>
-      <button onclick="document.getElementById('_dev-modal').style.display='none';clearAll()" style="background:#ef4444;color:#fff;padding:11px;border-radius:12px;font-size:13px;font-weight:700;border:none;cursor:pointer">Veriyi Temizle</button>
-    </div>
-    <button onclick="document.getElementById('_dev-modal').style.display='none'" style="margin-top:14px;background:transparent;border:1px solid #475569;color:#94a3b8;padding:8px 20px;border-radius:10px;font-size:12px;cursor:pointer">Kapat</button>
-  </div>
-</div>
 
 </body>
 </html>

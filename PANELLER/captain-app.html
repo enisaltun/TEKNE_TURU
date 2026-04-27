@@ -1312,7 +1312,7 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
     </div>
     <!-- App Version -->
     <div class="text-center text-[10px] text-gray-400 pb-4">
-      <span id="cp-ver-tap" onclick="_devTap('cp')" style="cursor:default;user-select:none">DenizBul Kaptan v1.0.0</span>
+      DenizBul Kaptan v1.0.0
     </div>
   </div>
 </section>
@@ -1638,7 +1638,7 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
         </div>
       </div>
     </div>
-    <div class="text-center text-[10px] text-gray-400"><span onclick="_devTap('cp')" style="cursor:default;user-select:none">DenizBul Kaptan v1.0.0</span></div>
+    <div class="text-center text-[10px] text-gray-400">DenizBul Kaptan v1.0.0</div>
   </div>
 </section>
 
@@ -4427,32 +4427,5 @@ function clearNotifications(){
   </div>
 </div>
 
-<!-- DEV MODAL — görünmez, sadece 5-dokunuş ile açılır -->
-<div id="_dev-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
-  <div style="background:#1e293b;border-radius:20px;padding:24px 20px;width:280px;text-align:center">
-    <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Geliştirici Modu</div>
-    <div style="font-size:18px;margin-bottom:20px">🔧</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <a href="admin-panel.html" target="_blank" style="background:#7c3aed;color:#fff;padding:11px;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none">Admin Panel</a>
-      <a href="../PANELLER/customer-app.html" target="_blank" style="background:#0369a1;color:#fff;padding:11px;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none">Müşteri Uygulaması</a>
-    </div>
-    <button onclick="document.getElementById('_dev-modal').style.display='none'" style="margin-top:14px;background:transparent;border:1px solid #475569;color:#94a3b8;padding:8px 20px;border-radius:10px;font-size:12px;cursor:pointer">Kapat</button>
-  </div>
-</div>
-<script>
-(function(){
-  let _tapCount=0,_tapTimer=null;
-  window._devTap=function(){
-    _tapCount++;
-    clearTimeout(_tapTimer);
-    _tapTimer=setTimeout(()=>{_tapCount=0;},1800);
-    if(_tapCount>=5){
-      _tapCount=0;clearTimeout(_tapTimer);
-      const m=document.getElementById('_dev-modal');
-      if(m) m.style.display='flex';
-    }
-  };
-})();
-</script>
 </body>
 </html>
