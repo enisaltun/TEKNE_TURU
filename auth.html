@@ -211,7 +211,7 @@ input.error,select.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,6
       </label>
       <div class="err-msg" id="rm-terms-err">Devam etmek için koşulları kabul etmelisiniz.</div>
       <label class="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
-        <input type="checkbox" id="rm-kvkk" class="!w-auto mt-0.5 accent-primary" onclick="authKvkkClick(event,'rm-kvkk')">
+        <input type="checkbox" id="rm-kvkk" class="!w-auto mt-0.5 accent-primary" onchange="authKvkkChange(event,'rm-kvkk')">
         <span><b>KVKK Aydınlatma Metni</b>'ni okudum, anladım ve kabul ediyorum.
           <button type="button" onclick="openKvkkModal('rm-kvkk')" class="text-primary underline font-medium hover:text-blue-800 ml-1">Metni Oku →</button>
         </span>
@@ -373,7 +373,7 @@ input.error,select.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,6
       </label>
       <div class="err-msg" id="rk-terms-err">Devam etmek için koşulları kabul etmelisiniz.</div>
       <label class="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
-        <input type="checkbox" id="rk-kvkk" class="!w-auto mt-0.5 accent-primary" onclick="authKvkkClick(event,'rk-kvkk')">
+        <input type="checkbox" id="rk-kvkk" class="!w-auto mt-0.5 accent-primary" onchange="authKvkkChange(event,'rk-kvkk')">
         <span><b>KVKK Aydınlatma Metni</b>'ni okudum, anladım ve kabul ediyorum.
           <button type="button" onclick="openKvkkModal('rk-kvkk')" class="text-primary underline font-medium hover:text-blue-800 ml-1">Metni Oku →</button>
         </span>
@@ -483,7 +483,7 @@ input.error,select.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,6
       </label>
       <div class="err-msg" id="rs-terms-err">Devam etmek için koşulları kabul etmelisiniz.</div>
       <label class="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
-        <input type="checkbox" id="rs-kvkk" class="!w-auto mt-0.5 accent-primary" onclick="authKvkkClick(event,'rs-kvkk')">
+        <input type="checkbox" id="rs-kvkk" class="!w-auto mt-0.5 accent-primary" onchange="authKvkkChange(event,'rs-kvkk')">
         <span><b>KVKK Aydınlatma Metni</b>'ni okudum, anladım ve kabul ediyorum.
           <button type="button" onclick="openKvkkModal('rs-kvkk')" class="text-primary underline font-medium hover:text-blue-800 ml-1">Metni Oku →</button>
         </span>
@@ -716,11 +716,12 @@ function checkStrength(val,suffix){
 /* ── KVKK MODAL ── */
 let _kvkkTarget=null;
 
-function authKvkkClick(e,checkboxId){
-  e.preventDefault(); // doğrudan işaretlemeyi engelle
-  const cb=document.getElementById(checkboxId);
-  if(cb&&cb.checked)return; // zaten onaylıysa tekrar açma
-  openKvkkModal(checkboxId);
+function authKvkkChange(e,checkboxId){
+  const cb=e.target;
+  if(cb.checked){
+    cb.checked=false; // geri al — sadece modal onayı işaretleyebilir
+    openKvkkModal(checkboxId);
+  }
 }
 
 function openKvkkModal(checkboxId){
