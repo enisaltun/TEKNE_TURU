@@ -214,80 +214,238 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
         </div>
       </div>
 
-      <!-- ADIM 3: Rol Özel Bilgiler (Kaptan/Satici/Magaza) -->
+      <!-- ADIM 3: Rol Özel Bilgiler -->
       <div id="reg-step-3" style="display:none">
 
-        <!-- Kaptan -->
-        <div id="reg-fields-captain">
-          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#ecfeff;border-radius:12px;border:1px solid #a5f3fc;margin-bottom:12px">
+        <!-- MÜŞTERİ -->
+        <div id="reg-fields-customer" style="display:none">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#eff6ff;border-radius:12px;border:1px solid #bfdbfe;margin-bottom:10px">
+            <i class="fas fa-star" style="color:#2563eb;font-size:12px"></i>
+            <span style="font-size:11px;font-weight:700;color:#1d4ed8">Sizi Tanıyalım</span>
+            <span style="margin-left:auto;font-size:9px;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:20px;padding:2px 8px;font-weight:600">Tüm alanlar opsiyonel</span>
+          </div>
+          <div style="margin-bottom:10px">
+            <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">ŞEHİR / KONUM</label>
+            <select id="reg-cu-sehir" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
+              <option value="">Seçiniz...</option>
+              <option>Antalya</option><option>İstanbul</option><option>İzmir</option><option>Bodrum</option>
+              <option>Fethiye</option><option>Marmaris</option><option>Kaş</option><option>Kemer</option>
+              <option>Alanya</option><option>Side</option><option>Çeşme</option><option>Diğer</option>
+            </select>
+          </div>
+          <div style="margin-bottom:12px">
+            <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:6px">TUR TERCİHLERİ <span style="font-weight:400;color:#94a3b8">(birden fazla seçilebilir)</span></label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+              <label style="display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:11px;color:#374151"><input type="checkbox" class="reg-cu-tercih" value="Balik Avi" style="accent-color:#0369a1"> Balık Avı</label>
+              <label style="display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:11px;color:#374151"><input type="checkbox" class="reg-cu-tercih" value="Gun Batimi" style="accent-color:#0369a1"> Gün Batımı</label>
+              <label style="display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:11px;color:#374151"><input type="checkbox" class="reg-cu-tercih" value="Dalis" style="accent-color:#0369a1"> Dalış / Snorkel</label>
+              <label style="display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:11px;color:#374151"><input type="checkbox" class="reg-cu-tercih" value="Tekne Gezisi" style="accent-color:#0369a1"> Tekne Gezisi</label>
+              <label style="display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:11px;color:#374151"><input type="checkbox" class="reg-cu-tercih" value="Aile Turu" style="accent-color:#0369a1"> Aile Turu</label>
+              <label style="display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:11px;color:#374151"><input type="checkbox" class="reg-cu-tercih" value="Macera" style="accent-color:#0369a1"> Macera & Spor</label>
+            </div>
+          </div>
+          <div style="margin-bottom:12px">
+            <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:6px">GENELLIKLE KAÇ KİŞİYLE SEYAHAT EDERSİNİZ?</label>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+              <label style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;color:#64748b"><input type="radio" name="reg-cu-grup" value="Yalniz" style="accent-color:#0369a1">Yalnız</label>
+              <label style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;color:#64748b"><input type="radio" name="reg-cu-grup" value="2 Kisi" style="accent-color:#0369a1">2 Kişi</label>
+              <label style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;color:#64748b"><input type="radio" name="reg-cu-grup" value="3-5 Kisi" style="accent-color:#0369a1">3–5 Kişi</label>
+              <label style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;color:#64748b"><input type="radio" name="reg-cu-grup" value="6+ Kisi" style="accent-color:#0369a1">6+ Kişi</label>
+            </div>
+          </div>
+          <div style="margin-bottom:4px">
+            <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">BİZİ NEREDEN DUYDUNUZ?</label>
+            <select id="reg-cu-kaynak" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
+              <option value="">Seçiniz...</option>
+              <option>Arkadaş önerisi</option><option>Google</option><option>Instagram</option>
+              <option>TikTok</option><option>Facebook</option><option>Uygulama Mağazası</option><option>Diğer</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- KAPTAN -->
+        <div id="reg-fields-captain" style="display:none">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#ecfeff;border-radius:12px;border:1px solid #a5f3fc;margin-bottom:10px">
             <i class="fas fa-anchor" style="color:#0891b2;font-size:12px"></i>
-            <span style="font-size:11px;font-weight:700;color:#0e7490">Tekne ve Lisans Bilgileri</span>
+            <span style="font-size:11px;font-weight:700;color:#0e7490">Tekne & Lisans Bilgileri</span>
             <span style="margin-left:auto;font-size:9px;background:#fefce8;color:#854d0e;border:1px solid #fde68a;border-radius:20px;padding:2px 8px;font-weight:600">Admin onayı gerektirir</span>
           </div>
-          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">TEKNE ADI *</label><input id="reg-tekne-adi" type="text" placeholder="Örn: Deniz Yildizi"></div>
+          <div style="display:flex;gap:8px;padding:9px 11px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;margin-bottom:10px;font-size:10px;color:#92400e">
+            <i class="fas fa-info-circle" style="margin-top:1px;flex-shrink:0"></i>
+            <span>MMSI, Call Sign ve AIS bilgileri <strong>güvenlik doğrulaması</strong> için zorunludur.</span>
+          </div>
+          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">TEKNE ADI *</label><input id="reg-tekne-adi" type="text" placeholder="Örn: Mavi Rüzgar"><div id="err-tekne-adi" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">Tekne adı giriniz.</div></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">TEKNE TİPİ</label>
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">TEKNE TİPİ *</label>
               <select id="reg-tekne-tipi" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
-                <option>Gulet</option><option>Yelkenli</option><option>Motor Yat</option><option>Katamaran</option><option>Speedboat</option>
+                <option value="">Seçin...</option><option>Motor Tekne</option><option>Yelkenli</option>
+                <option>Gulet</option><option>Katamaran</option><option>RIB / Şişme Bot</option><option>Diğer</option>
               </select>
+              <div id="err-tekne-tipi" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">Tekne tipi seçiniz.</div>
             </div>
-            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">KAPASİTE *</label><input id="reg-kapasite" type="number" min="1" max="100" placeholder="12"></div>
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">KAPASİTE * <span style="font-weight:400;color:#94a3b8">(kişi)</span></label>
+              <input id="reg-kapasite" type="number" min="1" max="200" placeholder="12">
+              <div id="err-kapasite" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">Kapasite giriniz.</div>
+            </div>
+          </div>
+          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">BAĞLI LIMAN / MARİNA *</label>
+            <select id="reg-kaptan-liman" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
+              <option value="">Seçin...</option><option>Antalya Yat Limanı</option><option>İstanbul Kalamış Marina</option>
+              <option>Bodrum Milta Marina</option><option>Fethiye Marina</option><option>Marmaris Yat Limanı</option>
+              <option>Kaş Marina</option><option>Kemer Marina</option><option>Çeşme Marina</option>
+              <option>İzmir Alsancak Limanı</option><option>Alanya Marina</option><option>Side Marina</option><option>Diğer</option>
+            </select>
+            <div id="err-kaptan-liman" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">Liman / marina seçiniz.</div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">LİSANS NO *</label><input id="reg-lisans-no" type="text" placeholder="A1-2024-XXXX"></div>
-            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">LİSANS TİPİ</label>
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">LİSANS NO *</label>
+              <input id="reg-lisans-no" type="text" placeholder="A1-2024-XXXX">
+              <div id="err-lisans-no" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">Lisans no giriniz.</div>
+            </div>
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">LİSANS TİPİ *</label>
               <select id="reg-lisans-tipi" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
-                <option value="A1">A1 — 12m altı</option><option value="A2">A2 — 18m altı</option><option value="B1">B1 — Açik deniz</option>
+                <option value="">Seçin...</option><option value="A1">A1 — 12m altı</option>
+                <option value="A2">A2 — 18m altı</option><option value="B1">B1 — Açık deniz</option><option value="SY">SY — Sportif yat</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">MMSI NO * <span style="font-weight:400;color:#94a3b8">9 hane</span></label>
+              <input id="reg-mmsi" type="text" maxlength="9" inputmode="numeric" placeholder="271XXXXXX" oninput="this.value=this.value.replace(/\D/g,'').slice(0,9)">
+              <div id="err-mmsi" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">9 haneli MMSI giriniz.</div>
+            </div>
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">CALL SIGN * <span style="font-weight:400;color:#94a3b8">3-7 kar.</span></label>
+              <input id="reg-callsign" type="text" maxlength="7" placeholder="TA1234" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,7)">
+              <div id="err-callsign" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">Call sign giriniz (3-7 karakter).</div>
+            </div>
+          </div>
+          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">AIS TRANSPONDER SINIFI *</label>
+            <select id="reg-ais" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
+              <option value="">Seçin...</option>
+              <option value="A">Class A — Ticari / büyük tekneler (SOLAS)</option>
+              <option value="B">Class B — Gezi / küçük tekneler</option>
+              <option value="B+">Class B+ — Gelişmiş küçük tekne</option>
+            </select>
+            <div id="err-ais" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">AIS sınıfı seçiniz.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">IMO NO <span style="font-weight:400;color:#94a3b8">(opsiyonel)</span></label>
+              <input id="reg-imo" type="text" maxlength="7" inputmode="numeric" placeholder="1234567" oninput="this.value=this.value.replace(/\D/g,'').slice(0,7)">
+            </div>
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">DENİZCİLİK DENEYİMİ</label>
+              <select id="reg-deneyim" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
+                <option value="">Seçin...</option><option>1–3 yıl</option><option>3–5 yıl</option><option>5–10 yıl</option><option>10+ yıl</option>
               </select>
             </div>
           </div>
         </div>
 
-        <!-- Seyyar Satıcı -->
+        <!-- SATICI -->
         <div id="reg-fields-vendor" style="display:none">
-          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#fff7ed;border-radius:12px;border:1px solid #fed7aa;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#fff7ed;border-radius:12px;border:1px solid #fed7aa;margin-bottom:10px">
             <i class="fas fa-cart-shopping" style="color:#ea580c;font-size:12px"></i>
-            <span style="font-size:11px;font-weight:700;color:#c2410c">Satici Profil Bilgileri</span>
+            <span style="font-size:11px;font-weight:700;color:#c2410c">Sahil Satış Profili</span>
             <span style="margin-left:auto;font-size:9px;background:#fefce8;color:#854d0e;border:1px solid #fde68a;border-radius:20px;padding:2px 8px;font-weight:600">Admin onayı gerektirir</span>
           </div>
           <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">ÜRÜN KATEGORİSİ *</label>
             <select id="reg-vendor-kategori" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
-              <option>Olta Takimlari</option><option>Yemler</option><option>Aksesuar</option><option>Hazir Paketler</option>
+              <option value="">Seçin...</option><option>Olta & Makara</option><option>Yemler</option>
+              <option>Tekne Aksesuarı</option><option>Giyim & Ekipman</option><option>Hazır Paketler</option><option>Diğer</option>
             </select>
+            <div id="err-vendor-kategori" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">Kategori seçiniz.</div>
           </div>
-          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">TERCİH EDİLEN SAHİL</label>
+          <div style="margin-bottom:12px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">TERCİH EDİLEN SAHİL / BÖLGE *</label>
             <select id="reg-vendor-sahil" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
-              <option>Konyaalti Sahili</option><option>Lara Plaji</option><option>Kemer Merkez Iskelesi</option><option>Olympos Koyu</option><option>Phaselis Koyu</option>
+              <option value="">Seçin...</option><option>Antalya Konyaaltı</option><option>Antalya Lara</option>
+              <option>Kemer Merkez</option><option>Olympos Koyu</option><option>Phaselis Koyu</option>
+              <option>Bodrum Gümbet</option><option>Bodrum Merkez</option><option>Marmaris Merkez</option>
+              <option>Fethiye Çalış</option><option>Kaş Merkez</option><option>Diğer</option>
             </select>
+            <div id="err-vendor-sahil" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">Sahil / bölge seçiniz.</div>
+          </div>
+          <div style="margin-bottom:12px">
+            <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:6px">SATIŞ GÜNLERİ * <span style="font-weight:400;color:#94a3b8">(en az 1 seçin)</span></label>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">
+              <label style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:10px;font-weight:600;color:#64748b"><input type="checkbox" class="reg-vendor-gun" value="Pzt" style="accent-color:#ea580c">Pzt</label>
+              <label style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:10px;font-weight:600;color:#64748b"><input type="checkbox" class="reg-vendor-gun" value="Sal" style="accent-color:#ea580c">Sal</label>
+              <label style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:10px;font-weight:600;color:#64748b"><input type="checkbox" class="reg-vendor-gun" value="Car" style="accent-color:#ea580c">Çar</label>
+              <label style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:10px;font-weight:600;color:#64748b"><input type="checkbox" class="reg-vendor-gun" value="Per" style="accent-color:#ea580c">Per</label>
+              <label style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:10px;font-weight:600;color:#64748b"><input type="checkbox" class="reg-vendor-gun" value="Cum" style="accent-color:#ea580c">Cum</label>
+              <label style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:10px;font-weight:600;color:#64748b"><input type="checkbox" class="reg-vendor-gun" value="Cmt" style="accent-color:#ea580c">Cmt</label>
+              <label style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:10px;font-weight:600;color:#64748b"><input type="checkbox" class="reg-vendor-gun" value="Paz" style="accent-color:#ea580c">Paz</label>
+            </div>
+            <div id="err-vendor-gun" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">En az bir satış günü seçiniz.</div>
+          </div>
+          <div style="margin-bottom:4px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">KISA ÜRÜN TANITIMI <span style="font-weight:400;color:#94a3b8">(opsiyonel, max 200 karakter)</span></label>
+            <textarea id="reg-vendor-tanitim" maxlength="200" rows="3" placeholder="Sattığınız ürünleri kısaca tanıtın..." style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff;resize:none;font-family:inherit"></textarea>
           </div>
         </div>
 
-        <!-- Mağaza -->
+        <!-- MAĞAZA -->
         <div id="reg-fields-shop" style="display:none">
-          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f5f3ff;border-radius:12px;border:1px solid #ddd6fe;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f5f3ff;border-radius:12px;border:1px solid #ddd6fe;margin-bottom:10px">
             <i class="fas fa-store" style="color:#7c3aed;font-size:12px"></i>
-            <span style="font-size:11px;font-weight:700;color:#6d28d9">Magaza Bilgileri</span>
+            <span style="font-size:11px;font-weight:700;color:#6d28d9">İşletme Bilgileri</span>
             <span style="margin-left:auto;font-size:9px;background:#fefce8;color:#854d0e;border:1px solid #fde68a;border-radius:20px;padding:2px 8px;font-weight:600">Admin onayı gerektirir</span>
           </div>
-          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">MAGAZA ADI *</label><input id="reg-shop-adi" type="text" placeholder="Örn: Balikci Dukkani"></div>
-          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">KATEGORİ</label>
-            <select id="reg-shop-kategori" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
-              <option>Malzeme ve Ekipman</option><option>Giyim</option><option>Gida</option><option>Diger</option>
-            </select>
+          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">MAĞAZA / İŞLETME ADI *</label>
+            <input id="reg-shop-adi" type="text" placeholder="Örn: Deniz Ekipmanları A.Ş.">
+            <div id="err-shop-adi" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">İşletme adı giriniz.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">VERGİ NO * <span style="font-weight:400;color:#94a3b8">10 hane</span></label>
+              <input id="reg-shop-vergino" type="text" maxlength="10" inputmode="numeric" placeholder="1234567890" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
+              <div id="err-shop-vergino" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">10 haneli vergi no giriniz.</div>
+            </div>
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">VERGİ DAİRESİ *</label>
+              <input id="reg-shop-vergidairesi" type="text" placeholder="Örn: Antalya VD">
+              <div id="err-shop-vergidairesi" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">Vergi dairesi giriniz.</div>
+            </div>
+          </div>
+          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">İŞLETME ADRESİ *</label>
+            <input id="reg-shop-adres" type="text" placeholder="Mahalle, sokak, bina no...">
+            <div id="err-shop-adres" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">Adres giriniz.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">İL *</label>
+              <select id="reg-shop-il" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
+                <option value="">Seçin...</option><option>Antalya</option><option>İstanbul</option><option>İzmir</option>
+                <option>Muğla</option><option>Mersin</option><option>Adana</option><option>Balıkesir</option>
+                <option>Çanakkale</option><option>Sinop</option><option>Trabzon</option><option>Diğer</option>
+              </select>
+              <div id="err-shop-il" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">İl seçiniz.</div>
+            </div>
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">KATEGORİ *</label>
+              <select id="reg-shop-kategori" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;background:#fff">
+                <option value="">Seçin...</option><option>Balıkçı Dükkanı</option><option>Deniz Ekipmanları</option>
+                <option>Tekne Malzemeleri</option><option>Giyim & Aksesuar</option><option>Diğer</option>
+              </select>
+              <div id="err-shop-kategori" style="display:none;font-size:10px;color:#ef4444;margin-top:3px">Kategori seçiniz.</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">WEB SİTESİ <span style="font-weight:400;color:#94a3b8">(opsiyonel)</span></label>
+              <input id="reg-shop-website" type="text" placeholder="www.magaza.com">
+            </div>
+            <div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">TİCARET SİCİL <span style="font-weight:400;color:#94a3b8">(opsiyonel)</span></label>
+              <input id="reg-shop-ticaret" type="text" placeholder="Sicil numarası">
+            </div>
           </div>
         </div>
 
-        <div id="reg-step3-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;font-size:12px;color:#ef4444;margin-bottom:10px">
+        <!-- Paylaşılan hata + aksiyon butonları -->
+        <div id="reg-step3-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;font-size:12px;color:#ef4444;margin-top:10px;margin-bottom:8px">
           <i class="fas fa-exclamation-circle" style="margin-right:6px"></i><span id="reg-step3-error-msg"></span>
         </div>
-        <div style="display:flex;gap:8px">
-          <button onclick="regPrevStep()"
-            style="padding:13px 16px;border-radius:14px;font-weight:600;font-size:13px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;color:#64748b">
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button onclick="regPrevStep()" style="padding:13px 16px;border-radius:14px;font-weight:600;font-size:13px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;color:#64748b">
             <i class="fas fa-arrow-left" style="font-size:10px"></i>
           </button>
-          <button onclick="doRegister()" id="reg-submit-btn"
-            style="flex:1;background:#0369a1;color:#fff;padding:13px;border-radius:14px;font-weight:700;font-size:13px;border:none;cursor:pointer">
-            Basvuruyu Gönder
+          <button id="reg-step3-skip" onclick="doRegister()" style="display:none;padding:13px 18px;border-radius:14px;font-weight:600;font-size:13px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;color:#64748b">
+            Atla
+          </button>
+          <button onclick="doRegister()" id="reg-submit-btn" style="flex:1;background:#0369a1;color:#fff;padding:13px;border-radius:14px;font-weight:700;font-size:13px;border:none;cursor:pointer">
+            Başvuruyu Gönder
           </button>
         </div>
       </div>
@@ -1595,19 +1753,25 @@ function regShowStep(step){
 
   // show correct step-3 panel
   if(step===3){
-    ['reg-fields-captain','reg-fields-vendor','reg-fields-shop'].forEach(function(id){
+    ['reg-fields-customer','reg-fields-captain','reg-fields-vendor','reg-fields-shop'].forEach(function(id){
       const el=document.getElementById(id);
       if(el) el.style.display='none';
     });
-    const panelMap={captain:'reg-fields-captain',vendor:'reg-fields-vendor',shop_vendor:'reg-fields-shop'};
+    const panelMap={customer:'reg-fields-customer',captain:'reg-fields-captain',vendor:'reg-fields-vendor',shop_vendor:'reg-fields-shop'};
     const panel=document.getElementById(panelMap[_regType]);
     if(panel) panel.style.display='block';
+    // Atla button: only for customer (their step-3 fields are optional preferences)
+    const skipBtn=document.getElementById('reg-step3-skip');
+    if(skipBtn) skipBtn.style.display=_regType==='customer'?'block':'none';
+    // submit button label
+    const submitBtn=document.getElementById('reg-submit-btn');
+    if(submitBtn) submitBtn.textContent=_regType==='customer'?'Kayit Ol →':'Basvuruyu Gonder';
   }
 
-  // update step-2 next button label
+  // update step-2 next button label — always "Ileri" now (all roles go to step 3)
   if(step===2){
     const lbl2=document.getElementById('reg-next2-lbl');
-    if(lbl2) lbl2.textContent=_regType==='customer'?'Kayit Ol':'Ileri';
+    if(lbl2) lbl2.textContent='Ileri';
   }
 }
 
@@ -1633,7 +1797,6 @@ function regNextStep(){
     const kvkkErrEl=document.getElementById('reg-kvkk-err');
     if(!kvkkEl||!kvkkEl.checked){if(kvkkErrEl)kvkkErrEl.style.display='block';return;}
     if(kvkkErrEl)kvkkErrEl.style.display='none';
-    if(_regType==='customer'){doRegister();return;}
     _regStep=3;
     regShowStep(3);
     return;
@@ -1656,23 +1819,24 @@ function doRegister(){
   if(!name||!email||!pass){showAuthErr('reg','Lutfen tum zorunlu alanlari doldurun.');return;}
   if(U.find(email)){showAuthErr('reg','Bu e-posta zaten kayitli. Giris yapin.');return;}
 
-  // validate step-3 fields for non-customer
+  function _val(id){const el=document.getElementById(id);return el?(el.value||'').trim():'';}
+
+  // validate step-3 fields
+  const step3Err=document.getElementById('reg-step3-error');
+  const step3Msg=document.getElementById('reg-step3-error-msg');
+  function _step3Err(msg){if(step3Err&&step3Msg){step3Msg.textContent=msg;step3Err.style.display='block';}return false;}
+
   if(_regType==='captain'){
-    const tekne=(document.getElementById('reg-tekne-adi')||{value:''}).value.trim();
-    const lisans=(document.getElementById('reg-lisans-no')||{value:''}).value.trim();
-    if(!tekne){
-      const errEl=document.getElementById('reg-step3-error');
-      const msgEl=document.getElementById('reg-step3-error-msg');
-      if(errEl&&msgEl){msgEl.textContent='Tekne adi gerekli.';errEl.style.display='block';}
-      return;
-    }
-    if(!lisans){
-      const errEl=document.getElementById('reg-step3-error');
-      const msgEl=document.getElementById('reg-step3-error-msg');
-      if(errEl&&msgEl){msgEl.textContent='Kaptan lisans numarasi gerekli.';errEl.style.display='block';}
-      return;
-    }
+    if(!_val('reg-tekne-adi'))return _step3Err('Tekne adi gerekli.');
+    if(!_val('reg-lisans-no'))return _step3Err('Kaptan lisans numarasi gerekli.');
+  } else if(_regType==='vendor'){
+    const gunler=Array.from(document.querySelectorAll('.reg-vendor-gun:checked')).map(function(cb){return cb.value;});
+    if(gunler.length===0)return _step3Err('En az bir satis gunu secin.');
+  } else if(_regType==='shop_vendor'){
+    if(!_val('reg-shop-adi'))return _step3Err('Magaza adi gerekli.');
+    if(!_val('reg-vergi-no'))return _step3Err('Vergi numarasi gerekli.');
   }
+  if(step3Err) step3Err.style.display='none';
 
   const parts=name.split(/\s+/);
   const isCustomer=_regType==='customer';
@@ -1689,26 +1853,50 @@ function doRegister(){
     kvkkOnayi:true,kvkkOnayTarihi:new Date().toISOString(),
   };
 
-  if(_regType==='captain'){
+  if(_regType==='customer'){
+    const tercihler=Array.from(document.querySelectorAll('.reg-cu-tercih:checked')).map(function(cb){return cb.value;});
+    const grupRadio=document.querySelector('input[name="reg-cu-grup"]:checked');
+    newUser.customerData={
+      sehir:_val('reg-cu-sehir'),
+      turTercihleri:tercihler,
+      grupBuyuklugu:grupRadio?grupRadio.value:'1-2',
+      nasılDuyduk:_val('reg-cu-kaynak'),
+    };
+  } else if(_regType==='captain'){
     newUser.captainData={
-      tekne:(document.getElementById('reg-tekne-adi')||{value:''}).value.trim(),
-      tekneTipi:(document.getElementById('reg-tekne-tipi')||{value:''}).value||'Motor Yat',
-      kapasite:parseInt((document.getElementById('reg-kapasite')||{value:'8'}).value)||8,
-      lisans:(document.getElementById('reg-lisans-no')||{value:''}).value.trim(),
-      lisansTipi:(document.getElementById('reg-lisans-tipi')||{value:''}).value||'A1',
+      tekne:_val('reg-tekne-adi'),
+      tekneTipi:_val('reg-tekne-tipi')||'Motor Yat',
+      kapasite:parseInt(_val('reg-kapasite'))||8,
+      liman:_val('reg-kaptan-liman'),
+      lisans:_val('reg-lisans-no'),
+      lisansTipi:_val('reg-lisans-tipi')||'A1',
+      mmsi:_val('reg-mmsi'),
+      callSign:_val('reg-callsign'),
+      aisUydu:document.getElementById('reg-ais')&&document.getElementById('reg-ais').checked,
+      imoNo:_val('reg-imo'),
+      deneyimYil:parseInt(_val('reg-deneyim'))||0,
       durum:'onay_bekliyor',
     };
   } else if(_regType==='vendor'){
+    const gunler=Array.from(document.querySelectorAll('.reg-vendor-gun:checked')).map(function(cb){return cb.value;});
     newUser.vendorData={
-      kategori:(document.getElementById('reg-vendor-kategori')||{value:''}).value||'Olta Takimlari',
-      sahil:(document.getElementById('reg-vendor-sahil')||{value:''}).value||'',
+      kategori:_val('reg-vendor-kategori')||'Olta Takimlari',
+      sahil:_val('reg-vendor-sahil'),
+      satisGunleri:gunler,
+      tanitim:_val('reg-vendor-tanitim'),
       rozet:'new',
       durum:'onay_bekliyor',
     };
   } else if(_regType==='shop_vendor'){
     newUser.shopData={
-      magazaAdi:(document.getElementById('reg-shop-adi')||{value:''}).value.trim(),
-      kategori:(document.getElementById('reg-shop-kategori')||{value:''}).value||'Malzeme ve Ekipman',
+      magazaAdi:_val('reg-shop-adi'),
+      vergiNo:_val('reg-vergi-no'),
+      vergiDairesi:_val('reg-vergi-dairesi'),
+      adres:_val('reg-shop-adres'),
+      il:_val('reg-shop-il'),
+      kategori:_val('reg-shop-kategori')||'Malzeme ve Ekipman',
+      webSitesi:_val('reg-shop-web'),
+      ticaretSicil:_val('reg-shop-sicil'),
       durum:'onay_bekliyor',
     };
   }
