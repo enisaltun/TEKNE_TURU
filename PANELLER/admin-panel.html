@@ -63,6 +63,41 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
 </head>
 <body>
 
+<!-- ===== ADMIN LOGIN OVERLAY ===== -->
+<div id="admin-login-overlay" style="position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#fff;border-radius:24px;padding:36px 32px;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(0,0,0,.5)">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="width:60px;height:60px;background:#0369a1;border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+        <i class="fas fa-ship" style="color:#fff;font-size:24px"></i>
+      </div>
+      <div style="font-size:22px;font-weight:800;color:#0f172a">DenizBul Admin</div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:4px">Platform Yönetim Paneli</div>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:5px">KULLANICI ADI / E-POSTA</label>
+      <input id="admin-login-email" type="text" placeholder="admin@denizbul.tr"
+        style="width:100%;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px;outline:none;transition:border .2s;font-family:Inter,sans-serif"
+        onkeydown="if(event.key==='Enter')document.getElementById('admin-login-pass').focus()">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:5px">ŞİFRE</label>
+      <input id="admin-login-pass" type="password" placeholder="••••••••"
+        style="width:100%;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px;outline:none;transition:border .2s;font-family:Inter,sans-serif"
+        onkeydown="if(event.key==='Enter')doAdminLogin()">
+    </div>
+    <div id="admin-login-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;font-size:12px;color:#ef4444;margin-bottom:14px">
+      <i class="fas fa-exclamation-circle" style="margin-right:6px"></i><span id="admin-login-error-msg"></span>
+    </div>
+    <button onclick="doAdminLogin()" style="width:100%;background:#0369a1;color:#fff;padding:14px;border-radius:14px;font-weight:700;font-size:14px;border:none;cursor:pointer;font-family:Inter,sans-serif;transition:background .2s" onmouseover="this.style.background='#075985'" onmouseout="this.style.background='#0369a1'">
+      Giriş Yap
+    </button>
+    <div style="margin-top:14px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;font-size:11px;color:#92400e">
+      <i class="fas fa-flask" style="margin-right:4px"></i>
+      <strong>Demo:</strong> admin &nbsp;/&nbsp; admin
+    </div>
+  </div>
+</div>
+
 <!-- ===== SIDEBAR ===== -->
 <div class="sidebar">
   <div class="flex items-center gap-2 mb-8 px-2">
@@ -102,10 +137,13 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <a href="#"><i class="fas fa-bell"></i> Bildirimler</a>
 
   <div class="mt-auto pt-6 border-t border-gray-800 mt-6">
-    <div class="flex items-center gap-2 px-2">
+    <div class="flex items-center gap-2 px-2 mb-3">
       <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center"><i class="fas fa-user text-primary text-xs"></i></div>
       <div><div class="text-xs text-white font-medium">Admin</div><div class="text-[10px] text-gray-500">admin@denizbul.tr</div></div>
     </div>
+    <button onclick="doAdminLogout()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:10px;background:transparent;border:none;color:#94a3b8;font-size:13px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#1e293b';this.style.color='#f87171'" onmouseout="this.style.background='transparent';this.style.color='#94a3b8'">
+      <i class="fas fa-sign-out-alt" style="width:18px;text-align:center"></i> Çıkış Yap
+    </button>
   </div>
 </div>
 
@@ -5669,7 +5707,36 @@ function _renderSimReport(r){
   `;
 }
 
+/* ── ADMIN SESSION ── */
+function isAdminLoggedIn(){return localStorage.getItem('admin_session')==='active';}
+function doAdminLogin(){
+  const email=(document.getElementById('admin-login-email').value||'').trim().toLowerCase();
+  const pass=document.getElementById('admin-login-pass').value||'';
+  const errEl=document.getElementById('admin-login-error');
+  const showErr=msg=>{errEl.style.display='';document.getElementById('admin-login-error-msg').textContent=msg;};
+  if(!email){showErr('Kullanıcı adı gerekli.');return;}
+  if(!pass){showErr('Şifre gerekli.');return;}
+  if(!['admin','admin@denizbul.tr'].includes(email)||pass!=='admin'){showErr('Kullanıcı adı veya şifre yanlış.');return;}
+  errEl.style.display='none';
+  localStorage.setItem('admin_session','active');
+  document.getElementById('admin-login-overlay').style.display='none';
+  _adminInit();
+}
+function doAdminLogout(){
+  if(!confirm('Admin panelinden çıkış yapmak istiyor musunuz?'))return;
+  localStorage.removeItem('admin_session');
+  document.getElementById('admin-login-email').value='';
+  document.getElementById('admin-login-pass').value='';
+  document.getElementById('admin-login-overlay').style.display='flex';
+}
+function _adminInit(){
+  migrateToUnifiedUsers();uBridgePendingCaptains();uSyncCaptainsToUsers();
+  purgeDatelessTours();_adminScanOversell();
+  handleRoute();pmUpdateBadge();initShopToggle();pcUpdateMaintenanceBadge();mcUpdateBadge();updateMsgBadge();updateUyarilarBadge();
+}
+
 function handleRoute(){
+  if(!isAdminLoggedIn())return;
   let h=window.location.hash.replace('#','')||'dashboard';
   pages.forEach(p=>{const el=document.getElementById('page-'+p);if(el)el.classList.toggle('active',p===h)});
   document.querySelectorAll('.sidebar a[data-nav]').forEach(a=>a.classList.toggle('active',a.dataset.nav===h||(h==='captain-add'&&a.dataset.nav==='captains')));
@@ -5696,12 +5763,12 @@ function handleRoute(){
 window.addEventListener('hashchange',handleRoute);
 window.addEventListener('load',async()=>{
   await window._sbSync?.();
-  migrateToUnifiedUsers();
-  uBridgePendingCaptains();
-  uSyncCaptainsToUsers();
-  purgeDatelessTours();
-  _adminScanOversell();
-  handleRoute();pmUpdateBadge();initShopToggle();pcUpdateMaintenanceBadge();mcUpdateBadge();updateMsgBadge();updateUyarilarBadge();
+  if(!isAdminLoggedIn()){
+    document.getElementById('admin-login-overlay').style.display='flex';
+    return;
+  }
+  document.getElementById('admin-login-overlay').style.display='none';
+  _adminInit();
 });
 
 // Başka sekmede (seed-data vb.) localStorage değişince otomatik yenile

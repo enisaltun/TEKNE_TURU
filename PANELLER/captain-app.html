@@ -97,9 +97,48 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
 </div>
 
 <!-- ================================================================ -->
+<!-- PAGE LOGIN                                                       -->
+<!-- ================================================================ -->
+<section id="page-login" class="page active" style="padding-bottom:0;min-height:calc(100vh - 28px);background:linear-gradient(160deg,#0369a1 0%,#075985 50%,#e0f2fe 100%)">
+  <div style="padding:48px 24px 32px;display:flex;flex-direction:column;align-items:center;min-height:calc(100vh - 28px)">
+    <div style="text-align:center;margin-bottom:36px">
+      <div style="width:72px;height:72px;background:rgba(255,255,255,.15);border-radius:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;backdrop-filter:blur(4px)">
+        <i class="fas fa-anchor" style="color:#fff;font-size:30px"></i>
+      </div>
+      <div style="color:#fff;font-size:26px;font-weight:800;letter-spacing:-.5px">DenizBul</div>
+      <div style="color:#bae6fd;font-size:13px;font-weight:500;margin-top:3px">Kaptan Paneli</div>
+    </div>
+    <div style="background:#fff;border-radius:24px;padding:28px 22px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+      <div style="font-size:17px;font-weight:800;color:#0f172a;margin-bottom:2px">Kaptana Özel Giriş</div>
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:22px">Hesabınıza giriş yapın</div>
+      <div style="margin-bottom:13px">
+        <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">E-POSTA</label>
+        <input id="cap-login-email" type="email" placeholder="ornek@email.com" autocomplete="email"
+          onkeydown="if(event.key==='Enter')document.getElementById('cap-login-pass').focus()">
+      </div>
+      <div style="margin-bottom:18px">
+        <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">ŞİFRE</label>
+        <input id="cap-login-pass" type="password" placeholder="Şifreniz" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div id="cap-login-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;font-size:12px;color:#ef4444;margin-bottom:14px">
+        <i class="fas fa-exclamation-circle" style="margin-right:6px"></i><span id="cap-login-error-msg"></span>
+      </div>
+      <button onclick="doLogin()" style="width:100%;background:#0369a1;color:#fff;padding:14px;border-radius:14px;font-weight:700;font-size:14px;border:none;cursor:pointer">
+        Giriş Yap
+      </button>
+      <div style="margin-top:14px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;font-size:11px;color:#92400e">
+        <i class="fas fa-flask" style="margin-right:4px"></i>
+        <strong>Demo:</strong> ali@kaptan.com &nbsp;/&nbsp; 1
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
 <!-- PAGE 1: DASHBOARD                                                -->
 <!-- ================================================================ -->
-<section id="page-dashboard" class="page active">
+<section id="page-dashboard" class="page">
   <div class="px-4 pt-3">
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
@@ -1837,8 +1876,8 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
 <!-- ===== JAVASCRIPT ===== -->
 <script>
 /* ── CONSTANTS ── */
-const allPages=['dashboard','my-tours','create-tour','calendar','bookings','messages','earnings','notifications','profile','tools','profile-edit','boat-edit','certificates','bank','help','terms'];
-const hideNavPages=['messages','calendar','earnings','notifications','create-tour','profile-edit','boat-edit','certificates','bank','help','terms'];
+const allPages=['login','dashboard','my-tours','create-tour','calendar','bookings','messages','earnings','notifications','profile','tools','profile-edit','boat-edit','certificates','bank','help','terms'];
+const hideNavPages=['login','messages','calendar','earnings','notifications','create-tour','profile-edit','boat-edit','certificates','bank','help','terms'];
 
 const CAT_META={
   'Balik Avi':     {icon:'fa-fish',      grad:'from-blue-400 to-blue-600'},
@@ -1857,18 +1896,38 @@ const S={
   set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
 };
 
+/* ── SESSION ── */
+function isLoggedIn(){return localStorage.getItem('cp_session')==='active';}
+function doLogin(){
+  const email=(document.getElementById('cap-login-email').value||'').trim().toLowerCase();
+  const pass=document.getElementById('cap-login-pass').value||'';
+  const errEl=document.getElementById('cap-login-error');
+  const showErr=msg=>{errEl.style.display='';document.getElementById('cap-login-error-msg').textContent=msg;};
+  if(!email){showErr('E-posta adresi gerekli.');return;}
+  if(!pass){showErr('Şifre gerekli.');return;}
+  errEl.style.display='none';
+  _seedAliKaptan();
+  const cap=S.get('db_captains',[]).find(c=>(c.email||'').toLowerCase()===email&&(c.password||'1')===pass);
+  if(!cap){showErr('E-posta veya şifre yanlış.');return;}
+  if(cap.durum==='askida'||cap.durum==='reddedildi'){showErr('Hesabınız onay bekliyor veya reddedildi. Admin ile iletişime geçin.');return;}
+  localStorage.setItem('cp_session','active');
+  S.set('cp_active_id',cap.id);
+  document.getElementById('cap-login-email').value='';
+  document.getElementById('cap-login-pass').value='';
+  navigateTo('dashboard');
+}
+
 /* ── CAPTAIN IDENTITY ── */
 /* Aşama F: customer-app/customer-site "Kaptan Paneli" butonundan açıldıysa
    active_user_email ile eşleşen kaptanı auto-select et. */
 function syncActiveCaptainFromUserSession(){
+  if(!isLoggedIn())return;
   try{
     const email=localStorage.getItem('active_user_email');
     if(!email)return;
     const caps=JSON.parse(localStorage.getItem('db_captains')||'[]');
     const match=caps.find(c=>c.email===email);
-    if(match){
-      localStorage.setItem('cp_active_id',JSON.stringify(match.id));
-    }
+    if(match)localStorage.setItem('cp_active_id',JSON.stringify(match.id));
   }catch(e){}
 }
 syncActiveCaptainFromUserSession();
@@ -1927,6 +1986,13 @@ function navigateTo(p){window.location.hash='#'+p}
 function handleRoute(){
   applyPageVisibility();
   let h=window.location.hash.replace('#','')||'dashboard';
+  if(!isLoggedIn()){
+    allPages.forEach(p=>{const el=document.getElementById('page-'+p);if(el)el.classList.remove('active');});
+    const lp=document.getElementById('page-login');if(lp)lp.classList.add('active');
+    document.getElementById('main-nav').style.display='none';
+    return;
+  }
+  if(h==='login'){window.location.replace('#dashboard');h='dashboard';}
   // gizli sayfaya hash ile giriş engeli
   try{const ps=JSON.parse(localStorage.getItem('page_settings')||'{}');const e=KAPP_PAGE_MAP.find(x=>x.hash===h);if(e&&ps[e.key]===false)h='dashboard';}catch(ex){}
   allPages.forEach(p=>{
@@ -1989,7 +2055,7 @@ function _seedAliKaptan(){
   if(!caps.find(c=>c.email===ALI)){
     caps.unshift({
       id:8888,ad:'Ali',soyad:'Kaptan',ad_soyad:'Ali Kaptan',name:'Ali Kaptan',
-      email:ALI,durum:'aktif',aktif:true,status:'aktif',
+      email:ALI,password:'1',durum:'aktif',aktif:true,status:'aktif',
       tekne:'Ali\'nin Teknesi',tekneAdi:'Ali\'nin Teknesi',tekne_adi:'Ali\'nin Teknesi',
       tekneTuru:'Motor Tekne',tekne_turu:'Motor Tekne',tekneYil:'2020',tekne_yil:'2020',
       kapasite:8,bolge:'Bodrum',marina:'Bodrum Marina',
@@ -1998,10 +2064,6 @@ function _seedAliKaptan(){
       createdAt:new Date().toISOString(),created_at:new Date().toISOString(),
     });
     S.set('db_captains',caps);
-  }
-  if(!S.get('cp_active_id',null)){
-    const ali=S.get('db_captains',[]).find(c=>c.email===ALI);
-    if(ali)S.set('cp_active_id',ali.id);
   }
 }
 window.addEventListener('storage',(e)=>{
@@ -3900,11 +3962,12 @@ function showLogoutConfirm(){
   document.body.appendChild(modal);
 }
 function doLogout(){
+  localStorage.removeItem('cp_session');
   localStorage.removeItem('cp_active_id');
   localStorage.removeItem('auth_user');
   document.getElementById('logout-modal')?.remove();
   showToast('Cikis yapildi. Hosca kalin!');
-  setTimeout(()=>navigateTo('dashboard'),800);
+  setTimeout(()=>navigateTo('login'),800);
 }
 
 /* ── SSS TOGGLE ── */

@@ -1865,12 +1865,6 @@ window.addEventListener('load',async function(){
     _ul.unshift({id:9999,ad:'Test',soyad:'Kullanici',email:TEST_EMAIL,password:TEST_PASS,phone:'',roles:['customer'],avatarUrl:null,createdAt:new Date().toISOString(),captainProfile:null});
     U.save(_ul);
   }
-  // Oturum yoksa otomatik giriş yap
-  if(!isLoggedIn()){
-    localStorage.setItem('cu_session','active');
-    localStorage.setItem('active_user_email',TEST_EMAIL);
-    S.set('cu_profile',{name:'Test Kullanici',email:TEST_EMAIL,phone:'',roles:['customer']});
-  }
   rebuildTourMap();
   handleRoute();
   updateClock();
