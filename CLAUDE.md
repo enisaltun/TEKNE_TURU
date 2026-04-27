@@ -108,6 +108,16 @@ Bu kurallar ihlal edilemez; her yeni özellik veya sayfa eklenirken kontrol edil
 - **`index.html`** (prototip hub'ı) şifre kapısıyla korunur. Erişim kodu: `denizdev25`. Bu kod kaynak kodda `btoa()` ile obfüske edilmiştir; düz metin olarak bırakılmamalıdır.
 - Yeni bir panel veya dahili araç eklendiğinde: kullanıcı yüzlü sayfalarda bu araca **hiçbir referans** verilmemelidir.
 
+## Gizlilik Kuralı — Kaptan Veri İzolasyonu (KESİN KURAL)
+
+Kaptanlar birbirinin verilerini hiçbir koşulda göremez:
+
+- **Kaptan uygulamasında** (`captain-app.html`) yalnızca o oturumu açmış kaptana ait turlar, rezervasyonlar, kazançlar ve mesajlar görüntülenir.
+- **Hiçbir kaptan** başka bir kaptanın: tur listesini, rezervasyon detaylarını, kazanç/gelir bilgilerini, müşteri iletişimlerini veya ceza/uyarı geçmişini **göremez, listeleyemez, filtreleyemez.**
+- **Arkadaş Kaptan sistemi** dahil: bir kaptan arkadaşının yalnızca adını, tekne adını, konumunu ve müsaitlik durumunu (tur var/yok) görebilir. Kazanç, rezervasyon sayısı veya müşteri bilgileri **kesinlikle paylaşılmaz.**
+- **Acil Transfer akışında** yeni kaptana yalnızca şu bilgiler iletilir: grup büyüklüğü, kalkış noktası, saat ve tur rotası. Müşterinin kişisel bilgileri (ad, telefon, e-posta) transfer kabul edildikten sonra iletilir.
+- Bu kural her yeni özellik, bildirim veya dashboard eklenirken **kod yazılmadan önce** kontrol edilmelidir.
+
 ## Geliştirme Kuralları
 
 - Her dosya **bağımsızdır** — paylaşılan CSS, JS veya component dosyası yoktur. Bir dosyada yapılan değişiklik diğerlerini etkilemez.

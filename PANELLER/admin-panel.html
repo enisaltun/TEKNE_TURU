@@ -111,6 +111,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <a href="#users" data-nav="users"><i class="fas fa-users"></i> Kullanici Yonetimi</a>
   <a href="#tours-bookings" data-nav="tours-bookings"><i class="fas fa-ship"></i> Tur Yonetimi</a>
   <a href="#mucbir" data-nav="mucbir"><i class="fas fa-exclamation-triangle"></i> Mücbir Sebepler <span id="mucbir-badge" style="display:none;background:#ef4444;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
+  <a href="#kriz-merkezi" data-nav="kriz-merkezi" style="background:#1e293b;border:1px solid #334155"><i class="fas fa-fire" style="color:#f97316"></i> <span style="color:#f97316;font-weight:700">Kriz Merkezi</span> <span id="kriz-badge" style="display:none;background:#ef4444;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:auto;animation:pulse 2s infinite">0</span></a>
   <a href="#reservations" data-nav="reservations"><i class="fas fa-calendar-check"></i> Rezervasyon Yonetimi <span id="res-badge" style="display:none;background:#f59e0b;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
   <a href="#messages" data-nav="messages"><i class="fas fa-comments"></i> Mesajlaşma <span id="msg-badge" style="display:none;background:#0369a1;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
   <a href="#uyarilar" data-nav="uyarilar"><i class="fas fa-bell"></i> Uyarılar <span id="uyarilar-badge" style="display:none;background:#ef4444;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px;animation:pulse 2s infinite">0</span></a>
@@ -316,6 +317,28 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <!-- ======================================= -->
   <!-- PAGE: MÜCBIR SEBEPLER                   -->
   <!-- ======================================= -->
+  <!-- ═══════════════════════════════════════════════════════ KRİZ MERKEZİ -->
+  <section id="page-kriz-merkezi" class="page">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-fire text-orange-500"></i> Kriz Merkezi</h1>
+        <p class="text-sm text-gray-500 mt-0.5">İptal sonrası akıllı eşleştirme ve yolcu transfer takibi</p>
+      </div>
+      <button onclick="renderKrizMerkezi()" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2"><i class="fas fa-sync-alt"></i> Yenile</button>
+    </div>
+
+    <!-- Özet Kartlar -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="stat-card" style="background:#fff7ed"><div class="stat-icon bg-orange-100 text-orange-500"><i class="fas fa-fire"></i></div><div><div class="text-xl font-bold text-orange-500" id="kriz-stat-aktif">0</div><div class="text-xs text-gray-500">Aktif Kriz</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-amber-100 text-amber-600"><i class="fas fa-search"></i></div><div><div class="text-xl font-bold text-amber-600" id="kriz-stat-arayor">0</div><div class="text-xs text-gray-500">Aranıyor</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-green-100 text-success"><i class="fas fa-check-circle"></i></div><div><div class="text-xl font-bold text-success" id="kriz-stat-cozuldu">0</div><div class="text-xs text-gray-500">Çözüldü</div></div></div>
+      <div class="stat-card"><div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-gift"></i></div><div><div class="text-xl font-bold text-primary" id="kriz-stat-iade">0</div><div class="text-xs text-gray-500">İade + Bonus</div></div></div>
+    </div>
+
+    <!-- Aktif Kriz Listesi -->
+    <div id="kriz-list" class="space-y-4"></div>
+  </section>
+
   <section id="page-mucbir" class="page">
 
     <div class="flex items-center justify-between mb-6">
@@ -4126,8 +4149,8 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
-const pages=['dashboard','captains','users','tours-bookings','reservations','messages','uyarilar','system-health','page-manager','cms-web','cms-app','finance','subscriptions','shop-admin','marine','modules','captain-add','platform-control','mucbir'];
-const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','messages':'Mesajlaşma Yönetimi','uyarilar':'Uyarılar','system-health':'Sistem Sağlığı','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','subscriptions':'Abonelik & Üyelik','shop-admin':'Mağaza Yönetimi','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi','mucbir':'Mucbir Sebepler Yonetimi'};
+const pages=['dashboard','captains','users','tours-bookings','reservations','messages','uyarilar','system-health','page-manager','cms-web','cms-app','finance','subscriptions','shop-admin','marine','modules','captain-add','platform-control','mucbir','kriz-merkezi'];
+const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','messages':'Mesajlaşma Yönetimi','uyarilar':'Uyarılar','system-health':'Sistem Sağlığı','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','subscriptions':'Abonelik & Üyelik','shop-admin':'Mağaza Yönetimi','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi','mucbir':'Mucbir Sebepler Yonetimi','kriz-merkezi':'🔥 Kriz Merkezi'};
 
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
@@ -5788,6 +5811,7 @@ function handleRoute(){
   if(h==='modules')             renderMarineModules();
   if(h==='platform-control')    renderPlatformControl();
   if(h==='mucbir')              renderMucbir();
+  if(h==='kriz-merkezi')        renderKrizMerkezi();
   if(h==='uyarilar')            renderUyarilar();
 }
 window.addEventListener('hashchange',handleRoute);
@@ -12463,6 +12487,94 @@ document.getElementById('delete-modal').addEventListener('click',function(e){if(
 ══════════════════════════════════════════════════ */
 let mcFilter='all';
 let currentDisruptionId=null;
+
+/* ══════════════════════════════════════════════════════
+   KRİZ MERKEZİ
+   ══════════════════════════════════════════════════════ */
+function renderKrizMerkezi(){
+  const havuz=lsGet('db_yolcu_havuzu',[]);
+  const teklifler=lsGet('db_transfer_teklifleri',[]);
+  const aktif=havuz.filter(h=>['arayor','teklif_gonderildi'].includes(h.status));
+  const cozuldu=havuz.filter(h=>h.status==='cozuldu');
+  const iade=havuz.filter(h=>h.status==='cozumsuz'||h.cozum==='iade_bonus');
+
+  // Badge guncelle
+  const badge=document.getElementById('kriz-badge');
+  if(badge){badge.style.display=aktif.length?'':'none';badge.textContent=aktif.length;}
+
+  // Ozet sayaclar
+  ['aktif','arayor','cozuldu','iade'].forEach((k,i)=>{
+    const el=document.getElementById('kriz-stat-'+k);
+    if(el)el.textContent=[aktif.length,havuz.filter(h=>h.status==='arayor').length,cozuldu.length,iade.length][i];
+  });
+
+  const listEl=document.getElementById('kriz-list');
+  if(!listEl)return;
+  if(!havuz.length){
+    listEl.innerHTML=`<div class="text-center py-16 text-gray-400"><i class="fas fa-fire text-4xl mb-3 block text-gray-200"></i><div class="text-sm">Aktif kriz yok</div><div class="text-xs mt-1">İptal tetiklendiğinde burada görünecek</div></div>`;
+    return;
+  }
+  const statusMap={
+    arayor:{label:'Aranıyor',cls:'bg-amber-100 text-amber-700',icon:'fa-search'},
+    teklif_gonderildi:{label:'Teklif Gönderildi',cls:'bg-blue-100 text-primary',icon:'fa-paper-plane'},
+    cozuldu:{label:'Çözüldü — Transfer',cls:'bg-green-100 text-success',icon:'fa-check-circle'},
+    cozumsuz:{label:'Çözümsüz — İade',cls:'bg-gray-100 text-gray-600',icon:'fa-undo'},
+    suresi_doldu:{label:'Süresi Doldu',cls:'bg-red-100 text-danger',icon:'fa-clock'}
+  };
+  listEl.innerHTML=havuz.map(h=>{
+    const st=statusMap[h.status]||{label:h.status,cls:'bg-gray-100 text-gray-600',icon:'fa-circle'};
+    const hTeklifler=teklifler.filter(t=>t.havuzId===h.id);
+    const bekleyen=hTeklifler.filter(t=>t.status==='bekliyor');
+    const kabul=hTeklifler.find(t=>t.status==='kabul');
+    const reddeden=hTeklifler.filter(t=>t.status==='reddedildi');
+    const ts=new Date(h.createdAt).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    return`<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px">
+        <div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:3px">${h.kaynak_turTitle||'—'}</div>
+          <div style="font-size:12px;color:#64748b"><i class="fas fa-map-marker-alt mr-1"></i>${h.kalkis||'—'} &nbsp;·&nbsp; <i class="fas fa-clock mr-1"></i>${h.saat||'—'} &nbsp;·&nbsp; <i class="fas fa-users mr-1"></i>${h.guests} kişi</div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:2px">Kaptan: ${h.kaynak_captainEmail||'—'} &nbsp;·&nbsp; ${ts}</div>
+        </div>
+        <span class="${st.cls} text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"><i class="fas ${st.icon} mr-1"></i>${st.label}</span>
+      </div>
+      ${h.iptalNedeni?`<div style="background:#fef2f2;border:1px solid #fee2e2;border-radius:8px;padding:8px 10px;font-size:11px;color:#b91c1c;margin-bottom:10px"><i class="fas fa-info-circle mr-1"></i>İptal nedeni: ${h.iptalNedeni}</div>`:''}
+      <div style="background:#f8fafc;border-radius:8px;padding:10px;font-size:11px;margin-bottom:10px">
+        <div style="font-weight:600;color:#374151;margin-bottom:6px">Transfer Teklifleri (${hTeklifler.length})</div>
+        ${hTeklifler.length?hTeklifler.map(t=>{
+          const tCls=t.status==='kabul'?'color:#15803d':t.status==='reddedildi'?'color:#dc2626':'color:#0369a1';
+          const tIcon=t.status==='kabul'?'fa-check':t.status==='reddedildi'?'fa-times':'fa-clock';
+          return`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #e2e8f0"><i class="fas ${tIcon} text-xs" style="${tCls}"></i><span style="flex:1">${t.hedefCaptainEmail}</span><span style="font-size:10px;${tCls};font-weight:600">${{bekliyor:'Bekliyor',kabul:'Kabul Etti',reddedildi:'Reddetti',iptal_edildi:'İptal'}[t.status]||t.status}</span></div>`;
+        }).join(''):'<div style="color:#94a3b8">Henüz teklif gönderilmedi</div>'}
+      </div>
+      ${['arayor','teklif_gonderildi'].includes(h.status)?`
+      <div style="display:flex;gap:8px">
+        <button onclick="adminForceIade('${h.id}')" style="flex:1;border:1px solid #e2e8f0;padding:8px;border-radius:8px;font-size:12px;font-weight:600;color:#64748b;cursor:pointer;background:#fff" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'"><i class="fas fa-undo mr-1"></i>Zorla İade</button>
+        <button onclick="adminManualTransfer('${h.id}')" style="flex:1;background:#0369a1;color:#fff;border:none;padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer" onmouseover="this.style.background='#075985'" onmouseout="this.style.background='#0369a1'"><i class="fas fa-exchange-alt mr-1"></i>Manuel Transfer</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function adminForceIade(havuzId){
+  const havuz=lsGet('db_yolcu_havuzu',[]);
+  const entry=havuz.find(h=>h.id===havuzId);
+  if(!entry)return;
+  const bonus='ADMIN20_'+Date.now().toString(36).slice(-4).toUpperCase();
+  entry.status='cozumsuz';entry.cozum='iade_bonus';entry.resolvedAt=new Date().toISOString();
+  lsSet('db_yolcu_havuzu',havuz);
+  const cuNotifs=lsGet('cu_notifs',[]);
+  entry.bookingIds.forEach(bId=>{
+    cuNotifs.unshift({id:Date.now()+Math.random(),title:'Tam İade + %20 Bonus (Admin)',body:`Admin tarafından çözümsüz kapatıldı. Ödemeniz iade edildi. Kupon: ${bonus}`,type:'success',ts:new Date().toISOString(),read:false,bookingId:bId,modalType:'iade_bonus',bonusKod:bonus});
+  });
+  lsSet('cu_notifs',cuNotifs.slice(0,500));
+  renderKrizMerkezi();
+  alert('İade + Bonus kararı müşterilere bildirildi.');
+}
+
+function adminManualTransfer(havuzId){
+  alert('Manuel transfer: Rezervasyon sayfasına gidin, yolcuları seçin ve FMR başlatın.');
+  window.location.hash='#reservations';
+}
 
 function renderMucbir(){
   const disruptions=lsGet('db_disruptions',[]);

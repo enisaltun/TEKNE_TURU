@@ -1287,6 +1287,24 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
         <div class="flex items-center gap-3"><div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center"><i class="fas fa-globe text-primary text-sm"></i></div><span class="text-sm">Dil</span></div>
         <span class="text-xs text-gray-500" id="prof-lang-label">Turkce <i class="fas fa-chevron-right ml-1"></i></span>
       </div>
+      <div onclick="navigateTo('captains-network')" class="card flex items-center gap-3 card-hover cursor-pointer">
+        <div class="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center"><i class="fas fa-users text-purple-600 text-sm"></i></div>
+        <div class="flex-1">
+          <div class="text-sm">Kaptan Agim</div>
+          <div class="text-[10px] text-gray-400" id="captains-net-hint">Baglantilar yukleniyor...</div>
+        </div>
+        <i class="fas fa-chevron-right text-gray-300 text-xs ml-auto"></i>
+      </div>
+      <div class="card flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center"><i class="fas fa-life-ring text-danger text-sm"></i></div>
+          <div>
+            <div class="text-sm">Acil Destek Modu</div>
+            <div class="text-[10px] text-gray-400 leading-tight">Iptal durumlarinda cagrilabilirim</div>
+          </div>
+        </div>
+        <div class="toggle" id="acil-destek-toggle" onclick="toggleAcilDestek(this)"></div>
+      </div>
       <div onclick="navigateTo('help')" class="card flex items-center gap-3 card-hover cursor-pointer">
         <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center"><i class="fas fa-question-circle text-primary text-sm"></i></div>
         <span class="text-sm">Yardim & Destek</span>
@@ -1313,6 +1331,77 @@ div.field-error{border:1.5px solid #ef4444;border-radius:12px;padding:6px;animat
     <!-- App Version -->
     <div class="text-center text-[10px] text-gray-400 pb-4">
       DenizBul Kaptan v1.0.0
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- PAGE: KAPTAN AGIM                                                -->
+<!-- ================================================================ -->
+<section id="page-captains-network" class="page">
+  <div class="status-bar" style="position:sticky;top:0;z-index:50">
+    <button onclick="navigateTo('profile')" class="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 active:bg-gray-200"><i class="fas fa-arrow-left text-sm text-gray-600"></i></button>
+    <span class="font-bold text-sm">Kaptan Agim</span>
+    <button onclick="showAddCaptainSheet()" class="w-9 h-9 flex items-center justify-center rounded-xl bg-primary/10 active:bg-primary/20"><i class="fas fa-plus text-primary text-sm"></i></button>
+  </div>
+  <div class="px-4 pt-4 pb-28">
+
+    <!-- Bilgi Kartı -->
+    <div class="card mb-4 bg-gradient-to-r from-red-50 to-orange-50 border border-red-100">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-life-ring text-danger text-lg"></i></div>
+        <div>
+          <div class="text-sm font-semibold text-danger mb-1">Acil Transfer Sistemi</div>
+          <div class="text-[11px] text-gray-600 leading-relaxed">Bir tur iptal edildiginde sistem once bu listedeki kaptanlara haber verir. Arkadaslariniz grubu kendi turlarına alabilir. Musteri bilgileri yalnizca kabul sonrasi paylasilir.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bağlantı Listesi -->
+    <div class="mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-gray-700">Kaptan Baglantilarim</h3>
+        <span class="text-xs text-gray-400" id="cn-count-label">0 kaptan</span>
+      </div>
+      <div id="cn-list" class="space-y-2">
+        <div class="text-center py-10 text-xs text-gray-400">
+          <i class="fas fa-users text-3xl mb-3 block text-gray-200"></i>
+          Henuz kaptan baglantisi yok.<br>
+          <button onclick="showAddCaptainSheet()" class="mt-3 text-primary font-medium">Kaptan ekle →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gelen İstekler -->
+    <div id="cn-pending-section" style="display:none">
+      <h3 class="text-sm font-semibold text-gray-700 mb-2">Gelen Istekler</h3>
+      <div id="cn-pending-list" class="space-y-2 mb-4"></div>
+    </div>
+
+  </div>
+
+  <!-- Kaptan Ekle Bottom Sheet -->
+  <div class="sheet-overlay" id="add-captain-overlay" onclick="closeAddCaptainSheet()" style="display:none"></div>
+  <div class="bottom-sheet" id="add-captain-sheet" style="display:none">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 class="text-base font-bold">Kaptan Ekle</h2>
+      <p class="text-xs text-gray-500 mt-1">Kaptan e-postasini girerek baglanti istegi gonderebilirsiniz</p>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs text-gray-500 mb-1 block">Kaptan E-postasi</label>
+        <input type="email" id="add-captain-email" placeholder="kaptan@ornek.com" class="text-sm">
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 mb-1 block">Not (opsiyonel)</label>
+        <input type="text" id="add-captain-note" placeholder="Ayni marinadan calisiyoruz..." class="text-sm">
+      </div>
+      <div class="bg-amber-50 border border-amber-100 rounded-xl p-3 text-[11px] text-amber-700">
+        <i class="fas fa-info-circle mr-1"></i>
+        Karsili onay gerekir. Karsı taraf kabul ettiginde baglanti kurulur.
+      </div>
+      <button onclick="sendFriendRequest()" class="w-full bg-primary text-white py-3.5 rounded-xl font-semibold text-sm">Istek Gonder</button>
     </div>
   </div>
 </section>
@@ -2484,10 +2573,12 @@ function doTourCancel(){
   const msgs=S.get('db_messages',{});
   const cuNotifs=S.get('cu_notifs',[]);
   let etkilenen=0;
+  const etkilenenBookings=[];
   const cap=getActiveCaptain();
   const capAd=cap?(cap.ad||'Kaptan'):'Kaptan';
   bookings.forEach(b=>{
     if(String(b.tourId)===String(id)&&['bekliyor','onaylandi'].includes(b.durum||'')){
+      etkilenenBookings.push({...b});
       b.durum='iptal';
       b.iptalNedeni=reason;
       b.iptalKategori='kaptan_tur_iptali';
@@ -2498,18 +2589,10 @@ function doTourCancel(){
         b.iadeTutari=+(b.unitPrice||b.price)||0;
         b.refundHistory=[...(b.refundHistory||[]),{from:null,to:'pending',ts:new Date().toISOString(),note:'Kaptan tur iptali'}];
       }
-      // Müşteriye mesaj gönder
       if(!msgs[b.id])msgs[b.id]=[];
       msgs[b.id].push({
-        text:`Merhaba, maalesef "${t.ad||t.title}" turumuz ${reason.toLowerCase()} nedeniyle iptal edilmek zorunda kalındı. Anlayışınız için teşekkür ederiz. İade işleminiz en kısa sürede gerçekleştirilecektir. — ${capAd}`,
+        text:`Merhaba, "${t.ad||t.title}" turumuz ${reason.toLowerCase()} nedeniyle iptal edilmek zorunda kalindi. Sizin icin uygun bir alternatif aranıyor — en kisa surede bilgi veririz. — ${capAd}`,
         byCaptan:true,ts:Date.now(),readByCustomer:false,readByCaptain:true,sysMsg:true
-      });
-      // Müşteriye bildirim — cu_notifs (customer-app'in okuduğu key)
-      cuNotifs.unshift({
-        id:Date.now()+Math.random(),
-        title:'Tur İptal Edildi',
-        body:`"${t.ad||t.title}" turu kaptan tarafından iptal edildi. Neden: ${reason}`,
-        type:'danger',ts:new Date().toISOString(),read:false,bookingId:b.id
       });
       etkilenen++;
     }
@@ -2518,6 +2601,12 @@ function doTourCancel(){
   S.set('db_tours',tours);
   S.set('db_bookings',bookings);
   S.set('db_messages',msgs);
+  // Musteri bildirimleri smartCancelModule tarafindan gonderilir
+  if(etkilenenBookings.length){
+    smartCancelModule(id,etkilenenBookings,t,reason,cuNotifs);
+  } else {
+    cuNotifs.unshift({id:Date.now()+Math.random(),title:'Tur Iptal Edildi',body:`"${t.ad||t.title}" turu iptal edildi.`,type:'danger',ts:new Date().toISOString(),read:false});
+  }
   S.set('cu_notifs',cuNotifs.slice(0,500));
   // Admin bildirimi
   const adminNotifs=S.get('admin_notifs',[]);
@@ -4341,32 +4430,67 @@ function updateNotifDot(){
   if(navBadge){navBadge.style.display=pending?'flex':'none';navBadge.textContent=pending>9?'9+':pending;}
 }
 function renderNotifications(){
-  const notifs=S.get('ca_notifications',[]);
+  const base=S.get('ca_notifications',[]);
+  const cap=getActiveCaptain();
+  // Transfer tekliflerini de birleştir — sadece bu kaptana yönelik, bekliyor olanlar
+  const transferItems=cap?.email
+    ? S.get('db_transfer_teklifleri',[])
+        .filter(tt=>tt.hedefCaptainEmail===cap.email&&tt.status==='bekliyor')
+        .map(tt=>({
+          id:'tt_'+tt.id, type:'transfer_teklif',
+          title:'🚨 Acil Transfer Talebi',
+          body:`${tt.kalkis||'—'} · Saat ${tt.saat||'—'} · ${tt.guests} kisilik grup`,
+          ts:new Date(tt.createdAt).getTime(), read:false,
+          havuzId:tt.havuzId, teklifId:tt.id,
+          kalkis:tt.kalkis, guests:tt.guests, saat:tt.saat,
+          turTitle:tt.turTitle, kaynak_turTitle:tt.kaynak_turTitle
+        }))
+    : [];
+  const notifs=[...transferItems,...base];
   const el=document.getElementById('ca-notif-list');
   if(!el)return;
-  const icons={success:{i:'fa-check-circle',bg:'bg-green-100',col:'text-success'},info:{i:'fa-info-circle',bg:'bg-blue-100',col:'text-primary'},danger:{i:'fa-exclamation-circle',bg:'bg-red-100',col:'text-danger'},warning:{i:'fa-exclamation-triangle',bg:'bg-amber-100',col:'text-amber-600'},fleet_merge_request:{i:'fa-link',bg:'bg-purple-100',col:'text-purple-600'}};
+  const icons={
+    success:{i:'fa-check-circle',bg:'bg-green-100',col:'text-success'},
+    info:{i:'fa-info-circle',bg:'bg-blue-100',col:'text-primary'},
+    danger:{i:'fa-exclamation-circle',bg:'bg-red-100',col:'text-danger'},
+    warning:{i:'fa-exclamation-triangle',bg:'bg-amber-100',col:'text-amber-600'},
+    fleet_merge_request:{i:'fa-link',bg:'bg-purple-100',col:'text-purple-600'},
+    transfer_teklif:{i:'fa-people-arrows',bg:'bg-emerald-100',col:'text-emerald-600'}
+  };
   if(!notifs.length){el.innerHTML='<div class="text-center text-gray-400 py-8 text-sm">Bildirim yok</div>';return;}
   el.innerHTML=notifs.map(n=>{
     const ic=icons[n.type]||icons.info;
     const age=Math.floor((Date.now()-n.ts)/60000);
     const ageLbl=age<1?'az once':age<60?age+' dk once':age<1440?Math.floor(age/60)+' saat once':Math.floor(age/1440)+' gun once';
     const isFMR=n.type==='fleet_merge_request'&&n.fmrId&&!n.fmrResponded;
+    const isTransfer=n.type==='transfer_teklif'&&n.teklifId&&!n.transferResponded;
     const fmrActions=isFMR?`
       <div class="flex gap-2 mt-3">
         <button onclick="respondFleetMerge('${n.fmrId}','${n.id}','kabul')" class="flex-1 bg-success text-white py-2 rounded-xl text-xs font-semibold hover:bg-green-600 flex items-center justify-center gap-1.5"><i class="fas fa-check"></i>Kabul Et</button>
-        <button onclick="respondFleetMerge('${n.fmrId}','${n.id}','red_eksik_cikacak')" class="flex-1 border border-amber-300 text-amber-700 py-2 rounded-xl text-xs font-semibold hover:bg-amber-50 flex items-center justify-center gap-1.5"><i class="fas fa-ship"></i>Eksik Çıkarım</button>
-        <button onclick="respondFleetMerge('${n.fmrId}','${n.id}','red_iptal_istedi')" class="flex-1 border border-red-300 text-danger py-2 rounded-xl text-xs font-semibold hover:bg-red-50 flex items-center justify-center gap-1.5"><i class="fas fa-times"></i>İptal İste</button>
+        <button onclick="respondFleetMerge('${n.fmrId}','${n.id}','red_eksik_cikacak')" class="flex-1 border border-amber-300 text-amber-700 py-2 rounded-xl text-xs font-semibold hover:bg-amber-50 flex items-center justify-center gap-1.5"><i class="fas fa-ship"></i>Eksik Cıkarım</button>
+        <button onclick="respondFleetMerge('${n.fmrId}','${n.id}','red_iptal_istedi')" class="flex-1 border border-red-300 text-danger py-2 rounded-xl text-xs font-semibold hover:bg-red-50 flex items-center justify-center gap-1.5"><i class="fas fa-times"></i>Iptal Iste</button>
       </div>
-      <p class="text-[10px] text-gray-400 mt-1.5"><i class="fas fa-info-circle mr-1"></i>Eksik Çıkarım: rezervasyonsuz tura çıkmayı kabul edersiniz. İptal İste: rezervasyonlarınızın iade edilmesini istersiniz.</p>`:'';
-    const respondedBadge=n.fmrResponded?`<span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full ml-1">${n.fmrResponded==='kabul'?'✓ Kabul edildi':'✗ Reddedildi'}</span>`:'';
-    return `<div class="card ${n.read&&!isFMR?'opacity-60':'border-l-4 '+(isFMR?'border-purple-400':'border-primary')}">
+      <p class="text-[10px] text-gray-400 mt-1.5"><i class="fas fa-info-circle mr-1"></i>Eksik Cıkarım: rezervasyonsuz tura cıkmayı kabul edersiniz. Iptal Iste: rezervasyonlarınızın iade edilmesini istersiniz.</p>`:'';
+    const transferActions=isTransfer?`
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 mt-2 space-y-1">
+        <div class="text-[10px] font-semibold text-emerald-800"><i class="fas fa-map-marker-alt mr-1"></i>Kalkış: ${n.kalkis||'—'} &nbsp;·&nbsp; <i class="fas fa-clock mr-1"></i>${n.saat||'—'} &nbsp;·&nbsp; <i class="fas fa-users mr-1"></i>${n.guests} kisi</div>
+        <div class="text-[10px] text-gray-500">Iptal edilen tur: "${n.kaynak_turTitle||'—'}"</div>
+        <div class="text-[9px] text-emerald-700 flex items-center gap-1"><i class="fas fa-shield-alt"></i>Musteri bilgileri kabul sonrasi paylasilir</div>
+      </div>
+      <div class="flex gap-2 mt-2">
+        <button onclick="acceptTransferOffer('${n.teklifId}','${n.id}')" class="flex-1 bg-success text-white py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 active:bg-green-600"><i class="fas fa-check"></i>Kabul Et</button>
+        <button onclick="declineTransferOffer('${n.teklifId}','${n.id}')" class="flex-1 border border-red-300 text-danger py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 active:bg-red-50"><i class="fas fa-times"></i>Reddet</button>
+      </div>`:'';
+    const respondedBadge=n.fmrResponded?`<span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full ml-1">${n.fmrResponded==='kabul'?'✓ Kabul edildi':'✗ Reddedildi'}</span>`:n.transferResponded?`<span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full ml-1">${n.transferResponded==='kabul'?'✓ Kabul edildi':'✗ Reddedildi'}</span>`:'';
+    const borderCls=n.read&&!isFMR&&!isTransfer?'opacity-60':isTransfer?'border-l-4 border-emerald-400':isFMR?'border-l-4 border-purple-400':'border-l-4 border-primary';
+    return `<div class="card ${borderCls}">
       <div class="flex items-start gap-3">
         <div class="w-10 h-10 ${ic.bg} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas ${ic.i} ${ic.col}"></i></div>
         <div class="flex-1">
           <div class="text-sm font-semibold">${n.title}${respondedBadge}</div>
           <div class="text-xs text-gray-500 mt-0.5">${n.body}</div>
           <div class="text-[10px] text-gray-400 mt-1">${ageLbl}</div>
-          ${fmrActions}
+          ${fmrActions}${transferActions}
         </div>
       </div>
     </div>`;
@@ -4402,6 +4526,319 @@ function respondFleetMerge(fmrId, notifId, action){
   const msg=action==='kabul'?'Birleştirme talebini kabul ettiniz. Admin onayı bekleniyor.':action==='red_eksik_cikacak'?'Eksik dolulukla tura çıkacağınız bildirildi.':'İptal talebiniz admin\'e iletildi.';
   alert(msg);
 }
+/* ══════════════════════════════════════════════════════════
+   AKILLI İPTAL MODÜLÜ
+   ══════════════════════════════════════════════════════════ */
+
+function extractIlce(kalkis){
+  if(!kalkis)return'';
+  return(kalkis.split(/[\s\/\-,]/)[0]||'').trim().toLowerCase();
+}
+
+function findCandidateTours(cancelledTour,guests){
+  const tours=S.get('db_tours',[]);
+  const bookings=S.get('db_bookings',[]);
+  const cap=getActiveCaptain();
+  const guestMap={};
+  bookings.filter(b=>['bekliyor','onaylandi'].includes(b.durum)).forEach(b=>{
+    guestMap[String(b.tourId)]=(guestMap[String(b.tourId)]||0)+(+b.guests||1);
+  });
+  const ckalkis=(cancelledTour.kalkis||'').toLowerCase();
+  const cilce=extractIlce(cancelledTour.kalkis);
+  const ctarih=cancelledTour.tarih||cancelledTour.tarihISO?.slice(0,10)||'';
+  const chour=parseInt(cancelledTour.saat||'0')||0;
+  return tours.filter(t=>{
+    if(String(t.id)===String(cancelledTour.id))return false;
+    if(t.captainEmail===cap?.email)return false;
+    if(!['aktif','yayinda',undefined,null,''].includes(t.durum))return false;
+    const ttarih=t.tarih||t.tarihISO?.slice(0,10)||'';
+    if(ttarih!==ctarih)return false;
+    const bos=(t.kapasite||0)-(guestMap[String(t.id)]||0);
+    if(bos<guests)return false;
+    const tkalkis=(t.kalkis||'').toLowerCase();
+    const exact=tkalkis===ckalkis;
+    const ilce=extractIlce(t.kalkis)===cilce;
+    if(!exact&&!ilce)return false;
+    const thour=parseInt(t.saat||'0')||0;
+    if(Math.abs(thour-chour)>1)return false;
+    t._matchScore=(exact?100:50)+(Math.abs(thour-chour)===0?20:0);
+    return true;
+  }).sort((a,b)=>(b._matchScore||0)-(a._matchScore||0));
+}
+
+function smartCancelModule(tourId,affectedBookings,tour,reason,cuNotifs){
+  const totalGuests=affectedBookings.reduce((s,b)=>s+(+b.guests||1),0);
+  const candidates=findCandidateTours(tour,totalGuests);
+  const connections=S.get('ca_connections',[]);
+  const arkadasAdaylar=candidates.filter(c=>connections.some(conn=>conn.captainEmail===c.captainEmail&&conn.acilIstekAktif&&conn.durum==='aktif'));
+  const digerAdaylar=candidates.filter(c=>!connections.some(conn=>conn.captainEmail===c.captainEmail));
+  const havuzEntry={
+    id:'YH'+Date.now(),
+    kaynak_turId:String(tourId),
+    kaynak_turTitle:tour.ad||tour.title||'—',
+    kaynak_captainEmail:tour.captainEmail||'',
+    bookingIds:affectedBookings.map(b=>b.id),
+    guests:totalGuests,
+    tarih:tour.tarih||'',
+    tarihISO:tour.tarihISO||'',
+    saat:tour.saat||'',
+    kalkis:tour.kalkis||'',
+    iptalNedeni:reason,
+    status:candidates.length?'teklif_gonderildi':'cozumsuz',
+    eskalasyon_halkasi:arkadasAdaylar.length?1:digerAdaylar.length?2:0,
+    teklifGonderildi:[],
+    createdAt:new Date().toISOString(),
+    resolvedAt:candidates.length?null:new Date().toISOString(),
+    cozum:candidates.length?null:'iade_bonus'
+  };
+  const havuz=S.get('db_yolcu_havuzu',[]);
+  havuz.unshift(havuzEntry);
+  if(candidates.length){
+    const teklifler=S.get('db_transfer_teklifleri',[]);
+    const ilkGrup=arkadasAdaylar.length?arkadasAdaylar:digerAdaylar.slice(0,3);
+    ilkGrup.forEach(aday=>{
+      const teklif={
+        id:'TT'+Date.now()+Math.random().toString(36).slice(2,6),
+        havuzId:havuzEntry.id,
+        hedefCaptainEmail:aday.captainEmail,
+        hedefTourId:String(aday.id),
+        turTitle:aday.ad||aday.title||'—',
+        kaynak_turTitle:tour.ad||tour.title||'—',
+        kalkis:tour.kalkis||'',
+        guests:totalGuests,
+        saat:tour.saat||'',
+        tarih:tour.tarih||'',
+        status:'bekliyor',
+        halka:arkadasAdaylar.length?'arkadas':'genel',
+        kilitli_mi:false,
+        createdAt:new Date().toISOString()
+      };
+      teklifler.unshift(teklif);
+      havuzEntry.teklifGonderildi.push(aday.captainEmail);
+    });
+    S.set('db_transfer_teklifleri',teklifler);
+    affectedBookings.forEach(b=>{
+      cuNotifs.unshift({
+        id:Date.now()+Math.random(),
+        title:'Alternatif Tur Aranıyor',
+        body:`"${tour.ad||tour.title}" iptal edildi. Ayni kalkis noktasindan size uygun alternatif aranis baslatildi. 30 dakika icinde bilgi veririz.`,
+        type:'warning',ts:new Date().toISOString(),read:false,
+        bookingId:b.id,havuzId:havuzEntry.id,modalType:'arayor'
+      });
+    });
+  } else {
+    const bonus='DENIZ20_'+Date.now().toString(36).slice(-4).toUpperCase();
+    affectedBookings.forEach(b=>{
+      cuNotifs.unshift({
+        id:Date.now()+Math.random(),
+        title:'Tam Iade + %20 Bonus Kazandınız',
+        body:`Uygun alternatif bulunamadı. Odemeniz iade edildi. Bir sonraki rezervasyonunuzda ${bonus} kuponunu kullanabilirsiniz.`,
+        type:'success',ts:new Date().toISOString(),read:false,
+        bookingId:b.id,havuzId:havuzEntry.id,modalType:'iade_bonus',bonusKod:bonus
+      });
+    });
+  }
+  S.set('db_yolcu_havuzu',havuz);
+}
+
+function acceptTransferOffer(teklifId,notifId){
+  const teklifler=S.get('db_transfer_teklifleri',[]);
+  const teklif=teklifler.find(t=>t.id===teklifId);
+  if(!teklif||teklif.status!=='bekliyor'){showToast('Bu teklif artik gecerli degil.','warning');renderNotifications();return;}
+  if(teklif.kilitli_mi){showToast('Bu transfer baska bir kaptan tarafindan alindi.','warning');renderNotifications();return;}
+  teklif.kilitli_mi=true;teklif.status='kabul';teklif.kabul_tarihi=new Date().toISOString();
+  teklifler.forEach(t=>{if(t.havuzId===teklif.havuzId&&t.id!==teklifId)t.status='iptal_edildi';});
+  S.set('db_transfer_teklifleri',teklifler);
+  const havuz=S.get('db_yolcu_havuzu',[]);
+  const entry=havuz.find(h=>h.id===teklif.havuzId);
+  if(entry){
+    entry.status='cozuldu';entry.cozum='transfer';entry.resolvedAt=new Date().toISOString();
+    entry.hedefCaptainEmail=teklif.hedefCaptainEmail;
+    const cap=getActiveCaptain();
+    const bookings=S.get('db_bookings',[]);
+    const tours=S.get('db_tours',[]);
+    const hedefTour=tours.find(t=>String(t.id)===String(teklif.hedefTourId));
+    entry.bookingIds.forEach(bId=>{
+      const b=bookings.find(x=>x.id===bId);
+      if(b){
+        b.durum='onaylandi';b.iptalNedeni=null;b.iptalKategori=null;
+        b.tourId=teklif.hedefTourId;
+        b.tourTitle=teklif.turTitle||hedefTour?.ad||hedefTour?.title||'—';
+        b.captainEmail=cap?.email||'';b.captainName=cap?.ad||'';
+        b.transferFrom=teklif.kaynak_turTitle;b.transferAt=new Date().toISOString();
+      }
+    });
+    S.set('db_bookings',bookings);
+    const cuNotifs=S.get('cu_notifs',[]);
+    entry.bookingIds.forEach(bId=>{
+      cuNotifs.unshift({
+        id:Date.now()+Math.random(),
+        title:'Turunuz Guvenceye Alındı ✓',
+        body:`"${teklif.turTitle||'Yeni tur'}" teknesine aktarildınız. Kalkis: ${teklif.kalkis||'—'} · Saat: ${teklif.saat||'—'}. Ek islem gerekmez.`,
+        type:'success',ts:new Date().toISOString(),read:false,bookingId:bId,modalType:'transfer_tamamlandi'
+      });
+    });
+    S.set('cu_notifs',cuNotifs.slice(0,500));
+    S.set('db_yolcu_havuzu',havuz);
+  }
+  const notifs=S.get('ca_notifications',[]);
+  const ni=notifs.findIndex(n=>String(n.id)===String(notifId));
+  if(ni>=0){notifs[ni].transferResponded='kabul';notifs[ni].read=true;S.set('ca_notifications',notifs);}
+  renderNotifications();renderBookings();renderDashboard();
+  showToast('Transfer kabul edildi! Rezervasyonlar size aktarıldı.','success');
+}
+
+function declineTransferOffer(teklifId,notifId){
+  const teklifler=S.get('db_transfer_teklifleri',[]);
+  const t=teklifler.find(x=>x.id===teklifId);
+  if(t){t.status='reddedildi';t.red_tarihi=new Date().toISOString();}
+  S.set('db_transfer_teklifleri',teklifler);
+  const notifs=S.get('ca_notifications',[]);
+  const ni=notifs.findIndex(n=>String(n.id)===String(notifId));
+  if(ni>=0){notifs[ni].transferResponded='reddedildi';notifs[ni].read=true;S.set('ca_notifications',notifs);}
+  renderNotifications();
+  showToast('Transfer teklifi reddedildi.');
+}
+
+function cleanYolcuHavuzu(){
+  const havuz=S.get('db_yolcu_havuzu',[]);
+  const now=Date.now();let changed=false;
+  havuz.forEach(h=>{
+    if(['arayor','teklif_gonderildi'].includes(h.status)){
+      const turZ=h.tarihISO?new Date(h.tarihISO).getTime():(h.tarih?new Date(h.tarih).getTime():0);
+      if(turZ&&now>turZ){h.status='suresi_doldu';h.cozum='iade_bonus';h.resolvedAt=new Date().toISOString();changed=true;}
+    }
+  });
+  if(changed)S.set('db_yolcu_havuzu',havuz);
+}
+
+/* ── KAPTAN AGIM ── */
+function toggleAcilDestek(el){
+  el.classList.toggle('on');
+  const cap=getActiveCaptain();if(!cap)return;
+  const captains=S.get('db_captains',[]);
+  const c=captains.find(x=>x.id===cap.id||x.email===cap.email);
+  if(c){c.acilDestekAktif=el.classList.contains('on');S.set('db_captains',captains);}
+}
+
+function showAddCaptainSheet(){
+  document.getElementById('add-captain-overlay').style.display='block';
+  document.getElementById('add-captain-sheet').style.display='block';
+}
+function closeAddCaptainSheet(){
+  document.getElementById('add-captain-overlay').style.display='none';
+  document.getElementById('add-captain-sheet').style.display='none';
+}
+
+function sendFriendRequest(){
+  const email=(document.getElementById('add-captain-email')?.value||'').trim().toLowerCase();
+  const note=(document.getElementById('add-captain-note')?.value||'').trim();
+  if(!email||!email.includes('@')){showToast('Gecerli bir e-posta girin','danger');return;}
+  const cap=getActiveCaptain();
+  if(!cap){showToast('Aktif kaptan bulunamadı','danger');return;}
+  if(email===cap.email){showToast('Kendinize istek gonderemezsiniz','danger');return;}
+  const captains=S.get('db_captains',[]);
+  const target=captains.find(c=>c.email?.toLowerCase()===email);
+  if(!target){showToast('Bu e-posta ile kayıtlı kaptan bulunamadı','danger');return;}
+  const connections=S.get('ca_connections',[]);
+  if(connections.some(c=>(c.requesterEmail===cap.email&&c.captainEmail===email)||(c.requesterEmail===email&&c.captainEmail===cap.email))){
+    showToast('Bu kaptan ile zaten baglanti var','warning');return;
+  }
+  connections.unshift({
+    id:'CN'+Date.now(),
+    requesterEmail:cap.email,requesterName:cap.ad||'Kaptan',
+    captainEmail:email,captainName:target.ad||email,
+    note,acilIstekAktif:true,durum:'bekliyor',
+    createdAt:new Date().toISOString()
+  });
+  S.set('ca_connections',connections);
+  closeAddCaptainSheet();
+  if(document.getElementById('add-captain-email'))document.getElementById('add-captain-email').value='';
+  if(document.getElementById('add-captain-note'))document.getElementById('add-captain-note').value='';
+  renderCaptainsNetwork();
+  showToast('Baglanti istegi gonderildi!','success');
+}
+
+function respondConnectionRequest(connId,action){
+  const connections=S.get('ca_connections',[]);
+  const conn=connections.find(c=>c.id===connId);
+  if(!conn)return;
+  conn.durum=action==='kabul'?'aktif':'reddedildi';
+  conn.responseAt=new Date().toISOString();
+  S.set('ca_connections',connections);
+  renderCaptainsNetwork();
+  showToast(action==='kabul'?'Baglanti kabul edildi!':'Istek reddedildi.');
+}
+
+function toggleConnectionAcil(connId,el){
+  el.classList.toggle('on');
+  const connections=S.get('ca_connections',[]);
+  const conn=connections.find(c=>c.id===connId);
+  if(conn){conn.acilIstekAktif=el.classList.contains('on');S.set('ca_connections',connections);}
+}
+
+function removeConnection(connId){
+  S.set('ca_connections',S.get('ca_connections',[]).filter(c=>c.id!==connId));
+  renderCaptainsNetwork();showToast('Baglanti kaldirildi.');
+}
+
+function renderCaptainsNetwork(){
+  const cap=getActiveCaptain();if(!cap)return;
+  const connections=S.get('ca_connections',[]);
+  const aktif=connections.filter(c=>(c.requesterEmail===cap.email||c.captainEmail===cap.email)&&c.durum==='aktif');
+  const bekleyen=connections.filter(c=>c.captainEmail===cap.email&&c.durum==='bekliyor');
+  const hint=document.getElementById('captains-net-hint');
+  if(hint)hint.textContent=aktif.length+' baglanti';
+  const countLabel=document.getElementById('cn-count-label');
+  if(countLabel)countLabel.textContent=aktif.length+' kaptan';
+  const listEl=document.getElementById('cn-list');
+  if(!listEl)return;
+  if(!aktif.length){
+    listEl.innerHTML=`<div class="text-center py-10 text-xs text-gray-400"><i class="fas fa-users text-3xl mb-3 block text-gray-200"></i>Henuz kaptan baglantisi yok.<br><button onclick="showAddCaptainSheet()" class="mt-3 text-primary font-medium">Kaptan ekle →</button></div>`;
+  } else {
+    const today=new Date().toISOString().slice(0,10);
+    const tours=S.get('db_tours',[]);
+    listEl.innerHTML=aktif.map(c=>{
+      const otherEmail=c.requesterEmail===cap.email?c.captainEmail:c.requesterEmail;
+      const otherName=c.requesterEmail===cap.email?c.captainName:c.requesterName;
+      const init=(otherName||'?')[0].toUpperCase();
+      const hasTour=tours.some(t=>t.captainEmail===otherEmail&&(t.tarih||'').startsWith(today)&&['aktif','yayinda'].includes(t.durum||'aktif'));
+      return`<div class="card">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-purple-100 rounded-2xl flex items-center justify-center font-bold text-purple-600 text-sm">${init}</div>
+          <div class="flex-1">
+            <div class="text-sm font-medium">${otherName||otherEmail}</div>
+            <div class="text-[10px] text-gray-400">${otherEmail}</div>
+            <div class="text-[10px] mt-0.5 ${hasTour?'text-amber-600':'text-success'}"><i class="fas fa-circle text-[6px] mr-1"></i>${hasTour?'Bugün turda':'Bugün müsait'}</div>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <div class="flex items-center gap-1"><span class="text-[9px] text-gray-400">Acil</span><div class="toggle ${c.acilIstekAktif?'on':''}" style="transform:scale(0.75);transform-origin:right center" onclick="toggleConnectionAcil('${c.id}',this)"></div></div>
+            <button onclick="removeConnection('${c.id}')" class="text-[10px] text-gray-300 hover:text-danger"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  const ps=document.getElementById('cn-pending-section');
+  const pl=document.getElementById('cn-pending-list');
+  if(ps&&pl){
+    if(bekleyen.length){
+      ps.style.display='';
+      pl.innerHTML=bekleyen.map(c=>`
+        <div class="card border border-amber-200 bg-amber-50">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center text-xs font-bold text-amber-700">${(c.requesterName||'?')[0]}</div>
+            <div class="flex-1"><div class="text-xs font-medium">${c.requesterName||c.requesterEmail}</div><div class="text-[10px] text-gray-400">${c.requesterEmail}</div></div>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button onclick="respondConnectionRequest('${c.id}','kabul')" class="flex-1 bg-success text-white py-2 rounded-xl text-xs font-semibold">Kabul Et</button>
+            <button onclick="respondConnectionRequest('${c.id}','ret')" class="flex-1 border text-gray-600 py-2 rounded-xl text-xs font-semibold">Reddet</button>
+          </div>
+        </div>`).join('');
+    } else { ps.style.display='none'; }
+  }
+}
+
 function clearNotifications(){
   const notifs=S.get('ca_notifications',[]);
   notifs.forEach(n=>n.read=true);
