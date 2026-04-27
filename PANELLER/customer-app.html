@@ -524,6 +524,10 @@ input:focus,textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,
       <div style="display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:4px"><i class="fas fa-triangle-exclamation"></i>Bu tur su an rezervasyona kapali</div>
       <div style="color:#991b1b;font-weight:500">Kaptan tarafindan uygun bir tarih tanimlanmamis. Lutfen daha sonra tekrar deneyin veya baska bir tur secin.</div>
     </div>
+    <div id="booking-conflict-banner" style="display:none;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;line-height:1.5">
+      <div style="display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:6px"><i class="fas fa-clock-rotate-left"></i>Rezervasyon Çakışması</div>
+      <div id="booking-conflict-msg" style="color:#7c2d12;font-weight:500"></div>
+    </div>
     <div class="card p-4 mb-3">
       <h3 class="font-semibold text-sm mb-3"><i class="fas fa-calendar text-primary mr-1"></i> Müsait Günler</h3>
       <!-- Ay navigasyonu -->
@@ -2405,6 +2409,7 @@ function renderBooking(){
 
   _renderExtrasSection(t);
   updPrice();
+  _updateConflictBanner();
 }
 
 function pickDate(str){
@@ -2422,6 +2427,7 @@ function pickDate(str){
   document.getElementById('guest-count-val').textContent=guestVal;
   renderBookingCal();
   updPrice();
+  _updateConflictBanner();
 }
 function bookCalPrev(){bookCalM--;if(bookCalM<0){bookCalM=11;bookCalY--;}renderBookingCal();}
 function bookCalNext(){bookCalM++;if(bookCalM>11){bookCalM=0;bookCalY++;}renderBookingCal();}
@@ -2463,7 +2469,7 @@ function renderBookingCal(){
   }
   grid.innerHTML=html;
 }
-function pickTime(t,el){selTime=t;document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');}
+function pickTime(t,el){selTime=t;document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');_updateConflictBanner();}
 function adjGuest(d){
   const t=selTour;if(!t)return;
   // Seçili tarihe özel kapasite
@@ -2924,6 +2930,72 @@ function selectTourFromModal(tourId){
 function _trToISO(tr){const m=/^(\d{2})\.(\d{2})\.(\d{4})$/.exec(tr||'');return m?`${m[3]}-${m[2]}-${m[1]}`:null;}
 function _isoToTr(iso){if(!iso)return null;const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);return m?`${m[3]}.${m[2]}.${m[1]}`:null;}
 
+/* ── Çakışma Kontrolü Yardımcıları ── */
+function _parseMinutes(timeStr){
+  if(!timeStr||timeStr==='—')return null;
+  const m=/^(\d{1,2}):(\d{2})$/.exec((timeStr||'').trim());
+  return m?+m[1]*60+ +m[2]:null;
+}
+function _parseDurMinutes(durStr){
+  if(!durStr)return 240;
+  const s=durStr.toLowerCase().trim();
+  if(s.includes('tam')||s.includes('full')||s.includes('gün'))return 480;
+  const m=/(\d+(?:[.,]\d+)?)/.exec(s);
+  return m?Math.round(+m[1].replace(',','.')*60):240;
+}
+function _checkBookingConflict(targetDate,targetTimeStr,tourDurStr){
+  if(!targetDate)return{conflict:false};
+  const myBkIds=new Set(S.get('cu_bookings',[]));
+  if(!myBkIds.size)return{conflict:false};
+  const allBookings=S.get('db_bookings',[]);
+  const myOnDate=allBookings.filter(b=>myBkIds.has(b.id)&&b.tarih===targetDate&&b.durum!=='iptal'&&b.durum!=='reddedildi');
+  if(!myOnDate.length)return{conflict:false};
+  const newStart=_parseMinutes(targetTimeStr);
+  const newDur=_parseDurMinutes(tourDurStr);
+  const newIsFullDay=newStart===null||newDur>=420;
+  const newEnd=newStart!==null?newStart+newDur:null;
+  for(const b of myOnDate){
+    const existTour=S.get('db_tours',[]).find(t=>String(t.id)===String(b.tourId));
+    const existDurStr=existTour?.dur||existTour?.sure||'';
+    const existStart=_parseMinutes(b.saat);
+    const existDur=_parseDurMinutes(existDurStr);
+    const existIsFullDay=existStart===null||existDur>=420;
+    const existEnd=existStart!==null?existStart+existDur:null;
+    let conflict=false,type='saat';
+    if(newIsFullDay||existIsFullDay){conflict=true;type='tamgun';}
+    else if(newStart!==null&&existStart!==null){if(newStart<existEnd&&existStart<newEnd){conflict=true;type='saat';}}
+    else{conflict=true;type='saat';}
+    if(conflict){
+      const pad=n=>String(Math.floor(n)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
+      const range=existIsFullDay?'Tam Gün':(existStart!==null?`${b.saat||pad(existStart)}–${pad(existEnd)}`:'—');
+      return{conflict:true,type,booking:b,tourName:b.tourTitle||'Başka bir tur',range};
+    }
+  }
+  return{conflict:false};
+}
+function _updateConflictBanner(){
+  const t=selTour;
+  const banner=document.getElementById('booking-conflict-banner');
+  const msgEl=document.getElementById('booking-conflict-msg');
+  const proceedBtn=document.getElementById('booking-proceed-btn');
+  if(!banner)return;
+  const r=_checkBookingConflict(selDate,selTime,t?.dur||t?.sure||'');
+  if(r.conflict){
+    const text=r.type==='tamgun'
+      ?`"${r.tourName}" rezervasyonunuz bu tarihte tam gün sürmekte. Aynı gün başka tur rezervasyonu yapılamaz.`
+      :`"${r.tourName}" rezervasyonunuz bu tarihte ${r.range} saatleri arasında — seçilen saat çakışıyor.`;
+    if(msgEl)msgEl.textContent=text;
+    banner.style.display='block';
+    if(proceedBtn){proceedBtn.disabled=true;proceedBtn.style.opacity='0.4';proceedBtn.style.pointerEvents='none';proceedBtn.innerHTML='<i class="fas fa-ban mr-2"></i>Rezervasyon Çakışıyor';}
+  }else{
+    banner.style.display='none';
+    if(proceedBtn){
+      const noDate=!t||!_activeDates(t).length;
+      if(!noDate){proceedBtn.disabled=false;proceedBtn.style.opacity='1';proceedBtn.style.pointerEvents='auto';proceedBtn.innerHTML='<i class="fas fa-arrow-right mr-2"></i>Odemeye Gec';}
+    }
+  }
+}
+
 async function doBooking(){
   const t=selTour;
   if(!t){showToast('Lutfen bir tur secin','danger');_paySetLoading(false);return;}
@@ -2931,6 +3003,13 @@ async function doBooking(){
   if(turDurum!=='aktif'){showToast('Bu tur şu anda rezervasyona açık değil','danger');_paySetLoading(false);return;}
   if(!_activeDates(t).length){showToast('Bu tur icin kaptan henuz tarih belirlemedi','danger');_paySetLoading(false);return;}
   if(!selDate){showToast('Lutfen bir tarih secin','danger');_paySetLoading(false);return;}
+  const _conflict=_checkBookingConflict(selDate,selTime,t.dur||t.sure||'');
+  if(_conflict.conflict){
+    const _cmsg=_conflict.type==='tamgun'
+      ?`"${_conflict.tourName}" rezervasyonunuz bu tarihte tam gün sürmekte — aynı gün başka tur yapılamaz.`
+      :`"${_conflict.tourName}" rezervasyonunuz ${_conflict.range} saatleri arasında — seçilen saat çakışıyor.`;
+    showToast(_cmsg,'danger');_paySetLoading(false);return;
+  }
   const guestN=+guestVal||0;
   const turKapasite=+(t.kapasite||8);
   if(guestN<=0||guestN>turKapasite){showToast(`Kişi sayısı 1 ile ${turKapasite} arasında olmalı`,'danger');_paySetLoading(false);return;}
