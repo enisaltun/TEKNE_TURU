@@ -78,6 +78,7 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
   <a href="#mucbir" data-nav="mucbir"><i class="fas fa-exclamation-triangle"></i> Mücbir Sebepler <span id="mucbir-badge" style="display:none;background:#ef4444;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
   <a href="#reservations" data-nav="reservations"><i class="fas fa-calendar-check"></i> Rezervasyon Yonetimi <span id="res-badge" style="display:none;background:#f59e0b;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
   <a href="#messages" data-nav="messages"><i class="fas fa-comments"></i> Mesajlaşma <span id="msg-badge" style="display:none;background:#0369a1;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
+  <a href="#uyarilar" data-nav="uyarilar"><i class="fas fa-bell"></i> Uyarılar <span id="uyarilar-badge" style="display:none;background:#ef4444;color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:4px;animation:pulse 2s infinite">0</span></a>
 
   <div class="text-[10px] uppercase tracking-wider text-gray-600 px-3 mb-2 mt-6">Yonetim</div>
   <a href="#page-manager" data-nav="page-manager"><i class="fas fa-layer-group"></i> Sayfa Yonetimi <span id="hidden-pages-badge" style="display:none;font-size:9px;background:#ef4444;color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></a>
@@ -628,6 +629,76 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
       <div class="flex justify-between items-center mt-4 text-xs text-gray-500">
         <span id="captain-count">0 kaptan</span>
       </div>
+    </div>
+  </section>
+
+  <!-- ======================================= -->
+  <!-- PAGE: UYARILAR                         -->
+  <!-- ======================================= -->
+  <section id="page-uyarilar" class="page">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h1 class="text-xl font-bold">Uyarılar</h1>
+        <p class="text-sm text-gray-500 mt-0.5">Tüm sistem uyarıları, alarmlar ve kritik durum mesajları</p>
+      </div>
+      <button onclick="renderUyarilar()" class="border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2"><i class="fas fa-rotate text-primary"></i>Yenile / Tara</button>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+      <div class="stat-card"><div class="stat-icon bg-gray-100 text-gray-600"><i class="fas fa-bell"></i></div><div><div class="text-2xl font-bold" id="uyari-stat-toplam">—</div><div class="text-xs text-gray-500">Toplam</div></div></div>
+      <div class="stat-card cursor-pointer hover:ring-2 hover:ring-red-200 transition" onclick="uyariSetFilter('seviye','kritik')">
+        <div class="stat-icon bg-red-100 text-danger"><i class="fas fa-circle-exclamation"></i></div><div><div class="text-2xl font-bold text-danger" id="uyari-stat-kritik">—</div><div class="text-xs text-gray-500">Kritik</div></div>
+      </div>
+      <div class="stat-card cursor-pointer hover:ring-2 hover:ring-amber-200 transition" onclick="uyariSetFilter('seviye','uyari')">
+        <div class="stat-icon bg-amber-100 text-amber-600"><i class="fas fa-triangle-exclamation"></i></div><div><div class="text-2xl font-bold text-amber-600" id="uyari-stat-uyari">—</div><div class="text-xs text-gray-500">Uyarı</div></div>
+      </div>
+      <div class="stat-card cursor-pointer hover:ring-2 hover:ring-blue-200 transition" onclick="uyariSetFilter('okunmamis',true)">
+        <div class="stat-icon bg-blue-100 text-primary"><i class="fas fa-envelope"></i></div><div><div class="text-2xl font-bold text-primary" id="uyari-stat-okunmamis">—</div><div class="text-xs text-gray-500">Okunmamış</div></div>
+      </div>
+    </div>
+
+    <!-- Filtre -->
+    <div class="card mb-4 !py-3">
+      <div class="flex flex-wrap gap-2 items-center">
+        <!-- Seviye tabs -->
+        <div class="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <button onclick="uyariSetFilter('seviye','')"   id="uf-sev-all"    class="px-3 py-1 rounded-md text-xs font-medium text-gray-700 bg-white shadow-sm">Tümü</button>
+          <button onclick="uyariSetFilter('seviye','kritik')" id="uf-sev-kritik" class="px-3 py-1 rounded-md text-xs font-medium text-gray-500 hover:bg-white/60 transition">Kritik</button>
+          <button onclick="uyariSetFilter('seviye','uyari')"  id="uf-sev-uyari"  class="px-3 py-1 rounded-md text-xs font-medium text-gray-500 hover:bg-white/60 transition">Uyarı</button>
+          <button onclick="uyariSetFilter('seviye','bilgi')"  id="uf-sev-bilgi"  class="px-3 py-1 rounded-md text-xs font-medium text-gray-500 hover:bg-white/60 transition">Bilgi</button>
+        </div>
+        <!-- Kategori -->
+        <select id="uyari-filter-kat" onchange="renderUyarilar()" class="px-3 py-2 border rounded-lg text-xs !w-auto">
+          <option value="">Tüm Kategoriler</option>
+          <option value="rezervasyon">Rezervasyon</option>
+          <option value="tur">Tur</option>
+          <option value="kapasite">Kapasite</option>
+          <option value="finans">Finans</option>
+          <option value="sistem">Sistem</option>
+        </select>
+        <!-- Kaynak -->
+        <select id="uyari-filter-kaynak" onchange="renderUyarilar()" class="px-3 py-2 border rounded-lg text-xs !w-auto">
+          <option value="">Tüm Kaynaklar</option>
+          <option value="notif">Sistem Bildirimi</option>
+          <option value="health">Sağlık Taraması</option>
+        </select>
+        <!-- Okunmamış toggle -->
+        <label class="flex items-center gap-2 text-xs text-gray-600 cursor-pointer ml-1">
+          <input type="checkbox" id="uyari-filter-okunmamis" onchange="renderUyarilar()" class="rounded accent-primary">
+          Sadece okunmamış
+        </label>
+        <div class="ml-auto flex items-center gap-2">
+          <span class="text-xs text-gray-400" id="uyari-count"></span>
+          <button onclick="markAllUyarilarOkundu()" class="border px-3 py-1.5 rounded-lg text-xs text-gray-600 hover:bg-gray-50"><i class="fas fa-check-double mr-1"></i>Tümünü Okundu</button>
+          <button onclick="clearOkunmusUyarilar()" class="border px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-50"><i class="fas fa-trash mr-1"></i>Okunmuşları Sil</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste -->
+    <div id="uyarilar-list" class="space-y-2">
+      <div class="text-center text-gray-400 py-16 text-sm"><i class="fas fa-spinner fa-spin text-2xl block mb-2 opacity-40"></i>Yükleniyor...</div>
     </div>
   </section>
 
@@ -3987,8 +4058,8 @@ input[type="checkbox"].rounded{border-radius:4px;width:14px;height:14px;cursor:p
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
-const pages=['dashboard','captains','users','tours-bookings','reservations','messages','system-health','page-manager','cms-web','cms-app','finance','subscriptions','shop-admin','marine','modules','captain-add','platform-control','mucbir'];
-const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','messages':'Mesajlaşma Yönetimi','system-health':'Sistem Sağlığı','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','subscriptions':'Abonelik & Üyelik','shop-admin':'Mağaza Yönetimi','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi','mucbir':'Mucbir Sebepler Yonetimi'};
+const pages=['dashboard','captains','users','tours-bookings','reservations','messages','uyarilar','system-health','page-manager','cms-web','cms-app','finance','subscriptions','shop-admin','marine','modules','captain-add','platform-control','mucbir'];
+const titles={'dashboard':'Dashboard','captains':'Kaptan Yonetimi','users':'Kullanici Yonetimi','tours-bookings':'Tur Yonetimi','reservations':'Rezervasyon Yonetimi','messages':'Mesajlaşma Yönetimi','uyarilar':'Uyarılar','system-health':'Sistem Sağlığı','page-manager':'Sayfa Yonetimi','cms-web':'Icerik Editoru','cms-app':'Uygulama Icerik Editoru','finance':'Finans','subscriptions':'Abonelik & Üyelik','shop-admin':'Mağaza Yönetimi','marine':'Deniz Verileri','modules':'Modul Yonetimi','captain-add':'Yeni Kaptan Ekle','platform-control':'Platform Kontrol Merkezi','mucbir':'Mucbir Sebepler Yonetimi'};
 
 function lsGet(k,d=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
@@ -5620,6 +5691,7 @@ function handleRoute(){
   if(h==='modules')             renderMarineModules();
   if(h==='platform-control')    renderPlatformControl();
   if(h==='mucbir')              renderMucbir();
+  if(h==='uyarilar')            renderUyarilar();
 }
 window.addEventListener('hashchange',handleRoute);
 window.addEventListener('load',async()=>{
@@ -5629,7 +5701,7 @@ window.addEventListener('load',async()=>{
   uSyncCaptainsToUsers();
   purgeDatelessTours();
   _adminScanOversell();
-  handleRoute();pmUpdateBadge();initShopToggle();pcUpdateMaintenanceBadge();mcUpdateBadge();updateMsgBadge();
+  handleRoute();pmUpdateBadge();initShopToggle();pcUpdateMaintenanceBadge();mcUpdateBadge();updateMsgBadge();updateUyarilarBadge();
 });
 
 // Başka sekmede (seed-data vb.) localStorage değişince otomatik yenile
@@ -5648,7 +5720,7 @@ function adminRefreshActivePage(){
   else if(h==='reservations')renderReservations();
   else if(h==='messages')renderMessages();
   else if(h==='finance')renderFinance();
-  pmUpdateBadge();mcUpdateBadge();updateResBadge();
+  pmUpdateBadge();mcUpdateBadge();updateResBadge();updateUyarilarBadge();
 }
 
 window.addEventListener('storage',(e)=>{
@@ -10822,6 +10894,237 @@ function adminCancelRes(){
   renderReservations();
   renderDashboard();
   showToast(`Rezervasyon iptal edildi — ${b.iadeTutari.toLocaleString('tr-TR')} TL tam iade talebi açıldı`,'success');
+}
+
+/* ══════════════════════════════════════════════
+   UYARILAR SAYFASI — Merkezi Uyarı Merkezi
+   ══════════════════════════════════════════════ */
+const _UYARI_SEVIYE={
+  // kritik
+  duplicate_booking_id:'kritik',orphan_booking:'kritik',invalid_guests:'kritik',
+  rejected_yet_boarded:'kritik',booking_on_unapproved_tour:'kritik',
+  booking_on_cancelled_tour:'kritik',overcapacity:'kritik',price_invalid:'kritik',
+  malformed_tour:'kritik',refund_stuck:'kritik',oversell:'kritik',
+  admin_approval_timeout:'kritik',national_mourning_tours:'kritik',
+  dangling_payment_ref:'kritik',refund_exceeds_payment:'kritik',
+  price_zero:'kritik',completed_unpaid:'kritik',dispute_open:'kritik',
+  // uyari
+  unknown_customer:'uyari',past_date_active:'uyari',missing_tarihISO:'uyari',
+  tarihISO_mismatch:'uyari',paid_no_ref:'uyari',boarded_not_completed:'uyari',
+  captain_mismatch:'uyari',tarih_not_in_tour:'uyari',wrong_tour_info:'uyari',
+  weather_cancel_no_compensation:'uyari',force_majeure_unhandled:'uyari',
+  withdrawal_fee_missing:'uyari',no_show_uncompensated:'uyari',
+  date_full:'uyari',tour_full:'uyari',
+  // bilgi
+  admin_cancel:'bilgi',tour_iptal:'bilgi',
+};
+const _UYARI_KAT={
+  orphan_booking:'rezervasyon',duplicate_booking_id:'rezervasyon',past_date_active:'rezervasyon',
+  missing_tarihISO:'rezervasyon',tarihISO_mismatch:'rezervasyon',invalid_guests:'rezervasyon',
+  rejected_yet_boarded:'rezervasyon',boarded_not_completed:'rezervasyon',
+  captain_mismatch:'rezervasyon',tarih_not_in_tour:'rezervasyon',
+  booking_on_unapproved_tour:'rezervasyon',booking_on_cancelled_tour:'rezervasyon',
+  unknown_customer:'rezervasyon',weather_cancel_no_compensation:'rezervasyon',
+  force_majeure_unhandled:'rezervasyon',withdrawal_fee_missing:'rezervasyon',
+  no_show_uncompensated:'rezervasyon',admin_cancel:'rezervasyon',
+  malformed_tour:'tur',wrong_tour_info:'tur',admin_approval_timeout:'tur',
+  national_mourning_tours:'tur',tour_iptal:'tur',price_invalid:'tur',
+  overcapacity:'kapasite',oversell:'kapasite',date_full:'kapasite',tour_full:'kapasite',
+  price_zero:'finans',paid_no_ref:'finans',completed_unpaid:'finans',
+  dangling_payment_ref:'finans',refund_exceeds_payment:'finans',refund_stuck:'finans',
+  dispute_open:'sistem',
+};
+const _UYARI_SEV_ORDER={kritik:0,uyari:1,bilgi:2};
+
+function _notifBaslik(n){
+  return{date_full:'Tarih Doldu',tour_full:'Tur Tamamen Doldu',oversell:'Aşırı Satış Tespit Edildi',
+    tour_iptal:'Tur İptal Edildi (Kaptan)',admin_cancel:'Rezervasyon İptal Edildi (Admin)'}[n.type]||n.type;
+}
+function _notifAciklama(n){
+  if(n.type==='date_full')return`"${n.tourTitle}" — ${n.tarih} tarihi ${n.bookedSeats}/${n.kapasite} kişi ile doldu`;
+  if(n.type==='tour_full')return`"${n.tourTitle}" — tüm tarihler kapasiteye ulaştı · ${n.captainEmail||''}`;
+  if(n.type==='oversell')return`"${n.tourTitle}" — ${n.tarih}: ${n.satilan} kişi satıldı, kapasite ${n.kapasite}`;
+  if(n.type==='tour_iptal')return`"${n.tourTitle}" · Neden: ${n.reason||'—'}${n.etkilenen?' · '+n.etkilenen+' müşteri etkilendi':''}`;
+  if(n.type==='admin_cancel')return`"${n.tourTitle||'—'}" · ${n.musteriAd||''} · ${n.sebep||'—'}`;
+  return'';
+}
+
+function _getUnifiedAlerts(){
+  const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
+  const healthRead=new Set(JSON.parse(localStorage.getItem('admin_health_read')||'[]'));
+  let findings={};
+  try{findings=runHealthScan();}catch(e){}
+  const unified=[];
+
+  notifs.forEach(n=>{
+    unified.push({
+      id:n.id,type:n.type,
+      seviye:_UYARI_SEVIYE[n.type]||'uyari',
+      kat:_UYARI_KAT[n.type]||'sistem',
+      baslik:_notifBaslik(n),
+      aciklama:_notifAciklama(n),
+      ts:n.ts||Date.now(),read:!!n.read,kaynak:'notif',
+    });
+  });
+
+  Object.entries(findings).forEach(([type,recs])=>{
+    const lbl=SH_LABELS[type];if(!lbl)return;
+    recs.forEach((rec,i)=>{
+      const hid='H_'+type+'_'+(rec.id||rec.tour||i);
+      const extra=[rec.id?'ID: '+rec.id:'',rec.tour||'',rec.gun?rec.gun+'g':'',rec.tarih||''].filter(Boolean).join(' · ');
+      unified.push({
+        id:hid,type,
+        seviye:_UYARI_SEVIYE[type]||'uyari',
+        kat:_UYARI_KAT[type]||'sistem',
+        baslik:lbl.label,
+        aciklama:lbl.desc+(extra?' · '+extra:''),
+        ts:Date.now(),read:healthRead.has(hid),kaynak:'health',
+      });
+    });
+  });
+
+  unified.sort((a,b)=>{
+    if(a.read!==b.read)return a.read?1:-1;
+    const sd=(_UYARI_SEV_ORDER[a.seviye]??1)-(_UYARI_SEV_ORDER[b.seviye]??1);
+    if(sd!==0)return sd;
+    return b.ts-a.ts;
+  });
+  return unified;
+}
+
+let _uyariFilterSeviye='';
+function uyariSetFilter(key,val){
+  if(key==='seviye'){
+    _uyariFilterSeviye=val;
+    ['all','kritik','uyari','bilgi'].forEach(k=>{
+      const el=document.getElementById('uf-sev-'+k);if(!el)return;
+      const active=(k==='all'&&val==='')||(k===val);
+      el.className=active
+        ?'px-3 py-1 rounded-md text-xs font-medium bg-white shadow-sm text-gray-800'
+        :'px-3 py-1 rounded-md text-xs font-medium text-gray-500 hover:bg-white/60 transition';
+    });
+  }
+  if(key==='okunmamis'){const el=document.getElementById('uyari-filter-okunmamis');if(el)el.checked=val;}
+  renderUyarilar();
+}
+
+function renderUyarilar(){
+  const all=_getUnifiedAlerts();
+  const kritik=all.filter(a=>a.seviye==='kritik').length;
+  const uyari=all.filter(a=>a.seviye==='uyari').length;
+  const okunmamis=all.filter(a=>!a.read).length;
+  const setEl=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  setEl('uyari-stat-toplam',all.length);
+  setEl('uyari-stat-kritik',kritik);
+  setEl('uyari-stat-uyari',uyari);
+  setEl('uyari-stat-okunmamis',okunmamis);
+
+  const fKat=document.getElementById('uyari-filter-kat')?.value||'';
+  const fKaynak=document.getElementById('uyari-filter-kaynak')?.value||'';
+  const fOkunmamis=document.getElementById('uyari-filter-okunmamis')?.checked||false;
+
+  let list=all;
+  if(_uyariFilterSeviye)list=list.filter(a=>a.seviye===_uyariFilterSeviye);
+  if(fKat)list=list.filter(a=>a.kat===fKat);
+  if(fKaynak)list=list.filter(a=>a.kaynak===fKaynak);
+  if(fOkunmamis)list=list.filter(a=>!a.read);
+
+  const countEl=document.getElementById('uyari-count');
+  if(countEl)countEl.textContent=list.length+' uyarı';
+
+  const container=document.getElementById('uyarilar-list');
+  if(!container)return;
+
+  if(!list.length){
+    container.innerHTML='<div class="text-center text-gray-400 py-16 text-sm"><i class="fas fa-bell-slash text-4xl block mb-3 opacity-20"></i>Gösterilecek uyarı yok</div>';
+    updateUyarilarBadge();return;
+  }
+
+  const S={
+    kritik:{bg:'bg-red-50',border:'border-red-200',badge:'bg-red-100 text-red-700',dot:'bg-red-500',icon:'fa-circle-exclamation text-danger'},
+    uyari: {bg:'bg-amber-50',border:'border-amber-200',badge:'bg-amber-100 text-amber-700',dot:'bg-amber-400',icon:'fa-triangle-exclamation text-amber-500'},
+    bilgi: {bg:'bg-blue-50', border:'border-blue-200', badge:'bg-blue-100 text-blue-700', dot:'bg-blue-400',icon:'fa-circle-info text-primary'},
+  };
+  const KAT_ICON={rezervasyon:'fa-calendar-check text-primary',tur:'fa-ship text-cyan-600',kapasite:'fa-people-group text-orange-500',finans:'fa-wallet text-green-600',sistem:'fa-stethoscope text-purple-600'};
+  const KAT_LABEL={rezervasyon:'Rezervasyon',tur:'Tur',kapasite:'Kapasite',finans:'Finans',sistem:'Sistem'};
+  const SEV_LABEL={kritik:'Kritik',uyari:'Uyarı',bilgi:'Bilgi'};
+  const KAYNAK_LABEL={notif:'Sistem Bildirimi',health:'Sağlık Taraması'};
+
+  container.innerHTML=list.map(a=>{
+    const s=S[a.seviye]||S.uyari;
+    const ki=KAT_ICON[a.kat]||'fa-circle-info text-gray-400';
+    const readOp=a.read?'opacity-60':'';
+    return`<div class="flex items-start gap-3 p-4 rounded-xl border ${s.border} ${s.bg} ${readOp} transition hover:shadow-sm">
+      <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-white border ${s.border} flex items-center justify-center shadow-sm">
+        <i class="fas ${ki.split(' ')[0]} ${ki.split(' ')[1]||''} text-sm"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1 flex-wrap">
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${s.badge}">${SEV_LABEL[a.seviye]||a.seviye}</span>
+          <span class="text-[10px] text-gray-400">${KAT_LABEL[a.kat]||a.kat}</span>
+          <span class="text-[10px] text-gray-300">·</span>
+          <span class="text-[10px] text-gray-400">${KAYNAK_LABEL[a.kaynak]||a.kaynak}</span>
+          ${!a.read?`<span class="ml-auto w-2 h-2 rounded-full ${s.dot} flex-shrink-0"></span>`:''}
+        </div>
+        <div class="text-sm font-semibold text-gray-800">${a.baslik}</div>
+        ${a.aciklama?`<div class="text-xs text-gray-500 mt-0.5 leading-relaxed">${a.aciklama}</div>`:''}
+        <div class="text-[10px] text-gray-400 mt-1.5">${_timeAgo(a.ts)}</div>
+      </div>
+      <button onclick="markUyariOkundu('${a.id}','${a.kaynak}')"
+        class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${a.read?'text-green-400 bg-green-50':'text-gray-300 hover:text-gray-600 hover:bg-gray-100'} transition" title="${a.read?'Okundu':'Okundu işaretle'}">
+        <i class="fas fa-check text-xs"></i>
+      </button>
+    </div>`;
+  }).join('');
+  updateUyarilarBadge();
+}
+
+function markUyariOkundu(id,kaynak){
+  if(kaynak==='notif'){
+    const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
+    const n=notifs.find(x=>x.id===id);if(n)n.read=true;
+    localStorage.setItem('admin_notifs',JSON.stringify(notifs));
+  } else {
+    const hr=new Set(JSON.parse(localStorage.getItem('admin_health_read')||'[]'));
+    hr.add(id);
+    localStorage.setItem('admin_health_read',JSON.stringify([...hr].slice(0,500)));
+  }
+  renderUyarilar();
+}
+
+function markAllUyarilarOkundu(){
+  const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
+  notifs.forEach(n=>n.read=true);
+  localStorage.setItem('admin_notifs',JSON.stringify(notifs));
+  const hr=new Set(JSON.parse(localStorage.getItem('admin_health_read')||'[]'));
+  try{
+    const findings=runHealthScan();
+    Object.entries(findings).forEach(([type,recs])=>recs.forEach((rec,i)=>hr.add('H_'+type+'_'+(rec.id||rec.tour||i))));
+  }catch(e){}
+  localStorage.setItem('admin_health_read',JSON.stringify([...hr].slice(0,500)));
+  renderUyarilar();showToast('Tüm uyarılar okundu işaretlendi','success');
+}
+
+function clearOkunmusUyarilar(){
+  const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
+  localStorage.setItem('admin_notifs',JSON.stringify(notifs.filter(n=>!n.read)));
+  localStorage.removeItem('admin_health_read');
+  renderUyarilar();showToast('Okunmuş uyarılar temizlendi','success');
+}
+
+function updateUyarilarBadge(){
+  const notifs=JSON.parse(localStorage.getItem('admin_notifs')||'[]');
+  let findings={};try{findings=runHealthScan();}catch(e){}
+  const unreadNotifs=notifs.filter(n=>!n.read).length;
+  const healthRead=new Set(JSON.parse(localStorage.getItem('admin_health_read')||'[]'));
+  let unreadHealth=0;
+  Object.entries(findings).forEach(([type,recs])=>recs.forEach((rec,i)=>{
+    const hid='H_'+type+'_'+(rec.id||rec.tour||i);
+    if(!healthRead.has(hid)&&(_UYARI_SEVIYE[type]==='kritik'||_UYARI_SEVIYE[type]==='uyari'))unreadHealth++;
+  }));
+  const total=unreadNotifs+unreadHealth;
+  const badge=document.getElementById('uyarilar-badge');
+  if(badge){badge.style.display=total?'':'none';badge.textContent=total>99?'99+':total;}
 }
 
 /* ── ADMİN BİLDİRİM & DOLULUK KONTROL SİSTEMİ ── */
